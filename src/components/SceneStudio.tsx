@@ -25,6 +25,12 @@ interface SceneStudioProps { campanha: Campanha; personagens: Personagem[]; }
 const KEY_PREFIX = 'reinos_oniricos_scene_studio_v1_';
 const GRID = 12;
 const cellKey = (x: number, y: number) => `${x}:${y}`;
+const ATMOSPHERE_PRESETS = [
+  { nome: 'Metrô vazio', local: 'Plataforma subterrânea', atmosfera: 'Luzes fluorescentes tremem; o último trem nunca chega.' },
+  { nome: 'Beco molhado', local: 'Centro da cidade', atmosfera: 'Asfalto espelhado, chuva fina e uma fenda dourada entre os prédios.' },
+  { nome: 'Galpão 14', local: 'Vila Leopoldina', atmosfera: 'Concreto úmido, metal rangendo e gravidade inquieta.' },
+  { nome: 'Corredor sem fim', local: 'Edifício abandonado', atmosfera: 'Portas repetidas, lâmpadas falhando e passos que não pertencem a ninguém.' }
+];
 
 const initialScene = (personagens: Personagem[]): MasterScene => ({
   id: 'cena-inicial',
@@ -130,7 +136,7 @@ export const SceneStudio: React.FC<SceneStudioProps> = ({ campanha, personagens 
 
   if (!cena) return null;
 
-  return <div className="grid grid-cols-1 xl:grid-cols-[255px_minmax(0,1fr)_285px] gap-4">
+  return <div className="ro-scene-studio grid grid-cols-1 xl:grid-cols-[255px_minmax(0,1fr)_285px] gap-4">
     <aside className="bg-[#171717] border border-[#292929] rounded-sm p-3 space-y-3">
       <div className="flex items-center justify-between"><span className="text-xs font-mono uppercase tracking-widest text-[#A88952]">Cenas</span><button onClick={criarCena} title="Criar cena" className="scene-icon-button"><Plus className="w-4 h-4" /></button></div>
       <div className="space-y-2 max-h-[575px] overflow-y-auto pr-1">
@@ -143,7 +149,7 @@ export const SceneStudio: React.FC<SceneStudioProps> = ({ campanha, personagens 
       <button onClick={excluirCena} disabled={cenas.length <= 1} className="w-full text-[11px] text-rose-300 border border-rose-900/60 py-2 disabled:opacity-30 hover:bg-rose-950/20"><Trash2 className="w-3.5 h-3.5 inline mr-1.5" />Excluir cena</button>
     </aside>
 
-    <section className="bg-[#11110f] border border-[#292929] rounded-sm overflow-hidden">
+    <section className="ro-scene-canvas bg-[#11110f] border border-[#292929] rounded-sm overflow-hidden">
       <header className="p-4 border-b border-[#292929] flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div><div className="text-[10px] font-mono uppercase tracking-[.18em] text-[#A88952]">Cena ativa da mesa</div><h2 className="font-serif text-2xl text-[#F5F3EE]">{cena.nome}</h2><p className="text-xs text-[#888]">{cena.local} · {cena.atmosfera || 'Sem atmosfera definida'}</p></div>
         <div className="flex gap-2"><button onClick={ativarCena} className="scene-action-primary"><Radio className="w-3.5 h-3.5" />{cena.ativa ? 'Ao vivo' : 'Colocar ao vivo'}</button><button onClick={() => updateCena({ playersVeem: !cena.playersVeem })} title="Visibilidade dos jogadores" className="scene-icon-button">{cena.playersVeem ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button></div>
@@ -167,6 +173,7 @@ export const SceneStudio: React.FC<SceneStudioProps> = ({ campanha, personagens 
         <label className="scene-field"><span>Nome</span><input value={cena.nome} onChange={e => updateCena({ nome: e.target.value })} /></label>
         <label className="scene-field"><span>Local</span><input value={cena.local} onChange={e => updateCena({ local: e.target.value })} /></label>
         <label className="scene-field"><span>Atmosfera pública</span><input value={cena.atmosfera} onChange={e => updateCena({ atmosfera: e.target.value })} placeholder="Chuva, tensão, distorção..." /></label>
+        <div className="scene-presets"><span>Atmosferas rápidas</span><div>{ATMOSPHERE_PRESETS.map(preset => <button key={preset.nome} type="button" onClick={() => updateCena({ nome: preset.nome, local: preset.local, atmosfera: preset.atmosfera })}>{preset.nome}</button>)}</div></div>
         <input ref={fileInputRef} className="hidden" type="file" accept="image/*" onChange={uploadImagem} />
         <button onClick={() => fileInputRef.current?.click()} className="scene-control w-full"><ImagePlus className="w-3.5 h-3.5" />{cena.imagem ? 'Trocar imagem do mapa' : 'Adicionar imagem local'}</button>
         {cena.imagem && <button onClick={() => updateCena({ imagem: undefined })} className="scene-control w-full"><Minus className="w-3.5 h-3.5" />Remover imagem</button>}

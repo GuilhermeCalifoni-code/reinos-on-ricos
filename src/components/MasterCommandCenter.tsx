@@ -7,8 +7,9 @@ import { Campanha } from '../types/campaign';
 import { Personagem } from '../types/character';
 import { MasterPanel } from './MasterPanel';
 import { SceneStudio } from './SceneStudio';
+import { CinematicTable } from './CinematicTable';
 
-type MasterTab = 'conduzir' | 'cenas' | 'mapa' | 'mesa' | 'desvelados';
+type MasterTab = 'sessao' | 'conduzir' | 'cenas' | 'mapa' | 'mesa' | 'desvelados';
 type JournalKind = 'anuncio' | 'rolagem' | 'narracao' | 'sistema';
 
 interface MapToken {
@@ -48,7 +49,7 @@ export const MasterCommandCenter: React.FC<MasterCommandCenterProps> = ({
   onAbrirModalRupturaPara,
   onAbrirFichaPersonagem
 }) => {
-  const [tabAtiva, setTabAtiva] = useState<MasterTab>('conduzir');
+  const [tabAtiva, setTabAtiva] = useState<MasterTab>('sessao');
   const [personagemEmFocoId, setPersonagemEmFocoId] = useState<string>(personagens[0]?.id || '');
   const [mensagem, setMensagem] = useState('');
   const [novoToken, setNovoToken] = useState('');
@@ -148,6 +149,7 @@ export const MasterCommandCenter: React.FC<MasterCommandCenterProps> = ({
   })), []);
 
   const abas: { id: MasterTab; label: string; icon: React.ElementType; descricao: string }[] = [
+    { id: 'sessao', label: 'Sessão', icon: Radio, descricao: 'Mesa cinematográfica' },
     { id: 'conduzir', label: 'Conduzir', icon: Crown, descricao: 'Cena e decisões' },
     { id: 'cenas', label: 'Cenas', icon: Sparkles, descricao: 'Mapa e revelação' },
     { id: 'mapa', label: 'Mapa', icon: Map, descricao: 'Posição e ameaça' },
@@ -156,8 +158,8 @@ export const MasterCommandCenter: React.FC<MasterCommandCenterProps> = ({
   ];
 
   return (
-    <div className="space-y-5 pb-16">
-      <section className="border border-[#3a3226] bg-[radial-gradient(ellipse_at_top_left,_rgba(168,137,82,0.14),_transparent_40%),#11110f] rounded-sm overflow-hidden">
+    <div className="ro-master-shell space-y-5 pb-16">
+      <section className="ro-hero border border-[#3a3226] bg-[radial-gradient(ellipse_at_top_left,_rgba(168,137,82,0.14),_transparent_40%),#11110f] rounded-sm overflow-hidden">
         <div className="px-5 py-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between border-b border-[#292929]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-sm bg-[#A88952] text-[#0B0B0B] grid place-items-center"><Crown className="w-5 h-5" /></div>
@@ -168,20 +170,22 @@ export const MasterCommandCenter: React.FC<MasterCommandCenterProps> = ({
             </div>
           </div>
           <div className="flex flex-wrap gap-2 text-[11px] font-mono">
-            <span className="px-2.5 py-1.5 border border-[#3a3226] bg-black/30 text-[#D9D7D2]">Sessão {String(campanha.sessaoAtual).padStart(2, '0')}</span>
-            <span className="px-2.5 py-1.5 border border-[#3a3226] bg-black/30 text-[#D9D7D2]">{personagens.length} Desvelados</span>
-            <span className="px-2.5 py-1.5 border border-[#5e332d] bg-rose-950/20 text-rose-300">Ruptura da crônica: {campanha.rupturaGeral}/6</span>
+            <span className="ro-stat px-2.5 py-1.5 border border-[#3a3226] bg-black/30 text-[#D9D7D2]">Sessão {String(campanha.sessaoAtual).padStart(2, '0')}</span>
+            <span className="ro-stat px-2.5 py-1.5 border border-[#3a3226] bg-black/30 text-[#D9D7D2]">{personagens.length} Desvelados</span>
+            <span className="ro-stat ro-stat--rupture px-2.5 py-1.5 border border-[#5e332d] bg-rose-950/20 text-rose-300">Ruptura da crônica: {campanha.rupturaGeral}/6</span>
           </div>
         </div>
-        <div className="p-2 grid grid-cols-2 sm:grid-cols-4 gap-1">
+        <div className="p-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
           {abas.map(({ id, label, descricao, icon: Icon }) => (
-            <button key={id} type="button" onClick={() => setTabAtiva(id)} className={`flex items-center gap-2.5 px-3 py-2.5 text-left rounded-sm transition-colors ${tabAtiva === id ? 'bg-[#A88952] text-[#0B0B0B]' : 'text-[#AFAAA0] hover:bg-[#24231f]'}`}>
+            <button key={id} type="button" onClick={() => setTabAtiva(id)} className={`ro-nav-tab flex items-center gap-2.5 px-3 py-2.5 text-left rounded-sm transition-colors ${tabAtiva === id ? 'bg-[#A88952] text-[#0B0B0B]' : 'text-[#AFAAA0] hover:bg-[#24231f]'}`}>
               <Icon className="w-4 h-4" />
               <span><span className="block text-xs font-semibold">{label}</span><span className="block text-[10px] opacity-70">{descricao}</span></span>
             </button>
           ))}
         </div>
       </section>
+
+      {tabAtiva === 'sessao' && <CinematicTable campanha={campanha} personagens={personagens} onAbrirFicha={onAbrirFichaPersonagem} onAbrirRuptura={onAbrirModalRupturaPara} onAbrirDirecao={() => setTabAtiva('conduzir')} onAtualizarPersonagem={onAtualizarPersonagem} />}
 
       {tabAtiva === 'conduzir' && (
         <>
