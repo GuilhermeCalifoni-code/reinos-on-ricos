@@ -1,0 +1,329 @@
+import React, { useState } from 'react';
+import { Plus, X, Check, Sparkles, UserPlus } from 'lucide-react';
+import { Personagem, AtributoNome, DominioNome } from '../types/character';
+import { TABELA_PROGRESSAO } from '../rules/rulesData';
+import { calcularResistencia, calcularDefesa, calcularVidaMaxima, validarDistribuicaoDominios } from '../rules/rulesEngine';
+
+interface CreateCharacterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCriar: (novo: Personagem) => void;
+}
+
+export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
+  isOpen,
+  onClose,
+  onCriar
+}) => {
+  const [nome, setNome] = useState('');
+  const [jogador, setJogador] = useState('');
+  const [nivel, setNivel] = useState(1);
+  const [conceito, setConceito] = useState<'Lúcido' | 'Tecelão' | 'Desperto' | 'Ecoante'>('Lúcido');
+  const [atributoPrincipal, setAtributoPrincipal] = useState<AtributoNome>('mente');
+  
+  const [atributos, setAtributos] = useState({
+    corpo: 1,
+    mente: 2,
+    vontade: 1,
+    vinculo: 0
+  });
+
+  const [dominios, setDominios] = useState<Record<DominioNome, number>>({
+    consciencia: 2,
+    espaco: 1,
+    fluxo: 0,
+    substancia: 0,
+    vida: 0
+  });
+
+  const [ancoragem, setAncoragem] = useState('');
+
+  if (!isOpen) return null;
+
+  const prog = TABELA_PROGRESSAO[nivel] || TABELA_PROGRESSAO[1];
+  const validacao = validarDistribuicaoDominios(dominios, nivel);
+
+  const handleUpdateAtributo = (at: AtributoNome, val: number) => {
+    setAtributos(prev => ({ ...prev, [at]: val }));
+  };
+
+  const handleUpdateDominio = (dom: DominioNome, val: number) => {
+    setDominios(prev => ({ ...prev, [dom]: val }));
+  };
+
+  const handleCriar = () => {
+    const resistencia = calcularResistencia(atributos.corpo);
+    const defesa = calcularDefesa(atributoPrincipal, atributos, nivel).defesa;
+    const vidaMaxima = calcularVidaMaxima(nivel);
+
+    const novoPersonagem: Personagem = {
+      id: 'desvelado-' + Date.now(),
+      nome: nome.trim() || 'Novo Desvelado',
+      conceito,
+      nivel,
+      atributos,
+      atributoPrincipal,
+      resistencia,
+      defesa,
+      vidaAtual: vidaMaxima,
+      vidaMaxima,
+      focoAtual: 4,
+      focoMaximo: 4,
+      protecaoOniricaAtual: 2,
+      protecaoOniricaMaxima: 2,
+      ruptura: 0,
+      historicoRuptura: [
+        {
+          id: 'rup-init-' + Date.now(),
+          dataHora: new Date().toLocaleTimeString('pt-BR') + ' ' + new Date().toLocaleDateString('pt-BR'),
+          valorAnterior: 0,
+          novoValor: 0,
+          motivo: 'Criação do Desvelado.',
+          origem: 'manual'
+        }
+      ],
+      dominios,
+      ancoragem: ancoragem.trim() || 'Um relógio de bolso antigo herdado da família.',
+      vinculos: [],
+      equipamentos: [
+        { id: 'eq-1', nome: 'Smartphone com bateria reserva', descricao: 'Comunicação e lanterna' },
+        { id: 'eq-2', nome: 'Casaco pesado impermeável', descricao: 'Vestimenta de proteção cotidiana' }
+      ],
+      recursos: [{ id: 'rec-1', nome: 'Recursos Estáveis', quantidade: 3, descricao: 'Nível 3 (Estável)' }],
+      percepcaoOniricaNotas: '',
+      anotacoesGerais: '',
+      criadoEm: new Date().toISOString(),
+      atualizadoEm: new Date().toISOString()
+    };
+
+    onCriar(novoPersonagem);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="bg-[#11141c] border border-slate-700/80 rounded-lg max-w-xl w-full shadow-2xl overflow-hidden animate-in fade-in duration-200 max-h-[90vh] flex flex-col font-mono text-xs">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#161b26] shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-400">
+              <UserPlus className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-slate-100 font-['Chakra_Petch'] uppercase tracking-wider">
+                Criar Novo Desvelado
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                Regras Oficiais do Livro Básico (Níveis 1 a 5)
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800/60 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Formulário com Scroll */}
+        <div className="p-5 space-y-4 overflow-y-auto flex-1">
+          
+          {/* Identidade */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-slate-300 block mb-1 font-semibold">Nome do Personagem:</label>
+              <input
+                type="text"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Ex: Clara Mendes"
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-slate-300 block mb-1 font-semibold">Jogador / Convidado:</label>
+              <input
+                type="text"
+                value={jogador}
+                onChange={(e) => setJogador(e.target.value)}
+                placeholder="Ex: Marina"
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-slate-300 block mb-1 font-semibold">Nível Inicial:</label>
+              <select
+                value={nivel}
+                onChange={(e) => setNivel(Number(e.target.value))}
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
+              >
+                {[1, 2, 3, 4, 5].map(n => (
+                  <option key={n} value={n}>Nível {n} ({TABELA_PROGRESSAO[n].pontosDeSonhar} Pontos de Domínio)</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-slate-300 block mb-1 font-semibold">Conceito do Desvelado:</label>
+              <select
+                value={conceito}
+                onChange={(e) => setConceito(e.target.value as any)}
+                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
+              >
+                {['Lúcido', 'Tecelão', 'Desperto', 'Ecoante'].map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Atributos */}
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-slate-300 font-semibold">Atributos (-1 a +3):</label>
+              <span className="text-[10px] text-slate-400">Escolha o Atributo Principal que ancora a Defesa</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { id: 'corpo', nome: 'Corpo' },
+                { id: 'mente', nome: 'Mente' },
+                { id: 'vontade', nome: 'Vontade' },
+                { id: 'vinculo', nome: 'Vínculo' }
+              ].map(at => {
+                const chave = at.id as AtributoNome;
+                const valor = atributos[chave];
+                const isPrincipal = atributoPrincipal === chave;
+
+                return (
+                  <div key={at.id} className={`p-2 rounded border ${isPrincipal ? 'bg-cyan-950/50 border-cyan-500' : 'bg-slate-950 border-slate-800'}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-200">{at.nome}</span>
+                      <input
+                        type="radio"
+                        name="principalRadio"
+                        checked={isPrincipal}
+                        onChange={() => setAtributoPrincipal(chave)}
+                        title="Marcar como Atributo Principal"
+                        className="text-cyan-500 focus:ring-cyan-500/30"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateAtributo(chave, valor - 1)}
+                        className="w-5 h-5 rounded bg-slate-800 text-slate-300"
+                      >
+                        -
+                      </button>
+                      <span className="font-bold text-cyan-400 text-sm">
+                        {valor >= 0 ? `+${valor}` : valor}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateAtributo(chave, valor + 1)}
+                        className="w-5 h-5 rounded bg-slate-800 text-slate-300"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Domínios */}
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-slate-300 font-semibold">Distribuição de Domínios:</label>
+              <span className={validacao.valida ? 'text-cyan-400 font-bold' : 'text-rose-400 font-bold'}>
+                {validacao.pontosUsados} / {validacao.pontosTotais} Pontos (Máx {prog.dominioMaximo})
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                { id: 'consciencia', nome: 'Consciência' },
+                { id: 'espaco', nome: 'Espaço' },
+                { id: 'fluxo', nome: 'Fluxo' },
+                { id: 'substancia', nome: 'Substância' },
+                { id: 'vida', nome: 'Vida' }
+              ].map(d => {
+                const chave = d.id as DominioNome;
+                const nv = dominios[chave] || 0;
+
+                return (
+                  <div key={d.id} className="p-2 rounded bg-slate-950 border border-slate-800 flex items-center justify-between">
+                    <span className="font-bold text-slate-200">{d.nome}</span>
+                    <div className="flex gap-1">
+                      {[0, 1, 2, 3, 4, 5].map(lvl => {
+                        const acimaLimite = lvl > prog.dominioMaximo;
+                        const ativo = lvl === nv;
+                        return (
+                          <button
+                            key={lvl}
+                            type="button"
+                            disabled={acimaLimite}
+                            onClick={() => handleUpdateDominio(chave, lvl)}
+                            className={`w-5 h-5 rounded text-[10px] font-bold border ${
+                              acimaLimite
+                                ? 'bg-slate-950/40 border-slate-900 text-slate-700 cursor-not-allowed'
+                                : ativo
+                                ? 'bg-cyan-500 border-cyan-400 text-slate-950'
+                                : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                            }`}
+                          >
+                            {lvl}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Ancoragem */}
+          <div>
+            <label className="text-slate-300 block mb-1 font-semibold">Ancoragem (Elo com a Realidade):</label>
+            <input
+              type="text"
+              value={ancoragem}
+              onChange={(e) => setAncoragem(e.target.value)}
+              placeholder="Ex: Uma fita cassete antiga com a voz do meu irmão..."
+              className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
+            />
+          </div>
+
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 px-5 py-3 border-t border-slate-800 bg-[#161b26] shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-1.5 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded font-medium transition"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleCriar}
+            className="px-4 py-1.5 text-slate-950 font-bold bg-cyan-400 hover:bg-cyan-300 rounded shadow-[0_0_12px_rgba(6,182,212,0.3)] flex items-center gap-1.5 transition"
+          >
+            <Check className="w-4 h-4" />
+            Criar Desvelado
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+};

@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-deep: #0B0B0B;
+    --bg-charcoal: #171717;
+    --bg-surface: #292929;
+    --text-muted: #666666;
+    --text-primary: #D9D7D2;
+    --text-light: #F5F3EE;
+    --accent-gold: #A88952;
+    --accent-bronze: #75603D;
+  }
+
+  body {
+    background-color: #0B0B0B;
+    color: #D9D7D2;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, .font-cinematic {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+}
+
+/* Custom scrollbar para manter atmosfera minimalista */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0B0B0B;
+}
+::-webkit-scrollbar-thumb {
+  background: #292929;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #666666;
+}
+
+/* Controles compactos da Central do Mestre */
+.map-control {
+  min-width: 28px;
+  min-height: 26px;
+  border: 1px solid #292929;
+  background: #171717;
+  color: #D9D7D2;
+  font-size: 12px;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.map-control:hover {
+  background: #A88952;
+  color: #0B0B0B;
+}
+
+.quick-journal {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #292929;
+  background: #0B0B0B;
+  color: #D9D7D2;
+  text-align: left;
+  font-size: 12px;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.quick-journal:hover {
+  border-color: #A88952;
+  background: #201d17;
+}
+
+/* Estúdio de Cenas: controles locais de preparação e condução */
+.scene-icon-button, .scene-action-primary, .scene-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  border: 1px solid #3a3226;
+  background: #0B0B0B;
+  color: #D9D7D2;
+  padding: 0.4rem 0.6rem;
+  font-size: 11px;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.scene-icon-button:hover, .scene-control:hover {
+  border-color: #A88952;
+  color: #F5F3EE;
+  background: #201d17;
+}
+
+.scene-action-primary {
+  border-color: #A88952;
+  background: #A88952;
+  color: #0B0B0B;
+  font-weight: 700;
+}
+
+.scene-action-primary:hover {
+  background: #c3a36d;
+}
+
+.scene-field span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #777;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.scene-field input, .scene-select, .scene-token-input {
+  width: 100%;
+  border: 1px solid #292929;
+  background: #0B0B0B;
+  color: #D9D7D2;
+  padding: 0.45rem 0.55rem;
+  font-size: 12px;
+  outline: none;
+}
+
+.scene-field input:focus, .scene-select:focus, .scene-token-input:focus {
+  border-color: #A88952;
+}
+

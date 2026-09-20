@@ -1,0 +1,6 @@
+{
+  "name": "Reinos Oníricos — Companheiro de Jogo",
+  "description": "Ferramenta digital e companheiro de jogo para o RPG Reinos Oníricos: gerenciamento de personagens, ficha digital, rolador onírico e painel do mestre.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
