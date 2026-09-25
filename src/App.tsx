@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Sidebar, MainViewType } from './components/Sidebar';
+import { Sidebar, MobileNavigation, MainViewType } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { CreateCampaignView } from './components/CreateCampaignView';
@@ -351,7 +351,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0B] text-[#D9D7D2] flex font-sans selection:bg-[#A88952]/20 selection:text-[#F5F3EE]">
+    <div className="ro-app-shell flex font-sans selection:bg-[#A88952]/20 selection:text-[#F5F3EE]">
       {/* Input Oculto de Arquivo JSON */}
       <input
         type="file"
@@ -381,6 +381,14 @@ export default function App() {
 
       {/* Área Principal de Conteúdo */}
       <div className="flex-1 flex flex-col min-w-0">
+        <MobileNavigation
+          viewAtiva={viewAtiva}
+          setViewAtiva={(v) => {
+            setPersonagemParaFicha(null);
+            setViewAtiva(v);
+          }}
+          onNovaCampanha={handleIniciarCriacaoCampanha}
+        />
         {/* 10. HEADER (Minimalista, Fundo #0B0B0B, Borda #292929) */}
         <Header
           campanhaNome={

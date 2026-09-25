@@ -1,3 +1,4 @@
+@import "./design-system/tokens.css";
 @import "tailwindcss";
 
 @layer base {
@@ -16,7 +17,7 @@
     --state-alert: #C49A57;
     --state-danger: #B85E68;
     --border-soft: rgba(217, 215, 210, 0.10);
-    --shadow-elevation: 0 18px 55px rgba(0, 0, 0, 0.28);
+    --shadow-elevation: var(--ro-shadow);
   }
 
   body {
@@ -35,7 +36,7 @@
   }
 
   button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-    outline: 2px solid var(--accent-gold);
+    outline: 2px solid var(--ro-gold);
     outline-offset: 2px;
   }
 

@@ -1,0 +1,136 @@
+/* Fundação visual de Reinos Oníricos.
+   Estes tokens são a única fonte de cor, ritmo e estados para as novas telas. */
+:root {
+  --ro-ink: #12110f;
+  --ro-charcoal: #1c1a17;
+  --ro-paper: #e8e1d3;
+  --ro-paper-muted: #a9a196;
+  --ro-ash: #6e685f;
+  --ro-line: rgba(232, 225, 211, 0.14);
+  --ro-line-strong: rgba(200, 165, 104, 0.42);
+  --ro-gold: #c8a568;
+  --ro-gold-deep: #8e6d38;
+  --ro-indigo: #595786;
+  --ro-wine: #773d4c;
+  --ro-safe: #829b79;
+  --ro-alert: #d0a761;
+  --ro-danger: #bd6570;
+  --ro-space-1: 0.25rem;
+  --ro-space-2: 0.5rem;
+  --ro-space-3: 0.75rem;
+  --ro-space-4: 1rem;
+  --ro-space-5: 1.5rem;
+  --ro-space-6: 2rem;
+  --ro-space-7: 3rem;
+  --ro-radius: 2px;
+  --ro-shadow: 0 22px 52px rgba(0, 0, 0, 0.28);
+  --ro-focus: 0 0 0 3px rgba(200, 165, 104, 0.26);
+  --ro-transition: 160ms ease;
+}
+
+.ro-app-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(900px circle at 92% -12%, rgba(89, 87, 134, 0.2), transparent 52%),
+    radial-gradient(680px circle at 16% 4%, rgba(119, 61, 76, 0.11), transparent 50%),
+    var(--ro-ink);
+  color: var(--ro-paper);
+}
+
+.ro-eyebrow {
+  color: var(--ro-gold);
+  font: 600 0.63rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.ro-button,
+.ro-button--quiet,
+.ro-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ro-space-2);
+  min-height: 2.5rem;
+  border: 1px solid var(--ro-line-strong);
+  border-radius: var(--ro-radius);
+  padding: 0 var(--ro-space-4);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background var(--ro-transition), border-color var(--ro-transition), color var(--ro-transition), transform var(--ro-transition);
+}
+
+.ro-button {
+  background: var(--ro-gold);
+  color: #21180c;
+}
+.ro-button:hover { background: #dbbb80; transform: translateY(-1px); }
+.ro-button--quiet { background: rgba(232, 225, 211, 0.035); color: var(--ro-paper); border-color: var(--ro-line); }
+.ro-button--quiet:hover { background: rgba(232, 225, 211, 0.09); border-color: var(--ro-line-strong); color: var(--ro-gold); }
+.ro-icon-button { min-width: 2.25rem; padding: 0; color: var(--ro-paper-muted); border-color: transparent; background: transparent; }
+.ro-icon-button:hover { color: var(--ro-gold); background: rgba(232, 225, 211, 0.05); }
+.ro-button:focus-visible, .ro-button--quiet:focus-visible, .ro-icon-button:focus-visible { outline: none; box-shadow: var(--ro-focus); }
+
+.ro-surface {
+  border: 1px solid var(--ro-line);
+  background: linear-gradient(145deg, rgba(34, 32, 28, 0.94), rgba(21, 20, 18, 0.94));
+  box-shadow: var(--ro-shadow);
+}
+
+.ro-empty-state {
+  border: 1px dashed var(--ro-line-strong);
+  background: linear-gradient(135deg, rgba(89, 87, 134, 0.1), rgba(119, 61, 76, 0.08));
+}
+
+.ro-nav-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.7rem;
+  border-left: 2px solid transparent;
+  padding: 0.58rem 0.7rem;
+  color: var(--ro-paper-muted);
+  font-size: 0.76rem;
+  text-align: left;
+  transition: color var(--ro-transition), background var(--ro-transition), border-color var(--ro-transition);
+}
+.ro-nav-item > span { width: 0.85rem; color: var(--ro-ash); font-size: 0.72rem; text-align: center; }
+.ro-nav-item:hover { background: rgba(232, 225, 211, 0.045); color: var(--ro-paper); }
+.ro-nav-item--active { border-left-color: var(--ro-gold); background: linear-gradient(90deg, rgba(200, 165, 104, 0.13), transparent); color: var(--ro-paper); }
+.ro-nav-item--active > span { color: var(--ro-gold); }
+
+.ro-campaign-nav {
+  display: flex;
+  width: 100%;
+  gap: 0.6rem;
+  padding: 0.58rem 0.7rem;
+  border-left: 2px solid transparent;
+  color: var(--ro-paper-muted);
+  text-align: left;
+  transition: color var(--ro-transition), background var(--ro-transition), border-color var(--ro-transition);
+}
+.ro-campaign-nav:hover { background: rgba(232, 225, 211, 0.045); color: var(--ro-paper); }
+.ro-campaign-nav--active { border-left-color: var(--ro-gold); background: rgba(200, 165, 104, 0.1); color: var(--ro-paper); }
+.ro-campaign-nav strong, .ro-campaign-nav small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ro-campaign-nav strong { font-size: 0.73rem; font-weight: 500; }
+.ro-campaign-nav small { margin-top: 0.16rem; color: var(--ro-ash); font: 0.58rem ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.ro-mobile-nav {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0 0.7rem;
+  border-bottom: 2px solid transparent;
+  color: var(--ro-paper-muted);
+  font-size: 0.64rem;
+  letter-spacing: 0.04em;
+}
+.ro-mobile-nav:hover { color: var(--ro-paper); background: rgba(232, 225, 211, 0.04); }
+.ro-mobile-nav--active { border-bottom-color: var(--ro-gold); color: var(--ro-gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ro-button, .ro-button--quiet, .ro-icon-button { transition: none; }
+  .ro-button:hover { transform: none; }
+}
