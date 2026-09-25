@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao } from '../types/campaign';
+import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, SessaoStatus } from '../types/campaign';
 import { Personagem } from '../types/character';
+import { SessionPlanner } from './campaign/SessionPlanner';
 
 export type CampaignTabType = 
   | 'visao_geral'
@@ -10,6 +11,9 @@ export type CampaignTabType =
   | 'adversarios'
   | 'locais'
   | 'pistas'
+  | 'cenas'
+  | 'mapas'
+  | 'handouts'
   | 'lore'
   | 'anotacoes'
   | 'configuracoes';
@@ -26,7 +30,7 @@ interface CampaignDetailViewProps {
   anotacoes: Anotacao[];
   onIniciarSessao: (campanha: Campanha) => void;
   onAbrirFichaPersonagem: (personagem: Personagem) => void;
-  onNovaSessao: (campanhaId: string, titulo: string) => void;
+  onNovaSessao: (campanhaId: string, dados: NovaSessaoInput) => void;
   onAdicionarNPC: (npc: Omit<NPC, 'id'>) => void;
   onAdicionarAdversario: (adv: Omit<Adversario, 'id'>) => void;
   onAdicionarLocal: (loc: Omit<Local, 'id'>) => void;
@@ -62,6 +66,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   // Estados para modais simples de adição rápida
   const [modalNovaSessao, setModalNovaSessao] = useState(false);
   const [tituloNovaSessao, setTituloNovaSessao] = useState('');
+  const [descricaoNovaSessao, setDescricaoNovaSessao] = useState('');
+  const [dataNovaSessao, setDataNovaSessao] = useState('');
+  const [statusNovaSessao, setStatusNovaSessao] = useState<SessaoStatus>('planejamento');
+  const [notasMestreNovaSessao, setNotasMestreNovaSessao] = useState('');
 
   const [modalNovoItem, setModalNovoItem] = useState<CampaignTabType | null>(null);
   const [itemNome, setItemNome] = useState('');
@@ -79,8 +87,18 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   const handleCriarSessaoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!tituloNovaSessao.trim()) return;
-    onNovaSessao(campanha.id, tituloNovaSessao);
+    onNovaSessao(campanha.id, {
+      titulo: tituloNovaSessao,
+      descricao: descricaoNovaSessao,
+      data: dataNovaSessao,
+      status: statusNovaSessao,
+      anotacoesMestre: notasMestreNovaSessao
+    });
     setTituloNovaSessao('');
+    setDescricaoNovaSessao('');
+    setDataNovaSessao('');
+    setStatusNovaSessao('planejamento');
+    setNotasMestreNovaSessao('');
     setModalNovaSessao(false);
   };
 
@@ -152,6 +170,9 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
     { id: 'adversarios', label: 'Adversários' },
     { id: 'locais', label: 'Locais' },
     { id: 'pistas', label: 'Pistas' },
+    { id: 'cenas', label: 'Cenas' },
+    { id: 'mapas', label: 'Mapas' },
+    { id: 'handouts', label: 'Arquivos' },
     { id: 'lore', label: 'Lore' },
     { id: 'anotacoes', label: 'Anotações' },
     { id: 'configuracoes', label: 'Configurações' }
@@ -337,63 +358,28 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
         {/* 21. ABA: SESSÕES */}
         {abaAtiva === 'sessoes' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#292929]">
-              <div>
-                <h2 className="font-serif text-2xl text-[#F5F3EE]">Sessões</h2>
-                <p className="text-xs text-[#666666] mt-0.5">Histórico e planejamento cronológico.</p>
-              </div>
-              <button
-                onClick={() => setModalNovaSessao(true)}
-                className="px-4 py-2 bg-[#292929] hover:bg-[#333333] text-[#F5F3EE] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[#333333]"
-              >
-                + Nova Sessão
-              </button>
-            </div>
+          <SessionPlanner
+            sessoes={sessoesCampanha}
+            onCreate={() => setModalNovaSessao(true)}
+            onOpen={() => onIniciarSessao(campanha)}
+          />
+        )}
 
-            <div className="space-y-4">
-              {sessoesCampanha.map(sessao => (
-                <div
-                  key={sessao.id}
-                  className="bg-[#171717] border border-[#292929] p-6 rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:border-[#3a3a3a]"
-                >
-                  <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#A88952] block mb-1">
-                      Sessão {String(sessao.numero).padStart(2, '0')}
-                    </span>
-                    <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">
-                      {sessao.titulo}
-                    </h3>
-                    <div className="flex items-center gap-3 text-xs font-mono text-[#666666] mt-2">
-                      <span>{sessao.jogadoresCount} jogadores</span>
-                      <span>·</span>
-                      <span>{sessao.data}</span>
-                      {sessao.concluida && (
-                        <>
-                          <span>·</span>
-                          <span className="text-[#666666]">Concluída</span>
-                        </>
-                      )}
-                    </div>
-                    {sessao.resumo && (
-                      <p className="text-xs text-[#D9D7D2]/80 mt-2.5 max-w-2xl font-normal leading-relaxed">
-                        {sessao.resumo}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="shrink-0">
-                    <button
-                      onClick={() => onIniciarSessao(campanha)}
-                      className="px-4 py-2 bg-[#292929] hover:bg-[#A88952] hover:text-[#0B0B0B] text-[#D9D7D2] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[#292929]"
-                    >
-                      Abrir
-                    </button>
-                  </div>
-                </div>
-              ))}
+        {(abaAtiva === 'cenas' || abaAtiva === 'mapas' || abaAtiva === 'handouts') && (
+          <section className="max-w-3xl border-y border-[var(--ro-line)] py-10">
+            <p className="ro-eyebrow">Estrutura preparada</p>
+            <h2 className="mt-3 font-serif text-3xl text-[var(--ro-paper)]">
+              {abaAtiva === 'cenas' ? 'Cenas da campanha' : abaAtiva === 'mapas' ? 'Mapas narrativos' : 'Arquivos e handouts'}
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--ro-paper-muted)]">
+              Esta área receberá registros reutilizáveis com visibilidade de Mestre, compartilhada ou revelada aos jogadores. A Mesa Ao Vivo já aceita ambientação, imagem, mapa e handout sem expor conteúdo privado.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2 text-xs text-[var(--ro-paper-muted)]">
+              <span className="border border-[var(--ro-line)] px-3 py-2">Mestre privado</span>
+              <span className="border border-[var(--ro-line)] px-3 py-2">Compartilhado</span>
+              <span className="border border-[var(--ro-line)] px-3 py-2">Revelado aos jogadores</span>
             </div>
-          </div>
+          </section>
         )}
 
         {/* 22. ABA: PERSONAGENS */}
@@ -726,6 +712,29 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                   onChange={(e) => setTituloNovaSessao(e.target.value)}
                   className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#F5F3EE] rounded-sm focus:border-[#A88952] focus:outline-none"
                 />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Data</label>
+                  <input type="date" value={dataNovaSessao} onChange={(e) => setDataNovaSessao(e.target.value)} className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#F5F3EE] rounded-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Estado</label>
+                  <select value={statusNovaSessao} onChange={(e) => setStatusNovaSessao(e.target.value as SessaoStatus)} className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#F5F3EE] rounded-sm">
+                    <option value="planejamento">Planejamento</option>
+                    <option value="pronta">Pronta</option>
+                    <option value="ao_vivo">Ao vivo</option>
+                    <option value="concluida">Concluída</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Descrição</label>
+                <textarea rows={2} value={descricaoNovaSessao} onChange={(e) => setDescricaoNovaSessao(e.target.value)} className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#D9D7D2] rounded-sm resize-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Notas do Mestre</label>
+                <textarea rows={2} value={notasMestreNovaSessao} onChange={(e) => setNotasMestreNovaSessao(e.target.value)} className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#D9D7D2] rounded-sm resize-none" />
               </div>
               <div className="flex justify-end gap-3 pt-4 border-t border-[#292929]">
                 <button

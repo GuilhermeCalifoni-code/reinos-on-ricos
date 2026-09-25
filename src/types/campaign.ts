@@ -1,5 +1,8 @@
 export type CampanhaTipo = 'campanha' | 'oneshot' | 'playtest';
 export type CampanhaStatus = 'em_andamento' | 'planejamento' | 'concluida';
+export type VisibilidadeConteudo = 'mestre_privado' | 'compartilhado' | 'revelado_jogadores';
+export type SessaoStatus = 'planejamento' | 'pronta' | 'ao_vivo' | 'concluida';
+export type ConteudoDeCena = 'ambientacao' | 'imagem' | 'mapa' | 'handout';
 
 export interface Campanha {
   id: string;
@@ -26,6 +29,51 @@ export interface Sessao {
   jogadoresCount: number;
   resumo?: string;
   concluida: boolean;
+  descricao?: string;
+  status?: SessaoStatus;
+  anotacoesMestre?: string;
+  cenaIds?: string[];
+  npcIds?: string[];
+  localIds?: string[];
+  pistaIds?: string[];
+  adversarioIds?: string[];
+  visibilidade?: VisibilidadeConteudo;
+  conteudoDeCena?: ConteudoDeCena;
+}
+
+export interface NovaSessaoInput {
+  titulo: string;
+  data?: string;
+  descricao?: string;
+  status?: SessaoStatus;
+  anotacoesMestre?: string;
+}
+
+export interface Cena {
+  id: string;
+  campanhaId: string;
+  titulo: string;
+  descricao?: string;
+  visibilidade: VisibilidadeConteudo;
+  tipoDeConteudo: ConteudoDeCena;
+  imagemUrl?: string;
+}
+
+export interface MapaNarrativo {
+  id: string;
+  campanhaId: string;
+  titulo: string;
+  imagemUrl?: string;
+  visibilidade: VisibilidadeConteudo;
+}
+
+export interface Handout {
+  id: string;
+  campanhaId: string;
+  titulo: string;
+  descricao?: string;
+  arquivoUrl?: string;
+  visibilidade: VisibilidadeConteudo;
 }
 
 export interface NPC {
@@ -37,6 +85,7 @@ export interface NPC {
   descricao: string;
   atitude: 'aliado' | 'neutro' | 'hostil' | 'desconhecido';
   localizacao: string;
+  visibilidade?: VisibilidadeConteudo;
 }
 
 export interface Adversario {
@@ -51,6 +100,7 @@ export interface Adversario {
   resistencia: number;
   ataquePrincipal: string;
   descricao: string;
+  visibilidade?: VisibilidadeConteudo;
 }
 
 export interface Local {
@@ -60,6 +110,7 @@ export interface Local {
   tipo: 'urbano' | 'fronteira' | 'onirico';
   descricao: string;
   anomaliaDetectada?: string;
+  visibilidade?: VisibilidadeConteudo;
 }
 
 export interface Pista {
@@ -69,6 +120,7 @@ export interface Pista {
   tipo: 'documento' | 'objeto' | 'testemunho' | 'anomalia';
   status: 'descoberta' | 'sob_analise' | 'resolvida';
   descricao: string;
+  visibilidade?: VisibilidadeConteudo;
 }
 
 export interface LoreEntry {
@@ -77,6 +129,7 @@ export interface LoreEntry {
   titulo: string;
   categoria: 'mundo' | 'faccao' | 'sonhar' | 'regras';
   conteudo: string;
+  visibilidade?: VisibilidadeConteudo;
 }
 
 export interface Anotacao {
@@ -85,4 +138,5 @@ export interface Anotacao {
   titulo: string;
   conteudo: string;
   atualizadaEm: string;
+  visibilidade?: VisibilidadeConteudo;
 }

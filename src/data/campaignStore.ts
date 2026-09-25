@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao } from '../types/campaign';
+import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput } from '../types/campaign';
 import {
   CAMPANHAS_INICIAIS,
   SESSOES_INICIAIS,
@@ -187,21 +187,35 @@ export function useCampaignStorage() {
     }
   };
 
-  const criarSessao = (campanhaId: string, titulo: string, dataStr?: string): Sessao => {
+  const criarSessao = (campanhaId: string, dados: NovaSessaoInput): Sessao => {
     const sessoesDaCamp = sessoes.filter(s => s.campanhaId === campanhaId);
     const proxNumero = sessoesDaCamp.length > 0 ? Math.max(...sessoesDaCamp.map(s => s.numero)) + 1 : 1;
     const nova: Sessao = {
       id: `sessao-${Date.now()}`,
       campanhaId,
       numero: proxNumero,
-      titulo: titulo.trim() || `Sessão ${String(proxNumero).padStart(2, '0')}`,
-      data: dataStr || new Date().toLocaleDateString('pt-BR'),
+      titulo: dados.titulo.trim() || `Sessão ${String(proxNumero).padStart(2, '0')}`,
+      data: dados.data || new Date().toLocaleDateString('pt-BR'),
       jogadoresCount: campanhaAtiva?.jogadoresCount || 4,
-      concluida: false
+      concluida: dados.status === 'concluida',
+      descricao: dados.descricao?.trim() || undefined,
+      status: dados.status || 'planejamento',
+      anotacoesMestre: dados.anotacoesMestre?.trim() || undefined,
+      cenaIds: [],
+      npcIds: [],
+      localIds: [],
+      pistaIds: [],
+      adversarioIds: [],
+      visibilidade: 'mestre_privado',
+      conteudoDeCena: 'ambientacao'
     };
     setSessoes(prev => [nova, ...prev]);
     atualizarCampanha(campanhaId, { sessaoAtual: proxNumero });
     return nova;
+  };
+
+  const atualizarSessao = (id: string, partial: Partial<Sessao>) => {
+    setSessoes(anteriores => anteriores.map(sessao => sessao.id === id ? { ...sessao, ...partial } : sessao));
   };
 
   const adicionarNPC = (novo: Omit<NPC, 'id'>) => {
@@ -250,6 +264,7 @@ export function useCampaignStorage() {
     removerCampanha,
     sessoes,
     criarSessao,
+    atualizarSessao,
     npcs,
     adicionarNPC,
     adversarios,
