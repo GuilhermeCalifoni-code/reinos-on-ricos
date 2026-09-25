@@ -318,6 +318,8 @@ export default function App() {
           <MesaView
             campanha={campanhaAtiva}
             personagens={personagens}
+            role={session.role}
+            personagemJogadorId={session.personagemVinculadoId}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
             onAtualizarPersonagem={salvarPersonagem}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
