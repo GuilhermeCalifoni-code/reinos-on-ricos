@@ -8,12 +8,6 @@ import {
   calcularVidaMaxima, 
   calcularProtecaoOniricaMaxima 
 } from '../rules/rulesEngine';
-import { 
-  isSupabaseConfigured, 
-  syncPersonagemComSupabase, 
-  carregarPersonagensDoSupabase, 
-  excluirPersonagemDoSupabase 
-} from '../lib/supabaseClient';
 
 const STORAGE_KEY = 'reinos_oniricos_personagens_v1';
 const ACTIVE_CHAR_KEY = 'reinos_oniricos_ativo_id_v1';
@@ -44,19 +38,6 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
     return PERSONAGENS_PRE_PRONTOS[0]?.id || '';
   });
 
-  // Tentar carregar do Supabase ao inicializar se configurado
-  useEffect(() => {
-    if (isSupabaseConfigured()) {
-      carregarPersonagensDoSupabase(mesaCodigo).then((doBanco) => {
-        if (doBanco && doBanco.length > 0) {
-          setPersonagens(doBanco);
-          if (!doBanco.some(p => p.id === personagemAtivoId)) {
-            setPersonagemAtivoId(doBanco[0].id);
-          }
-        }
-      }).catch(err => console.log('Sincronização Supabase em segundo plano:', err));
-    }
-  }, [mesaCodigo]);
 
   // Salva no localStorage quando os personagens mudam
   useEffect(() => {
@@ -110,10 +91,6 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
       }
     });
 
-    // Se o Supabase estiver configurado, sincroniza na nuvem
-    if (isSupabaseConfigured()) {
-      syncPersonagemComSupabase(normalizado, mesaCodigo).catch(() => {});
-    }
   }, [mesaCodigo]);
 
   const criarNovoPersonagem = useCallback((nome?: string) => {
@@ -195,9 +172,6 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
       }
     }
 
-    if (isSupabaseConfigured()) {
-      excluirPersonagemDoSupabase(id).catch(() => {});
-    }
   }, [personagemAtivoId, personagens]);
 
   const restaurarExemplos = useCallback(() => {

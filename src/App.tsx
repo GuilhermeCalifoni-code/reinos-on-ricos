@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar, MobileNavigation, MainViewType } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
@@ -17,6 +17,11 @@ import { useCampaignStorage } from './data/campaignStore';
 import { Personagem, AtributoNome, DominioNome } from './types/character';
 import { Campanha } from './types/campaign';
 import { UserSession } from './types/auth';
+import { isSupabaseConfigured } from './lib/supabaseClient';
+import { authService } from './services/auth/authService';
+import { useRemoteCampaigns } from './services/campaigns/useRemoteCampaigns';
+import { characterRepository } from './services/characters/characterRepository';
+import { campaignRepository } from './services/campaigns/campaignRepository';
 
 const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
 
@@ -50,11 +55,11 @@ export default function App() {
 
   // Storage de Campanhas
   const {
-    campanhas,
-    campanhaAtivaId,
-    campanhaAtiva,
-    setCampanhaAtivaId,
-    criarCampanha,
+    campanhas: campanhasLocais,
+    campanhaAtivaId: campanhaAtivaIdLocal,
+    campanhaAtiva: campanhaAtivaLocal,
+    setCampanhaAtivaId: setCampanhaAtivaIdLocal,
+    criarCampanha: criarCampanhaLocal,
     atualizarCampanha,
     removerCampanha,
     sessoes,
@@ -85,6 +90,23 @@ export default function App() {
     atualizarTokenMapa,
     removerTokenMapa
   } = useCampaignStorage();
+  const campanhasRemotas = useRemoteCampaigns(session?.modoConexao === 'supabase' ? session.authUserId : undefined);
+  const [campanhaRemotaAtivaId, setCampanhaRemotaAtivaId] = useState<string | null>(null);
+  const usandoRemoto = session?.modoConexao === 'supabase' && Boolean(session.authUserId) && isSupabaseConfigured();
+  const campanhas = usandoRemoto ? campanhasRemotas.campanhas : campanhasLocais;
+  const campanhaAtivaId = usandoRemoto ? campanhaRemotaAtivaId : campanhaAtivaIdLocal;
+  const campanhaAtiva = usandoRemoto ? campanhas.find(c => c.id === campanhaRemotaAtivaId) || campanhas[0] || null : campanhaAtivaLocal;
+  const setCampanhaAtivaId = (id: string) => usandoRemoto ? setCampanhaRemotaAtivaId(id) : setCampanhaAtivaIdLocal(id);
+  const papelDaCampanha = usandoRemoto ? campanhasRemotas.roleDaCampanha(campanhaAtivaId || undefined) || 'observador' : session?.role || 'observador';
+
+  useEffect(() => {
+    if (!isSupabaseConfigured() || session?.modoConexao === 'local') return;
+    authService.sessaoAtual().then(async (supabaseSession) => {
+      if (!supabaseSession?.user) return;
+      const profile = await authService.perfil(supabaseSession.user);
+      setSession({ id: supabaseSession.user.id, authUserId: supabaseSession.user.id, role: 'observador', nome: profile.nome, email: supabaseSession.user.email, mesaCodigo: '', modoConexao: 'supabase' });
+    }).catch(() => undefined);
+  }, []);
 
   // Navegação Principal do Produto
   const [viewAtiva, setViewAtiva] = useState<MainViewType>('dashboard');
@@ -133,6 +155,7 @@ export default function App() {
   };
 
   const handleTrocarSessao = () => {
+    if (session?.modoConexao === 'supabase') void authService.sair().catch(() => undefined);
     try {
       localStorage.removeItem(SESSION_STORAGE_KEY);
     } catch (e) {
@@ -162,7 +185,11 @@ export default function App() {
     imagemUrl: string;
     tipo: 'campanha' | 'oneshot' | 'playtest';
   }) => {
-    const nova = criarCampanha(dados);
+    if (usandoRemoto) {
+      campanhasRemotas.criar(dados).then(nova => { setCampanhaRemotaAtivaId(nova.id); setViewAtiva('detalhe_campanha'); }).catch(error => alert(error.message || 'Não foi possível criar a campanha.'));
+      return;
+    }
+    criarCampanhaLocal(dados);
     setViewAtiva('detalhe_campanha');
   };
 
@@ -283,6 +310,8 @@ export default function App() {
             onNovaCampanha={handleIniciarCriacaoCampanha}
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
+            personagensParaVinculo={usandoRemoto ? personagens : undefined}
+            onEntrarComCodigo={usandoRemoto ? async (codigo, personagemId) => { const id = await campanhasRemotas.entrarComCodigo(codigo); if (personagemId && session?.authUserId) { const personagem = personagens.find(item => item.id === personagemId); if (personagem) { await characterRepository.salvar({ ...personagem, campaignId: id, ownerUserId: session.authUserId }); await campaignRepository.vincularPersonagem(id, personagem.id); } } setCampanhaRemotaAtivaId(id); } : undefined}
           />
         );
 
@@ -315,7 +344,7 @@ export default function App() {
             onAdicionarPista={adicionarPista}
             onAdicionarLore={adicionarLore}
             onAdicionarAnotacao={adicionarAnotacao}
-            onExcluirCampanha={removerCampanha}
+            onExcluirCampanha={usandoRemoto ? () => alert('A exclusão de campanhas remotas ainda não faz parte desta fundação.') : removerCampanha}
           />
         ) : (
           <DashboardView
@@ -323,6 +352,8 @@ export default function App() {
             onNovaCampanha={handleIniciarCriacaoCampanha}
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
+            personagensParaVinculo={usandoRemoto ? personagens : undefined}
+            onEntrarComCodigo={usandoRemoto ? async (codigo, personagemId) => { const id = await campanhasRemotas.entrarComCodigo(codigo); if (personagemId && session?.authUserId) { const personagem = personagens.find(item => item.id === personagemId); if (personagem) { await characterRepository.salvar({ ...personagem, campaignId: id, ownerUserId: session.authUserId }); await campaignRepository.vincularPersonagem(id, personagem.id); } } setCampanhaRemotaAtivaId(id); } : undefined}
           />
         );
 
@@ -331,7 +362,7 @@ export default function App() {
           <MesaView
             campanha={campanhaAtiva}
             personagens={personagens}
-            role={session.role}
+            role={papelDaCampanha}
             personagemJogadorId={session.personagemVinculadoId}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
             onAtualizarPersonagem={salvarPersonagem}

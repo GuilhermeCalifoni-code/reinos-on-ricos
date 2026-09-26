@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Campanha } from '../types/campaign';
+import { Personagem } from '../types/character';
 
 interface DashboardViewProps {
   campanhas: Campanha[];
   onNovaCampanha: () => void;
   onContinuarCampanha: (campanha: Campanha) => void;
   onDetalhesCampanha: (campanha: Campanha) => void;
+  personagensParaVinculo?: Personagem[];
+  onEntrarComCodigo?: (codigo: string, personagemId?: string) => Promise<void>;
 }
 
 const statusLabel: Record<Campanha['status'], string> = {
@@ -18,8 +21,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   campanhas,
   onNovaCampanha,
   onContinuarCampanha,
-  onDetalhesCampanha
-}) => (
+  onDetalhesCampanha, onEntrarComCodigo, personagensParaVinculo = []
+}) => {
+  const [codigo, setCodigo] = useState(''); const [personagemId, setPersonagemId] = useState(''); const [erro, setErro] = useState('');
+  const entrar = async (event: React.FormEvent) => { event.preventDefault(); if (!onEntrarComCodigo || !codigo.trim()) return; try { setErro(''); await onEntrarComCodigo(codigo, personagemId || undefined); setCodigo(''); } catch (e: any) { setErro(e.message || 'Não foi possível entrar com este código.'); } };
+  return (
   <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8 sm:py-12">
     <header className="grid gap-6 border-b border-[var(--ro-line)] pb-9 md:grid-cols-[1fr_auto] md:items-end">
       <div>
@@ -27,7 +33,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <h1 className="mt-3 font-serif text-4xl font-medium tracking-tight text-[var(--ro-paper)] sm:text-5xl">Meus Reinos</h1>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[var(--ro-paper-muted)]">Prepare, registre e conduza as histórias que atravessam a vigília e o Sonhar.</p>
       </div>
-      <button onClick={onNovaCampanha} className="ro-button justify-self-start md:justify-self-end"><span aria-hidden="true">+</span> Nova campanha</button>
+      <div className="flex flex-wrap gap-3"><button onClick={onNovaCampanha} className="ro-button"><span aria-hidden="true">+</span> Nova campanha</button>{onEntrarComCodigo && <form onSubmit={entrar} className="flex flex-wrap gap-2"><input value={codigo} onChange={e => setCodigo(e.target.value.toUpperCase())} placeholder="Código de convite" className="w-40 border border-[var(--ro-line)] bg-[#12110f] px-3 text-xs" />{personagensParaVinculo.length > 0 && <select value={personagemId} onChange={e => setPersonagemId(e.target.value)} className="border border-[var(--ro-line)] bg-[#12110f] px-2 text-xs"><option value="">Vincular ficha depois</option>{personagensParaVinculo.map(personagem => <option key={personagem.id} value={personagem.id}>{personagem.nome}</option>)}</select>}<button className="ro-button--quiet">Entrar com código</button></form>}{erro && <p className="basis-full text-xs text-rose-400">{erro}</p>}</div>
     </header>
 
     {campanhas.length === 0 ? (
@@ -77,4 +83,5 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
     )}
   </section>
-);
+  );
+};

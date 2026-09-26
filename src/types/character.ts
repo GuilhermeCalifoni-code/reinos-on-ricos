@@ -59,6 +59,8 @@ export interface RupturaLog {
 
 export interface Personagem {
   id: string;
+  campaignId?: string;
+  ownerUserId?: string;
   nome: string;
   jogador?: string;
   conceito: string;

@@ -1,0 +1,8 @@
+import { supabase } from '../../lib/supabaseClient';
+import { Personagem } from '../../types/character';
+
+const client = () => { if (!supabase) throw new Error('Supabase não está configurado.'); return supabase; };
+export const characterRepository = {
+  async listar(campaignId: string) { const { data, error } = await client().from('personagens').select('*').eq('campaign_id', campaignId); if (error) throw error; return data || []; },
+  async salvar(personagem: Personagem) { if (!personagem.campaignId) throw new Error('Uma ficha remota precisa estar vinculada a uma campanha.'); const { error } = await client().from('personagens').upsert({ id: personagem.id, campaign_id: personagem.campaignId, owner_user_id: personagem.ownerUserId || null, nome: personagem.nome, jogador: personagem.jogador || 'Jogador', conceito: personagem.conceito, nivel: personagem.nivel, atributos: personagem.atributos, atributo_principal: personagem.atributoPrincipal, resistencia: personagem.resistencia, defesa: personagem.defesa, vida_atual: personagem.vidaAtual, vida_maxima: personagem.vidaMaxima, foco_atual: personagem.focoAtual, foco_maximo: personagem.focoMaximo, protecao_onirica_atual: personagem.protecaoOniricaAtual, protecao_onirica_maxima: personagem.protecaoOniricaMaxima, ruptura: personagem.ruptura, historico_ruptura: personagem.historicoRuptura, dominios: personagem.dominios, ancoragem: personagem.ancoragem, vinculos: personagem.vinculos, equipamentos: personagem.equipamentos, recursos: personagem.recursos, percepcao_onirica_notas: personagem.percepcaoOniricaNotas || '', anotacoes_gerais: personagem.anotacoesGerais || '' }, { onConflict: 'id' }); if (error) throw error; }
+};

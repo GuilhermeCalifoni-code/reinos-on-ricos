@@ -9,6 +9,7 @@ export type EstadoContador = 'ativo' | 'concluido' | 'pausado';
 
 export interface Campanha {
   id: string;
+  ownerId?: string;
   codigo: string;
   nome: string;
   descricao: string;
@@ -21,6 +22,15 @@ export interface Campanha {
   criadaEm: string;
   ultimaSessaoData: string;
   personagensIds: string[];
+}
+
+export interface MembroCampanha {
+  campaignId: string;
+  userId: string;
+  role: 'mestre' | 'jogador' | 'observador';
+  characterId?: string;
+  status: 'ativo' | 'pendente' | 'removido';
+  joinedAt: string;
 }
 
 export interface Sessao {
@@ -42,6 +52,7 @@ export interface Sessao {
   adversarioIds?: string[];
   visibilidade?: VisibilidadeConteudo;
   conteudoDeCena?: ConteudoDeCena;
+  criadoPor?: string;
 }
 
 export interface NovaSessaoInput {
@@ -71,6 +82,7 @@ export interface MapaNarrativo {
   gradeVisivel?: boolean;
   criadoEm: string;
   atualizadoEm: string;
+  criadoPor?: string;
 }
 
 export type TipoTokenMapa = 'personagem' | 'npc' | 'adversario' | 'marcador';
@@ -88,6 +100,7 @@ export interface TokenMapa {
   oculto: boolean;
   criadoEm: string;
   atualizadoEm: string;
+  criadoPor?: string;
 }
 
 export interface Handout {
@@ -115,6 +128,7 @@ export interface Contador {
   estado: EstadoContador;
   criadoEm: string;
   atualizadoEm: string;
+  criadoPor?: string;
 }
 
 export interface NPC {
