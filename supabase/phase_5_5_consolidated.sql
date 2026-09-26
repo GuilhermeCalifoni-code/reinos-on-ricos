@@ -20,7 +20,7 @@ create unique index if not exists campaigns_invite_code_unique on public.campaig
 create index if not exists campaigns_owner_idx on public.campaigns(owner_id);
 drop trigger if exists campaigns_set_updated_at on public.campaigns;
 create trigger campaigns_set_updated_at before update on public.campaigns for each row execute function public.set_updated_at();
-create or replace function public.generate_invite_code() returns text language plpgsql volatile set search_path=public as $$ declare code text; begin loop code:='REINO-'||upper(substr(encode(gen_random_bytes(8),'hex'),1,12)); exit when not exists(select 1 from public.campaigns where codigo_convite=code); end loop; return code; end; $$;
+create or replace function public.generate_invite_code() returns text language plpgsql volatile set search_path=public,extensions as $$ declare code text; begin loop code:='REINO-'||upper(substr(encode(extensions.gen_random_bytes(8),'hex'),1,12)); exit when not exists(select 1 from public.campaigns where codigo_convite=code); end loop; return code; end; $$;
 update public.campaigns set codigo_convite=public.generate_invite_code() where codigo_convite is null;
 create table if not exists public.campaign_members (campaign_id uuid not null references public.campaigns(id) on delete cascade, user_id uuid not null references auth.users(id) on delete cascade, role text not null check(role in ('mestre','jogador','observador')), character_id text, status text not null default 'ativo' check(status in ('ativo','pendente','removido')), joined_at timestamptz not null default now(), primary key(campaign_id,user_id));
 create index if not exists campaign_members_user_idx on public.campaign_members(user_id,campaign_id);
