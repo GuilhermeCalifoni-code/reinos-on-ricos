@@ -9,6 +9,8 @@ interface MesaViewProps {
   personagens: Personagem[];
   role: UserRole;
   personagemJogadorId?: string;
+  userId?: string;
+  registroOnline: boolean;
   onVoltarParaCampanha: () => void;
   onAtualizarPersonagem: (p: Personagem) => void;
   onAbrirModalRupturaPara: (p: Personagem, delta: number, motivo: string) => void;
@@ -29,7 +31,7 @@ interface MesaViewProps {
 }
 
 export const MesaView: React.FC<MesaViewProps> = ({
-  campanha, personagens, role, personagemJogadorId, onVoltarParaCampanha,
+  campanha, personagens, role, personagemJogadorId, userId, registroOnline, onVoltarParaCampanha,
   onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
   contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
   mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
@@ -39,6 +41,8 @@ export const MesaView: React.FC<MesaViewProps> = ({
     personagens={personagens}
     role={role}
     personagemJogadorId={personagemJogadorId}
+    userId={userId}
+    registroOnline={registroOnline}
     onVoltar={onVoltarParaCampanha}
     onAtualizarPersonagem={onAtualizarPersonagem}
     onAbrirRuptura={onAbrirModalRupturaPara}

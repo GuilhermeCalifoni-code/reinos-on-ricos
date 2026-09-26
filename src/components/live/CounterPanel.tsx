@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Contador, DirecaoContador, EstadoContador, TipoContador, VisibilidadeConteudo } from '../../types/campaign';
+import { NewSessionEvent } from '../../types/sessionEvent';
 
 interface CounterPanelProps {
   campanhaId: string;
@@ -10,12 +11,13 @@ interface CounterPanelProps {
   onRemover: (id: string) => void;
   onDuplicar: (id: string) => void;
   compacto?: boolean;
+  onRegistrarEvento?: (event: NewSessionEvent) => void;
 }
 
 const visiveisParaJogador = (contador: Contador) => contador.visibilidade !== 'mestre_privado';
 
 export const CounterPanel: React.FC<CounterPanelProps> = ({
-  campanhaId, contadores, mestre, onAdicionar, onAtualizar, onRemover, onDuplicar, compacto = false
+  campanhaId, contadores, mestre, onAdicionar, onAtualizar, onRemover, onDuplicar, compacto = false, onRegistrarEvento
 }) => {
   const [novoNome, setNovoNome] = useState('');
   const [novoMaximo, setNovoMaximo] = useState(6);
@@ -35,6 +37,7 @@ export const CounterPanel: React.FC<CounterPanelProps> = ({
     const valor = Math.max(0, Math.min(contador.valorMaximo, contador.valorAtual + delta));
     const concluido = contador.direcao === 'crescente' ? valor === contador.valorMaximo : valor === 0;
     onAtualizar(contador.id, { valorAtual: valor, estado: concluido ? 'concluido' : contador.estado === 'concluido' ? 'ativo' : contador.estado });
+    onRegistrarEvento?.({ type: 'counter_update', content: `${contador.nome}: ${valor}/${contador.valorMaximo}${concluido ? ' — concluído.' : '.'}`, metadata: { counterId: contador.id, nome: contador.nome, anterior: contador.valorAtual, valor, maximo: contador.valorMaximo, concluido } });
   };
   const alternarVisibilidade = (contador: Contador) => {
     const proxima: VisibilidadeConteudo = contador.visibilidade === 'mestre_privado' ? 'revelado_jogadores' : 'mestre_privado';

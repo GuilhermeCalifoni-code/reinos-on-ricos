@@ -20,19 +20,21 @@ import {
   ResultadoOniricoTipo
 } from '../types/character';
 import { executarTesteMundano, executarTesteOnirico } from '../rules/rulesEngine';
+import { NewSessionEvent } from '../types/sessionEvent';
 
 interface DiceRollerProps {
   personagemAtivo: Personagem | null;
   atributoInicial?: AtributoNome;
   onSalvarPersonagem?: (p: Personagem) => void;
   onAbrirModalRuptura?: (delta: number, motivo: string) => void;
+  onRegistrarRolagem?: (event: NewSessionEvent) => void;
 }
 
 export const DiceRoller: React.FC<DiceRollerProps> = ({
   personagemAtivo,
   atributoInicial,
   onSalvarPersonagem,
-  onAbrirModalRuptura
+  onAbrirModalRuptura, onRegistrarRolagem
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<'mundano' | 'onirico' | 'morte'>('mundano');
 
@@ -79,6 +81,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     });
 
     setResultadoMundano(res);
+    onRegistrarRolagem?.({ type: 'roll', content: `${personagemAtivo?.nome || 'Mesa'} · ${res.atributo}: d20 ${res.dadoBruto} + ${res.valorAtributo >= 0 ? '+' : ''}${res.valorAtributo} = ${res.totalFinal} vs DT ${res.dt} — ${res.sucesso ? 'sucesso' : 'fracasso'}.`, metadata: { kind: 'mundano', dados: res.dadosRolados, total: res.totalFinal, dt: res.dt, sucesso: res.sucesso, atributo: res.atributo } });
 
     // Se usou Foco e há personagem ativo com foco, gasta 1 PF
     if (usarFoco && personagemAtivo && personagemAtivo.focoAtual > 0 && onSalvarPersonagem) {
@@ -103,6 +106,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     });
 
     setResultadoOnirico(res);
+    onRegistrarRolagem?.({ type: 'roll', content: `${personagemAtivo?.nome || 'Mesa'} · ${res.atributo}: Realidade ${res.dadoRealidade} (${res.totalRealidade}) · Sonhar ${res.dadoSonhar} (${res.totalSonhar}) vs DT ${res.dt} — ${res.resultado}.`, metadata: { kind: 'onirico', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura } });
   };
 
   // Executar Movimento de Morte (Livro Básico pág. 32)

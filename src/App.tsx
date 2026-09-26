@@ -364,6 +364,8 @@ export default function App() {
             personagens={personagens}
             role={papelDaCampanha}
             personagemJogadorId={session.personagemVinculadoId}
+            userId={session.authUserId}
+            registroOnline={usandoRemoto}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
             onAtualizarPersonagem={salvarPersonagem}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
