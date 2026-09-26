@@ -3,6 +3,9 @@ export type CampanhaStatus = 'em_andamento' | 'planejamento' | 'concluida';
 export type VisibilidadeConteudo = 'mestre_privado' | 'compartilhado' | 'revelado_jogadores';
 export type SessaoStatus = 'planejamento' | 'pronta' | 'ao_vivo' | 'concluida';
 export type ConteudoDeCena = 'ambientacao' | 'imagem' | 'mapa' | 'handout';
+export type TipoContador = 'tempo' | 'progresso' | 'problema' | 'conflito' | 'personalizado';
+export type DirecaoContador = 'crescente' | 'decrescente';
+export type EstadoContador = 'ativo' | 'concluido' | 'pausado';
 
 export interface Campanha {
   id: string;
@@ -65,6 +68,26 @@ export interface MapaNarrativo {
   titulo: string;
   imagemUrl?: string;
   visibilidade: VisibilidadeConteudo;
+  gradeVisivel?: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
+export type TipoTokenMapa = 'personagem' | 'npc' | 'adversario' | 'marcador';
+
+export interface TokenMapa {
+  id: string;
+  mapaId: string;
+  campanhaId: string;
+  tipo: TipoTokenMapa;
+  nome: string;
+  imagemUrl?: string;
+  cor: string;
+  x: number;
+  y: number;
+  oculto: boolean;
+  criadoEm: string;
+  atualizadoEm: string;
 }
 
 export interface Handout {
@@ -74,6 +97,24 @@ export interface Handout {
   descricao?: string;
   arquivoUrl?: string;
   visibilidade: VisibilidadeConteudo;
+}
+
+export interface Contador {
+  id: string;
+  campanhaId: string;
+  sessaoId?: string;
+  cenaId?: string;
+  nome: string;
+  descricao?: string;
+  tipo: TipoContador;
+  valorAtual: number;
+  valorMaximo: number;
+  direcao: DirecaoContador;
+  visibilidade: VisibilidadeConteudo;
+  gatilho?: string;
+  estado: EstadoContador;
+  criadoEm: string;
+  atualizadoEm: string;
 }
 
 export interface NPC {

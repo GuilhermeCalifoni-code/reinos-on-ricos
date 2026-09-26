@@ -70,7 +70,20 @@ export default function App() {
     loreEntries,
     adicionarLore,
     anotacoes,
-    adicionarAnotacao
+    adicionarAnotacao,
+    contadores,
+    adicionarContador,
+    atualizarContador,
+    removerContador,
+    duplicarContador,
+    mapas,
+    adicionarMapa,
+    atualizarMapa,
+    removerMapa,
+    tokensMapa,
+    adicionarTokenMapa,
+    atualizarTokenMapa,
+    removerTokenMapa
   } = useCampaignStorage();
 
   // Navegação Principal do Produto
@@ -324,6 +337,19 @@ export default function App() {
             onAtualizarPersonagem={salvarPersonagem}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
+            contadores={contadores}
+            onAdicionarContador={adicionarContador}
+            onAtualizarContador={atualizarContador}
+            onRemoverContador={removerContador}
+            onDuplicarContador={duplicarContador}
+            mapas={mapas}
+            onAdicionarMapa={adicionarMapa}
+            onAtualizarMapa={atualizarMapa}
+            onRemoverMapa={removerMapa}
+            tokensMapa={tokensMapa}
+            onAdicionarTokenMapa={adicionarTokenMapa}
+            onAtualizarTokenMapa={atualizarTokenMapa}
+            onRemoverTokenMapa={removerTokenMapa}
           />
         ) : null;
 

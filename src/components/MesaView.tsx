@@ -1,5 +1,5 @@
 import React from 'react';
-import { Campanha } from '../types/campaign';
+import { Campanha, Contador, MapaNarrativo, TokenMapa } from '../types/campaign';
 import { UserRole } from '../types/auth';
 import { Personagem } from '../types/character';
 import { LiveTable } from './live/LiveTable';
@@ -13,11 +13,26 @@ interface MesaViewProps {
   onAtualizarPersonagem: (p: Personagem) => void;
   onAbrirModalRupturaPara: (p: Personagem, delta: number, motivo: string) => void;
   onAbrirFichaPersonagem: (p: Personagem) => void;
+  contadores: Contador[];
+  onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
+  onAtualizarContador: (id: string, parcial: Partial<Contador>) => void;
+  onRemoverContador: (id: string) => void;
+  onDuplicarContador: (id: string) => void;
+  mapas: MapaNarrativo[];
+  onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
+  onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void;
+  onRemoverMapa: (id: string) => void;
+  tokensMapa: TokenMapa[];
+  onAdicionarTokenMapa: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
+  onAtualizarTokenMapa: (id: string, parcial: Partial<TokenMapa>) => void;
+  onRemoverTokenMapa: (id: string) => void;
 }
 
 export const MesaView: React.FC<MesaViewProps> = ({
   campanha, personagens, role, personagemJogadorId, onVoltarParaCampanha,
-  onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem
+  onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
+  contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
+  mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
 }) => (
   <LiveTable
     campanha={campanha}
@@ -28,5 +43,18 @@ export const MesaView: React.FC<MesaViewProps> = ({
     onAtualizarPersonagem={onAtualizarPersonagem}
     onAbrirRuptura={onAbrirModalRupturaPara}
     onAbrirFicha={onAbrirFichaPersonagem}
+    contadores={contadores}
+    onAdicionarContador={onAdicionarContador}
+    onAtualizarContador={onAtualizarContador}
+    onRemoverContador={onRemoverContador}
+    onDuplicarContador={onDuplicarContador}
+    mapas={mapas}
+    onAdicionarMapa={onAdicionarMapa}
+    onAtualizarMapa={onAtualizarMapa}
+    onRemoverMapa={onRemoverMapa}
+    tokensMapa={tokensMapa}
+    onAdicionarTokenMapa={onAdicionarTokenMapa}
+    onAtualizarTokenMapa={onAtualizarTokenMapa}
+    onRemoverTokenMapa={onRemoverTokenMapa}
   />
 );

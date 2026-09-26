@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput } from '../types/campaign';
+import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, Contador, MapaNarrativo, TokenMapa } from '../types/campaign';
 import {
   CAMPANHAS_INICIAIS,
   SESSOES_INICIAIS,
@@ -20,6 +20,9 @@ const STORAGE_KEYS = {
   PISTAS: 'reinos_oniricos_pistas_v2',
   LORE: 'reinos_oniricos_lore_v2',
   ANOTACOES: 'reinos_oniricos_anotacoes_v2',
+  CONTADORES: 'reinos_oniricos_contadores_v1',
+  MAPAS: 'reinos_oniricos_mapas_v1',
+  TOKENS_MAPA: 'reinos_oniricos_tokens_mapa_v1',
   ATIVA_ID: 'reinos_oniricos_campanha_ativa_v2'
 };
 
@@ -105,6 +108,16 @@ export function useCampaignStorage() {
     }
   });
 
+  const [contadores, setContadores] = useState<Contador[]>(() => {
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.CONTADORES); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+  });
+  const [mapas, setMapas] = useState<MapaNarrativo[]>(() => {
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.MAPAS); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+  });
+  const [tokensMapa, setTokensMapa] = useState<TokenMapa[]>(() => {
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.TOKENS_MAPA); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+  });
+
   // Salvar no localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CAMPANHAS, JSON.stringify(campanhas));
@@ -143,6 +156,9 @@ export function useCampaignStorage() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.ANOTACOES, JSON.stringify(anotacoes));
   }, [anotacoes]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.CONTADORES, JSON.stringify(contadores)); }, [contadores]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.MAPAS, JSON.stringify(mapas)); }, [mapas]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.TOKENS_MAPA, JSON.stringify(tokensMapa)); }, [tokensMapa]);
 
   const campanhaAtiva = campanhas.find(c => c.id === campanhaAtivaId) || campanhas[0] || null;
 
@@ -254,6 +270,37 @@ export function useCampaignStorage() {
     setAnotacoes(prev => [item, ...prev]);
   };
 
+  const adicionarContador = (novo: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
+    const agora = new Date().toISOString();
+    const item: Contador = { ...novo, id: `contador-${Date.now()}`, criadoEm: agora, atualizadoEm: agora };
+    setContadores(anteriores => [...anteriores, item]);
+    return item;
+  };
+  const atualizarContador = (id: string, parcial: Partial<Contador>) => setContadores(anteriores => anteriores.map(item => item.id === id ? { ...item, ...parcial, atualizadoEm: new Date().toISOString() } : item));
+  const removerContador = (id: string) => setContadores(anteriores => anteriores.filter(item => item.id !== id));
+  const duplicarContador = (id: string) => {
+    const origem = contadores.find(item => item.id === id);
+    if (!origem) return null;
+    return adicionarContador({ ...origem, nome: `${origem.nome} (cópia)`, valorAtual: origem.direcao === 'crescente' ? 0 : origem.valorMaximo, estado: 'ativo' });
+  };
+
+  const adicionarMapa = (novo: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
+    const agora = new Date().toISOString();
+    const item: MapaNarrativo = { ...novo, id: `mapa-${Date.now()}`, criadoEm: agora, atualizadoEm: agora };
+    setMapas(anteriores => [...anteriores, item]);
+    return item;
+  };
+  const atualizarMapa = (id: string, parcial: Partial<MapaNarrativo>) => setMapas(anteriores => anteriores.map(item => item.id === id ? { ...item, ...parcial, atualizadoEm: new Date().toISOString() } : item));
+  const removerMapa = (id: string) => { setMapas(anteriores => anteriores.filter(item => item.id !== id)); setTokensMapa(anteriores => anteriores.filter(item => item.mapaId !== id)); };
+  const adicionarTokenMapa = (novo: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
+    const agora = new Date().toISOString();
+    const item: TokenMapa = { ...novo, id: `token-${Date.now()}`, criadoEm: agora, atualizadoEm: agora };
+    setTokensMapa(anteriores => [...anteriores, item]);
+    return item;
+  };
+  const atualizarTokenMapa = (id: string, parcial: Partial<TokenMapa>) => setTokensMapa(anteriores => anteriores.map(item => item.id === id ? { ...item, ...parcial, atualizadoEm: new Date().toISOString() } : item));
+  const removerTokenMapa = (id: string) => setTokensMapa(anteriores => anteriores.filter(item => item.id !== id));
+
   return {
     campanhas,
     campanhaAtivaId,
@@ -276,6 +323,19 @@ export function useCampaignStorage() {
     loreEntries,
     adicionarLore,
     anotacoes,
-    adicionarAnotacao
+    adicionarAnotacao,
+    contadores,
+    adicionarContador,
+    atualizarContador,
+    removerContador,
+    duplicarContador,
+    mapas,
+    adicionarMapa,
+    atualizarMapa,
+    removerMapa,
+    tokensMapa,
+    adicionarTokenMapa,
+    atualizarTokenMapa,
+    removerTokenMapa
   };
 }
