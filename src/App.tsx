@@ -380,6 +380,7 @@ export default function App() {
             role={papelDaCampanha}
             personagemJogadorId={personagemJogadorId}
             userId={session.authUserId}
+            userName={session.nome}
             registroOnline={usandoRemoto}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
             onAtualizarPersonagem={salvarPersonagem}

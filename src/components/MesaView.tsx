@@ -10,6 +10,7 @@ interface MesaViewProps {
   role: UserRole;
   personagemJogadorId?: string;
   userId?: string;
+  userName?: string;
   registroOnline: boolean;
   onVoltarParaCampanha: () => void;
   onAtualizarPersonagem: (p: Personagem) => void;
@@ -31,7 +32,7 @@ interface MesaViewProps {
 }
 
 export const MesaView: React.FC<MesaViewProps> = ({
-  campanha, personagens, role, personagemJogadorId, userId, registroOnline, onVoltarParaCampanha,
+  campanha, personagens, role, personagemJogadorId, userId, userName, registroOnline, onVoltarParaCampanha,
   onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
   contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
   mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
@@ -42,6 +43,7 @@ export const MesaView: React.FC<MesaViewProps> = ({
     role={role}
     personagemJogadorId={personagemJogadorId}
     userId={userId}
+    userName={userName}
     registroOnline={registroOnline}
     onVoltar={onVoltarParaCampanha}
     onAtualizarPersonagem={onAtualizarPersonagem}

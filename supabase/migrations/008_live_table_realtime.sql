@@ -1,0 +1,130 @@
+-- Fase 7: estado sincronizado da Mesa Ao Vivo. Não exclui dados existentes.
+create table if not exists public.narrative_maps (
+  id uuid primary key default gen_random_uuid(),
+  campaign_id uuid not null references public.campaigns(id) on delete cascade,
+  titulo text not null check (char_length(trim(titulo)) between 1 and 160),
+  imagem_url text,
+  visibilidade text not null default 'revelado_jogadores' check (visibilidade in ('mestre_privado','compartilhado','revelado_jogadores')),
+  grade_visivel boolean not null default false,
+  criado_por uuid not null default auth.uid() references auth.users(id) on delete restrict,
+  criado_em timestamptz not null default now(), atualizado_em timestamptz not null default now()
+);
+
+create table if not exists public.map_tokens (
+  id uuid primary key default gen_random_uuid(),
+  map_id uuid not null references public.narrative_maps(id) on delete cascade,
+  campaign_id uuid not null references public.campaigns(id) on delete cascade,
+  character_id text references public.personagens(id) on delete set null,
+  npc_id text, adversary_id text,
+  tipo text not null check (tipo in ('personagem','npc','adversario','marcador')),
+  nome text not null check (char_length(trim(nome)) between 1 and 120),
+  imagem_url text, cor text not null default '#a99c83',
+  x numeric not null default 50 check (x between 0 and 100), y numeric not null default 50 check (y between 0 and 100),
+  oculto boolean not null default false,
+  criado_por uuid not null default auth.uid() references auth.users(id) on delete restrict,
+  criado_em timestamptz not null default now(), atualizado_em timestamptz not null default now()
+);
+
+create table if not exists public.session_counters (
+  id uuid primary key default gen_random_uuid(),
+  campaign_id uuid not null references public.campaigns(id) on delete cascade,
+  session_id uuid, scene_id uuid,
+  nome text not null check (char_length(trim(nome)) between 1 and 160), descricao text,
+  tipo text not null check (tipo in ('tempo','progresso','problema','conflito','personalizado')),
+  valor_atual integer not null default 0 check (valor_atual >= 0), valor_maximo integer not null check (valor_maximo > 0),
+  direcao text not null check (direcao in ('crescente','decrescente')),
+  visibilidade text not null default 'mestre_privado' check (visibilidade in ('mestre_privado','compartilhado','revelado_jogadores')),
+  gatilho text, estado text not null default 'ativo' check (estado in ('ativo','concluido','pausado')),
+  criado_por uuid not null default auth.uid() references auth.users(id) on delete restrict,
+  criado_em timestamptz not null default now(), atualizado_em timestamptz not null default now(),
+  constraint session_counters_value_in_range check (valor_atual <= valor_maximo)
+);
+
+create table if not exists public.live_session_states (
+  campaign_id uuid primary key references public.campaigns(id) on delete cascade,
+  session_id uuid, active_scene_id uuid, active_map_id uuid references public.narrative_maps(id) on delete set null,
+  content_type text not null default 'ambientacao' check (content_type in ('ambientacao','imagem','mapa','handout')),
+  rupture_general integer not null default 0 check (rupture_general between 0 and 6),
+  metadata jsonb not null default '{}'::jsonb check (jsonb_typeof(metadata) = 'object'),
+  updated_by uuid not null default auth.uid() references auth.users(id) on delete restrict,
+  updated_at timestamptz not null default now()
+);
+alter table public.map_tokens add column if not exists character_id text references public.personagens(id) on delete set null;
+alter table public.map_tokens add column if not exists npc_id text;
+alter table public.map_tokens add column if not exists adversary_id text;
+
+create index if not exists narrative_maps_campaign_idx on public.narrative_maps(campaign_id, criado_em);
+create index if not exists map_tokens_campaign_map_idx on public.map_tokens(campaign_id, map_id, criado_em);
+create index if not exists session_counters_campaign_idx on public.session_counters(campaign_id, criado_em);
+
+create or replace function public.live_table_set_updated_at() returns trigger language plpgsql set search_path = public as $$ begin new.atualizado_em = now(); return new; end; $$;
+create or replace function public.live_state_set_updated_at() returns trigger language plpgsql set search_path = public as $$ begin new.updated_at = now(); return new; end; $$;
+create or replace function public.map_token_campaign_matches_map() returns trigger language plpgsql set search_path = public as $$ begin if not exists (select 1 from public.narrative_maps where id = new.map_id and campaign_id = new.campaign_id) then raise exception 'map token campaign must match its map'; end if; return new; end; $$;
+drop trigger if exists narrative_maps_set_updated_at on public.narrative_maps;
+create trigger narrative_maps_set_updated_at before update on public.narrative_maps for each row execute function public.live_table_set_updated_at();
+drop trigger if exists map_tokens_set_updated_at on public.map_tokens;
+create trigger map_tokens_set_updated_at before update on public.map_tokens for each row execute function public.live_table_set_updated_at();
+drop trigger if exists session_counters_set_updated_at on public.session_counters;
+create trigger session_counters_set_updated_at before update on public.session_counters for each row execute function public.live_table_set_updated_at();
+drop trigger if exists live_session_states_set_updated_at on public.live_session_states;
+create trigger live_session_states_set_updated_at before update on public.live_session_states for each row execute function public.live_state_set_updated_at();
+drop trigger if exists personagens_set_updated_at on public.personagens;
+create trigger personagens_set_updated_at before update on public.personagens for each row execute function public.live_table_set_updated_at();
+drop trigger if exists map_tokens_campaign_matches_map on public.map_tokens;
+create trigger map_tokens_campaign_matches_map before insert or update on public.map_tokens for each row execute function public.map_token_campaign_matches_map();
+
+create or replace function public.can_read_live_content(p_campaign_id uuid, p_visibility text) returns boolean language sql security definer stable set search_path = public as $$
+  select public.is_campaign_master(p_campaign_id) or (p_visibility <> 'mestre_privado' and public.is_campaign_member(p_campaign_id));
+$$;
+create or replace function public.can_read_map_token(p_campaign_id uuid, p_map_id uuid, p_oculto boolean) returns boolean language sql security definer stable set search_path = public as $$
+  select public.is_campaign_master(p_campaign_id) or (not p_oculto and public.is_campaign_member(p_campaign_id) and exists (select 1 from public.narrative_maps where id = p_map_id and campaign_id = p_campaign_id and visibilidade <> 'mestre_privado'));
+$$;
+
+alter table public.live_session_states enable row level security;
+alter table public.session_counters enable row level security;
+alter table public.narrative_maps enable row level security;
+alter table public.map_tokens enable row level security;
+
+drop policy if exists "members read live state" on public.live_session_states;
+drop policy if exists "masters manage live state" on public.live_session_states;
+create policy "members read live state" on public.live_session_states for select using (public.is_campaign_member(campaign_id));
+create policy "masters manage live state" on public.live_session_states for all using (public.is_campaign_master(campaign_id)) with check (public.is_campaign_master(campaign_id) and updated_by = auth.uid());
+
+drop policy if exists "members read visible counters" on public.session_counters;
+drop policy if exists "masters manage counters" on public.session_counters;
+drop policy if exists "masters create counters" on public.session_counters;
+create policy "members read visible counters" on public.session_counters for select using (public.can_read_live_content(campaign_id, visibilidade));
+create policy "masters create counters" on public.session_counters for insert with check (public.is_campaign_master(campaign_id) and criado_por = auth.uid());
+create policy "masters manage counters" on public.session_counters for update using (public.is_campaign_master(campaign_id)) with check (public.is_campaign_master(campaign_id));
+create policy "masters delete counters" on public.session_counters for delete using (public.is_campaign_master(campaign_id));
+
+drop policy if exists "members read visible maps" on public.narrative_maps;
+drop policy if exists "masters manage maps" on public.narrative_maps;
+drop policy if exists "masters create maps" on public.narrative_maps;
+create policy "members read visible maps" on public.narrative_maps for select using (public.can_read_live_content(campaign_id, visibilidade));
+create policy "masters create maps" on public.narrative_maps for insert with check (public.is_campaign_master(campaign_id) and criado_por = auth.uid());
+create policy "masters manage maps" on public.narrative_maps for update using (public.is_campaign_master(campaign_id)) with check (public.is_campaign_master(campaign_id));
+create policy "masters delete maps" on public.narrative_maps for delete using (public.is_campaign_master(campaign_id));
+
+drop policy if exists "members read visible map tokens" on public.map_tokens;
+drop policy if exists "masters manage map tokens" on public.map_tokens;
+drop policy if exists "masters create map tokens" on public.map_tokens;
+create policy "members read visible map tokens" on public.map_tokens for select using (public.can_read_map_token(campaign_id, map_id, oculto));
+create policy "masters create map tokens" on public.map_tokens for insert with check (public.is_campaign_master(campaign_id) and criado_por = auth.uid());
+create policy "masters manage map tokens" on public.map_tokens for update using (public.is_campaign_master(campaign_id)) with check (public.is_campaign_master(campaign_id));
+create policy "masters delete map tokens" on public.map_tokens for delete using (public.is_campaign_master(campaign_id));
+
+alter table public.live_session_states replica identity full;
+alter table public.session_counters replica identity full;
+alter table public.narrative_maps replica identity full;
+alter table public.map_tokens replica identity full;
+alter table public.personagens replica identity full;
+do $$
+declare table_name text;
+begin
+  foreach table_name in array array['live_session_states','session_counters','narrative_maps','map_tokens','personagens'] loop
+    if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = table_name) then
+      execute format('alter publication supabase_realtime add table public.%I', table_name);
+    end if;
+  end loop;
+end $$;
