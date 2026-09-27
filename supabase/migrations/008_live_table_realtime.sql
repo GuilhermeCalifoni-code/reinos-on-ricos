@@ -79,6 +79,9 @@ $$;
 create or replace function public.can_read_map_token(p_campaign_id uuid, p_map_id uuid, p_oculto boolean) returns boolean language sql security definer stable set search_path = public as $$
   select public.is_campaign_master(p_campaign_id) or (not p_oculto and public.is_campaign_member(p_campaign_id) and exists (select 1 from public.narrative_maps where id = p_map_id and campaign_id = p_campaign_id and visibilidade <> 'mestre_privado'));
 $$;
+create or replace function public.can_update_own_linked_character(p_campaign_id uuid, p_character_id text) returns boolean language sql security definer stable set search_path = public as $$
+  select exists (select 1 from public.campaign_members where campaign_id = p_campaign_id and user_id = auth.uid() and character_id = p_character_id and status = 'ativo');
+$$;
 
 alter table public.live_session_states enable row level security;
 alter table public.session_counters enable row level security;
@@ -113,6 +116,16 @@ create policy "members read visible map tokens" on public.map_tokens for select 
 create policy "masters create map tokens" on public.map_tokens for insert with check (public.is_campaign_master(campaign_id) and criado_por = auth.uid());
 create policy "masters manage map tokens" on public.map_tokens for update using (public.is_campaign_master(campaign_id)) with check (public.is_campaign_master(campaign_id));
 create policy "masters delete map tokens" on public.map_tokens for delete using (public.is_campaign_master(campaign_id));
+
+-- A ficha pertence ao usuário, mas só pode ser alterada por ele durante uma mesa
+-- quando estiver explicitamente vinculada ao membership daquela campanha.
+drop policy if exists "owners and masters manage characters" on public.personagens;
+drop policy if exists "masters manage campaign characters" on public.personagens;
+drop policy if exists "owners create own characters" on public.personagens;
+drop policy if exists "owners update linked characters" on public.personagens;
+create policy "masters manage campaign characters" on public.personagens for all using (campaign_id is not null and public.is_campaign_master(campaign_id)) with check (campaign_id is not null and public.is_campaign_master(campaign_id));
+create policy "owners create own characters" on public.personagens for insert with check (owner_user_id = auth.uid());
+create policy "owners update linked characters" on public.personagens for update using (owner_user_id = auth.uid() and campaign_id is not null and public.can_update_own_linked_character(campaign_id, id)) with check (owner_user_id = auth.uid() and campaign_id is not null and public.can_update_own_linked_character(campaign_id, id));
 
 alter table public.live_session_states replica identity full;
 alter table public.session_counters replica identity full;
