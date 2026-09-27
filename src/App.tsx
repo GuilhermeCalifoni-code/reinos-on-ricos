@@ -98,6 +98,8 @@ export default function App() {
   const campanhaAtiva = usandoRemoto ? campanhas.find(c => c.id === campanhaRemotaAtivaId) || campanhas[0] || null : campanhaAtivaLocal;
   const setCampanhaAtivaId = (id: string) => usandoRemoto ? setCampanhaRemotaAtivaId(id) : setCampanhaAtivaIdLocal(id);
   const papelDaCampanha = usandoRemoto ? campanhasRemotas.roleDaCampanha(campanhaAtivaId || undefined) || 'observador' : session?.role || 'observador';
+  const membroRemotoAtivo = usandoRemoto ? campanhasRemotas.membros.find(membro => membro.campaignId === campanhaAtivaId && membro.userId === session?.authUserId) : undefined;
+  const personagemJogadorId = usandoRemoto ? membroRemotoAtivo?.characterId : session?.personagemVinculadoId;
 
   useEffect(() => {
     if (!isSupabaseConfigured() || session?.modoConexao === 'local') return;
@@ -177,6 +179,19 @@ export default function App() {
 
   const handleIniciarCriacaoCampanha = () => {
     setViewAtiva('criar_campanha');
+  };
+
+  const handleEntrarComCodigoRemoto = async (codigo: string, personagemId?: string) => {
+    const id = await campanhasRemotas.entrarComCodigo(codigo);
+    if (personagemId && session?.authUserId) {
+      const personagem = personagens.find(item => item.id === personagemId);
+      if (personagem) {
+        await characterRepository.salvar({ ...personagem, campaignId: id, ownerUserId: session.authUserId });
+        await campaignRepository.vincularPersonagem(id, personagem.id);
+      }
+    }
+    await campanhasRemotas.recarregar();
+    setCampanhaRemotaAtivaId(id);
   };
 
   const handleExecutarCriacaoCampanha = (dados: {
@@ -311,7 +326,7 @@ export default function App() {
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             personagensParaVinculo={usandoRemoto ? personagens : undefined}
-            onEntrarComCodigo={usandoRemoto ? async (codigo, personagemId) => { const id = await campanhasRemotas.entrarComCodigo(codigo); if (personagemId && session?.authUserId) { const personagem = personagens.find(item => item.id === personagemId); if (personagem) { await characterRepository.salvar({ ...personagem, campaignId: id, ownerUserId: session.authUserId }); await campaignRepository.vincularPersonagem(id, personagem.id); } } setCampanhaRemotaAtivaId(id); } : undefined}
+            onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
           />
         );
 
@@ -353,7 +368,7 @@ export default function App() {
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             personagensParaVinculo={usandoRemoto ? personagens : undefined}
-            onEntrarComCodigo={usandoRemoto ? async (codigo, personagemId) => { const id = await campanhasRemotas.entrarComCodigo(codigo); if (personagemId && session?.authUserId) { const personagem = personagens.find(item => item.id === personagemId); if (personagem) { await characterRepository.salvar({ ...personagem, campaignId: id, ownerUserId: session.authUserId }); await campaignRepository.vincularPersonagem(id, personagem.id); } } setCampanhaRemotaAtivaId(id); } : undefined}
+            onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
           />
         );
 
@@ -363,7 +378,7 @@ export default function App() {
             campanha={campanhaAtiva}
             personagens={personagens}
             role={papelDaCampanha}
-            personagemJogadorId={session.personagemVinculadoId}
+            personagemJogadorId={personagemJogadorId}
             userId={session.authUserId}
             registroOnline={usandoRemoto}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
