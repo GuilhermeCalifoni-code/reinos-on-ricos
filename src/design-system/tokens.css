@@ -1075,3 +1075,197 @@
     max-height: 4.5rem;
   }
 }
+
+
+/* ==========================================================================
+   Tema do Livro — aplicação semântica nas superfícies da plataforma
+   ========================================================================== */
+.ro-theme-toggle {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  border: 1px solid var(--ro-line);
+  padding: 0 .75rem;
+  background: color-mix(in srgb, var(--ro-surface-raised) 72%, transparent);
+  color: var(--ro-paper-muted);
+  font-size: .68rem;
+  letter-spacing: .05em;
+  transition: border-color var(--ro-transition), color var(--ro-transition), background var(--ro-transition);
+}
+.ro-theme-toggle:hover {
+  border-color: var(--ro-line-strong);
+  color: var(--ro-copper);
+  background: var(--ro-accent-soft);
+}
+.ro-theme-toggle--compact {
+  width: 2.35rem;
+  padding: 0;
+}
+.ro-theme-toggle:focus-visible { outline: none; box-shadow: var(--ro-focus); }
+
+.live-table__bar { background: var(--ro-panel-bg); }
+.live-table__grid { background: var(--ro-bg-soft); }
+.live-table__party,
+.live-table__session { background: var(--ro-panel-bg); }
+.live-table__character.is-selected {
+  background: linear-gradient(90deg, var(--ro-accent-soft), transparent);
+}
+.live-table__stage {
+  background: radial-gradient(ellipse at 50% 45%, var(--ro-stage-from), var(--ro-stage-to) 72%);
+}
+.live-table__stage::after {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ro-navy) 13%, transparent),
+    transparent 42%,
+    color-mix(in srgb, var(--ro-copper) 8%, transparent)
+  );
+}
+.live-table__stage--handout {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ro-olive) 22%, var(--ro-bg)), var(--ro-bg-soft) 68%);
+}
+.live-table__stage--mapa { background: var(--ro-bg-soft); }
+.live-table__geometry {
+  border-color: color-mix(in srgb, var(--ro-copper) 24%, transparent);
+  box-shadow:
+    0 0 0 6rem color-mix(in srgb, var(--ro-navy) 4%, transparent),
+    0 0 0 12rem color-mix(in srgb, var(--ro-copper) 2%, transparent);
+}
+.live-table__scene-controls button {
+  background: color-mix(in srgb, var(--ro-bg) 82%, transparent);
+}
+.live-table__dock { background: var(--ro-surface); }
+.live-table__dock button:hover,
+.live-table__dock button.is-active { background: var(--ro-accent-soft); }
+.live-table__tool {
+  background:
+    radial-gradient(circle at 80% 0%, color-mix(in srgb, var(--ro-navy) 10%, transparent), transparent 24rem),
+    var(--ro-panel-bg);
+}
+.live-table__tool-head { background: var(--ro-panel-bg); }
+
+.session-feed__event {
+  border-left-color: var(--ro-ash);
+  background: color-mix(in srgb, var(--ro-paper) 2.5%, transparent);
+}
+.session-feed__event--character_speech { border-color: var(--ro-blue); }
+.session-feed__event--ooc {
+  border-color: var(--ro-olive);
+  background: var(--ro-olive-soft);
+}
+.session-feed__event--roll {
+  border-color: var(--ro-copper);
+  background: var(--ro-accent-soft);
+}
+.session-feed__event--system,
+.session-feed__event--scene_change,
+.session-feed__event--counter_update,
+.session-feed__event--clue_reveal {
+  border-color: var(--ro-navy);
+  background: var(--ro-blue-soft);
+}
+.session-feed__event.is-private {
+  border-color: var(--ro-rift);
+  background: var(--ro-rupture-soft);
+}
+.session-feed__composer select,
+.session-feed__composer input,
+.session-feed__composer textarea,
+.counter-panel__create input,
+.counter-panel__create select,
+.map-stage input,
+.map-stage select {
+  background: var(--ro-input);
+  color: var(--ro-paper);
+}
+.session-feed__header small {
+  border-color: color-mix(in srgb, var(--ro-copper) 40%, transparent);
+}
+.session-feed__readonly,
+.session-feed__error,
+.live-table__sync-error { color: var(--ro-danger) !important; }
+
+.counter-panel__meter,
+.live-counter-preview__dial {
+  background:
+    radial-gradient(circle, var(--ro-surface) 57%, transparent 59%),
+    conic-gradient(var(--ro-copper) var(--counter-progress), color-mix(in srgb, var(--ro-paper) 14%, transparent) 0);
+}
+
+.map-stage { background: var(--ro-bg-soft); }
+.map-stage__viewport {
+  background: radial-gradient(ellipse at 50% 45%, var(--ro-stage-from), var(--ro-stage-to) 73%);
+}
+.map-stage__viewport.has-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ro-paper) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ro-paper) 9%, transparent) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 45%, var(--ro-stage-from), var(--ro-stage-to) 73%);
+}
+.map-stage__token {
+  border-color: var(--ro-bg);
+  color: var(--ro-on-accent);
+}
+
+.campaign-assets__form,
+.campaign-assets__card {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ro-navy) 6%, transparent), transparent 50%),
+    var(--ro-surface);
+}
+.campaign-assets__form input,
+.campaign-assets__form textarea,
+.campaign-assets__form select {
+  background: var(--ro-input);
+  color: var(--ro-paper);
+}
+.campaign-members__invite code,
+.campaign-members__invite button,
+.campaign-members__actions button,
+.campaign-members__actions select {
+  background: var(--ro-input);
+}
+
+.login-onirico {
+  background:
+    radial-gradient(circle at 16% 18%, color-mix(in srgb, var(--ro-navy) 15%, transparent), transparent 34rem),
+    radial-gradient(circle at 86% 72%, color-mix(in srgb, var(--ro-copper) 7%, transparent), transparent 32rem),
+    var(--ro-bg);
+}
+.login-onirico__panel {
+  background: color-mix(in srgb, var(--ro-surface-raised) 94%, transparent);
+}
+.login-onirico__form input,
+.login-onirico__form select {
+  background: var(--ro-input);
+  color: var(--ro-paper);
+}
+.login-onirico__switch button.is-active {
+  background: var(--ro-blue-soft);
+  color: var(--ro-paper);
+}
+
+:root[data-theme='light'] .ro-surface {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.56), transparent),
+    var(--ro-surface-raised);
+}
+:root[data-theme='light'] .ro-empty-state {
+  background:
+    linear-gradient(135deg, var(--ro-blue-soft), var(--ro-olive-soft)),
+    var(--ro-surface-raised);
+}
+:root[data-theme='light'] .live-table__stage--imagem img {
+  filter: brightness(.68) saturate(.72) contrast(.92);
+}
+:root[data-theme='light'] .live-table__stage-copy {
+  text-shadow: 0 1px 12px rgba(248,245,238,.86);
+}
+:root[data-theme='light'] .live-table__tool-backdrop {
+  background: rgba(16, 24, 34, .28);
+}
+:root[data-theme='light'] .ro-button {
+  color: #fffaf1;
+}
