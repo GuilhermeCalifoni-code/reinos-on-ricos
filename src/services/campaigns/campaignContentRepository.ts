@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabaseClient';
-import { Adversario, Anotacao, Local, LoreEntry, NPC, NovaSessaoInput, Pista, Sessao } from '../../types/campaign';
+import { Adversario, Anotacao, Cena, Handout, Local, LoreEntry, NPC, NovaSessaoInput, Pista, Sessao, VisibilidadeConteudo } from '../../types/campaign';
 
 const client = () => {
   if (!supabase) throw new Error('Supabase não está configurado.');
@@ -66,19 +66,41 @@ const mapNote = (row: any): Anotacao => ({
   visibilidade: row.visibilidade
 });
 
+const mapScene = (row: any): Cena => ({
+  id: row.id,
+  campanhaId: row.campaign_id,
+  titulo: row.titulo,
+  descricao: row.descricao || undefined,
+  visibilidade: row.visibilidade,
+  tipoDeConteudo: row.tipo_de_conteudo,
+  imagemUrl: row.imagem_url || undefined
+});
+
+const mapHandout = (row: any): Handout => ({
+  id: row.id,
+  campanhaId: row.campaign_id,
+  titulo: row.titulo,
+  descricao: row.descricao || undefined,
+  arquivoUrl: row.arquivo_url || undefined,
+  storagePath: row.storage_path || undefined,
+  visibilidade: row.visibilidade
+});
+
 export const campaignContentRepository = {
   async carregar(campaignId: string) {
     const api = client();
-    const [sessions, npcs, adversaries, locations, clues, lore, notes] = await Promise.all([
+    const [sessions, npcs, adversaries, locations, clues, lore, notes, scenes, handouts] = await Promise.all([
       api.from('campaign_sessions').select('*').eq('campaign_id', campaignId).order('numero', { ascending: false }),
       api.from('campaign_npcs').select('*').eq('campaign_id', campaignId).order('criado_em'),
       api.from('campaign_adversaries').select('*').eq('campaign_id', campaignId).order('criado_em'),
       api.from('campaign_locations').select('*').eq('campaign_id', campaignId).order('criado_em'),
       api.from('campaign_clues').select('*').eq('campaign_id', campaignId).order('criado_em'),
       api.from('campaign_lore').select('*').eq('campaign_id', campaignId).order('criado_em'),
-      api.from('campaign_notes').select('*').eq('campaign_id', campaignId).order('atualizado_em', { ascending: false })
+      api.from('campaign_notes').select('*').eq('campaign_id', campaignId).order('atualizado_em', { ascending: false }),
+      api.from('campaign_scenes').select('*').eq('campaign_id', campaignId).order('criado_em'),
+      api.from('campaign_handouts').select('*').eq('campaign_id', campaignId).order('criado_em')
     ]);
-    for (const result of [sessions, npcs, adversaries, locations, clues, lore, notes]) if (result.error) throw result.error;
+    for (const result of [sessions, npcs, adversaries, locations, clues, lore, notes, scenes, handouts]) if (result.error) throw result.error;
     return {
       sessoes: (sessions.data || []).map(mapSession),
       npcs: (npcs.data || []).map(mapNpc),
@@ -86,7 +108,9 @@ export const campaignContentRepository = {
       locais: (locations.data || []).map(mapLocation),
       pistas: (clues.data || []).map(mapClue),
       loreEntries: (lore.data || []).map(mapLore),
-      anotacoes: (notes.data || []).map(mapNote)
+      anotacoes: (notes.data || []).map(mapNote),
+      cenas: (scenes.data || []).map(mapScene),
+      handouts: (handouts.data || []).map(mapHandout)
     };
   },
 
@@ -165,5 +189,66 @@ export const campaignContentRepository = {
     }).select().single();
     if (error) throw error;
     return mapNote(data);
+  },
+
+  async adicionarCena(nova: Omit<Cena, 'id'>) {
+    const { data, error } = await client().from('campaign_scenes').insert({
+      campaign_id: nova.campanhaId,
+      titulo: nova.titulo,
+      descricao: nova.descricao || null,
+      visibilidade: nova.visibilidade,
+      tipo_de_conteudo: nova.tipoDeConteudo,
+      imagem_url: nova.imagemUrl || null
+    }).select().single();
+    if (error) throw error;
+    return mapScene(data);
+  },
+
+  async atualizarCena(id: string, patch: Partial<Cena>) {
+    const values: Record<string, unknown> = {};
+    if (patch.titulo !== undefined) values.titulo = patch.titulo;
+    if (patch.descricao !== undefined) values.descricao = patch.descricao || null;
+    if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
+    if (patch.tipoDeConteudo !== undefined) values.tipo_de_conteudo = patch.tipoDeConteudo;
+    if (patch.imagemUrl !== undefined) values.imagem_url = patch.imagemUrl || null;
+    const { data, error } = await client().from('campaign_scenes').update(values).eq('id', id).select().single();
+    if (error) throw error;
+    return mapScene(data);
+  },
+
+  async removerCena(id: string) {
+    const { error } = await client().from('campaign_scenes').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  async adicionarHandout(novo: Omit<Handout, 'id'>) {
+    const { data, error } = await client().from('campaign_handouts').insert({
+      campaign_id: novo.campanhaId,
+      titulo: novo.titulo,
+      descricao: novo.descricao || null,
+      arquivo_url: novo.arquivoUrl || null,
+      storage_path: novo.storagePath || null,
+      visibilidade: novo.visibilidade
+    }).select().single();
+    if (error) throw error;
+    return mapHandout(data);
+  },
+
+  async atualizarHandout(id: string, patch: Partial<Handout>) {
+    const values: Record<string, unknown> = {};
+    if (patch.titulo !== undefined) values.titulo = patch.titulo;
+    if (patch.descricao !== undefined) values.descricao = patch.descricao || null;
+    if (patch.arquivoUrl !== undefined) values.arquivo_url = patch.arquivoUrl || null;
+    if (patch.storagePath !== undefined) values.storage_path = patch.storagePath || null;
+    if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
+    const { data, error } = await client().from('campaign_handouts').update(values).eq('id', id).select().single();
+    if (error) throw error;
+    return mapHandout(data);
+  },
+
+  async removerHandout(id: string) {
+    const { error } = await client().from('campaign_handouts').delete().eq('id', id);
+    if (error) throw error;
   }
+
 };
