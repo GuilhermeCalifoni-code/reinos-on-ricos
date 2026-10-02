@@ -208,6 +208,34 @@ create policy "campaign co-members read profiles" on public.profiles for select 
   )
 );
 
+-- Jogadores podem enviar whisper apenas para um Mestre ativo da própria campanha.
+create or replace function public.is_campaign_master_user(p_campaign_id uuid, p_user_id uuid)
+returns boolean language sql security definer stable set search_path = public as $
+  select exists (
+    select 1 from public.campaign_members
+    where campaign_id = p_campaign_id and user_id = p_user_id and role = 'mestre' and status = 'ativo'
+  );
+$;
+
+drop policy if exists "campaign members create allowed session events" on public.session_events;
+create policy "campaign members create allowed session events" on public.session_events
+  for insert with check (
+    created_by = auth.uid()
+    and public.is_campaign_member(campaign_id)
+    and (
+      public.is_campaign_master(campaign_id)
+      or (
+        public.is_campaign_player(campaign_id)
+        and (
+          (type in ('chat','character_speech','ooc','roll') and visibility = 'todos' and recipient_user_id is null)
+          or
+          (type = 'whisper' and visibility = 'usuario_especifico' and recipient_user_id is not null and public.is_campaign_master_user(campaign_id, recipient_user_id))
+        )
+      )
+    )
+    and (visibility <> 'usuario_especifico' or public.is_active_campaign_member(campaign_id, recipient_user_id))
+  );
+
 -- O servidor, não o cliente, assina o papel/nome usado na apresentação dos eventos.
 create or replace function public.stamp_session_event_metadata()
 returns trigger language plpgsql security definer set search_path = public as $$
