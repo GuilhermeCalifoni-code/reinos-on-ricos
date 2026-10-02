@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Personagem } from '../../types/character';
-import { Campanha, Contador, ConteudoDeCena, MapaNarrativo, TokenMapa } from '../../types/campaign';
+import { Campanha, Contador, ConteudoDeCena, MapaNarrativo, MembroCampanha, TokenMapa } from '../../types/campaign';
 import { UserRole } from '../../types/auth';
 import { DiceRoller } from '../DiceRoller';
 import { DreamGuide } from '../DreamGuide';
@@ -15,7 +15,7 @@ import { sessionEventFactories } from '../../services/session-events/sessionEven
 import { useCampaignRealtime } from '../../features/realtime/useCampaignRealtime';
 
 interface LiveTableProps {
-  campanha: Campanha; personagens: Personagem[]; role: UserRole; personagemJogadorId?: string; userId?: string; userName?: string; registroOnline: boolean; onVoltar: () => void;
+  campanha: Campanha; personagens: Personagem[]; role: UserRole; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
   onAtualizarPersonagem: (personagem: Personagem) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem) => void;
   contadores: Contador[]; onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarContador: (id: string, parcial: Partial<Contador>) => void; onRemoverContador: (id: string) => void; onDuplicarContador: (id: string) => void;
   mapas: MapaNarrativo[]; onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void; onRemoverMapa: (id: string) => void;
@@ -23,7 +23,7 @@ interface LiveTableProps {
 }
 
 export const LiveTable: React.FC<LiveTableProps> = (props) => {
-  const { campanha, personagens, role, personagemJogadorId, userId, userName, registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
+  const { campanha, personagens, role, personagemJogadorId, userId, userName, sessionId, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
   const mestre = role === 'mestre';
   const personagensVisiveis = useMemo(() => mestre ? personagens : personagens.filter(p => p.id === personagemJogadorId), [mestre, personagemJogadorId, personagens]);
   const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || personagens[0]?.id || '');
@@ -41,7 +41,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const conteudo = compartilhando && realtime.state ? realtime.state.contentType : conteudoLocal;
   const mapaAtualId = compartilhando && realtime.state?.activeMapId ? realtime.state.activeMapId : mapaLocalId;
   const selecionado = personagens.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
-  const registro = useSessionEvents({ campaignId: campanha.id, userId, role, enabled: registroOnline, characterId: personagemJogadorId });
+  const registro = useSessionEvents({ campaignId: campanha.id, sessionId, userId, enabled: registroOnline, characterId: personagemJogadorId });
   const registrarSemFalhar = (event: Parameters<typeof registro.registrar>[0]) => { void registro.registrar(event).catch(() => undefined); };
 
   useEffect(() => { if (!mapaAtualId && mapasAtuais[0]) setMapaLocalId(mapasAtuais[0].id); }, [mapaAtualId, mapasAtuais]);
@@ -66,7 +66,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   return <section className="live-table">
     <header className="live-table__bar"><button onClick={onVoltar} className="live-table__back">← Campanha</button><div className="min-w-0 text-center"><p className="ro-eyebrow">{campanha.nome}</p><h1>Sessão {String(campanha.sessaoAtual).padStart(2, '0')}</h1>{registroOnline && <small className="live-table__presence">{realtime.presence.length ? realtime.presence.map(item => `● ${item.name}`).join(' · ') : 'Conectando participantes…'}</small>}</div><span className={`live-table__live is-${realtime.status}`}><i /> {statusTexto}</span></header>
     {realtime.error && <p className="live-table__sync-error">Mesa remota indisponível: {realtime.error}</p>}
-    <div className="live-table__grid"><PartyPanel personagens={personagensVisiveis} selecionadoId={selecionado?.id || ''} mestre={mestre} onSelecionar={setSelecionadoId} onAjustar={ajustar} onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')} />{cena}<SessionPanel contadores={contadoresAtuais} mestre={mestre} role={role} enabled={registroOnline} events={registro.events} loading={registro.loading} error={registro.error} onSend={registro.registrar} /></div>
+    <div className="live-table__grid"><PartyPanel personagens={personagensVisiveis} selecionadoId={selecionado?.id || ''} mestre={mestre} onSelecionar={setSelecionadoId} onAjustar={ajustar} onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')} />{cena}<SessionPanel contadores={contadoresAtuais} mestre={mestre} role={role} userId={userId} members={members} enabled={registroOnline} events={registro.events} loading={registro.loading} error={registro.error} onSend={registro.registrar} /></div>
     <LiveDock ferramenta={ferramenta} onSelecionar={selecionarFerramenta} />
     {ferramenta !== 'nenhuma' && <section className="live-table__tool">
       {ferramenta === 'dados' && <DiceRoller personagemAtivo={selecionado} onSalvarPersonagem={atualizarPersonagemMesa} onAbrirModalRuptura={(delta, motivo) => selecionado && onAbrirRuptura(selecionado, delta, motivo)} onRegistrarRolagem={registrarSemFalhar} />}
