@@ -33,14 +33,22 @@ const mapSession = (row: any): Sessao => ({
 const mapNpc = (row: any): NPC => ({
   id: row.id, campanhaId: row.campaign_id, nome: row.nome, papel: row.papel,
   conceito: row.conceito, descricao: row.descricao, atitude: row.atitude,
-  localizacao: row.localizacao, visibilidade: row.visibilidade
+  localizacao: row.localizacao, nivelAmeaca: row.nivel_ameaca ?? 0,
+  vida: row.vida ?? 1, resistencia: row.resistencia ?? 0,
+  dificuldade: row.dificuldade ?? 10, deslocamento: row.deslocamento || 'Próximo',
+  habilidades: Array.isArray(row.habilidades) ? row.habilidades : [],
+  visibilidade: row.visibilidade
 });
 
 const mapAdversary = (row: any): Adversario => ({
   id: row.id, campanhaId: row.campaign_id, nome: row.nome, tipo: row.tipo,
   nivel: row.nivel, vida: row.vida, vidaMaxima: row.vida_maxima, defesa: row.defesa,
   resistencia: row.resistencia, ataquePrincipal: row.ataque_principal,
-  descricao: row.descricao, visibilidade: row.visibilidade
+  descricao: row.descricao, origem: row.origem || undefined,
+  natureza: row.natureza || undefined, perturbacao: row.perturbacao || undefined,
+  deslocamento: row.deslocamento || 'Próximo',
+  habilidades: Array.isArray(row.habilidades) ? row.habilidades : [],
+  visibilidade: row.visibilidade
 });
 
 const mapLocation = (row: any): Local => ({
@@ -139,6 +147,9 @@ export const campaignContentRepository = {
     const { data, error } = await client().from('campaign_npcs').insert({
       campaign_id: novo.campanhaId, nome: novo.nome, papel: novo.papel, conceito: novo.conceito,
       descricao: novo.descricao, atitude: novo.atitude, localizacao: novo.localizacao,
+      nivel_ameaca: novo.nivelAmeaca ?? 0, vida: novo.vida ?? 1,
+      resistencia: novo.resistencia ?? 0, dificuldade: novo.dificuldade ?? 10,
+      deslocamento: novo.deslocamento || 'Próximo', habilidades: novo.habilidades || [],
       visibilidade: novo.visibilidade || visibility
     }).select().single();
     if (error) throw error;
@@ -150,10 +161,64 @@ export const campaignContentRepository = {
       campaign_id: novo.campanhaId, nome: novo.nome, tipo: novo.tipo, nivel: novo.nivel,
       vida: novo.vida, vida_maxima: novo.vidaMaxima, defesa: novo.defesa,
       resistencia: novo.resistencia, ataque_principal: novo.ataquePrincipal,
-      descricao: novo.descricao, visibilidade: novo.visibilidade || visibility
+      descricao: novo.descricao, origem: novo.origem || null, natureza: novo.natureza || null,
+      perturbacao: novo.perturbacao || null, deslocamento: novo.deslocamento || 'Próximo',
+      habilidades: novo.habilidades || [], visibilidade: novo.visibilidade || visibility
     }).select().single();
     if (error) throw error;
     return mapAdversary(data);
+  },
+
+  async atualizarNPC(id: string, patch: Partial<NPC>) {
+    const values: Record<string, unknown> = {};
+    if (patch.nome !== undefined) values.nome = patch.nome;
+    if (patch.papel !== undefined) values.papel = patch.papel;
+    if (patch.conceito !== undefined) values.conceito = patch.conceito;
+    if (patch.descricao !== undefined) values.descricao = patch.descricao;
+    if (patch.atitude !== undefined) values.atitude = patch.atitude;
+    if (patch.localizacao !== undefined) values.localizacao = patch.localizacao;
+    if (patch.nivelAmeaca !== undefined) values.nivel_ameaca = patch.nivelAmeaca;
+    if (patch.vida !== undefined) values.vida = patch.vida;
+    if (patch.resistencia !== undefined) values.resistencia = patch.resistencia;
+    if (patch.dificuldade !== undefined) values.dificuldade = patch.dificuldade;
+    if (patch.deslocamento !== undefined) values.deslocamento = patch.deslocamento;
+    if (patch.habilidades !== undefined) values.habilidades = patch.habilidades;
+    if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
+    const { data, error } = await client().from('campaign_npcs').update(values).eq('id', id).select().single();
+    if (error) throw error;
+    return mapNpc(data);
+  },
+
+  async removerNPC(id: string) {
+    const { error } = await client().from('campaign_npcs').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  async atualizarAdversario(id: string, patch: Partial<Adversario>) {
+    const values: Record<string, unknown> = {};
+    if (patch.nome !== undefined) values.nome = patch.nome;
+    if (patch.tipo !== undefined) values.tipo = patch.tipo;
+    if (patch.nivel !== undefined) values.nivel = patch.nivel;
+    if (patch.vida !== undefined) values.vida = patch.vida;
+    if (patch.vidaMaxima !== undefined) values.vida_maxima = patch.vidaMaxima;
+    if (patch.defesa !== undefined) values.defesa = patch.defesa;
+    if (patch.resistencia !== undefined) values.resistencia = patch.resistencia;
+    if (patch.ataquePrincipal !== undefined) values.ataque_principal = patch.ataquePrincipal;
+    if (patch.descricao !== undefined) values.descricao = patch.descricao;
+    if (patch.origem !== undefined) values.origem = patch.origem || null;
+    if (patch.natureza !== undefined) values.natureza = patch.natureza || null;
+    if (patch.perturbacao !== undefined) values.perturbacao = patch.perturbacao || null;
+    if (patch.deslocamento !== undefined) values.deslocamento = patch.deslocamento;
+    if (patch.habilidades !== undefined) values.habilidades = patch.habilidades;
+    if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
+    const { data, error } = await client().from('campaign_adversaries').update(values).eq('id', id).select().single();
+    if (error) throw error;
+    return mapAdversary(data);
+  },
+
+  async removerAdversario(id: string) {
+    const { error } = await client().from('campaign_adversaries').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async adicionarLocal(novo: Omit<Local, 'id'>) {
