@@ -136,7 +136,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     <div className="space-y-6 pb-12">
       
       {/* Barra Superior da Ficha: Identidade & Ações */}
-      <div className="bg-[#12151e] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-xl">
+      <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           
           <div className="flex-1 space-y-2">
@@ -306,7 +306,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           <div className="lg:col-span-7 space-y-6">
             
             {/* Bloco de Atributos */}
-            <div className="bg-[#12151e] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg">
+            <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg">
               <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-2">
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-200 uppercase tracking-wider flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-cyan-400" />
@@ -389,7 +389,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             </div>
 
             {/* Bloco de Vigília: Resistência, Defesa, Vida, Foco e PO */}
-            <div className="bg-[#12151e] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg space-y-4">
+            <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg space-y-4">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-200 uppercase tracking-wider flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -550,7 +550,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             </div>
 
             {/* Armas, Instrumentos e Proteção */}
-            <div className="bg-[#12151e] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg space-y-4">
+            <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg space-y-4">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-200 uppercase tracking-wider flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-slate-400" />
@@ -617,7 +617,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           <div className="lg:col-span-5 space-y-6">
             
             {/* Bloco de Ruptura (Trilha 0 a 6 com destaque imponente) */}
-            <div className="bg-[#12151e] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg relative overflow-hidden">
+            <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg relative overflow-hidden">
               <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className={`w-4 h-4 ${personagem.ruptura >= 4 ? 'text-rose-500 animate-bounce' : 'text-slate-400'}`} />
@@ -687,7 +687,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             </div>
 
             {/* Bloco de Domínios do Sonhar com Nova Progressão do Prompt */}
-            <div className="bg-[#12151e] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg space-y-4">
+            <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-lg space-y-4">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-purple-400" />
@@ -797,7 +797,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           {/* Ancoragem & Vínculos */}
           <div className="space-y-6">
             
-            <div className="bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg space-y-3">
+            <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-3">
               <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
                 <Anchor className="w-4 h-4 text-cyan-400" />
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider">
@@ -817,7 +817,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             </div>
 
             {/* Vínculos */}
-            <div className="bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg space-y-3">
+            <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-3">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider">
                   Vínculos (Relações)
@@ -890,7 +890,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             </div>
 
             {/* Recursos (Trilha 1 a 5) */}
-            <div className="bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg space-y-3">
+            <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-3">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider">
                   Recursos
@@ -942,7 +942,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           {/* O Desvelado: Aparência, Comportamento e História */}
           <div className="space-y-6">
             
-            <div className="bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4">
+            <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4">
               <div className="border-b border-slate-800 pb-2">
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider">
                   O Desvelado (Descrição e Toques Finais)
