@@ -333,16 +333,16 @@ export default function App() {
   const renderConteudoPrincipal = () => {
     if (personagemParaFicha) {
       return (
-        <div className="max-w-7xl mx-auto px-6 py-6 w-full">
-          <div className="mb-6 flex items-center justify-between pb-4 border-b border-[#292929]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 w-full">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--ro-line)]">
             <button
               onClick={() => setPersonagemParaFicha(null)}
-              className="text-xs font-mono text-[#666666] hover:text-[#A88952] transition-colors flex items-center gap-1.5"
+              className="text-xs text-[var(--ro-paper-muted)] hover:text-[var(--ro-gold)] transition-colors flex items-center gap-1.5"
             >
               <span>←</span>
               <span>Voltar para o painel</span>
             </button>
-            <span className="text-xs font-mono uppercase text-[#A88952]">
+            <span className="text-[10px] sm:text-xs uppercase tracking-[.12em] text-[var(--ro-gold)]">
               Ficha do Desvelado · {personagemParaFicha.nome}
             </span>
           </div>
@@ -506,7 +506,7 @@ export default function App() {
   };
 
   return (
-    <div className="ro-app-shell flex font-sans selection:bg-[#A88952]/20 selection:text-[#F5F3EE]">
+    <div className={`ro-app-shell flex font-sans selection:bg-[#A88952]/20 selection:text-[#F5F3EE] ${viewAtiva === 'modo_mesa' && !personagemParaFicha ? 'ro-app-shell--live' : ''}`}>
       {/* Input Oculto de Arquivo JSON */}
       <input
         type="file"
@@ -517,7 +517,7 @@ export default function App() {
       />
 
       {/* 9. SIDEBAR (210-230px, Fundo #171717, Borda #292929, Minimalista) */}
-      <Sidebar
+      {viewAtiva !== 'modo_mesa' && <Sidebar
         viewAtiva={viewAtiva}
         setViewAtiva={(v) => {
           setPersonagemParaFicha(null);
@@ -532,32 +532,32 @@ export default function App() {
         }}
         onNovaCampanha={handleIniciarCriacaoCampanha}
         onSair={handleTrocarSessao}
-      />
+      />}
 
       {/* Área Principal de Conteúdo */}
       <div className="flex-1 flex flex-col min-w-0">
-        <MobileNavigation
+        {viewAtiva !== 'modo_mesa' && <MobileNavigation
           viewAtiva={viewAtiva}
           setViewAtiva={(v) => {
             setPersonagemParaFicha(null);
             setViewAtiva(v);
           }}
           onNovaCampanha={handleIniciarCriacaoCampanha}
-        />
+        />}
         {/* 10. HEADER (Minimalista, Fundo #0B0B0B, Borda #292929) */}
-        <Header
+        {viewAtiva !== 'modo_mesa' && <Header
           campanhaNome={
-            (viewAtiva === 'detalhe_campanha' || viewAtiva === 'modo_mesa') 
-              ? campanhaAtiva?.nome 
+            viewAtiva === 'detalhe_campanha'
+              ? campanhaAtiva?.nome
               : undefined
           }
           rupturaNivel={campanhaAtiva?.rupturaGeral || 0}
           session={session}
           onAbrirSql={() => setModalSqlAberto(true)}
-        />
+        />}
 
         {/* View renderizada */}
-        <main className="flex-1 min-h-[calc(100vh-3.5rem)]">
+        <main className={viewAtiva === 'modo_mesa' && !personagemParaFicha ? 'flex-1 min-h-0 overflow-hidden' : 'flex-1 min-h-[calc(100vh-3.5rem)]'}>
           <React.Suspense fallback={<ViewFallback />}>
             {renderConteudoPrincipal()}
           </React.Suspense>
