@@ -211,11 +211,11 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   return (
     <div className="w-full flex flex-col pb-20">
       {/* 20. HERO DA CAMPANHA (Cinematográfico, Atmosférico) */}
-      <section className="relative w-full h-64 sm:h-80 overflow-hidden bg-[var(--ro-bg)] border-b border-[var(--ro-line)]">
+      <section className="ro-campaign-hero relative w-full h-64 sm:h-80 overflow-hidden bg-[var(--ro-media-fallback)] border-b border-[var(--ro-line)]">
         <img
           src={campanha.imagemUrl}
           alt={campanha.nome}
-          className="w-full h-full object-cover filter brightness-[0.45] contrast-[0.9] grayscale-[30%]"
+          onError={(event) => { event.currentTarget.style.display = 'none'; }} className="w-full h-full object-cover filter brightness-[0.45] contrast-[0.9] grayscale-[30%]"
         />
         {/* Overlay escuro em camadas */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B] via-[#0B0B0B]/70 to-transparent" />
@@ -225,21 +225,21 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-8 flex flex-col justify-end pb-6 sm:pb-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             <div className="max-w-2xl">
-              <span className="text-[11px] font-mono tracking-widest text-[var(--ro-copper)] uppercase block mb-2">
+              <span className="text-[11px] font-mono tracking-widest text-[var(--ro-media-accent)] uppercase block mb-2">
                 Código: {campanha.codigo} · {campanha.tipo}
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[var(--ro-paper)] tracking-tight leading-tight">
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[var(--ro-media-text)] tracking-tight leading-tight">
                 {campanha.nome}
               </h1>
-              <p className="text-sm text-[var(--ro-paper-muted)]/90 mt-3 font-normal leading-relaxed">
+              <p className="text-sm text-[var(--ro-media-muted)] mt-3 font-normal leading-relaxed">
                 {campanha.descricao}
               </p>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] font-mono text-[var(--ro-ash)]">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] font-mono text-[var(--ro-media-muted)]">
                 <span>{campanha.jogadoresCount || personagens.length || 4} jogadores</span>
                 <span>·</span>
                 <span>{sessoesCampanha.length} sessões</span>
                 <span>·</span>
-                <span className="text-[var(--ro-copper)]">Em andamento</span>
+                <span className="text-[var(--ro-media-accent)]">Em andamento</span>
               </div>
             </div>
 

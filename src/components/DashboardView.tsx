@@ -33,7 +33,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <h1 className="mt-3 font-serif text-3xl font-medium tracking-tight text-[var(--ro-paper)] sm:text-4xl">Meus Reinos</h1>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[var(--ro-paper-muted)]">Prepare, registre e conduza as histórias que atravessam a vigília e o Sonhar.</p>
       </div>
-      <div className="flex flex-wrap gap-3"><button onClick={onNovaCampanha} className="ro-button"><span aria-hidden="true">+</span> Nova campanha</button>{onEntrarComCodigo && <form onSubmit={entrar} className="flex flex-wrap gap-2"><input value={codigo} onChange={e => setCodigo(e.target.value.toUpperCase())} placeholder="Código de convite" className="w-40 border border-[var(--ro-line)] bg-[#12110f] px-3 text-xs" />{personagensParaVinculo.length > 0 && <select value={personagemId} onChange={e => setPersonagemId(e.target.value)} className="border border-[var(--ro-line)] bg-[#12110f] px-2 text-xs"><option value="">Vincular ficha depois</option>{personagensParaVinculo.map(personagem => <option key={personagem.id} value={personagem.id}>{personagem.nome}</option>)}</select>}<button className="ro-button--quiet">Entrar com código</button></form>}{erro && <p className="basis-full text-xs text-rose-400">{erro}</p>}</div>
+      <div className="flex flex-wrap gap-3"><button onClick={onNovaCampanha} className="ro-button"><span aria-hidden="true">+</span> Nova campanha</button>{onEntrarComCodigo && <form onSubmit={entrar} className="flex flex-wrap gap-2"><input value={codigo} onChange={e => setCodigo(e.target.value.toUpperCase())} placeholder="Código de convite" className="w-40 border border-[var(--ro-line)] bg-[var(--ro-input)] px-3 text-xs text-[var(--ro-paper)]" />{personagensParaVinculo.length > 0 && <select value={personagemId} onChange={e => setPersonagemId(e.target.value)} className="border border-[var(--ro-line)] bg-[var(--ro-input)] px-2 text-xs text-[var(--ro-paper)]"><option value="">Vincular ficha depois</option>{personagensParaVinculo.map(personagem => <option key={personagem.id} value={personagem.id}>{personagem.nome}</option>)}</select>}<button className="ro-button--quiet">Entrar com código</button></form>}{erro && <p className="basis-full text-xs text-rose-400">{erro}</p>}</div>
     </header>
 
     {campanhas.length === 0 ? (
@@ -49,16 +49,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="grid grid-cols-1 gap-5 pt-8 md:grid-cols-2 xl:grid-cols-3">
         {campanhas.map((campanha) => (
           <article key={campanha.id} className="ro-surface group flex min-h-[24rem] flex-col overflow-hidden">
-            <div className="relative h-36 sm:h-40 overflow-hidden bg-[#100f0e]">
-              <img src={campanha.imagemUrl} alt="" className="h-full w-full object-cover brightness-[.56] contrast-[.9] grayscale-[18%] transition duration-500 group-hover:scale-[1.035]" />
-              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(18,17,15,.08),rgba(18,17,15,.93))]" />
+            <div className="ro-campaign-card__media relative h-36 sm:h-40 overflow-hidden bg-[var(--ro-media-fallback)]">
+              <img src={campanha.imagemUrl} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover brightness-[.56] contrast-[.9] grayscale-[18%] transition duration-500 group-hover:scale-[1.035]" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,12,17,.05),rgba(8,12,17,.94))]" />
               <div className="absolute left-4 top-4 flex items-center gap-2">
-                <span className="border border-[var(--ro-line-strong)] bg-[#12110f]/75 px-2 py-1 font-mono text-[9px] uppercase tracking-[.15em] text-[var(--ro-gold)]">{campanha.tipo}</span>
-                <span className="font-mono text-[9px] uppercase tracking-[.12em] text-[var(--ro-paper-muted)]">{statusLabel[campanha.status]}</span>
+                <span className="border border-[var(--ro-line-strong)] bg-[#12110f]/75 px-2 py-1 font-mono text-[9px] uppercase tracking-[.15em] text-[var(--ro-media-accent)]">{campanha.tipo}</span>
+                <span className="font-mono text-[9px] uppercase tracking-[.12em] text-[var(--ro-media-muted)]">{statusLabel[campanha.status]}</span>
               </div>
               <div className="absolute bottom-4 left-5 right-5">
-                <p className="ro-eyebrow">{campanha.codigo}</p>
-                <h2 className="mt-2 font-serif text-3xl leading-none text-[var(--ro-paper)]">{campanha.nome}</h2>
+                <p className="ro-eyebrow ro-eyebrow--media">{campanha.codigo}</p>
+                <h2 className="mt-2 font-serif text-3xl leading-none text-[var(--ro-media-text)]">{campanha.nome}</h2>
               </div>
             </div>
             <div className="flex flex-1 flex-col p-4 sm:p-5">
