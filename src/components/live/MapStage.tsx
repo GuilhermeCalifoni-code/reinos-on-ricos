@@ -37,6 +37,7 @@ export const MapStage: React.FC<MapStageProps> = ({
   const [imagemResolvida, setImagemResolvida] = useState('');
   const [uploading, setUploading] = useState(false);
   const [assetError, setAssetError] = useState('');
+  const [arquivoNome, setArquivoNome] = useState('');
   const [novoToken, setNovoToken] = useState('');
   const [tipoToken, setTipoToken] = useState<TipoTokenMapa>('marcador');
   const criarMapa = (event: React.FormEvent) => {
@@ -53,6 +54,7 @@ export const MapStage: React.FC<MapStageProps> = ({
     setNovoMapa('');
     setNovaImagem('');
     setNovoStoragePath('');
+    setArquivoNome('');
     setAssetError('');
   };
   const criarToken = (event: React.FormEvent) => { event.preventDefault(); if (!mapaAtual || !novoToken.trim()) return; onAdicionarToken({ campanhaId, mapaId: mapaAtual.id, tipo: tipoToken, nome: novoToken.trim(), cor: cores[tipoToken], x: 50, y: 50, oculto: false }); setNovoToken(''); };
@@ -74,6 +76,15 @@ export const MapStage: React.FC<MapStageProps> = ({
   const selecionarArquivo = async (file?: File) => {
     if (!file) return;
     setAssetError('');
+    if (!file.type.startsWith('image/')) {
+      setAssetError('Selecione uma imagem PNG, JPG, WEBP ou GIF.');
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      setAssetError('A imagem excede o limite de 15 MB.');
+      return;
+    }
+    setArquivoNome(file.name);
     if (campaignAssetService.isRemoteCampaignId(campanhaId)) {
       setUploading(true);
       try {
@@ -81,7 +92,8 @@ export const MapStage: React.FC<MapStageProps> = ({
         setNovoStoragePath(path);
         setNovaImagem('');
       } catch (error: any) {
-        setAssetError(error.message || 'Não foi possível enviar a imagem.');
+        const mensagem = error.message || 'Não foi possível enviar a imagem.';
+        setAssetError(`${mensagem} Verifique se a migration de Storage foi aplicada no Supabase.`);
       } finally {
         setUploading(false);
       }
@@ -109,7 +121,17 @@ export const MapStage: React.FC<MapStageProps> = ({
     <section className="map-stage">
       <header className="map-stage__head"><div><p className="ro-eyebrow">Mapa narrativo</p><h2>{mapaAtual?.titulo || 'Nenhum mapa selecionado'}</h2></div>{mestre && <div className="map-stage__tools"><button onClick={() => setZoom(valor => Math.max(.6, valor - .1))}>−</button><span>{Math.round(zoom * 100)}%</span><button onClick={() => setZoom(valor => Math.min(2, valor + .1))}>+</button><button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Resetar</button><button onClick={fullscreen}>Tela cheia</button></div>}</header>
       {mestre && <div className="map-stage__library"><label>Mapa</label><select value={mapaAtual?.id || ''} onChange={(e) => onSelecionarMapa(e.target.value)}><option value="">Selecionar mapa</option>{mapas.map(mapa => <option key={mapa.id} value={mapa.id}>{mapa.titulo}</option>)}</select>{mapaAtual && <button onClick={() => onAtualizarMapa(mapaAtual.id, { gradeVisivel: !mapaAtual.gradeVisivel })}>{mapaAtual.gradeVisivel ? 'Ocultar grade' : 'Exibir grade'}</button>}{mapaAtual && <button onClick={() => onAtualizarMapa(mapaAtual.id, { visibilidade: mapaAtual.visibilidade === 'mestre_privado' ? 'revelado_jogadores' : 'mestre_privado' })}>{mapaAtual.visibilidade === 'mestre_privado' ? 'Revelar mapa' : 'Ocultar mapa'}</button>}{mapaAtual && <button onClick={() => onRemoverMapa(mapaAtual.id)} className="is-danger">Excluir mapa</button>}</div>}
-      {mestre && <form onSubmit={criarMapa} className="map-stage__create"><input value={novoMapa} onChange={(e) => setNovoMapa(e.target.value)} placeholder="Nome do novo mapa" /><input value={novaImagem} onChange={(e) => setNovaImagem(e.target.value)} placeholder="URL da imagem, opcional" /><label className="map-stage__file">{uploading ? 'Enviando…' : novoStoragePath ? 'Imagem enviada' : 'Imagem'}<input type="file" accept="image/*" disabled={uploading} onChange={(e) => void selecionarArquivo(e.target.files?.[0])} /></label><button className="ro-button" disabled={uploading}>Criar mapa</button>{assetError && <span className="map-stage__asset-error">{assetError}</span>}</form>}
+      {mestre && <form onSubmit={criarMapa} className="map-stage__create">
+        <input value={novoMapa} onChange={(e) => setNovoMapa(e.target.value)} placeholder="Nome do novo mapa" />
+        <input value={novaImagem} onChange={(e) => { setNovaImagem(e.target.value); setNovoStoragePath(''); setArquivoNome(''); }} placeholder="URL da imagem, opcional" />
+        <label className={`map-stage__file ${novoStoragePath || novaImagem ? 'has-file' : ''}`}>
+          <strong>{uploading ? 'Enviando imagem…' : arquivoNome || (novoStoragePath ? 'Imagem pronta' : 'Anexar imagem')}</strong>
+          <small>{novoStoragePath ? 'Upload concluído · clique em Criar mapa' : 'PNG, JPG, WEBP ou GIF · até 15 MB'}</small>
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={uploading} onChange={(e) => void selecionarArquivo(e.target.files?.[0])} />
+        </label>
+        <button className="ro-button" disabled={uploading || !novoMapa.trim()}>Criar mapa</button>
+        {assetError && <span className="map-stage__asset-error">{assetError}</span>}
+      </form>}
       <div ref={viewport} className={`map-stage__viewport ${mapaAtual?.gradeVisivel ? 'has-grid' : ''}`} onPointerMove={mover} onPointerUp={finalizarArrasto} onPointerLeave={finalizarArrasto} onPointerDown={(e) => { if (!(e.target as HTMLElement).closest('.map-stage__token')) setMovendoCamera({ x: e.clientX, y: e.clientY }); }} onWheel={(e) => { e.preventDefault(); setZoom(valor => Math.max(.6, Math.min(2, valor + (e.deltaY < 0 ? .1 : -.1)))); }}>
         {mapaVisivel && mapaAtual ? <div className="map-stage__canvas" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, backgroundImage: imagemResolvida ? `url(${imagemResolvida})` : undefined }}>
           {!imagemResolvida && <span className="map-stage__placeholder">Imagem opcional · use este espaço como mapa abstrato ou cenário</span>}
