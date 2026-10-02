@@ -21,10 +21,12 @@ const toEvent = (row: SessionEventRow): SessionEvent => ({
 });
 
 export const sessionEventRepository = {
-  async listar(campaignId: string) {
-    const { data, error } = await client().from('session_events').select('*').eq('campaign_id', campaignId).order('created_at', { ascending: true });
+  async listar(campaignId: string, sessionId?: string, limit = 200) {
+    let query = client().from('session_events').select('*').eq('campaign_id', campaignId);
+    if (sessionId) query = query.eq('session_id', sessionId);
+    const { data, error } = await query.order('created_at', { ascending: false }).limit(limit);
     if (error) throw error;
-    return (data as SessionEventRow[]).map(toEvent);
+    return ((data || []) as SessionEventRow[]).reverse().map(toEvent);
   },
   async criar(campaignId: string, userId: string, event: NewSessionEvent) {
     const { data, error } = await client().from('session_events').insert({
