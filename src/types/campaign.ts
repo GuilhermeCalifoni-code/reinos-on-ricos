@@ -111,6 +111,7 @@ export interface Handout {
   titulo: string;
   descricao?: string;
   arquivoUrl?: string;
+  storagePath?: string;
   visibilidade: VisibilidadeConteudo;
 }
 
