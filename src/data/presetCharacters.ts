@@ -17,7 +17,7 @@ export const PERSONAGENS_PRE_PRONTOS: Personagem[] = [
     vidaMaxima: 4,
     vidaAtual: 4,
     resistencia: 6, // 6 + 0
-    defesa: 10,     // 8 + 2 (Mente) + 0 (N1)
+    defesa: 8,      // 8 + Corpo (0)
     protecaoOniricaMaxima: 2,
     protecaoOniricaAtual: 2,
     focoMaximo: 4,
@@ -72,7 +72,7 @@ export const PERSONAGENS_PRE_PRONTOS: Personagem[] = [
     vidaMaxima: 4,
     vidaAtual: 4,
     resistencia: 8, // 6 + 2
-    defesa: 10,     // 8 + 2 (Corpo) + 0 (N1)
+    defesa: 10,     // 8 + Corpo (2)
     protecaoOniricaMaxima: 2,
     protecaoOniricaAtual: 2,
     focoMaximo: 4,
@@ -118,7 +118,7 @@ export const PERSONAGENS_PRE_PRONTOS: Personagem[] = [
     vidaMaxima: 4,
     vidaAtual: 4,
     resistencia: 5, // 6 + (-1)
-    defesa: 10,     // 8 + 2 (Vínculo) + 0 (N1)
+    defesa: 7,      // 8 + Corpo (-1)
     protecaoOniricaMaxima: 2,
     protecaoOniricaAtual: 2,
     focoMaximo: 4,
@@ -164,7 +164,7 @@ export const PERSONAGENS_PRE_PRONTOS: Personagem[] = [
     vidaMaxima: 4,
     vidaAtual: 4,
     resistencia: 7, // 6 + 1
-    defesa: 10,     // 8 + 2 (Vontade) + 0 (N1)
+    defesa: 9,      // 8 + Corpo (1)
     protecaoOniricaMaxima: 2,
     protecaoOniricaAtual: 2,
     focoMaximo: 4,

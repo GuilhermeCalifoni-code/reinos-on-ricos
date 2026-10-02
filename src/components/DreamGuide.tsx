@@ -166,7 +166,7 @@ export const DreamGuide: React.FC<DreamGuideProps> = ({
                           {nv.nivel}
                         </span>
                         <span className="font-bold text-slate-200 uppercase">
-                          {nv.nivel === 1 ? 'Nível 1 · INFLUENCIAR' : `Nível ${nv.nivel} · ${nv.verbo}`}
+                          {`Nível ${nv.nivel} · ${nv.verbo}`}
                         </span>
                         {nv.nivel === 1 && (
                           <span className="text-[9px] bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.2 rounded">

@@ -50,7 +50,7 @@ export const RulesReference: React.FC = () => {
           <article className="ro-surface">
             <p className="ro-eyebrow">Teste Onírico</p>
             <h3>Realidade + Sonhar, cada dado contra a DT</h3>
-            <p>Role 2d20 + o mesmo Atributo apropriado. A DT é normalmente 13. Os dados não competem entre si e não existem margens de sucesso.</p>
+            <p>Role 2d20 + o mesmo Atributo apropriado. A DT é normalmente 13. Os dados não competem entre si e não existem margens de sucesso. Antes do Teste, até 1 PF pode ser gasto para +2 no Teste; o bônus se aplica aos dois resultados.</p>
             <div className="rules-reference__outcomes">
               <div><strong>Convergência</strong><span>ambos passam</span><p>Manifestação acontece; é crítico; Ruptura −1.</p></div>
               <div><strong>Realidade vence</strong><span>Realidade passa</span><p>Manifestação não acontece; Ruptura 0.</p></div>

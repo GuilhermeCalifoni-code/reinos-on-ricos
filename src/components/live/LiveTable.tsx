@@ -54,20 +54,31 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const sceneDescription = compartilhando && typeof realtime.state?.metadata?.sceneDescription === 'string'
     ? realtime.state.metadata.sceneDescription
     : sceneCopyLocal.description;
+  const effectiveSessionId = sessionId || realtime.state?.sessionId;
   const selecionado = personagens.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
-  const registro = useSessionEvents({ campaignId: campanha.id, sessionId, userId, enabled: registroOnline, characterId: personagemJogadorId });
+  const registro = useSessionEvents({ campaignId: campanha.id, sessionId: effectiveSessionId, userId, enabled: registroOnline, characterId: personagemJogadorId });
   const registrarSemFalhar = (event: Parameters<typeof registro.registrar>[0]) => { void registro.registrar(event).catch(() => undefined); };
 
   useEffect(() => { if (!mapaAtualId && mapasAtuais[0]) setMapaLocalId(mapasAtuais[0].id); }, [mapaAtualId, mapasAtuais]);
   useEffect(() => {
-    if (compartilhando && realtime.state?.sessionId === sessionId) return;
+    if (!compartilhando || !mestre || !sessionId || realtime.state?.sessionId === sessionId) return;
+    void realtime.saveState({
+      ...realtime.state,
+      sessionId,
+      contentType: realtime.state?.contentType || conteudoLocal,
+      ruptureGeneral: realtime.state?.ruptureGeneral ?? campanha.rupturaGeral,
+      metadata: realtime.state?.metadata || {}
+    }).catch(() => undefined);
+  }, [campanha.rupturaGeral, compartilhando, conteudoLocal, mestre, realtime.state, sessionId]);
+  useEffect(() => {
+    if (compartilhando && realtime.state?.sessionId === effectiveSessionId) return;
     setSceneCopyLocal({
       title: sessionTitle || 'A cidade contém a respiração',
       description: sessionDescription || 'Ambientação da cena. O Mestre pode preparar imagem, mapa ou handout para esta área.'
     });
-  }, [compartilhando, realtime.state?.sessionId, sessionDescription, sessionId, sessionTitle]);
+  }, [compartilhando, effectiveSessionId, realtime.state?.sessionId, sessionDescription, sessionTitle]);
   const selecionarFerramenta = (proxima: LiveTool) => setFerramenta(atual => atual === proxima ? 'nenhuma' : proxima);
-  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
+  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
   const mudarConteudo = (proximo: ConteudoDeCena) => { setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
   const selecionarMapa = (id: string) => { setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
   const atualizarTextoCena = (title: string, description: string) => {

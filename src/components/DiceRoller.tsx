@@ -51,6 +51,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   const [atribOnirico, setAtribOnirico] = useState<AtributoNome>(atributoInicial || 'vontade');
   const [dtOnirico, setDtOnirico] = useState<number>(13); // Padrão 13 no Livro Básico
   const [condicaoAumentaDT, setCondicaoAumentaDT] = useState<boolean>(false);
+  const [usarFocoOnirico, setUsarFocoOnirico] = useState<boolean>(false);
   const [resultadoOnirico, setResultadoOnirico] = useState<ResultadoTesteOnirico | null>(null);
 
   // Estado do Movimento de Morte
@@ -98,15 +99,24 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     const valorAtrib = personagemAtivo ? personagemAtivo.atributos[atribOnirico] : 0;
     const dtFinal = dtOnirico + (condicaoAumentaDT ? 2 : 0);
 
+    const focoDisponivel = Boolean(usarFocoOnirico && personagemAtivo && personagemAtivo.focoAtual > 0);
     const res = executarTesteOnirico({
       atributo: atribOnirico,
       valorAtributo: valorAtrib,
       dt: dtFinal,
-      modificadores: []
+      modificadores: focoDisponivel ? [{ nome: 'Foco', valor: 2 }] : []
     });
 
     setResultadoOnirico(res);
-    onRegistrarRolagem?.({ type: 'roll', content: `${personagemAtivo?.nome || 'Mesa'} · ${res.atributo}: Realidade ${res.dadoRealidade} (${res.totalRealidade}) · Sonhar ${res.dadoSonhar} (${res.totalSonhar}) vs DT ${res.dt} — ${res.resultado}.`, metadata: { kind: 'onirico', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura } });
+    onRegistrarRolagem?.({ type: 'roll', content: `${personagemAtivo?.nome || 'Mesa'} · ${res.atributo}: Realidade ${res.dadoRealidade} (${res.totalRealidade}) · Sonhar ${res.dadoSonhar} (${res.totalSonhar}) vs DT ${res.dt} — ${res.resultado}.`, metadata: { kind: 'onirico', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura, foco: focoDisponivel } });
+
+    if (focoDisponivel && personagemAtivo && onSalvarPersonagem) {
+      onSalvarPersonagem({
+        ...personagemAtivo,
+        focoAtual: Math.max(0, personagemAtivo.focoAtual - 1),
+        atualizadoEm: new Date().toISOString()
+      });
+    }
   };
 
   // Executar Movimento de Morte (Livro Básico pág. 32)
@@ -275,9 +285,10 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                 <label className="text-slate-300 font-semibold">Dificuldade do Teste (DT):</label>
                 <span className="text-amber-400 font-bold text-sm">DT {dtMundano}</span>
               </div>
-              <div className="grid grid-cols-4 gap-1.5 mb-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 mb-2">
                 {[
-                  { label: 'Fácil', val: 8 },
+                  { label: 'Trivial', val: 8 },
+                  { label: 'Fácil', val: 10 },
                   { label: 'Comum', val: 12 },
                   { label: 'Desafiador', val: 14 },
                   { label: 'Difícil', val: 16 }
@@ -565,14 +576,38 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
               </label>
             </div>
 
+            <div className="bg-slate-950 border border-slate-800 rounded p-3">
+              <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={usarFocoOnirico}
+                    disabled={personagemAtivo ? personagemAtivo.focoAtual <= 0 : false}
+                    onChange={(e) => setUsarFocoOnirico(e.target.checked)}
+                    className="rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-cyan-500/40"
+                  />
+                  <div>
+                    <span className="text-slate-200 font-bold flex items-center gap-1">
+                      <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                      Gastar 1 Ponto de Foco (+2 no Teste)
+                    </span>
+                    <span className="text-[10px] text-slate-500 block">
+                      O +2 se aplica aos dois resultados do Teste Onírico · Disponível: {personagemAtivo?.focoAtual ?? 4} PF
+                    </span>
+                  </div>
+                </div>
+                {usarFocoOnirico && <span className="text-cyan-300 font-bold">+2 ATIVO</span>}
+              </label>
+            </div>
+
             {/* Aviso de Regra Importante */}
             <div className="p-3 rounded bg-slate-950/80 border border-slate-800/80 text-[11px] text-slate-400 space-y-1">
               <p className="text-cyan-300 font-semibold flex items-center gap-1">
-                <Info className="w-3.5 h-3.5" /> Regras Absolutas do Teste Onírico:
+                <Info className="w-3.5 h-3.5" /> Regras do Teste Onírico:
               </p>
               <p>• NÃO utiliza Vantagem ou Desvantagem.</p>
-              <p>• Foco NÃO pode ser utilizado em Testes Oníricos.</p>
-              <p>• São dois dados independentes com funções diferentes.</p>
+              <p>• Até 1 PF pode ser gasto antes do Teste para +2.</p>
+              <p>• Realidade e Sonhar são avaliados separadamente contra a mesma DT.</p>
             </div>
 
             {/* Botão de Rolagem Onírica */}

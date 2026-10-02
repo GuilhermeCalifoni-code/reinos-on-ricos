@@ -34,7 +34,7 @@ export async function testarConexaoSupabase(): Promise<{ ok: boolean; mensagem: 
       if (error.code === '42P01') {
         return {
           ok: false,
-          mensagem: 'Conectado ao Supabase, mas o schema atual ainda não foi aplicado. Execute as migrations 001–009.'
+          mensagem: 'Conectado ao Supabase, mas o schema atual ainda não foi aplicado. Execute as migrations 001–010.'
         };
       }
       return { ok: false, mensagem: `Erro do Supabase: ${error.message}` };

@@ -22,10 +22,11 @@ interface RollResult {
   actor: string;
   ability: string;
   kind: TipoTesteAtor;
-  die: number;
-  modifier: number;
-  total: number;
+  die?: number;
+  modifier?: number;
+  total?: number;
   dt: number;
+  atributo?: HabilidadeAtor['atributo'];
 }
 
 const uid = () => `hab-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -91,8 +92,8 @@ const AbilityEditor: React.FC<{
           {ability.categoria !== 'passiva' && ability.teste && (
             <div className="actor-editor__roll-config">
               <label>DT <input type="number" min={1} value={ability.dt ?? 10} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
-              <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>
-              <label>Atributo
+              {ability.teste === 'mundano' && <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>}
+              <label>{ability.teste === 'reflexo' ? 'Atributo do alvo' : 'Atributo'}
                 <select value={ability.atributo || 'corpo'} onChange={event => update(ability.id, { atributo: event.target.value as HabilidadeAtor['atributo'] })}>
                   <option value="corpo">Corpo</option><option value="mente">Mente</option><option value="vontade">Vontade</option><option value="vinculo">Vínculo</option>
                 </select>
@@ -157,10 +158,16 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
 
   const rollAbility = (actorName: string, ability: HabilidadeAtor, fallbackDt: number) => {
     if (!ability.teste || ability.categoria === 'passiva') return;
+    const dt = ability.dt || fallbackDt;
+
+    if (ability.teste === 'reflexo') {
+      setRoll({ actor: actorName, ability: ability.nome, kind: 'reflexo', dt, atributo: ability.atributo || 'corpo' });
+      return;
+    }
+
     const die = Math.floor(Math.random() * 20) + 1;
     const modifier = ability.modificador || 0;
-    const dt = ability.dt || fallbackDt;
-    setRoll({ actor: actorName, ability: ability.nome, kind: ability.teste, die, modifier, total: die + modifier, dt });
+    setRoll({ actor: actorName, ability: ability.nome, kind: 'mundano', die, modifier, total: die + modifier, dt, atributo: ability.atributo });
   };
 
   const remove = async (id: string, name: string) => {
@@ -189,7 +196,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
           return (
             <article key={raw.id} className="actor-card">
               <div className="actor-card__top">
-                <div><p className="ro-eyebrow">{mode === 'npc' ? npc!.papel : adv!.tipo}</p><h3>{name}</h3></div>
+                <div><p className="ro-eyebrow">{mode === 'npc' ? npc!.papel : adv!.tipo}</p><h3>{name}</h3><small className="actor-card__visibility">{raw.visibilidade === 'revelado_jogadores' ? 'Revelado' : raw.visibilidade === 'compartilhado' ? 'Compartilhado' : 'Mestre privado'}</small></div>
                 {canManage && <div className="actor-card__tools">
                   <button onClick={() => mode === 'npc' ? openEditNpc(npc!) : openEditAdv(adv!)} title="Editar"><Pencil size={14} /></button>
                   <button onClick={() => void remove(raw.id, name)} title="Excluir" className="is-danger"><Trash2 size={14} /></button>
@@ -209,7 +216,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
                 {(['passiva','acao','reacao'] as CategoriaHabilidadeAtor[]).map(category => abilities.filter(a => a.categoria === category).map(ability => (
                   <div key={ability.id} className="actor-card__ability">
                     <div className="actor-card__ability-title"><span>{category === 'acao' ? 'Ação' : category === 'reacao' ? 'Reação' : 'Passiva'}</span><strong>{ability.nome}</strong>
-                      {ability.teste && category !== 'passiva' && <button onClick={() => rollAbility(name, ability, difficulty)}><Dice5 size={13} /> {ability.teste === 'reflexo' ? 'Reflexo' : 'Mundano'}</button>}
+                      {ability.teste && category !== 'passiva' && <button onClick={() => rollAbility(name, ability, difficulty)}><Dice5 size={13} /> {ability.teste === 'reflexo' ? 'Solicitar Reflexo' : 'Rolar Mundano'}</button>}
                     </div>
                     <p>{ability.descricao}</p>
                   </div>
@@ -244,6 +251,13 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
               <label>Dif<input type="number" min={1} value={(form as Adversario).dificuldade ?? 10} onChange={event => setForm({ ...form, dificuldade: Number(event.target.value) } as Adversario)} /></label>
               <label>Deslocamento<input value={(form as Adversario).deslocamento || 'Próximo'} onChange={event => setForm({ ...form, deslocamento: event.target.value } as Adversario)} /></label>
             </>}
+            <label>Visibilidade
+              <select value={form.visibilidade || 'mestre_privado'} onChange={event => setForm({ ...form, visibilidade: event.target.value as NPC['visibilidade'] } as NPC | Adversario)}>
+                <option value="mestre_privado">Mestre privado</option>
+                <option value="compartilhado">Compartilhado</option>
+                <option value="revelado_jogadores">Revelado aos jogadores</option>
+              </select>
+            </label>
             <label className="actor-editor__wide">Descrição<textarea rows={3} value={form.descricao} onChange={event => setForm({ ...form, descricao: event.target.value } as NPC | Adversario)} /></label>
             <div className="actor-editor__wide"><AbilityEditor abilities={form.habilidades || []} onChange={habilidades => setForm({ ...form, habilidades } as NPC | Adversario)} /></div>
           </div>
@@ -255,8 +269,18 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
         <div className="actor-roll" onMouseDown={event => event.stopPropagation()}>
           <p className="ro-eyebrow">{roll.kind === 'reflexo' ? 'Teste Reflexo' : 'Teste Mundano'}</p>
           <h3>{roll.actor} · {roll.ability}</h3>
-          <div className="actor-roll__result"><strong>{roll.die}</strong><span>{roll.modifier >= 0 ? '+' : '−'} {Math.abs(roll.modifier)}</span><b>= {roll.total}</b></div>
-          <p>DT {roll.dt} · <strong className={roll.total >= roll.dt ? 'is-success' : 'is-failure'}>{roll.total >= roll.dt ? 'SUCESSO' : 'FRACASSO'}</strong></p>
+          {roll.kind === 'reflexo' ? (
+            <div className="actor-roll__request">
+              <strong>O alvo realiza o teste.</strong>
+              <p>Role 1d20 + {roll.atributo === 'vinculo' ? 'Vínculo' : roll.atributo === 'vontade' ? 'Vontade' : roll.atributo === 'mente' ? 'Mente' : 'Corpo'} contra DT {roll.dt}.</p>
+              <small>Teste Reflexo é um Teste Mundano de reação. O modificador pertence ao alvo, não ao NPC ou Adversário.</small>
+            </div>
+          ) : (
+            <>
+              <div className="actor-roll__result"><strong>{roll.die}</strong><span>{(roll.modifier || 0) >= 0 ? '+' : '−'} {Math.abs(roll.modifier || 0)}</span><b>= {roll.total}</b></div>
+              <p>DT {roll.dt} · <strong className={(roll.total || 0) >= roll.dt ? 'is-success' : 'is-failure'}>{(roll.total || 0) >= roll.dt ? 'SUCESSO' : 'FRACASSO'}</strong></p>
+            </>
+          )}
           <button className="ro-button" onClick={() => setRoll(null)}>Fechar</button>
         </div>
       </div>}
