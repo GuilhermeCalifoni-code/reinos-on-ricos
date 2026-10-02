@@ -162,36 +162,36 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#171717] border border-[#292929] w-full max-w-3xl max-h-[90vh] flex flex-col rounded-sm shadow-2xl">
+      <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] w-full max-w-3xl max-h-[90vh] flex flex-col rounded-sm shadow-2xl">
         
         {/* Cabeçalho */}
-        <div className="px-6 py-4 border-b border-[#292929] flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-[var(--ro-line)] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-mono font-bold tracking-widest text-[#A88952] border border-[#75603D]/60 px-1.5 py-0.5 rounded-sm">
+            <span className="text-xs font-mono font-bold tracking-widest text-[var(--ro-copper)] border border-[#75603D]/60 px-1.5 py-0.5 rounded-sm">
               TURNO DO MESTRE
             </span>
-            <h2 className="font-serif text-xl text-[#F5F3EE]">
+            <h2 className="font-serif text-xl text-[var(--ro-paper)]">
               Ação do Mestre
             </h2>
           </div>
 
           <button
             onClick={onClose}
-            className="text-[#666666] hover:text-[#F5F3EE] font-mono text-sm px-2 py-1 transition-colors"
+            className="text-[var(--ro-ash)] hover:text-[var(--ro-paper)] font-mono text-sm px-2 py-1 transition-colors"
           >
             ✕
           </button>
         </div>
 
         {/* Abas das 4 Ações Principais */}
-        <div className="bg-[#0B0B0B] border-b border-[#292929] px-6 py-2 flex items-center gap-2 overflow-x-auto text-xs font-mono">
+        <div className="bg-[var(--ro-bg)] border-b border-[var(--ro-line)] px-6 py-2 flex items-center gap-2 overflow-x-auto text-xs font-mono">
           <button
             type="button"
             onClick={() => setAbaAtiva('antagonista')}
             className={`px-3 py-1.5 rounded-sm transition-colors uppercase tracking-wider ${
               abaAtiva === 'antagonista'
-                ? 'bg-[#292929] text-[#F5F3EE] border border-[#333333]'
-                : 'text-[#666666] hover:text-[#D9D7D2]'
+                ? 'bg-[var(--ro-surface-raised)] text-[var(--ro-paper)] border border-[var(--ro-line-strong)]'
+                : 'text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
             }`}
           >
             1. Ativar Antagonista
@@ -202,8 +202,8 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
             onClick={() => setAbaAtiva('ambiente')}
             className={`px-3 py-1.5 rounded-sm transition-colors uppercase tracking-wider ${
               abaAtiva === 'ambiente'
-                ? 'bg-[#292929] text-[#F5F3EE] border border-[#333333]'
-                : 'text-[#666666] hover:text-[#D9D7D2]'
+                ? 'bg-[var(--ro-surface-raised)] text-[var(--ro-paper)] border border-[var(--ro-line-strong)]'
+                : 'text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
             }`}
           >
             2. Ativar Ambiente
@@ -214,8 +214,8 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
             onClick={() => setAbaAtiva('ficcao')}
             className={`px-3 py-1.5 rounded-sm transition-colors uppercase tracking-wider ${
               abaAtiva === 'ficcao'
-                ? 'bg-[#292929] text-[#F5F3EE] border border-[#333333]'
-                : 'text-[#666666] hover:text-[#D9D7D2]'
+                ? 'bg-[var(--ro-surface-raised)] text-[var(--ro-paper)] border border-[var(--ro-line-strong)]'
+                : 'text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
             }`}
           >
             3. Mover a Ficção
@@ -226,8 +226,8 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
             onClick={() => setAbaAtiva('contador')}
             className={`px-3 py-1.5 rounded-sm transition-colors uppercase tracking-wider ${
               abaAtiva === 'contador'
-                ? 'bg-[#292929] text-[#F5F3EE] border border-[#333333]'
-                : 'text-[#666666] hover:text-[#D9D7D2]'
+                ? 'bg-[var(--ro-surface-raised)] text-[var(--ro-paper)] border border-[var(--ro-line-strong)]'
+                : 'text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
             }`}
           >
             4. Avançar Contador
@@ -241,7 +241,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
           {abaAtiva === 'antagonista' && (
             <div className="space-y-5">
               {antagonistas.length === 0 ? (
-                <div className="text-xs font-mono text-[#666666] py-8 text-center">
+                <div className="text-xs font-mono text-[var(--ro-ash)] py-8 text-center">
                   Nenhum antagonista ativo na cena. Adicione uma ameaça primeiro.
                 </div>
               ) : (
@@ -249,7 +249,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                   {/* Seleção do Antagonista e do Alvo */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                      <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                         Antagonista Agindo
                       </label>
                       <select
@@ -258,7 +258,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                           setAntagonistaId(e.target.value);
                           setResultadoAtaque(null);
                         }}
-                        className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2.5 rounded-sm"
+                        className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2.5 rounded-sm"
                       >
                         {antagonistas.map(a => (
                           <option key={a.id} value={a.id}>
@@ -269,7 +269,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                      <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                         Desvelado Alvo
                       </label>
                       <select
@@ -278,7 +278,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                           setAlvoPersonagemId(e.target.value);
                           setResultadoAtaque(null);
                         }}
-                        className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2.5 rounded-sm"
+                        className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2.5 rounded-sm"
                       >
                         {personagens.map(p => (
                           <option key={p.id} value={p.id}>
@@ -291,20 +291,20 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
 
                   {/* Resumo Rápido da Ameaça Selecionada */}
                   {antAtivo && (
-                    <div className="bg-[#0B0B0B] border border-[#292929] p-4 rounded-sm space-y-3">
+                    <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-4 rounded-sm space-y-3">
                       <div className="flex items-center justify-between text-xs font-mono">
-                        <span className="text-[#F5F3EE] font-semibold">{antAtivo.nome}</span>
-                        <div className="flex gap-4 text-[#666666]">
-                          <span>Vida: <strong className="text-[#F5F3EE]">{antAtivo.vidaAtual}/{antAtivo.vidaMaxima}</strong></span>
-                          <span>R: <strong className="text-[#F5F3EE]">{antAtivo.resistencia}</strong></span>
-                          <span>DEF: <strong className="text-[#F5F3EE]">{antAtivo.defesa}</strong></span>
-                          <span>Distância: <strong className="text-[#A88952]">{DISTANCIAS_REINOS_ONIRICOS[antAtivo.distancia].nome}</strong></span>
+                        <span className="text-[var(--ro-paper)] font-semibold">{antAtivo.nome}</span>
+                        <div className="flex gap-4 text-[var(--ro-ash)]">
+                          <span>Vida: <strong className="text-[var(--ro-paper)]">{antAtivo.vidaAtual}/{antAtivo.vidaMaxima}</strong></span>
+                          <span>R: <strong className="text-[var(--ro-paper)]">{antAtivo.resistencia}</strong></span>
+                          <span>DEF: <strong className="text-[var(--ro-paper)]">{antAtivo.defesa}</strong></span>
+                          <span>Distância: <strong className="text-[var(--ro-copper)]">{DISTANCIAS_REINOS_ONIRICOS[antAtivo.distancia].nome}</strong></span>
                         </div>
                       </div>
 
                       {/* Lista de Ações Disponíveis */}
                       <div>
-                        <div className="text-[11px] font-mono text-[#666666] uppercase mb-1.5">
+                        <div className="text-[11px] font-mono text-[var(--ro-ash)] uppercase mb-1.5">
                           Ações do Antagonista:
                         </div>
                         <div className="space-y-1.5">
@@ -312,34 +312,34 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                             antAtivo.acoes.map(ac => (
                               <div
                                 key={ac.id}
-                                className="p-2.5 bg-[#171717] border border-[#292929] rounded-sm flex items-center justify-between text-xs font-mono"
+                                className="p-2.5 bg-[var(--ro-surface)] border border-[var(--ro-line)] rounded-sm flex items-center justify-between text-xs font-mono"
                               >
                                 <div>
-                                  <span className="text-[#F5F3EE] font-medium">{ac.nome}</span>
-                                  <span className="text-[#666666] ml-2">{ac.descricao}</span>
+                                  <span className="text-[var(--ro-paper)] font-medium">{ac.nome}</span>
+                                  <span className="text-[var(--ro-ash)] ml-2">{ac.descricao}</span>
                                   {ac.dano && (
-                                    <span className="text-[#A88952] ml-2">[{ac.dano}]</span>
+                                    <span className="text-[var(--ro-copper)] ml-2">[{ac.dano}]</span>
                                   )}
                                 </div>
                                 <button
                                   type="button"
                                   onClick={() => executarAtaqueAntagonista(ac.dano || antAtivo.danoPadrao)}
-                                  className="px-3 py-1 bg-[#292929] hover:bg-[#333333] text-[#F5F3EE] text-xs rounded-sm transition-colors"
+                                  className="px-3 py-1 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs rounded-sm transition-colors"
                                 >
                                   Executar Ação
                                 </button>
                               </div>
                             ))
                           ) : (
-                            <div className="p-2 bg-[#171717] border border-[#292929] rounded-sm flex items-center justify-between text-xs font-mono">
+                            <div className="p-2 bg-[var(--ro-surface)] border border-[var(--ro-line)] rounded-sm flex items-center justify-between text-xs font-mono">
                               <div>
-                                <span className="text-[#F5F3EE]">Ataque Padrão</span>
-                                <span className="text-[#A88952] ml-2">[{antAtivo.danoPadrao}]</span>
+                                <span className="text-[var(--ro-paper)]">Ataque Padrão</span>
+                                <span className="text-[var(--ro-copper)] ml-2">[{antAtivo.danoPadrao}]</span>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => executarAtaqueAntagonista(antAtivo.danoPadrao)}
-                                className="px-3 py-1 bg-[#292929] hover:bg-[#333333] text-[#F5F3EE] text-xs rounded-sm transition-colors"
+                                className="px-3 py-1 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs rounded-sm transition-colors"
                               >
                                 Atacar Alvo
                               </button>
@@ -349,7 +349,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                       </div>
 
                       {/* Ações Táticas Rápidas */}
-                      <div className="flex flex-wrap gap-2 pt-1 border-t border-[#292929]">
+                      <div className="flex flex-wrap gap-2 pt-1 border-t border-[var(--ro-line)]">
                         <button
                           type="button"
                           onClick={() => {
@@ -357,7 +357,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                             onConsumirAcaoMestre();
                             onClose();
                           }}
-                          className="px-2.5 py-1 bg-[#171717] hover:bg-[#292929] border border-[#292929] text-xs font-mono text-[#D9D7D2] rounded-sm"
+                          className="px-2.5 py-1 bg-[var(--ro-surface)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper-muted)] rounded-sm"
                         >
                           → Avançar
                         </button>
@@ -368,7 +368,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                             onConsumirAcaoMestre();
                             onClose();
                           }}
-                          className="px-2.5 py-1 bg-[#171717] hover:bg-[#292929] border border-[#292929] text-xs font-mono text-[#D9D7D2] rounded-sm"
+                          className="px-2.5 py-1 bg-[var(--ro-surface)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper-muted)] rounded-sm"
                         >
                           ← Recuar
                         </button>
@@ -379,7 +379,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                             onConsumirAcaoMestre();
                             onClose();
                           }}
-                          className="px-2.5 py-1 bg-[#171717] hover:bg-[#292929] border border-[#292929] text-xs font-mono text-[#D9D7D2] rounded-sm"
+                          className="px-2.5 py-1 bg-[var(--ro-surface)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper-muted)] rounded-sm"
                         >
                           ⚡ Interromper / Preparar
                         </button>
@@ -387,22 +387,22 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
 
                       {/* Reações e Passivas */}
                       {(antAtivo.reacoes?.length > 0 || antAtivo.passivas?.length > 0) && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[#292929] text-[11px] font-mono">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[var(--ro-line)] text-[11px] font-mono">
                           {antAtivo.passivas?.length > 0 && (
                             <div>
-                              <span className="text-[#666666] uppercase block">Passivas:</span>
+                              <span className="text-[var(--ro-ash)] uppercase block">Passivas:</span>
                               {antAtivo.passivas.map(p => (
-                                <div key={p.id} className="text-[#D9D7D2]">
-                                  • <strong className="text-[#F5F3EE]">{p.nome}:</strong> {p.descricao}
+                                <div key={p.id} className="text-[var(--ro-paper-muted)]">
+                                  • <strong className="text-[var(--ro-paper)]">{p.nome}:</strong> {p.descricao}
                                 </div>
                               ))}
                             </div>
                           )}
                           {antAtivo.reacoes?.length > 0 && (
                             <div>
-                              <span className="text-[#666666] uppercase block">Reações Disponíveis:</span>
+                              <span className="text-[var(--ro-ash)] uppercase block">Reações Disponíveis:</span>
                               {antAtivo.reacoes.map(r => (
-                                <div key={r.id} className="text-[#D9D7D2]">
+                                <div key={r.id} className="text-[var(--ro-paper-muted)]">
                                   • <strong className="text-amber-400/90">{r.gatilho}:</strong> {r.efeito}
                                 </div>
                               ))}
@@ -415,9 +415,9 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
 
                   {/* Exibição do Resultado do Ataque */}
                   {resultadoAtaque && (
-                    <div className="bg-[#0B0B0B] border border-[#292929] p-4 rounded-sm space-y-3 font-mono text-xs">
-                      <div className="flex items-center justify-between border-b border-[#292929] pb-2">
-                        <span className="text-[#A88952] uppercase tracking-wider font-semibold">
+                    <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-4 rounded-sm space-y-3 font-mono text-xs">
+                      <div className="flex items-center justify-between border-b border-[var(--ro-line)] pb-2">
+                        <span className="text-[var(--ro-copper)] uppercase tracking-wider font-semibold">
                           Resolução de Ataque Oficial (1d20 vs Defesa)
                         </span>
                         <span className={resultadoAtaque.acertou ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
@@ -427,10 +427,10 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-lg font-bold text-[#F5F3EE]">
+                          <div className="text-lg font-bold text-[var(--ro-paper)]">
                             1d20 = {resultadoAtaque.dadoAtaque} vs DEF {resultadoAtaque.defesaAlvo} ({resultadoAtaque.alvo})
                           </div>
-                          <div className="text-[#666666] text-[11px] mt-0.5">
+                          <div className="text-[var(--ro-ash)] text-[11px] mt-0.5">
                             Regra: Ação ofensiva de antagonista usa 1d20 puro contra a Defesa do alvo.
                           </div>
                         </div>
@@ -440,7 +440,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                             <div className="text-xl font-bold text-rose-400">
                               {resultadoAtaque.danoTotal} Dano
                             </div>
-                            <div className="text-[#666666] text-[11px]">
+                            <div className="text-[var(--ro-ash)] text-[11px]">
                               Fórmula: {resultadoAtaque.danoFormula}
                             </div>
                           </div>
@@ -448,11 +448,11 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                       </div>
 
                       {resultadoAtaque.acertou && resultadoAtaque.danoTotal > 0 && (
-                        <div className="pt-2 border-t border-[#292929] flex justify-end">
+                        <div className="pt-2 border-t border-[var(--ro-line)] flex justify-end">
                           <button
                             type="button"
                             onClick={aplicarDanoAoAlvo}
-                            className="px-4 py-2 bg-rose-900/60 hover:bg-rose-900 border border-rose-700/60 text-[#F5F3EE] text-xs font-mono uppercase tracking-wider rounded-sm transition-colors"
+                            className="px-4 py-2 bg-rose-900/60 hover:bg-rose-900 border border-rose-700/60 text-[var(--ro-paper)] text-xs font-mono uppercase tracking-wider rounded-sm transition-colors"
                           >
                             Aplicar {resultadoAtaque.danoTotal} de Dano à Vida de {alvoAtivo.nome} →
                           </button>
@@ -469,7 +469,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
           {abaAtiva === 'ambiente' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-2">
+                <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-2">
                   Presets Rápidos de Efeito Ambiental
                 </label>
                 <div className="space-y-1.5">
@@ -480,8 +480,8 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                       onClick={() => setAmbienteDescricao(p)}
                       className={`w-full text-left p-2.5 border rounded-sm text-xs font-mono transition-colors ${
                         ambienteDescricao === p
-                          ? 'bg-[#292929] border-[#A88952] text-[#F5F3EE]'
-                          : 'bg-[#0B0B0B] border-[#292929] text-[#666666] hover:text-[#D9D7D2]'
+                          ? 'bg-[var(--ro-surface-raised)] border-[var(--ro-line-strong)] text-[var(--ro-paper)]'
+                          : 'bg-[var(--ro-bg)] border-[var(--ro-line)] text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
                       }`}
                     >
                       {p}
@@ -491,7 +491,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                   Descrição do Evento Ambiental (Editável)
                 </label>
                 <input
@@ -499,12 +499,12 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                   value={ambienteDescricao}
                   onChange={(e) => setAmbienteDescricao(e.target.value)}
                   placeholder="Ex: O teto do saguão desaba entre os personagens e a saída..."
-                  className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2 text-xs text-[#F5F3EE] rounded-sm focus:outline-none focus:border-[#A88952]"
+                  className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2 text-xs text-[var(--ro-paper)] rounded-sm focus:outline-none focus:border-[var(--ro-line-strong)]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                   Consequência Narrativa ou Mecânica (Opcional)
                 </label>
                 <input
@@ -512,7 +512,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                   value={ambienteImpacto}
                   onChange={(e) => setAmbienteImpacto(e.target.value)}
                   placeholder="Ex: Distância aumentada para Longe, teste de Corpo DT 12 para atravessar..."
-                  className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2 text-xs text-[#F5F3EE] rounded-sm focus:outline-none focus:border-[#A88952]"
+                  className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2 text-xs text-[var(--ro-paper)] rounded-sm focus:outline-none focus:border-[var(--ro-line-strong)]"
                 />
               </div>
 
@@ -521,7 +521,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                   type="button"
                   disabled={!ambienteDescricao.trim()}
                   onClick={handleAtivarAmbiente}
-                  className="px-6 py-2.5 bg-[#A88952] disabled:opacity-50 hover:bg-[#75603D] text-[#0B0B0B] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors"
+                  className="px-6 py-2.5 bg-[var(--ro-copper)] disabled:opacity-50 hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors"
                 >
                   Confirmar Ação de Ambiente →
                 </button>
@@ -532,8 +532,8 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
           {/* ABA 3: MOVER A FICÇÃO */}
           {abaAtiva === 'ficcao' && (
             <div className="space-y-4">
-              <div className="bg-[#0B0B0B] border border-[#292929] p-3 rounded-sm text-xs font-mono text-[#D9D7D2] flex items-start gap-2">
-                <span className="text-[#A88952]">✦</span>
+              <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-3 rounded-sm text-xs font-mono text-[var(--ro-paper-muted)] flex items-start gap-2">
+                <span className="text-[var(--ro-copper)]">✦</span>
                 <p>
                   A Ação do Mestre é a ferramenta para moldar a tensão sem depender apenas de combate direto. Use-a para alterar posições, fechar passagens, impor escolhas difíceis ou avançar perigos latentes.
                 </p>
@@ -552,8 +552,8 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                     onClick={() => setFiccaoTipo(t.id as any)}
                     className={`py-2 text-xs font-mono uppercase tracking-wider rounded-sm transition-colors border ${
                       ficcaoTipo === t.id
-                        ? 'bg-[#292929] border-[#A88952] text-[#F5F3EE]'
-                        : 'bg-[#0B0B0B] border-[#292929] text-[#666666] hover:text-[#D9D7D2]'
+                        ? 'bg-[var(--ro-surface-raised)] border-[var(--ro-line-strong)] text-[var(--ro-paper)]'
+                        : 'bg-[var(--ro-bg)] border-[var(--ro-line)] text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
                     }`}
                   >
                     {t.label}
@@ -562,15 +562,15 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
               </div>
 
               {ficcaoTipo === 'distancia' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#0B0B0B] border border-[#292929] p-4 rounded-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[var(--ro-bg)] border border-[var(--ro-line)] p-4 rounded-sm">
                   <div>
-                    <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">
+                    <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">
                       Participante / Ameaça
                     </label>
                     <select
                       value={alvoDistanciaId}
                       onChange={(e) => setAlvoDistanciaId(e.target.value)}
-                      className="w-full bg-[#171717] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2 rounded-sm"
+                      className="w-full bg-[var(--ro-surface)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                     >
                       {antagonistas.map(a => (
                         <option key={a.id} value={a.id}>
@@ -581,13 +581,13 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">
+                    <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">
                       Nova Faixa de Distância
                     </label>
                     <select
                       value={novaDistancia}
                       onChange={(e) => setNovaDistancia(e.target.value as DistanciaFaixa)}
-                      className="w-full bg-[#171717] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2 rounded-sm"
+                      className="w-full bg-[var(--ro-surface)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                     >
                       <option value="imediata">Corpo a Corpo / Imediata</option>
                       <option value="muito_proxima">Muito Próxima</option>
@@ -600,7 +600,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
               ) : null}
 
               <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                   Registro da Mudança na Ficção
                 </label>
                 <textarea
@@ -608,7 +608,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                   value={ficcaoDescricao}
                   onChange={(e) => setFiccaoDescricao(e.target.value)}
                   placeholder="Descreva o que mudou na narrativa e o que os Desvelados percebem imediatamente..."
-                  className="w-full bg-[#0B0B0B] border border-[#292929] p-3 text-xs text-[#F5F3EE] rounded-sm focus:outline-none focus:border-[#A88952]"
+                  className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] p-3 text-xs text-[var(--ro-paper)] rounded-sm focus:outline-none focus:border-[var(--ro-line-strong)]"
                 />
               </div>
 
@@ -616,7 +616,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                 <button
                   type="button"
                   onClick={handleMoverFiccao}
-                  className="px-6 py-2.5 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors"
+                  className="px-6 py-2.5 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors"
                 >
                   Aplicar na Ficção →
                 </button>
@@ -627,12 +627,12 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
           {/* ABA 4: AVANÇAR CONTADOR */}
           {abaAtiva === 'contador' && (
             <div className="space-y-4">
-              <div className="text-xs font-mono text-[#666666]">
+              <div className="text-xs font-mono text-[var(--ro-ash)]">
                 Avance o progresso de ameaças iminentes, contadores de tempo ou rituais que se movem a cada rodada:
               </div>
 
               {contadores.length === 0 ? (
-                <div className="text-xs font-mono text-[#666666] py-6 text-center border border-dashed border-[#292929]">
+                <div className="text-xs font-mono text-[var(--ro-ash)] py-6 text-center border border-dashed border-[var(--ro-line)]">
                   Nenhum contador ativo na cena.
                 </div>
               ) : (
@@ -640,14 +640,14 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                   {contadores.map(c => (
                     <div
                       key={c.id}
-                      className="bg-[#0B0B0B] border border-[#292929] p-4 rounded-sm flex items-center justify-between"
+                      className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-4 rounded-sm flex items-center justify-between"
                     >
                       <div>
-                        <div className="text-sm font-mono font-bold text-[#F5F3EE]">{c.nome}</div>
+                        <div className="text-sm font-mono font-bold text-[var(--ro-paper)]">{c.nome}</div>
                         {c.descricao && (
-                          <div className="text-xs text-[#666666] mt-0.5">{c.descricao}</div>
+                          <div className="text-xs text-[var(--ro-ash)] mt-0.5">{c.descricao}</div>
                         )}
-                        <div className="text-xs font-mono text-[#A88952] mt-1">
+                        <div className="text-xs font-mono text-[var(--ro-copper)] mt-1">
                           Progresso: {c.valorAtual}/{c.valorMaximo} {c.concluido ? '(CONCLUÍDO)' : ''}
                         </div>
                       </div>
@@ -656,7 +656,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                         <button
                           type="button"
                           onClick={() => onAvancarContador(c.id, -1)}
-                          className="px-3 py-1 bg-[#171717] hover:bg-[#292929] border border-[#292929] text-xs font-mono text-[#D9D7D2] rounded-sm"
+                          className="px-3 py-1 bg-[var(--ro-surface)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper-muted)] rounded-sm"
                         >
                           -1
                         </button>
@@ -667,7 +667,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                             onConsumirAcaoMestre();
                             onClose();
                           }}
-                          className="px-4 py-1.5 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-mono font-medium uppercase tracking-wider rounded-sm transition-colors"
+                          className="px-4 py-1.5 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-mono font-medium uppercase tracking-wider rounded-sm transition-colors"
                         >
                           +1 (Consumir Ação)
                         </button>
