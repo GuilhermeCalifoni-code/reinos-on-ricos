@@ -75,6 +75,7 @@ supabase/migrations/
 007_reload_postgrest_schema_cache.sql
 008_live_table_realtime.sql
 009_campaign_content_and_storage.sql
+010_actor_sheets.sql
 ~~~
 
 Para um projeto novo, execute as migrations **na ordem**. A tela “Configurar Supabase” também monta o setup completo a partir desses arquivos versionados.
