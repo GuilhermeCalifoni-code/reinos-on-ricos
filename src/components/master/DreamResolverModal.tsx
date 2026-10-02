@@ -111,25 +111,25 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#171717] border border-[#292929] w-full max-w-4xl max-h-[90vh] flex flex-col rounded-sm shadow-2xl">
+      <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] w-full max-w-4xl max-h-[90vh] flex flex-col rounded-sm shadow-2xl">
         
         {/* Cabeçalho */}
-        <div className="px-6 py-4 border-b border-[#292929] flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-[var(--ro-line)] flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="text-xs font-mono font-bold tracking-widest text-[#A88952] border border-[#75603D]/60 px-1.5 py-0.5 rounded-sm">
+            <span className="text-xs font-mono font-bold tracking-widest text-[var(--ro-copper)] border border-[#75603D]/60 px-1.5 py-0.5 rounded-sm">
               ONÍRICO
             </span>
-            <h2 className="font-serif text-xl text-[#F5F3EE]">
+            <h2 className="font-serif text-xl text-[var(--ro-paper)]">
               Assistente de Sonhar & Percepção
             </h2>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex bg-[#0B0B0B] border border-[#292929] p-0.5 rounded-sm text-xs font-mono">
+            <div className="flex bg-[var(--ro-bg)] border border-[var(--ro-line)] p-0.5 rounded-sm text-xs font-mono">
               <button
                 onClick={() => setModoAba('sonhar')}
                 className={`px-3 py-1 rounded-sm transition-colors ${
-                  modoAba === 'sonhar' ? 'bg-[#292929] text-[#F5F3EE]' : 'text-[#666666] hover:text-[#D9D7D2]'
+                  modoAba === 'sonhar' ? 'bg-[var(--ro-surface-raised)] text-[var(--ro-paper)]' : 'text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
                 }`}
               >
                 Resolver Sonhar
@@ -137,7 +137,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
               <button
                 onClick={() => setModoAba('percepcao')}
                 className={`px-3 py-1 rounded-sm transition-colors ${
-                  modoAba === 'percepcao' ? 'bg-[#292929] text-[#F5F3EE]' : 'text-[#666666] hover:text-[#D9D7D2]'
+                  modoAba === 'percepcao' ? 'bg-[var(--ro-surface-raised)] text-[var(--ro-paper)]' : 'text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
                 }`}
               >
                 Percepção Onírica
@@ -146,7 +146,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
 
             <button
               onClick={onClose}
-              className="text-[#666666] hover:text-[#F5F3EE] font-mono text-sm px-2 py-1 transition-colors"
+              className="text-[var(--ro-ash)] hover:text-[var(--ro-paper)] font-mono text-sm px-2 py-1 transition-colors"
             >
               ✕
             </button>
@@ -157,14 +157,14 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
           {/* Seleção de Desvelado */}
-          <div className="bg-[#0B0B0B] border border-[#292929] p-3 rounded-sm flex items-center justify-between">
-            <div className="text-xs font-mono text-[#666666] uppercase">
+          <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-3 rounded-sm flex items-center justify-between">
+            <div className="text-xs font-mono text-[var(--ro-ash)] uppercase">
               Desvelado Agindo:
             </div>
             <select
               value={personagemId}
               onChange={(e) => setPersonagemId(e.target.value)}
-              className="bg-[#171717] border border-[#292929] text-xs font-mono text-[#F5F3EE] px-3 py-1.5 rounded-sm focus:outline-none focus:border-[#A88952]"
+              className="bg-[var(--ro-surface)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] px-3 py-1.5 rounded-sm focus:outline-none focus:border-[var(--ro-line-strong)]"
             >
               {personagens.map(p => (
                 <option key={p.id} value={p.id}>
@@ -179,7 +179,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
               
               {/* Etapa 1: O que o jogador quer fazer */}
               <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                   Etapa 1 · Intenção do Desvelado na Ficção
                 </label>
                 <input
@@ -187,14 +187,14 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                   value={intencaoJogador}
                   onChange={(e) => setIntencaoJogador(e.target.value)}
                   placeholder="Ex: Curvar a geometria do corredor para afastar o Agente do Véu..."
-                  className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2 text-xs text-[#F5F3EE] rounded-sm focus:outline-none focus:border-[#A88952]"
+                  className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2 text-xs text-[var(--ro-paper)] rounded-sm focus:outline-none focus:border-[var(--ro-line-strong)]"
                 />
               </div>
 
               {/* Etapa 2 e 3: Domínio e Nível do Verbo */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                     Etapa 2 · Domínio Envolvido
                   </label>
                   <div className="grid grid-cols-1 gap-1.5">
@@ -207,15 +207,15 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                           onClick={() => setDominioSelecionado(d)}
                           className={`text-left px-3 py-2 border rounded-sm transition-colors text-xs ${
                             dominioSelecionado === d
-                              ? 'bg-[#292929] border-[#A88952] text-[#F5F3EE]'
-                              : 'bg-[#0B0B0B] border-[#292929] text-[#666666] hover:text-[#D9D7D2]'
+                              ? 'bg-[var(--ro-surface-raised)] border-[var(--ro-line-strong)] text-[var(--ro-paper)]'
+                              : 'bg-[var(--ro-bg)] border-[var(--ro-line)] text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
                           }`}
                         >
                           <div className="flex items-center justify-between font-mono">
-                            <span className="font-semibold capitalize text-[#F5F3EE]">{d}</span>
-                            <span className="text-[11px] text-[#A88952]">Ficha: Nível {pjDom}</span>
+                            <span className="font-semibold capitalize text-[var(--ro-paper)]">{d}</span>
+                            <span className="text-[11px] text-[var(--ro-copper)]">Ficha: Nível {pjDom}</span>
                           </div>
-                          <div className="text-[11px] text-[#666666] mt-0.5 line-clamp-1">
+                          <div className="text-[11px] text-[var(--ro-ash)] mt-0.5 line-clamp-1">
                             {DESCRICAO_DOMINIOS[d].tema}
                           </div>
                         </button>
@@ -225,7 +225,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                     Etapa 3 · Nível do Verbo / Intensidade
                   </label>
                   <div className="space-y-1.5">
@@ -236,17 +236,17 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                         onClick={() => setNivelVerbo(item.nivel)}
                         className={`w-full text-left px-3 py-2 border rounded-sm transition-colors text-xs ${
                           nivelVerbo === item.nivel
-                            ? 'bg-[#292929] border-[#A88952] text-[#F5F3EE]'
-                            : 'bg-[#0B0B0B] border-[#292929] text-[#666666] hover:text-[#D9D7D2]'
+                            ? 'bg-[var(--ro-surface-raised)] border-[var(--ro-line-strong)] text-[var(--ro-paper)]'
+                            : 'bg-[var(--ro-bg)] border-[var(--ro-line)] text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]'
                         }`}
                       >
                         <div className="flex items-center justify-between font-mono">
-                          <span className="font-semibold text-[#F5F3EE]">L{item.nivel} — {item.verbo}</span>
+                          <span className="font-semibold text-[var(--ro-paper)]">L{item.nivel} — {item.verbo}</span>
                           {item.nivel > nivelDominioPJ && (
                             <span className="text-[10px] text-amber-500 font-mono">Excede Ficha</span>
                           )}
                         </div>
-                        <div className="text-[11px] text-[#666666] mt-0.5">
+                        <div className="text-[11px] text-[var(--ro-ash)] mt-0.5">
                           {item.descricao}
                         </div>
                       </button>
@@ -271,13 +271,13 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
               {/* Parâmetros Operacionais: Alcance, Alvos, Duração, Complexidade, Atributo, DT */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-2">
                 <div>
-                  <label className="block text-[11px] font-mono text-[#666666] uppercase mb-1">
+                  <label className="block text-[11px] font-mono text-[var(--ro-ash)] uppercase mb-1">
                     Etapa 4 · Alcance
                   </label>
                   <select
                     value={alcance}
                     onChange={(e) => setAlcance(e.target.value as DistanciaFaixa)}
-                    className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2 rounded-sm"
+                    className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                   >
                     <option value="imediata">Imediata (Toque)</option>
                     <option value="muito_proxima">Muito Próxima</option>
@@ -288,13 +288,13 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-[#666666] uppercase mb-1">
+                  <label className="block text-[11px] font-mono text-[var(--ro-ash)] uppercase mb-1">
                     Etapa 5 · Alvos
                   </label>
                   <select
                     value={tipoAlvo}
                     onChange={(e) => setTipoAlvo(e.target.value as any)}
-                    className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2 rounded-sm"
+                    className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                   >
                     <option value="unico">Alvo Único</option>
                     <option value="pequeno_grupo">Pequeno Grupo (2-3)</option>
@@ -303,13 +303,13 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-[#666666] uppercase mb-1">
+                  <label className="block text-[11px] font-mono text-[var(--ro-ash)] uppercase mb-1">
                     Etapa 6 · Duração
                   </label>
                   <select
                     value={duracao}
                     onChange={(e) => setDuracao(e.target.value as any)}
-                    className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2 rounded-sm"
+                    className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                   >
                     <option value="instantanea">Instantânea</option>
                     <option value="sustentada">Sustentada (Foco)</option>
@@ -318,13 +318,13 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-[#666666] uppercase mb-1">
+                  <label className="block text-[11px] font-mono text-[var(--ro-ash)] uppercase mb-1">
                     Etapa 7 · Complexidade
                   </label>
                   <select
                     value={complexidade}
                     onChange={(e) => setComplexidade(e.target.value as any)}
-                    className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2 rounded-sm"
+                    className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                   >
                     <option value="simples">Simples (1 Ação)</option>
                     <option value="complexa">Complexa (Ritual/Foco)</option>
@@ -332,13 +332,13 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-[#666666] uppercase mb-1">
+                  <label className="block text-[11px] font-mono text-[var(--ro-ash)] uppercase mb-1">
                     Etapa 8 · Atributo
                   </label>
                   <select
                     value={atributoEscolhido}
                     onChange={(e) => setAtributoEscolhido(e.target.value as AtributoNome)}
-                    className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2 rounded-sm capitalize"
+                    className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm capitalize"
                   >
                     <option value="mente">Mente (+{personagemAtual?.atributos?.mente ?? 0})</option>
                     <option value="vontade">Vontade (+{personagemAtual?.atributos?.vontade ?? 0})</option>
@@ -348,14 +348,14 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-mono text-[#666666] uppercase mb-1">
+                  <label className="block text-[11px] font-mono text-[var(--ro-ash)] uppercase mb-1">
                     Etapa 9 · DT
                   </label>
                   <input
                     type="number"
                     value={dtDificuldade}
                     onChange={(e) => setDtDificuldade(Number(e.target.value))}
-                    className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2 rounded-sm text-center"
+                    className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm text-center"
                   />
                 </div>
               </div>
@@ -365,7 +365,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 <button
                   type="button"
                   onClick={executarTesteOnirico}
-                  className="px-6 py-2.5 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors flex items-center gap-2"
+                  className="px-6 py-2.5 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors flex items-center gap-2"
                 >
                   <span>Executar Teste Onírico (Realidade & Sonho)</span>
                   <span>→</span>
@@ -374,8 +374,8 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
 
               {/* Resultado do Teste Onírico */}
               {resultadoTeste && (
-                <div className="bg-[#0B0B0B] border border-[#292929] p-5 rounded-sm space-y-4">
-                  <div className="text-xs font-mono uppercase tracking-widest text-[#A88952] border-b border-[#292929] pb-2">
+                <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-5 rounded-sm space-y-4">
+                  <div className="text-xs font-mono uppercase tracking-widest text-[var(--ro-copper)] border-b border-[var(--ro-line)] pb-2">
                     Resultado da Manifestação vs DT {resultadoTeste.dt}
                   </div>
 
@@ -386,8 +386,8 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                         ? 'border-emerald-900/60 bg-emerald-950/10'
                         : 'border-rose-900/60 bg-rose-950/10'
                     }`}>
-                      <div className="text-xs font-mono text-[#666666] uppercase mb-1">Realidade (1d20 + Atributo)</div>
-                      <div className="text-2xl font-mono font-bold text-[#F5F3EE]">
+                      <div className="text-xs font-mono text-[var(--ro-ash)] uppercase mb-1">Realidade (1d20 + Atributo)</div>
+                      <div className="text-2xl font-mono font-bold text-[var(--ro-paper)]">
                         {resultadoTeste.realidadeDado} + {resultadoTeste.atributoValor} = {resultadoTeste.realidadeTotal}
                       </div>
                       <div className={`text-xs font-mono mt-1 ${resultadoTeste.realidadeSucesso ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -401,8 +401,8 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                         ? 'border-emerald-900/60 bg-emerald-950/10'
                         : 'border-rose-900/60 bg-rose-950/10'
                     }`}>
-                      <div className="text-xs font-mono text-[#666666] uppercase mb-1">Sonho (1d20 + Atributo)</div>
-                      <div className="text-2xl font-mono font-bold text-[#F5F3EE]">
+                      <div className="text-xs font-mono text-[var(--ro-ash)] uppercase mb-1">Sonho (1d20 + Atributo)</div>
+                      <div className="text-2xl font-mono font-bold text-[var(--ro-paper)]">
                         {resultadoTeste.sonhoDado} + {resultadoTeste.atributoValor} = {resultadoTeste.sonhoTotal}
                       </div>
                       <div className={`text-xs font-mono mt-1 ${resultadoTeste.sonhoSucesso ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -412,14 +412,14 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                   </div>
 
                   {/* Leitura e Consequência */}
-                  <div className="space-y-2 pt-2 border-t border-[#292929] text-xs font-mono">
+                  <div className="space-y-2 pt-2 border-t border-[var(--ro-line)] text-xs font-mono">
                     <div>
-                      <span className="text-[#A88952] font-semibold">Leitura da Ficção: </span>
-                      <span className="text-[#F5F3EE]">{resultadoTeste.interpretacao}</span>
+                      <span className="text-[var(--ro-copper)] font-semibold">Leitura da Ficção: </span>
+                      <span className="text-[var(--ro-paper)]">{resultadoTeste.interpretacao}</span>
                     </div>
                     <div>
-                      <span className="text-[#666666]">Sugestão para o Mestre: </span>
-                      <span className="text-[#D9D7D2]">{resultadoTeste.consequenciaSugerida}</span>
+                      <span className="text-[var(--ro-ash)]">Sugestão para o Mestre: </span>
+                      <span className="text-[var(--ro-paper-muted)]">{resultadoTeste.consequenciaSugerida}</span>
                     </div>
                   </div>
                 </div>
@@ -429,28 +429,28 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
           ) : (
             /* Modo Percepção Onírica */
             <div className="space-y-5">
-              <div className="bg-[#0B0B0B] border border-[#292929] p-4 rounded-sm space-y-2 text-xs font-mono">
-                <div className="text-[#A88952] font-semibold uppercase tracking-wider">
+              <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-4 rounded-sm space-y-2 text-xs font-mono">
+                <div className="text-[var(--ro-copper)] font-semibold uppercase tracking-wider">
                   Regra do Livro Básico · Percepção Onírica
                 </div>
-                <p className="text-[#D9D7D2] leading-relaxed">
+                <p className="text-[var(--ro-paper-muted)] leading-relaxed">
                   A Percepção Onírica é o ato de perscrutar através da névoa consensual da metrópole.
                 </p>
-                <div className="p-2.5 bg-[#171717] border border-[#292929] text-[#F5F3EE]">
-                  <span className="text-[#A88952]">Lembrete de Ação: </span>
-                  Uma Percepção Onírica que seja <strong className="text-[#F5F3EE]">exclusivamente perceptiva não consome Ação</strong> na rodada. Se a percepção tentar interferir, conter, modificar ou produzir impacto material, ela passa a ser uma Ação normal de Sonhar.
+                <div className="p-2.5 bg-[var(--ro-surface)] border border-[var(--ro-line)] text-[var(--ro-paper)]">
+                  <span className="text-[var(--ro-copper)]">Lembrete de Ação: </span>
+                  Uma Percepção Onírica que seja <strong className="text-[var(--ro-paper)]">exclusivamente perceptiva não consome Ação</strong> na rodada. Se a percepção tentar interferir, conter, modificar ou produzir impacto material, ela passa a ser uma Ação normal de Sonhar.
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                     Domínio da Percepção
                   </label>
                   <select
                     value={dominioPercepcao}
                     onChange={(e) => setDominioPercepcao(e.target.value as DominioNome)}
-                    className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2.5 rounded-sm capitalize"
+                    className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2.5 rounded-sm capitalize"
                   >
                     {(Object.keys(DESCRICAO_DOMINIOS) as DominioNome[]).map(d => (
                       <option key={d} value={d}>
@@ -461,7 +461,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                     O que está sendo percebido?
                   </label>
                   <input
@@ -469,13 +469,13 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                     value={alvoPercepcao}
                     onChange={(e) => setAlvoPercepcao(e.target.value)}
                     placeholder="Ex: Ecos residuais na parede, intenção hostil oculta..."
-                    className="w-full bg-[#0B0B0B] border border-[#292929] px-3 py-2.5 text-xs text-[#F5F3EE] rounded-sm focus:outline-none focus:border-[#A88952]"
+                    className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3 py-2.5 text-xs text-[var(--ro-paper)] rounded-sm focus:outline-none focus:border-[var(--ro-line-strong)]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5">
                   Informação Revelada pelo Mestre (Para o Log da Cena)
                 </label>
                 <textarea
@@ -483,7 +483,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                   value={resultadoPercepcao}
                   onChange={(e) => setResultadoPercepcao(e.target.value)}
                   placeholder="Ex: O Desvelado percebe que as marcas no concreto não foram feitas por ferramentas humanas, mas por densidade alterada de Substância..."
-                  className="w-full bg-[#0B0B0B] border border-[#292929] p-3 text-xs text-[#F5F3EE] rounded-sm focus:outline-none focus:border-[#A88952]"
+                  className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] p-3 text-xs text-[var(--ro-paper)] rounded-sm focus:outline-none focus:border-[var(--ro-line-strong)]"
                 />
               </div>
 
@@ -491,7 +491,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 <button
                   type="button"
                   onClick={handleRegistrarPercepcao}
-                  className="px-5 py-2.5 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors"
+                  className="px-5 py-2.5 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors"
                 >
                   Registrar Percepção na Cena →
                 </button>
