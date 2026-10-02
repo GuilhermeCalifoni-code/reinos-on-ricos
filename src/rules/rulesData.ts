@@ -6,6 +6,7 @@ export interface ProgressaoNivelInfo {
   vidaBase: number;
   bonusDefesa: number;
   protecaoOniricaBase: number;
+  focoBase: number;
   pontosDeSonhar: number;
   dominioMaximo: number;
   pontosAtributoAdicionais: number; // cumulativo ou por nível
@@ -18,6 +19,7 @@ export const TABELA_PROGRESSAO: Record<number, ProgressaoNivelInfo> = {
     vidaBase: 4,
     bonusDefesa: 0,
     protecaoOniricaBase: 2,
+    focoBase: 4,
     pontosDeSonhar: 5,
     dominioMaximo: 3,
     pontosAtributoAdicionais: 0,
@@ -26,42 +28,46 @@ export const TABELA_PROGRESSAO: Record<number, ProgressaoNivelInfo> = {
   2: {
     nivel: 2,
     vidaBase: 4,
-    bonusDefesa: 1,
+    bonusDefesa: 0,
     protecaoOniricaBase: 2,
+    focoBase: 5,
     pontosDeSonhar: 7,
     dominioMaximo: 3,
     pontosAtributoAdicionais: 0,
-    descricao: 'Defesa +1, 7 Pontos de Sonhar.'
+    descricao: '+1 PF, 7 Pontos de Sonhar. Domínio máximo 3.'
   },
   3: {
     nivel: 3,
     vidaBase: 5,
-    bonusDefesa: 1,
+    bonusDefesa: 0,
     protecaoOniricaBase: 2,
+    focoBase: 5,
     pontosDeSonhar: 8,
-    dominioMaximo: 3,
+    dominioMaximo: 4,
     pontosAtributoAdicionais: 1,
-    descricao: 'Vida sobe para 5, +1 em um Atributo, 8 Pontos de Sonhar.'
+    descricao: '+1 PV, +1 em um Atributo, 8 Pontos de Sonhar. Domínio máximo 4.'
   },
   4: {
     nivel: 4,
     vidaBase: 5,
-    bonusDefesa: 2,
+    bonusDefesa: 0,
     protecaoOniricaBase: 2,
+    focoBase: 6,
     pontosDeSonhar: 9,
     dominioMaximo: 4,
     pontosAtributoAdicionais: 1,
-    descricao: 'Defesa +1 adicional (total +2), Domínio máx 4, 9 Pontos de Sonhar.'
+    descricao: '+1 PF, 9 Pontos de Sonhar. Domínio máximo 4.'
   },
   5: {
     nivel: 5,
     vidaBase: 5,
-    bonusDefesa: 2,
+    bonusDefesa: 0,
     protecaoOniricaBase: 2,
+    focoBase: 6,
     pontosDeSonhar: 10,
     dominioMaximo: 5,
     pontosAtributoAdicionais: 2,
-    descricao: '+1 em um Atributo, 10 Pontos de Sonhar. Apenas UM Domínio pode alcançar nível 5.'
+    descricao: '+1 em um Atributo, +1 Ponto de Sonhar, Domínio máximo 5; apenas UM Domínio pode alcançar nível 5.'
   }
 };
 
@@ -100,8 +106,8 @@ export const DISTANCIAS_REINOS_ONIRICOS: Record<DistanciaFaixa, {
 export const LINGUAGEM_DOMINIOS = [
   {
     nivel: 1,
-    verbo: 'INFLUENCIAR',
-    descricao: 'Perceber, direcionar ou provocar pequenas alterações naquilo que já existe.'
+    verbo: 'PERCEBER',
+    descricao: 'Sentir e compreender o aspecto do Domínio. Percepção Onírica não é onisciência e não exige Teste Onírico para perceber ou interpretar algo presente.'
   },
   {
     nivel: 2,
@@ -133,33 +139,33 @@ export const DESCRICAO_DOMINIOS: Record<DominioNome, {
 }> = {
   consciencia: {
     nome: 'Consciência',
-    tema: 'Percepção, pensamentos, emoções, memórias, ilusões e estados mentais.',
-    esfera: 'Mente e sentimentos dos seres vivos, percepção sensorial, conexões psíquicas.',
-    manifestacoesTipicas: 'Induzir calma ou terror, ocultar presença, ler resquícios de memória, alterar percepção de perigo.'
+    tema: 'Percepção, emoção, memória, pensamento e identidade.',
+    esfera: 'Experiências mentais, interpretação, lembranças, emoções e estados da consciência.',
+    manifestacoesTipicas: 'Intensificar uma emoção, transformar uma memória, criar uma experiência sensorial ou Sonhar estados mentais impossíveis.'
   },
   espaco: {
     nome: 'Espaço',
-    tema: 'Distâncias, geometrias urbanas, passagens, barreiras, dimensões e gravidade local.',
-    esfera: 'Arquitetura, limites físicos, corredores intermináveis, dobras espaciais.',
-    manifestacoesTipicas: 'Encurtar ou esticar corredores, criar passagens onde há paredes sólidas, abrir portas trancadas pelo Sonhar.'
+    tema: 'Posição, distância e relações espaciais.',
+    esfera: 'Movimento, configuração espacial, caminhos, passagens e relações entre lugares.',
+    manifestacoesTipicas: 'Ampliar ou reduzir distâncias, trocar posições, criar passagens ou Sonhar geometrias impossíveis.'
   },
   fluxo: {
     nome: 'Fluxo',
-    tema: 'Tempo, movimento, eletricidade, sinais digitais, luz, som e transmissões.',
-    esfera: 'Dinâmica urbana: redes, semáforos, fluxo de trânsito, correntes de energia, aceleração temporal.',
-    manifestacoesTipicas: 'Acelerar ou retardar reações, interceptar comunicações, controlar circuitos urbanos, manipular frequências sonoras.'
+    tema: 'Ritmo, duração, processos e causalidade.',
+    esfera: 'Velocidade e ordem de processos, duração de acontecimentos e relações de causa e efeito.',
+    manifestacoesTipicas: 'Acelerar ou desacelerar processos, alterar sua duração ou ordem, iniciar sequências possíveis ou Sonhar causalidade impossível.'
   },
   substancia: {
     nome: 'Substância',
-    tema: 'Matéria, densidade, concreto, asfalto, vidro, metais e objetos inanimados.',
-    esfera: 'O tecido material da metrópole, integridade estrutural, solidez e dissolução.',
-    manifestacoesTipicas: 'Tornar vidro tão duro quanto titânio, liquefazer asfalto temporariamente, moldar ferro, reparar danos materiais.'
+    tema: 'Matéria e propriedades físicas.',
+    esfera: 'Materiais, objetos, dureza, peso, temperatura e estrutura física.',
+    manifestacoesTipicas: 'Fortalecer uma propriedade, transformar matéria, criar um objeto possível ou Sonhar matéria de propriedades impossíveis.'
   },
   vida: {
     nome: 'Vida',
-    tema: 'Fisiologia, tecidos biológicos, cura, estamina, pragas, mutações e organismos.',
-    esfera: 'Corpos humanos e animais, processos metabólicos, cicatrização e deterioração celular.',
-    manifestacoesTipicas: 'Estancar hemorragias, fechar ferimentos profundos, neutralizar toxinas, sobrecarregar adrenalina.'
+    tema: 'Organismos e processos vitais.',
+    esfera: 'Tecidos, órgãos, crescimento, recuperação e estruturas biológicas.',
+    manifestacoesTipicas: 'Fortalecer recuperação, transformar tecidos, criar estruturas biológicas possíveis ou Sonhar vida além dos limites naturais.'
   }
 };
 
