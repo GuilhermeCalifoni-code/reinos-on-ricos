@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, SessaoStatus, MembroCampanha } from '../types/campaign';
+import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, SessaoStatus, MembroCampanha, Cena, Handout } from '../types/campaign';
 import { Personagem } from '../types/character';
 import { SessionPlanner } from './campaign/SessionPlanner';
 import { CampaignMembersPanel } from './campaign/CampaignMembersPanel';
+import { CampaignAssetsPanel } from './campaign/CampaignAssetsPanel';
 
 export type CampaignTabType = 
   | 'visao_geral'
@@ -29,6 +30,8 @@ interface CampaignDetailViewProps {
   pistas: Pista[];
   loreEntries: LoreEntry[];
   anotacoes: Anotacao[];
+  cenas: Cena[];
+  handouts: Handout[];
   onIniciarSessao: (campanha: Campanha) => void;
   onAbrirFichaPersonagem: (personagem: Personagem) => void;
   onNovaSessao: (campanhaId: string, dados: NovaSessaoInput) => void;
@@ -38,6 +41,12 @@ interface CampaignDetailViewProps {
   onAdicionarPista: (pista: Omit<Pista, 'id'>) => void;
   onAdicionarLore: (lore: Omit<LoreEntry, 'id'>) => void;
   onAdicionarAnotacao: (campanhaId: string, titulo: string, conteudo: string) => void;
+  onAdicionarCena: (cena: Omit<Cena, 'id'>) => Promise<unknown> | unknown;
+  onAtualizarCena: (id: string, patch: Partial<Cena>) => Promise<unknown> | unknown;
+  onRemoverCena: (id: string) => Promise<unknown> | unknown;
+  onAdicionarHandout: (handout: Omit<Handout, 'id'>) => Promise<unknown> | unknown;
+  onAtualizarHandout: (id: string, patch: Partial<Handout>) => Promise<unknown> | unknown;
+  onRemoverHandout: (id: string) => Promise<unknown> | unknown;
   membros?: MembroCampanha[];
   currentUserId?: string;
   canManageMembers?: boolean;
@@ -56,6 +65,8 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   pistas,
   loreEntries,
   anotacoes,
+  cenas,
+  handouts,
   onIniciarSessao,
   onAbrirFichaPersonagem,
   onNovaSessao,
@@ -65,6 +76,12 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   onAdicionarPista,
   onAdicionarLore,
   onAdicionarAnotacao,
+  onAdicionarCena,
+  onAtualizarCena,
+  onRemoverCena,
+  onAdicionarHandout,
+  onAtualizarHandout,
+  onRemoverHandout,
   membros = [],
   currentUserId,
   canManageMembers = false,
@@ -94,6 +111,8 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   const pistasCampanha = pistas.filter(p => p.campanhaId === campanha.id);
   const loreCampanha = loreEntries.filter(l => l.campanhaId === campanha.id);
   const anotacoesCampanha = anotacoes.filter(a => a.campanhaId === campanha.id);
+  const cenasCampanha = cenas.filter(item => item.campanhaId === campanha.id);
+  const handoutsCampanha = handouts.filter(item => item.campanhaId === campanha.id);
 
   const handleCriarSessaoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -376,19 +395,46 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
           />
         )}
 
-        {(abaAtiva === 'cenas' || abaAtiva === 'mapas' || abaAtiva === 'handouts') && (
-          <section className="max-w-3xl border-y border-[var(--ro-line)] py-10">
-            <p className="ro-eyebrow">Estrutura preparada</p>
-            <h2 className="mt-3 font-serif text-3xl text-[var(--ro-paper)]">
-              {abaAtiva === 'cenas' ? 'Cenas da campanha' : abaAtiva === 'mapas' ? 'Mapas narrativos' : 'Arquivos e handouts'}
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--ro-paper-muted)]">
-              Esta área receberá registros reutilizáveis com visibilidade de Mestre, compartilhada ou revelada aos jogadores. A Mesa Ao Vivo já aceita ambientação, imagem, mapa e handout sem expor conteúdo privado.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2 text-xs text-[var(--ro-paper-muted)]">
-              <span className="border border-[var(--ro-line)] px-3 py-2">Mestre privado</span>
-              <span className="border border-[var(--ro-line)] px-3 py-2">Compartilhado</span>
-              <span className="border border-[var(--ro-line)] px-3 py-2">Revelado aos jogadores</span>
+        {abaAtiva === 'cenas' && (
+          <CampaignAssetsPanel
+            campaignId={campanha.id}
+            mode="cenas"
+            scenes={cenasCampanha}
+            handouts={handoutsCampanha}
+            canManage={canManageMembers}
+            onAddScene={onAdicionarCena}
+            onUpdateScene={onAtualizarCena}
+            onRemoveScene={onRemoverCena}
+            onAddHandout={onAdicionarHandout}
+            onUpdateHandout={onAtualizarHandout}
+            onRemoveHandout={onRemoverHandout}
+          />
+        )}
+
+        {abaAtiva === 'handouts' && (
+          <CampaignAssetsPanel
+            campaignId={campanha.id}
+            mode="handouts"
+            scenes={cenasCampanha}
+            handouts={handoutsCampanha}
+            canManage={canManageMembers}
+            onAddScene={onAdicionarCena}
+            onUpdateScene={onAtualizarCena}
+            onRemoveScene={onRemoverCena}
+            onAddHandout={onAdicionarHandout}
+            onUpdateHandout={onAtualizarHandout}
+            onRemoveHandout={onRemoverHandout}
+          />
+        )}
+
+        {abaAtiva === 'mapas' && (
+          <section className="campaign-assets">
+            <header className="campaign-assets__head">
+              <div><p className="ro-eyebrow">Cartografia narrativa</p><h2>Mapas da campanha</h2></div>
+            </header>
+            <div className="campaign-assets__card">
+              <p>Mapas são administrados diretamente na Mesa Ao Vivo, onde zoom, pan, grade, visibilidade e tokens permanecem sincronizados em Realtime.</p>
+              <button type="button" className="ro-button mt-4" onClick={() => onIniciarSessao(campanha)}>Abrir Mesa Ao Vivo →</button>
             </div>
           </section>
         )}
