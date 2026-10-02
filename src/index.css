@@ -3,32 +3,33 @@
 
 @layer base {
   :root {
-    --bg-deep: #0B0B0B;
-    --bg-charcoal: #171717;
-    --bg-surface: #292929;
-    --text-muted: #666666;
-    --text-primary: #D9D7D2;
-    --text-light: #F5F3EE;
-    --accent-gold: #A88952;
-    --accent-bronze: #75603D;
-    --accent-indigo: #4E4B78;
-    --accent-wine: #6A3446;
-    --state-safe: #6F9B82;
-    --state-alert: #C49A57;
-    --state-danger: #B85E68;
-    --border-soft: rgba(217, 215, 210, 0.10);
+    --bg-deep: var(--ro-bg);
+    --bg-charcoal: var(--ro-surface);
+    --bg-surface: var(--ro-surface-raised);
+    --text-muted: var(--ro-ash);
+    --text-primary: var(--ro-paper-muted);
+    --text-light: var(--ro-paper);
+    --accent-gold: var(--ro-copper);
+    --accent-bronze: var(--ro-gold-deep);
+    --accent-indigo: var(--ro-navy);
+    --accent-wine: var(--ro-rift);
+    --state-safe: var(--ro-safe);
+    --state-alert: var(--ro-alert);
+    --state-danger: var(--ro-danger);
+    --border-soft: var(--ro-line);
     --shadow-elevation: var(--ro-shadow);
   }
 
   body {
     min-height: 100vh;
     background:
-      radial-gradient(900px circle at 8% -10%, rgba(78, 75, 120, 0.18), transparent 52%),
-      radial-gradient(800px circle at 100% 0%, rgba(106, 52, 70, 0.11), transparent 45%),
-      #0B0B0B;
-    color: #D9D7D2;
+      radial-gradient(900px circle at 8% -10%, color-mix(in srgb, var(--ro-navy) 12%, transparent), transparent 52%),
+      radial-gradient(800px circle at 100% 0%, color-mix(in srgb, var(--ro-copper) 6%, transparent), transparent 45%),
+      var(--ro-bg);
+    color: var(--ro-paper-muted);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     letter-spacing: 0.005em;
+    transition: background-color var(--ro-transition), color var(--ro-transition);
   }
 
   button, input, textarea, select {
@@ -51,14 +52,14 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0B0B;
+  background: var(--ro-bg-soft);
 }
 ::-webkit-scrollbar-thumb {
-  background: #292929;
+  background: var(--ro-line-strong);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #666666;
+  background: var(--ro-ash);
 }
 
 /* Controles compactos da Central do Mestre */
@@ -382,3 +383,140 @@
 .cinematic-threat-state { display: flex; align-items: center; gap: .38rem; margin: .4rem 0 .6rem; padding: .45rem; border: 1px solid rgba(184,94,104,.4); background: rgba(184,94,104,.08); color: #e3a1a9; font: 10px ui-monospace, monospace; }.cinematic-threat-state button { min-width: 20px; border: 1px solid rgba(184,94,104,.35); color: #e3a1a9; }.cinematic-threat-state strong { color: #fff0ee; }.cinematic-threat-state span:last-child { margin-left: auto; color: #bcb0a9; }
 .cinematic-counters { margin-top: .85rem; padding: .7rem; border: 1px solid #4b3b23; background: linear-gradient(130deg, rgba(168,137,82,.10), rgba(13,13,12,.92)); }.cinematic-counters__head { display: flex; justify-content: space-between; align-items: center; color: var(--accent-gold); }.cinematic-counter { display: grid; grid-template-columns: 1fr auto; gap: .65rem; align-items: center; margin-top: .55rem; }.cinematic-counter > div:first-child strong, .cinematic-counter > div:first-child small { display: block; }.cinematic-counter > div:first-child strong { color: #e6dfd4; font-size: 11px; }.cinematic-counter > div:first-child small { margin-top: .2rem; color: #8c8579; font-size: 9px; line-height: 1.3; }.cinematic-counter__dial { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle, #181714 57%, transparent 59%), conic-gradient(var(--accent-gold) var(--counter-progress), #302b22 0); }.cinematic-counter__dial span { color: #f1eadf; font: 10px ui-monospace, monospace; }.cinematic-counter__actions { grid-column: 1 / -1; display: flex; justify-content: end; gap: .35rem; }.cinematic-counter__actions button { border: 1px solid rgba(168,137,82,.38); padding: .25rem .45rem; color: #d1b377; font-size: 10px; }.cinematic-counter__actions button:hover { background: rgba(168,137,82,.14); }
 
+
+
+/* --------------------------------------------------------------------------
+   Ponte de compatibilidade visual
+   A V2 ainda possui componentes antigos com utilitários Tailwind de cores
+   fixas. Esta camada os converte para os tokens do livro sem reescrever
+   mecânica ou layout. Ela pode ser removida à medida que cada componente
+   migrar para classes semânticas.
+   -------------------------------------------------------------------------- */
+[class~="bg-[#0B0B0B]"],
+[class~="bg-[#0b0b0b]"] { background-color: var(--ro-bg) !important; }
+[class~="bg-[#171717]"],
+[class~="bg-[#12151e]"] { background-color: var(--ro-surface) !important; }
+[class~="bg-[#292929]"],
+[class~="bg-[#333333]"] { background-color: var(--ro-surface-raised) !important; }
+
+[class~="text-[#F5F3EE]"],
+[class~="text-slate-100"],
+[class~="text-slate-200"] { color: var(--ro-paper) !important; }
+[class~="text-[#D9D7D2]"],
+[class~="text-slate-300"],
+[class~="text-slate-400"] { color: var(--ro-paper-muted) !important; }
+[class~="text-[#666666]"],
+[class~="text-[#777]"],
+[class~="text-slate-500"],
+[class~="text-slate-600"] { color: var(--ro-ash) !important; }
+[class~="text-[#A88952]"],
+[class~="text-cyan-300"],
+[class~="text-cyan-400"],
+[class~="text-cyan-500"] { color: var(--ro-copper) !important; }
+
+[class~="border-[#292929]"],
+[class~="border-[#333333]"],
+[class~="border-slate-700"],
+[class~="border-slate-800"] { border-color: var(--ro-line) !important; }
+[class~="border-[#A88952]"],
+[class~="border-cyan-500"],
+[class~="border-cyan-800/60"] { border-color: var(--ro-line-strong) !important; }
+
+[class~="bg-cyan-950/60"],
+[class~="bg-slate-900"],
+[class~="bg-slate-950"] { background-color: var(--ro-input) !important; }
+
+[class~="hover:bg-[#292929]"]:hover,
+[class~="hover:bg-[#333333]"]:hover { background-color: var(--ro-accent-soft) !important; }
+[class~="hover:text-[#A88952]"]:hover,
+[class~="hover:text-cyan-400"]:hover,
+[class~="hover:text-cyan-500"]:hover { color: var(--ro-copper-bright) !important; }
+
+[class~="focus:border-[#A88952]"]:focus,
+[class~="focus:border-cyan-400"]:focus,
+[class~="focus:border-cyan-500"]:focus { border-color: var(--ro-blue) !important; }
+
+[class~="bg-[#A88952]"] { background-color: var(--ro-copper) !important; }
+[class~="hover:bg-[#75603D]"]:hover { background-color: var(--ro-copper-bright) !important; }
+[class~="text-[#0B0B0B]"] { color: var(--ro-on-accent) !important; }
+
+:root[data-theme='light'] img.ro-theme-dim,
+:root[data-theme='light'] .ro-theme-dim img {
+  filter: brightness(.78) contrast(.96) saturate(.82);
+}
+
+
+/* Mapeamento da antiga linguagem cyan/slate para a paleta editorial do livro. */
+[class~="bg-slate-950"],
+[class~="bg-slate-950/80"],
+[class~="bg-slate-950/60"] { background-color: var(--ro-bg) !important; }
+[class~="bg-slate-900"],
+[class~="bg-slate-900/80"],
+[class~="bg-slate-900/60"] { background-color: var(--ro-input) !important; }
+[class~="bg-slate-800"],
+[class~="bg-slate-800/80"],
+[class~="bg-slate-800/60"] { background-color: var(--ro-surface) !important; }
+[class~="bg-slate-700"],
+[class~="bg-slate-700/80"] { background-color: var(--ro-surface-raised) !important; }
+
+[class~="border-slate-900"],
+[class~="border-slate-800"],
+[class~="border-slate-700"],
+[class~="border-slate-600"] { border-color: var(--ro-line) !important; }
+
+[class~="bg-cyan-950/80"],
+[class~="bg-cyan-950/60"],
+[class~="bg-cyan-950/50"],
+[class~="bg-cyan-950/40"] { background-color: var(--ro-blue-soft) !important; }
+[class~="bg-cyan-500"],
+[class~="bg-cyan-400"] { background-color: var(--ro-blue) !important; }
+
+[class~="border-cyan-500"],
+[class~="border-cyan-500/60"],
+[class~="border-cyan-500/50"],
+[class~="border-cyan-500/40"],
+[class~="border-cyan-800/60"] { border-color: color-mix(in srgb, var(--ro-blue) 55%, var(--ro-line)) !important; }
+
+[class~="text-cyan-200"],
+[class~="text-cyan-300"],
+[class~="text-cyan-400"],
+[class~="text-cyan-500"],
+[class~="text-cyan-600"] { color: var(--ro-blue) !important; }
+
+[class~="bg-amber-950/80"],
+[class~="bg-amber-950/60"],
+[class~="bg-amber-950/40"],
+[class~="bg-amber-950/20"] { background-color: var(--ro-olive-soft) !important; }
+[class~="bg-amber-500"],
+[class~="bg-amber-400"] { background-color: var(--ro-copper) !important; }
+[class~="border-amber-500"],
+[class~="border-amber-500/60"],
+[class~="border-amber-700"] { border-color: var(--ro-line-strong) !important; }
+[class~="text-amber-200"],
+[class~="text-amber-300"],
+[class~="text-amber-400"],
+[class~="text-amber-500"] { color: var(--ro-copper) !important; }
+
+[class~="hover:bg-slate-900"]:hover,
+[class~="hover:bg-slate-800"]:hover,
+[class~="hover:bg-slate-700"]:hover { background-color: var(--ro-accent-soft) !important; }
+[class~="hover:bg-cyan-400"]:hover,
+[class~="hover:bg-cyan-500"]:hover,
+[class~="hover:bg-amber-400"]:hover,
+[class~="hover:bg-amber-500"]:hover { background-color: var(--ro-copper-bright) !important; }
+[class~="hover:text-slate-200"]:hover,
+[class~="hover:text-slate-100"]:hover { color: var(--ro-paper) !important; }
+[class~="hover:text-cyan-300"]:hover,
+[class~="hover:text-cyan-400"]:hover { color: var(--ro-blue) !important; }
+
+[class~="ring-cyan-500"],
+[class~="ring-cyan-400"] { --tw-ring-color: var(--ro-blue) !important; }
+[class~="focus:ring-cyan-500/40"]:focus { --tw-ring-color: color-mix(in srgb, var(--ro-blue) 32%, transparent) !important; }
+
+[class~="text-rose-300"],
+[class~="text-rose-400"],
+[class~="text-rose-500"] { color: var(--ro-danger) !important; }
+[class~="border-rose-900/60"],
+[class~="border-rose-500/50"] { border-color: color-mix(in srgb, var(--ro-danger) 45%, var(--ro-line)) !important; }
+[class~="bg-rose-950/40"],
+[class~="bg-rose-950/60"] { background-color: var(--ro-rupture-soft) !important; }

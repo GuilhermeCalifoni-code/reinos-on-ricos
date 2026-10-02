@@ -30,10 +30,10 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in font-['Plus_Jakarta_Sans']">
-      <div className="bg-[#0f121a] border border-cyan-500/30 w-full max-w-4xl max-h-[90vh] rounded-xl flex flex-col shadow-2xl shadow-cyan-950/40 overflow-hidden">
+      <div className="bg-[var(--ro-surface)] border border-cyan-500/30 w-full max-w-4xl max-h-[90vh] rounded-xl flex flex-col shadow-2xl shadow-cyan-950/40 overflow-hidden">
         
         {/* Cabeçalho */}
-        <div className="p-5 border-b border-slate-800 bg-[#121622] flex items-center justify-between">
+        <div className="p-5 border-b border-slate-800 bg-[var(--ro-surface-raised)] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               <Database className="w-5 h-5" />
@@ -100,7 +100,7 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
         </div>
 
         {/* Rodapé com Informações das Tabelas */}
-        <div className="p-4 bg-[#121622] text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="p-4 bg-[var(--ro-surface-raised)] text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-4 text-[11px] font-mono">
             <span className="text-slate-300">Base:</span>
             <span className="text-emerald-400">campaigns</span>

@@ -13,6 +13,7 @@ import { SessionPanel } from './SessionPanel';
 import { useSessionEvents } from '../../services/session-events/useSessionEvents';
 import { sessionEventFactories } from '../../services/session-events/sessionEventFactories';
 import { useCampaignRealtime } from '../../features/realtime/useCampaignRealtime';
+import { ThemeToggle } from '../../design-system/ThemeToggle';
 
 interface LiveTableProps {
   campanha: Campanha; personagens: Personagem[]; role: UserRole; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
@@ -88,6 +89,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
         {registroOnline && <small className="live-table__presence">{realtime.presence.length ? realtime.presence.map(item => `● ${item.name}`).join(' · ') : 'Conectando participantes…'}</small>}
       </div>
       <div className="live-table__bar-right">
+        <ThemeToggle compact />
         <button className="live-table__panel-toggle" onClick={() => { setSessionOpen(v => !v); setCinematic(false); }} aria-pressed={sessionOpen}>Registro</button>
         <button className={`live-table__focus-toggle ${cinematic ? 'is-active' : ''}`} onClick={toggleCinematic}>{cinematic ? 'Sair do foco' : 'Modo foco'}</button>
         <span className={`live-table__live is-${realtime.status}`}><i /> {statusTexto}</span>

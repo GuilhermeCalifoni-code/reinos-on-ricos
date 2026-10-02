@@ -3,6 +3,7 @@ import { Personagem } from '../types/character';
 import { UserSession } from '../types/auth';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
 import { authService } from '../services/auth/authService';
+import { ThemeToggle } from '../design-system/ThemeToggle';
 
 interface LoginScreenProps {
   personagens: Personagem[];
@@ -128,7 +129,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           <span className="login-onirico__brand">REINOS ONÍRICOS</span>
           <small>Companheiro de mesa</small>
         </div>
-        <button type="button" onClick={onAbrirModalSql} className="ro-button--quiet">Configurar Supabase</button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button type="button" onClick={onAbrirModalSql} className="ro-button--quiet">Configurar Supabase</button>
+        </div>
       </header>
 
       <main className="login-onirico__main">

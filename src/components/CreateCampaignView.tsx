@@ -37,11 +37,11 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
   return (
     <div className="w-full max-w-3xl mx-auto px-8 py-12">
       {/* Topo */}
-      <div className="pb-8 border-b border-[#292929]">
-        <h1 className="font-serif text-3xl sm:text-4xl text-[#F5F3EE] font-normal tracking-tight">
+      <div className="pb-8 border-b border-[var(--ro-line)]">
+        <h1 className="font-serif text-3xl sm:text-4xl text-[var(--ro-paper)] font-normal tracking-tight">
           Nova Campanha
         </h1>
-        <p className="text-sm text-[#666666] mt-2">
+        <p className="text-sm text-[var(--ro-ash)] mt-2">
           Crie um novo espaço para sua história.
         </p>
       </div>
@@ -50,7 +50,7 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
       <form onSubmit={handleSubmit} className="pt-8 space-y-8">
         {/* Nome */}
         <div>
-          <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-2.5">
+          <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-2.5">
             Nome
           </label>
           <input
@@ -59,13 +59,13 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             placeholder="Nome da campanha..."
-            className="w-full bg-[#171717] border border-[#292929] focus:border-[#A88952] focus:outline-none px-4 py-3 text-sm text-[#F5F3EE] placeholder-[#666666] transition-colors rounded-sm"
+            className="w-full bg-[var(--ro-surface)] border border-[var(--ro-line)] focus:border-[var(--ro-line-strong)] focus:outline-none px-4 py-3 text-sm text-[var(--ro-paper)] placeholder-[#666666] transition-colors rounded-sm"
           />
         </div>
 
         {/* Descrição */}
         <div>
-          <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-2.5">
+          <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-2.5">
             Descrição
           </label>
           <textarea
@@ -73,20 +73,20 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
             value={descricao}
             onChange={(e) => setDescricao(e.target.value)}
             placeholder="Descreva brevemente sua campanha..."
-            className="w-full bg-[#171717] border border-[#292929] focus:border-[#A88952] focus:outline-none px-4 py-3 text-sm text-[#D9D7D2] placeholder-[#666666] transition-colors rounded-sm resize-none"
+            className="w-full bg-[var(--ro-surface)] border border-[var(--ro-line)] focus:border-[var(--ro-line-strong)] focus:outline-none px-4 py-3 text-sm text-[var(--ro-paper-muted)] placeholder-[#666666] transition-colors rounded-sm resize-none"
           />
         </div>
 
         {/* Imagem */}
         <div>
           <div className="flex items-center justify-between mb-2.5">
-            <label className="text-xs font-mono uppercase tracking-widest text-[#666666]">
+            <label className="text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)]">
               Imagem Atmosférica
             </label>
             <button
               type="button"
               onClick={() => setUsarUrlCustom(!usarUrlCustom)}
-              className="text-[11px] font-mono text-[#666666] hover:text-[#A88952] transition-colors"
+              className="text-[11px] font-mono text-[var(--ro-ash)] hover:text-[var(--ro-copper)] transition-colors"
             >
               {usarUrlCustom ? 'Escolher da Coleção' : 'Inserir URL direta'}
             </button>
@@ -98,7 +98,7 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
               value={imagemUrl}
               onChange={(e) => setImagemUrl(e.target.value)}
               placeholder="https://exemplo.com/imagem-urbana.jpg"
-              className="w-full bg-[#171717] border border-[#292929] focus:border-[#A88952] focus:outline-none px-4 py-3 text-sm text-[#D9D7D2] placeholder-[#666666] transition-colors rounded-sm"
+              className="w-full bg-[var(--ro-surface)] border border-[var(--ro-line)] focus:border-[var(--ro-line-strong)] focus:outline-none px-4 py-3 text-sm text-[var(--ro-paper-muted)] placeholder-[#666666] transition-colors rounded-sm"
             />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -109,7 +109,7 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
                     key={img.id}
                     onClick={() => setImagemUrl(img.url)}
                     className={`cursor-pointer overflow-hidden border rounded-sm relative aspect-video group transition-all ${
-                      selecionada ? 'border-[#A88952]' : 'border-[#292929] hover:border-[#666666]'
+                      selecionada ? 'border-[var(--ro-line-strong)]' : 'border-[var(--ro-line)] hover:border-[#666666]'
                     }`}
                   >
                     <img
@@ -117,8 +117,8 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
                       alt={img.nome}
                       className="w-full h-full object-cover filter brightness-75 contrast-90"
                     />
-                    <div className="absolute inset-0 bg-[#0B0B0B]/30" />
-                    <div className="absolute bottom-1.5 left-2 right-2 text-[10px] text-[#F5F3EE] truncate drop-shadow">
+                    <div className="absolute inset-0 bg-[var(--ro-bg)]/30" />
+                    <div className="absolute bottom-1.5 left-2 right-2 text-[10px] text-[var(--ro-paper)] truncate drop-shadow">
                       {img.nome}
                     </div>
                   </div>
@@ -130,11 +130,11 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
 
         {/* Tipo */}
         <div>
-          <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-3">
+          <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-3">
             Tipo
           </label>
           <div className="flex flex-wrap items-center gap-6">
-            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-[#D9D7D2]">
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-[var(--ro-paper-muted)]">
               <input
                 type="radio"
                 name="tipo"
@@ -146,7 +146,7 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
               <span>Campanha</span>
             </label>
 
-            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-[#D9D7D2]">
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-[var(--ro-paper-muted)]">
               <input
                 type="radio"
                 name="tipo"
@@ -158,7 +158,7 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
               <span>One-shot</span>
             </label>
 
-            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-[#D9D7D2]">
+            <label className="flex items-center gap-2.5 cursor-pointer text-xs text-[var(--ro-paper-muted)]">
               <input
                 type="radio"
                 name="tipo"
@@ -173,18 +173,18 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({
         </div>
 
         {/* Botões Finais */}
-        <div className="pt-6 border-t border-[#292929] flex items-center justify-end gap-4">
+        <div className="pt-6 border-t border-[var(--ro-line)] flex items-center justify-end gap-4">
           <button
             type="button"
             onClick={onCancelar}
-            className="px-5 py-2.5 bg-transparent hover:bg-[#292929] text-[#666666] hover:text-[#D9D7D2] text-xs font-medium tracking-wide uppercase transition-colors rounded-sm"
+            className="px-5 py-2.5 bg-transparent hover:bg-[var(--ro-surface-raised)] text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)] text-xs font-medium tracking-wide uppercase transition-colors rounded-sm"
           >
             Cancelar
           </button>
 
           <button
             type="submit"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-medium tracking-wide uppercase transition-colors rounded-sm"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium tracking-wide uppercase transition-colors rounded-sm"
           >
             <span>Criar Campanha</span>
             <span className="text-xs">→</span>

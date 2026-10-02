@@ -506,7 +506,7 @@ export default function App() {
   };
 
   return (
-    <div className={`ro-app-shell flex font-sans selection:bg-[#A88952]/20 selection:text-[#F5F3EE] ${viewAtiva === 'modo_mesa' && !personagemParaFicha ? 'ro-app-shell--live' : ''}`}>
+    <div className={`ro-app-shell flex font-sans selection:bg-[var(--ro-accent-soft)] selection:text-[var(--ro-paper)] ${viewAtiva === 'modo_mesa' && !personagemParaFicha ? 'ro-app-shell--live' : ''}`}>
       {/* Input Oculto de Arquivo JSON */}
       <input
         type="file"

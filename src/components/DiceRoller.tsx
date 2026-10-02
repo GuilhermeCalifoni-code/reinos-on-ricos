@@ -183,7 +183,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       
       {/* Abas de Navegação do Rolador */}
-      <div className="bg-[#12151e] border border-slate-800 rounded-lg p-2 flex gap-2 font-mono text-xs">
+      <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-2 flex gap-2 font-mono text-xs">
         <button
           onClick={() => setAbaAtiva('mundano')}
           className={`flex-1 py-2.5 px-4 rounded font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition ${
@@ -226,7 +226,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
           {/* Controles de Entrada */}
-          <div className="md:col-span-6 bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4 font-mono text-xs">
+          <div className="md:col-span-6 bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4 font-mono text-xs">
             <div className="border-b border-slate-800 pb-2">
               <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -390,7 +390,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
           </div>
 
           {/* Painel de Resolução */}
-          <div className="md:col-span-6 bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg font-mono flex flex-col justify-between">
+          <div className="md:col-span-6 bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg font-mono flex flex-col justify-between">
             <div>
               <div className="border-b border-slate-800 pb-2 mb-4">
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider">
@@ -494,7 +494,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
           {/* Controles do Teste Onírico */}
-          <div className="md:col-span-5 bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4 font-mono text-xs">
+          <div className="md:col-span-5 bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4 font-mono text-xs">
             <div className="border-b border-slate-800 pb-2">
               <h3 className="text-sm font-bold font-['Chakra_Petch'] text-cyan-300 uppercase tracking-wider flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-cyan-400" />
@@ -586,7 +586,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
           </div>
 
           {/* Resolução Dual: Realidade vs Sonhar */}
-          <div className="md:col-span-7 bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg font-mono flex flex-col justify-between">
+          <div className="md:col-span-7 bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg font-mono flex flex-col justify-between">
             <div>
               <div className="border-b border-slate-800 pb-2 mb-4 flex items-center justify-between">
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider">
@@ -722,7 +722,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
 
       {/* ABA 3: MOVIMENTO DE MORTE (Pág. 32) */}
       {abaAtiva === 'morte' && (
-        <div className="bg-[#12151e] border border-rose-900/40 rounded-lg p-6 shadow-xl font-mono text-xs space-y-5">
+        <div className="bg-[var(--ro-surface)] border border-rose-900/40 rounded-lg p-6 shadow-xl font-mono text-xs space-y-5">
           <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded bg-rose-950 border border-rose-600 text-rose-400">

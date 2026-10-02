@@ -1,20 +1,47 @@
 /* Fundação visual de Reinos Oníricos.
    Estes tokens são a única fonte de cor, ritmo e estados para as novas telas. */
-:root {
-  --ro-ink: #12110f;
-  --ro-charcoal: #1c1a17;
-  --ro-paper: #e8e1d3;
-  --ro-paper-muted: #a9a196;
-  --ro-ash: #6e685f;
-  --ro-line: rgba(232, 225, 211, 0.14);
-  --ro-line-strong: rgba(200, 165, 104, 0.42);
-  --ro-gold: #c8a568;
-  --ro-gold-deep: #8e6d38;
-  --ro-indigo: #595786;
-  --ro-wine: #773d4c;
-  --ro-safe: #829b79;
-  --ro-alert: #d0a761;
-  --ro-danger: #bd6570;
+:root,
+:root[data-theme='dark'] {
+  /* Paleta extraída do Livro Básico: tinta azul-negra, marfim, azul editorial,
+     cobre dos diagramas e oliva das tabelas. */
+  --ro-ink: #0b0e12;
+  --ro-charcoal: #121923;
+  --ro-charcoal-raised: #18222d;
+  --ro-paper: #f8f1e8;
+  --ro-paper-muted: #c9c1b7;
+  --ro-ash: #858b92;
+  --ro-navy: #5f7fa5;
+  --ro-blue: #78a0c9;
+  --ro-copper: #b7792f;
+  --ro-copper-bright: #d49a4c;
+  --ro-olive: #908850;
+  --ro-rift: #713b35;
+  --ro-line: rgba(248, 241, 232, 0.13);
+  --ro-line-strong: rgba(183, 121, 47, 0.48);
+  --ro-gold: var(--ro-copper);
+  --ro-gold-deep: #81501f;
+  --ro-indigo: var(--ro-navy);
+  --ro-wine: var(--ro-rift);
+  --ro-safe: #7f9273;
+  --ro-alert: #bd8a43;
+  --ro-danger: #b85d61;
+
+  --ro-bg: var(--ro-ink);
+  --ro-bg-soft: #10161e;
+  --ro-surface: var(--ro-charcoal);
+  --ro-surface-raised: var(--ro-charcoal-raised);
+  --ro-input: #0e141c;
+  --ro-header-bg: rgba(11, 14, 18, 0.9);
+  --ro-panel-bg: rgba(18, 25, 35, 0.96);
+  --ro-accent-soft: rgba(183, 121, 47, 0.11);
+  --ro-blue-soft: rgba(95, 127, 165, 0.14);
+  --ro-olive-soft: rgba(144, 136, 80, 0.14);
+  --ro-rupture-soft: rgba(113, 59, 53, 0.18);
+  --ro-stage-from: #172637;
+  --ro-stage-to: #080b0f;
+  --ro-overlay: rgba(7, 9, 12, 0.72);
+  --ro-on-accent: #120d07;
+
   --ro-space-1: 0.25rem;
   --ro-space-2: 0.5rem;
   --ro-space-3: 0.75rem;
@@ -23,17 +50,61 @@
   --ro-space-6: 2rem;
   --ro-space-7: 3rem;
   --ro-radius: 2px;
-  --ro-shadow: 0 22px 52px rgba(0, 0, 0, 0.28);
-  --ro-focus: 0 0 0 3px rgba(200, 165, 104, 0.26);
+  --ro-shadow: 0 22px 52px rgba(0, 0, 0, 0.34);
+  --ro-focus: 0 0 0 3px rgba(183, 121, 47, 0.28);
   --ro-transition: 160ms ease;
+}
+
+:root[data-theme='light'] {
+  /* O modo claro replica a linguagem editorial das páginas internas. */
+  --ro-ink: #f8f5ee;
+  --ro-charcoal: #eee9df;
+  --ro-charcoal-raised: #fffdf8;
+  --ro-paper: #101822;
+  --ro-paper-muted: #4f5660;
+  --ro-ash: #73777b;
+  --ro-navy: #103058;
+  --ro-blue: #487fb7;
+  --ro-copper: #985818;
+  --ro-copper-bright: #b86f22;
+  --ro-olive: #908850;
+  --ro-rift: #783f37;
+  --ro-line: rgba(16, 48, 88, 0.15);
+  --ro-line-strong: rgba(152, 88, 24, 0.45);
+  --ro-gold: var(--ro-copper);
+  --ro-gold-deep: #6d3f13;
+  --ro-indigo: var(--ro-navy);
+  --ro-wine: var(--ro-rift);
+  --ro-safe: #5f724f;
+  --ro-alert: #9b692e;
+  --ro-danger: #94484e;
+
+  --ro-bg: var(--ro-ink);
+  --ro-bg-soft: #f1ede4;
+  --ro-surface: var(--ro-charcoal);
+  --ro-surface-raised: var(--ro-charcoal-raised);
+  --ro-input: #fffdf9;
+  --ro-header-bg: rgba(248, 245, 238, 0.92);
+  --ro-panel-bg: rgba(255, 253, 248, 0.96);
+  --ro-accent-soft: rgba(152, 88, 24, 0.09);
+  --ro-blue-soft: rgba(16, 48, 88, 0.08);
+  --ro-olive-soft: rgba(144, 136, 80, 0.15);
+  --ro-rupture-soft: rgba(120, 63, 55, 0.1);
+  --ro-stage-from: #dfe8ed;
+  --ro-stage-to: #f8f5ee;
+  --ro-overlay: rgba(248, 245, 238, 0.72);
+  --ro-on-accent: #fffaf1;
+
+  --ro-shadow: 0 18px 44px rgba(32, 38, 45, 0.13);
+  --ro-focus: 0 0 0 3px rgba(72, 127, 183, 0.22);
 }
 
 .ro-app-shell {
   min-height: 100vh;
   background:
-    radial-gradient(900px circle at 92% -12%, rgba(89, 87, 134, 0.2), transparent 52%),
-    radial-gradient(680px circle at 16% 4%, rgba(119, 61, 76, 0.11), transparent 50%),
-    var(--ro-ink);
+    radial-gradient(920px circle at 92% -12%, color-mix(in srgb, var(--ro-navy) 16%, transparent), transparent 54%),
+    radial-gradient(720px circle at 8% 0%, color-mix(in srgb, var(--ro-copper) 7%, transparent), transparent 50%),
+    var(--ro-bg);
   color: var(--ro-paper);
 }
 
@@ -64,24 +135,24 @@
 
 .ro-button {
   background: var(--ro-gold);
-  color: #21180c;
+  color: var(--ro-on-accent);
 }
-.ro-button:hover { background: #dbbb80; transform: translateY(-1px); }
-.ro-button--quiet { background: rgba(232, 225, 211, 0.035); color: var(--ro-paper); border-color: var(--ro-line); }
-.ro-button--quiet:hover { background: rgba(232, 225, 211, 0.09); border-color: var(--ro-line-strong); color: var(--ro-gold); }
+.ro-button:hover { background: var(--ro-copper-bright); transform: translateY(-1px); }
+.ro-button--quiet { background: color-mix(in srgb, var(--ro-paper) 4%, transparent); color: var(--ro-paper); border-color: var(--ro-line); }
+.ro-button--quiet:hover { background: color-mix(in srgb, var(--ro-paper) 8%, transparent); border-color: var(--ro-line-strong); color: var(--ro-gold); }
 .ro-icon-button { min-width: 2.25rem; padding: 0; color: var(--ro-paper-muted); border-color: transparent; background: transparent; }
-.ro-icon-button:hover { color: var(--ro-gold); background: rgba(232, 225, 211, 0.05); }
+.ro-icon-button:hover { color: var(--ro-gold); background: color-mix(in srgb, var(--ro-paper) 5%, transparent); }
 .ro-button:focus-visible, .ro-button--quiet:focus-visible, .ro-icon-button:focus-visible { outline: none; box-shadow: var(--ro-focus); }
 
 .ro-surface {
   border: 1px solid var(--ro-line);
-  background: linear-gradient(145deg, rgba(34, 32, 28, 0.94), rgba(21, 20, 18, 0.94));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--ro-surface-raised) 96%, var(--ro-navy) 4%), var(--ro-surface));
   box-shadow: var(--ro-shadow);
 }
 
 .ro-empty-state {
   border: 1px dashed var(--ro-line-strong);
-  background: linear-gradient(135deg, rgba(89, 87, 134, 0.1), rgba(119, 61, 76, 0.08));
+  background: linear-gradient(135deg, var(--ro-blue-soft), var(--ro-olive-soft));
 }
 
 .ro-nav-item {
@@ -1003,4 +1074,218 @@
     min-height: 2.75rem;
     max-height: 4.5rem;
   }
+}
+
+
+/* ==========================================================================
+   Tema do Livro — aplicação semântica nas superfícies da plataforma
+   ========================================================================== */
+.ro-theme-toggle {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  border: 1px solid var(--ro-line);
+  padding: 0 .75rem;
+  background: color-mix(in srgb, var(--ro-surface-raised) 72%, transparent);
+  color: var(--ro-paper-muted);
+  font-size: .68rem;
+  letter-spacing: .05em;
+  transition: border-color var(--ro-transition), color var(--ro-transition), background var(--ro-transition);
+}
+.ro-theme-toggle:hover {
+  border-color: var(--ro-line-strong);
+  color: var(--ro-copper);
+  background: var(--ro-accent-soft);
+}
+.ro-theme-toggle--compact {
+  width: 2.35rem;
+  padding: 0;
+}
+.ro-theme-toggle:focus-visible { outline: none; box-shadow: var(--ro-focus); }
+
+.live-table__bar { background: var(--ro-panel-bg); }
+.live-table__grid { background: var(--ro-bg-soft); }
+.live-table__party,
+.live-table__session { background: var(--ro-panel-bg); }
+.live-table__character.is-selected {
+  background: linear-gradient(90deg, var(--ro-accent-soft), transparent);
+}
+.live-table__stage {
+  background: radial-gradient(ellipse at 50% 45%, var(--ro-stage-from), var(--ro-stage-to) 72%);
+}
+.live-table__stage::after {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ro-navy) 13%, transparent),
+    transparent 42%,
+    color-mix(in srgb, var(--ro-copper) 8%, transparent)
+  );
+}
+.live-table__stage--handout {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ro-olive) 22%, var(--ro-bg)), var(--ro-bg-soft) 68%);
+}
+.live-table__stage--mapa { background: var(--ro-bg-soft); }
+.live-table__geometry {
+  border-color: color-mix(in srgb, var(--ro-copper) 24%, transparent);
+  box-shadow:
+    0 0 0 6rem color-mix(in srgb, var(--ro-navy) 4%, transparent),
+    0 0 0 12rem color-mix(in srgb, var(--ro-copper) 2%, transparent);
+}
+.live-table__scene-controls button {
+  background: color-mix(in srgb, var(--ro-bg) 82%, transparent);
+}
+.live-table__dock { background: var(--ro-surface); }
+.live-table__dock button:hover,
+.live-table__dock button.is-active { background: var(--ro-accent-soft); }
+.live-table__tool {
+  background:
+    radial-gradient(circle at 80% 0%, color-mix(in srgb, var(--ro-navy) 10%, transparent), transparent 24rem),
+    var(--ro-panel-bg);
+}
+.live-table__tool-head { background: var(--ro-panel-bg); }
+
+.session-feed__event {
+  border-left-color: var(--ro-ash);
+  background: color-mix(in srgb, var(--ro-paper) 2.5%, transparent);
+}
+.session-feed__event--character_speech { border-color: var(--ro-blue); }
+.session-feed__event--ooc {
+  border-color: var(--ro-olive);
+  background: var(--ro-olive-soft);
+}
+.session-feed__event--roll {
+  border-color: var(--ro-copper);
+  background: var(--ro-accent-soft);
+}
+.session-feed__event--system,
+.session-feed__event--scene_change,
+.session-feed__event--counter_update,
+.session-feed__event--clue_reveal {
+  border-color: var(--ro-navy);
+  background: var(--ro-blue-soft);
+}
+.session-feed__event.is-private {
+  border-color: var(--ro-rift);
+  background: var(--ro-rupture-soft);
+}
+.session-feed__composer select,
+.session-feed__composer input,
+.session-feed__composer textarea,
+.counter-panel__create input,
+.counter-panel__create select,
+.map-stage input,
+.map-stage select {
+  background: var(--ro-input);
+  color: var(--ro-paper);
+}
+.session-feed__header small {
+  border-color: color-mix(in srgb, var(--ro-copper) 40%, transparent);
+}
+.session-feed__readonly,
+.session-feed__error,
+.live-table__sync-error { color: var(--ro-danger) !important; }
+
+.counter-panel__meter,
+.live-counter-preview__dial {
+  background:
+    radial-gradient(circle, var(--ro-surface) 57%, transparent 59%),
+    conic-gradient(var(--ro-copper) var(--counter-progress), color-mix(in srgb, var(--ro-paper) 14%, transparent) 0);
+}
+
+.map-stage { background: var(--ro-bg-soft); }
+.map-stage__viewport {
+  background: radial-gradient(ellipse at 50% 45%, var(--ro-stage-from), var(--ro-stage-to) 73%);
+}
+.map-stage__viewport.has-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ro-paper) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ro-paper) 9%, transparent) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 45%, var(--ro-stage-from), var(--ro-stage-to) 73%);
+}
+.map-stage__token {
+  border-color: var(--ro-bg);
+  color: var(--ro-on-accent);
+}
+
+.campaign-assets__form,
+.campaign-assets__card {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ro-navy) 6%, transparent), transparent 50%),
+    var(--ro-surface);
+}
+.campaign-assets__form input,
+.campaign-assets__form textarea,
+.campaign-assets__form select {
+  background: var(--ro-input);
+  color: var(--ro-paper);
+}
+.campaign-members__invite code,
+.campaign-members__invite button,
+.campaign-members__actions button,
+.campaign-members__actions select {
+  background: var(--ro-input);
+}
+
+.login-onirico {
+  background:
+    radial-gradient(circle at 16% 18%, color-mix(in srgb, var(--ro-navy) 15%, transparent), transparent 34rem),
+    radial-gradient(circle at 86% 72%, color-mix(in srgb, var(--ro-copper) 7%, transparent), transparent 32rem),
+    var(--ro-bg);
+}
+.login-onirico__panel {
+  background: color-mix(in srgb, var(--ro-surface-raised) 94%, transparent);
+}
+.login-onirico__form input,
+.login-onirico__form select {
+  background: var(--ro-input);
+  color: var(--ro-paper);
+}
+.login-onirico__switch button.is-active {
+  background: var(--ro-blue-soft);
+  color: var(--ro-paper);
+}
+
+:root[data-theme='light'] .ro-surface {
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.56), transparent),
+    var(--ro-surface-raised);
+}
+:root[data-theme='light'] .ro-empty-state {
+  background:
+    linear-gradient(135deg, var(--ro-blue-soft), var(--ro-olive-soft)),
+    var(--ro-surface-raised);
+}
+:root[data-theme='light'] .live-table__stage--imagem img {
+  filter: brightness(.68) saturate(.72) contrast(.92);
+}
+:root[data-theme='light'] .live-table__stage-copy {
+  text-shadow: 0 1px 12px rgba(248,245,238,.86);
+}
+:root[data-theme='light'] .live-table__tool-backdrop {
+  background: rgba(16, 24, 34, .28);
+}
+:root[data-theme='light'] .ro-button {
+  color: #fffaf1;
+}
+
+
+/* O claro segue a diagramação interna: azul para hierarquia, cobre para ação. */
+:root[data-theme='light'] .ro-eyebrow { color: var(--ro-navy); }
+:root[data-theme='light'] .ro-nav-item--active,
+:root[data-theme='light'] .ro-campaign-nav--active {
+  border-left-color: var(--ro-navy);
+  background: linear-gradient(90deg, var(--ro-blue-soft), transparent);
+}
+:root[data-theme='light'] .ro-nav-item--active,
+:root[data-theme='light'] .ro-nav-item--active > span,
+:root[data-theme='light'] .ro-mobile-nav--active {
+  color: var(--ro-navy);
+}
+:root[data-theme='light'] .ro-mobile-nav--active { border-bottom-color: var(--ro-navy); }
+
+::selection {
+  background: color-mix(in srgb, var(--ro-copper) 28%, transparent);
+  color: var(--ro-paper);
 }
