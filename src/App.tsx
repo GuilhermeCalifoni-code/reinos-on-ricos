@@ -90,7 +90,15 @@ export default function App() {
     tokensMapa,
     adicionarTokenMapa,
     atualizarTokenMapa,
-    removerTokenMapa
+    removerTokenMapa,
+    cenas,
+    adicionarCena,
+    atualizarCena,
+    removerCena,
+    handouts,
+    adicionarHandout,
+    atualizarHandout,
+    removerHandout
   } = useCampaignStorage();
   const campanhasRemotas = useRemoteCampaigns(session?.modoConexao === 'supabase' ? session.authUserId : undefined);
   const [campanhaRemotaAtivaId, setCampanhaRemotaAtivaId] = useState<string | null>(null);
@@ -111,6 +119,8 @@ export default function App() {
   const pistasAtuais = usandoRemoto ? conteudoRemoto.pistas : pistas;
   const loreAtual = usandoRemoto ? conteudoRemoto.loreEntries : loreEntries;
   const anotacoesAtuais = usandoRemoto ? conteudoRemoto.anotacoes : anotacoes;
+  const cenasAtuais = usandoRemoto ? conteudoRemoto.cenas : cenas;
+  const handoutsAtuais = usandoRemoto ? conteudoRemoto.handouts : handouts;
   const sessaoAtivaId = usandoRemoto ? sessoesAtuais.find(sessao => sessao.numero === campanhaAtiva?.sessaoAtual)?.id : undefined;
   const membrosCampanha = usandoRemoto && campanhaAtivaId ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtivaId) : [];
   const personagensCampanha = usandoRemoto && campanhaAtivaId
@@ -396,6 +406,8 @@ export default function App() {
             pistas={pistasAtuais}
             loreEntries={loreAtual}
             anotacoes={anotacoesAtuais}
+            cenas={cenasAtuais}
+            handouts={handoutsAtuais}
             onIniciarSessao={handleContinuarCampanha}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
             onNovaSessao={(campaignId, dados) => usandoRemoto ? void conteudoRemoto.criarSessao(campaignId, dados) : void criarSessao(campaignId, dados)}
@@ -404,7 +416,13 @@ export default function App() {
             onAdicionarLocal={(item) => usandoRemoto ? void conteudoRemoto.adicionarLocal(item) : adicionarLocal(item)}
             onAdicionarPista={(item) => usandoRemoto ? void conteudoRemoto.adicionarPista(item) : adicionarPista(item)}
             onAdicionarLore={(item) => usandoRemoto ? void conteudoRemoto.adicionarLore(item) : adicionarLore(item)}
-            onAdicionarAnotacao={(campaignId, titulo, conteudo) => usandoRemoto ? void conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo) : adicionarAnotacao(campaignId, titulo, conteudo)}
+            onAdicionarAnotacao={(campaignId, titulo, conteudo) => usandoRemoto ? conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo) : adicionarAnotacao(campaignId, titulo, conteudo)}
+            onAdicionarCena={(item) => usandoRemoto ? conteudoRemoto.adicionarCena(item) : adicionarCena(item)}
+            onAtualizarCena={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarCena(id, patch) : atualizarCena(id, patch)}
+            onRemoverCena={(id) => usandoRemoto ? conteudoRemoto.removerCena(id) : removerCena(id)}
+            onAdicionarHandout={(item) => usandoRemoto ? conteudoRemoto.adicionarHandout(item) : adicionarHandout(item)}
+            onAtualizarHandout={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarHandout(id, patch) : atualizarHandout(id, patch)}
+            onRemoverHandout={(id) => usandoRemoto ? conteudoRemoto.removerHandout(id) : removerHandout(id)}
             membros={usandoRemoto ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id) : []}
             currentUserId={session.authUserId}
             canManageMembers={papelDaCampanha === 'mestre'}
@@ -436,7 +454,7 @@ export default function App() {
             members={membrosCampanha}
             registroOnline={usandoRemoto}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
-            onAtualizarPersonagem={salvarPersonagem}
+            onAtualizarPersonagem={salvarPersonagemPersistente}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
             contadores={contadores}
