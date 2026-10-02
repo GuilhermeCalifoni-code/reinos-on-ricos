@@ -48,7 +48,7 @@ export const DreamGuide: React.FC<DreamGuideProps> = ({
     <div className="space-y-6 max-w-6xl mx-auto pb-12 font-mono text-xs">
       
       {/* Banner Superior */}
-      <div className="bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg">
+      <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-800 pb-3">
           <div>
             <h2 className="text-lg font-bold font-['Chakra_Petch'] text-cyan-300 uppercase tracking-wider flex items-center gap-2">
@@ -116,7 +116,7 @@ export const DreamGuide: React.FC<DreamGuideProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Coluna Esquerda: Detalhes do Domínio e Níveis 1 a 5 (7 cols) */}
-        <div className="lg:col-span-7 bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4">
+        <div className="lg:col-span-7 bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4">
           <div className="border-b border-slate-800 pb-3 flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -195,7 +195,7 @@ export const DreamGuide: React.FC<DreamGuideProps> = ({
         </div>
 
         {/* Coluna Direita: Construtor de Manifestação e Verificação de Regras (5 cols) */}
-        <div className="lg:col-span-5 bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="border-b border-slate-800 pb-2">
               <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider flex items-center gap-2">
