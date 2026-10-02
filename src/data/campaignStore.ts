@@ -247,12 +247,18 @@ export function useCampaignStorage() {
   const adicionarNPC = (novo: Omit<NPC, 'id'>) => {
     const item: NPC = { ...novo, id: `npc-${Date.now()}` };
     setNpcs(prev => [...prev, item]);
+    return item;
   };
+  const atualizarNPC = (id: string, parcial: Partial<NPC>) => setNpcs(prev => prev.map(item => item.id === id ? { ...item, ...parcial } : item));
+  const removerNPC = (id: string) => setNpcs(prev => prev.filter(item => item.id !== id));
 
   const adicionarAdversario = (novo: Omit<Adversario, 'id'>) => {
     const item: Adversario = { ...novo, id: `adv-${Date.now()}` };
     setAdversarios(prev => [...prev, item]);
+    return item;
   };
+  const atualizarAdversario = (id: string, parcial: Partial<Adversario>) => setAdversarios(prev => prev.map(item => item.id === id ? { ...item, ...parcial } : item));
+  const removerAdversario = (id: string) => setAdversarios(prev => prev.filter(item => item.id !== id));
 
   const adicionarLocal = (novo: Omit<Local, 'id'>) => {
     const item: Local = { ...novo, id: `loc-${Date.now()}` };
@@ -340,8 +346,12 @@ export function useCampaignStorage() {
     atualizarSessao,
     npcs,
     adicionarNPC,
+    atualizarNPC,
+    removerNPC,
     adversarios,
     adicionarAdversario,
+    atualizarAdversario,
+    removerAdversario,
     locais,
     adicionarLocal,
     pistas,
