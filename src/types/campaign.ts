@@ -134,6 +134,24 @@ export interface Contador {
   criadoPor?: string;
 }
 
+export type TipoHabilidadeAtor = 'passiva' | 'acao' | 'reacao';
+export type TipoTesteVinculado = 'mundano' | 'reflexo';
+export type AtributoTesteVinculado = 'corpo' | 'mente' | 'vontade' | 'vinculo';
+
+export interface TesteVinculado {
+  tipo: TipoTesteVinculado;
+  atributo: AtributoTesteVinculado;
+  dt: number;
+}
+
+export interface HabilidadeAtor {
+  id: string;
+  tipo: TipoHabilidadeAtor;
+  nome: string;
+  descricao: string;
+  teste?: TesteVinculado;
+}
+
 export interface NPC {
   id: string;
   campanhaId: string;
@@ -143,6 +161,12 @@ export interface NPC {
   descricao: string;
   atitude: 'aliado' | 'neutro' | 'hostil' | 'desconhecido';
   localizacao: string;
+  nivelAmeaca?: number;
+  vida?: number;
+  resistencia?: number;
+  dificuldade?: number;
+  deslocamento?: string;
+  habilidades?: HabilidadeAtor[];
   visibilidade?: VisibilidadeConteudo;
 }
 
@@ -158,6 +182,11 @@ export interface Adversario {
   resistencia: number;
   ataquePrincipal: string;
   descricao: string;
+  origem?: string;
+  natureza?: string;
+  perturbacao?: string;
+  deslocamento?: string;
+  habilidades?: HabilidadeAtor[];
   visibilidade?: VisibilidadeConteudo;
 }
 
