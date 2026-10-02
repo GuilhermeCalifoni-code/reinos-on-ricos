@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, Contador, MapaNarrativo, TokenMapa } from '../types/campaign';
+import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, Contador, MapaNarrativo, TokenMapa, Cena, Handout } from '../types/campaign';
 import {
   CAMPANHAS_INICIAIS,
   SESSOES_INICIAIS,
@@ -23,6 +23,8 @@ const STORAGE_KEYS = {
   CONTADORES: 'reinos_oniricos_contadores_v1',
   MAPAS: 'reinos_oniricos_mapas_v1',
   TOKENS_MAPA: 'reinos_oniricos_tokens_mapa_v1',
+  CENAS: 'reinos_oniricos_cenas_v1',
+  HANDOUTS: 'reinos_oniricos_handouts_v1',
   ATIVA_ID: 'reinos_oniricos_campanha_ativa_v2'
 };
 
@@ -117,6 +119,12 @@ export function useCampaignStorage() {
   const [tokensMapa, setTokensMapa] = useState<TokenMapa[]>(() => {
     try { const salvo = localStorage.getItem(STORAGE_KEYS.TOKENS_MAPA); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
   });
+  const [cenas, setCenas] = useState<Cena[]>(() => {
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.CENAS); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+  });
+  const [handouts, setHandouts] = useState<Handout[]>(() => {
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.HANDOUTS); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+  });
 
   // Salvar no localStorage
   useEffect(() => {
@@ -159,6 +167,8 @@ export function useCampaignStorage() {
   useEffect(() => { localStorage.setItem(STORAGE_KEYS.CONTADORES, JSON.stringify(contadores)); }, [contadores]);
   useEffect(() => { localStorage.setItem(STORAGE_KEYS.MAPAS, JSON.stringify(mapas)); }, [mapas]);
   useEffect(() => { localStorage.setItem(STORAGE_KEYS.TOKENS_MAPA, JSON.stringify(tokensMapa)); }, [tokensMapa]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.CENAS, JSON.stringify(cenas)); }, [cenas]);
+  useEffect(() => { localStorage.setItem(STORAGE_KEYS.HANDOUTS, JSON.stringify(handouts)); }, [handouts]);
 
   const campanhaAtiva = campanhas.find(c => c.id === campanhaAtivaId) || campanhas[0] || null;
 
@@ -301,6 +311,22 @@ export function useCampaignStorage() {
   const atualizarTokenMapa = (id: string, parcial: Partial<TokenMapa>) => setTokensMapa(anteriores => anteriores.map(item => item.id === id ? { ...item, ...parcial, atualizadoEm: new Date().toISOString() } : item));
   const removerTokenMapa = (id: string) => setTokensMapa(anteriores => anteriores.filter(item => item.id !== id));
 
+  const adicionarCena = (novo: Omit<Cena, 'id'>) => {
+    const item: Cena = { ...novo, id: `cena-${Date.now()}` };
+    setCenas(anteriores => [...anteriores, item]);
+    return item;
+  };
+  const atualizarCena = (id: string, parcial: Partial<Cena>) => setCenas(anteriores => anteriores.map(item => item.id === id ? { ...item, ...parcial } : item));
+  const removerCena = (id: string) => setCenas(anteriores => anteriores.filter(item => item.id !== id));
+
+  const adicionarHandout = (novo: Omit<Handout, 'id'>) => {
+    const item: Handout = { ...novo, id: `handout-${Date.now()}` };
+    setHandouts(anteriores => [...anteriores, item]);
+    return item;
+  };
+  const atualizarHandout = (id: string, parcial: Partial<Handout>) => setHandouts(anteriores => anteriores.map(item => item.id === id ? { ...item, ...parcial } : item));
+  const removerHandout = (id: string) => setHandouts(anteriores => anteriores.filter(item => item.id !== id));
+
   return {
     campanhas,
     campanhaAtivaId,
@@ -336,6 +362,14 @@ export function useCampaignStorage() {
     tokensMapa,
     adicionarTokenMapa,
     atualizarTokenMapa,
-    removerTokenMapa
+    removerTokenMapa,
+    cenas,
+    adicionarCena,
+    atualizarCena,
+    removerCena,
+    handouts,
+    adicionarHandout,
+    atualizarHandout,
+    removerHandout
   };
 }
