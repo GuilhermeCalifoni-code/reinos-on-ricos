@@ -92,8 +92,8 @@ const AbilityEditor: React.FC<{
           {ability.categoria !== 'passiva' && ability.teste && (
             <div className="actor-editor__roll-config">
               <label>DT <input type="number" min={1} value={ability.dt ?? 10} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
-              <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>
-              <label>Atributo
+              {ability.teste === 'mundano' && <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>}
+              <label>{ability.teste === 'reflexo' ? 'Atributo do alvo' : 'Atributo'}
                 <select value={ability.atributo || 'corpo'} onChange={event => update(ability.id, { atributo: event.target.value as HabilidadeAtor['atributo'] })}>
                   <option value="corpo">Corpo</option><option value="mente">Mente</option><option value="vontade">Vontade</option><option value="vinculo">Vínculo</option>
                 </select>
