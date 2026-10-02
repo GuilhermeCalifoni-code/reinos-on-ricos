@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Personagem } from '../types/character';
 import { PERSONAGENS_PRE_PRONTOS } from './presetCharacters';
+import { TABELA_PROGRESSAO } from '../rules/rulesData';
 import { 
   calcularResistencia, 
   calcularDefesa, 
@@ -68,6 +69,7 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
     ).defesa;
     const vMax = calcularVidaMaxima(personagemAtualizado.nivel);
     const poMax = calcularProtecaoOniricaMaxima(personagemAtualizado.nivel);
+    const focoMax = TABELA_PROGRESSAO[personagemAtualizado.nivel]?.focoBase ?? 4;
 
     const normalizado: Personagem = {
       ...personagemAtualizado,
@@ -77,6 +79,8 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
       vidaAtual: Math.min(personagemAtualizado.vidaAtual, vMax),
       protecaoOniricaMaxima: poMax,
       protecaoOniricaAtual: Math.min(personagemAtualizado.protecaoOniricaAtual, poMax),
+      focoMaximo: focoMax,
+      focoAtual: Math.min(personagemAtualizado.focoAtual, focoMax),
       atualizadoEm: new Date().toISOString()
     };
 
@@ -118,7 +122,7 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
       historicoRuptura: [],
       dominios: {
         consciencia: 0,
-        espaco: 0,
+        espaco: 2,
         fluxo: 0,
         substancia: 0,
         vida: 3
