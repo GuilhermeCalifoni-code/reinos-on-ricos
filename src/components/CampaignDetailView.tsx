@@ -211,7 +211,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   return (
     <div className="w-full flex flex-col pb-20">
       {/* 20. HERO DA CAMPANHA (Cinematográfico, Atmosférico) */}
-      <section className="relative w-full h-64 sm:h-80 overflow-hidden bg-[#0B0B0B] border-b border-[#292929]">
+      <section className="relative w-full h-64 sm:h-80 overflow-hidden bg-[var(--ro-bg)] border-b border-[var(--ro-line)]">
         <img
           src={campanha.imagemUrl}
           alt={campanha.nome}
@@ -225,28 +225,28 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-8 flex flex-col justify-end pb-6 sm:pb-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             <div className="max-w-2xl">
-              <span className="text-[11px] font-mono tracking-widest text-[#A88952] uppercase block mb-2">
+              <span className="text-[11px] font-mono tracking-widest text-[var(--ro-copper)] uppercase block mb-2">
                 Código: {campanha.codigo} · {campanha.tipo}
               </span>
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[#F5F3EE] tracking-tight leading-tight">
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[var(--ro-paper)] tracking-tight leading-tight">
                 {campanha.nome}
               </h1>
-              <p className="text-sm text-[#D9D7D2]/90 mt-3 font-normal leading-relaxed">
+              <p className="text-sm text-[var(--ro-paper-muted)]/90 mt-3 font-normal leading-relaxed">
                 {campanha.descricao}
               </p>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] font-mono text-[#666666]">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] font-mono text-[var(--ro-ash)]">
                 <span>{campanha.jogadoresCount || personagens.length || 4} jogadores</span>
                 <span>·</span>
                 <span>{sessoesCampanha.length} sessões</span>
                 <span>·</span>
-                <span className="text-[#A88952]">Em andamento</span>
+                <span className="text-[var(--ro-copper)]">Em andamento</span>
               </div>
             </div>
 
             <div>
               <button
                 onClick={() => onIniciarSessao(campanha)}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-medium tracking-wider uppercase transition-colors rounded-sm shadow-none"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium tracking-wider uppercase transition-colors rounded-sm shadow-none"
               >
                 <span>Iniciar Sessão</span>
                 <span className="text-xs">→</span>
@@ -257,7 +257,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
       </section>
 
       {/* Navegação de Abas (Visão Geral, Sessões, Personagens, etc.) */}
-      <nav className="w-full border-b border-[#292929] bg-[#0B0B0B] sticky top-14 z-20">
+      <nav className="w-full border-b border-[var(--ro-line)] bg-[var(--ro-bg)] sticky top-14 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center gap-1 overflow-x-auto py-1.5 [scrollbar-width:none]">
           {tabs.map(tab => (
             <button
@@ -265,8 +265,8 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
               onClick={() => setAbaAtiva(tab.id)}
               className={`px-3.5 py-2 text-xs font-mono uppercase tracking-wider transition-colors whitespace-nowrap rounded-sm ${
                 abaAtiva === tab.id
-                  ? 'text-[#F5F3EE] bg-[#292929] border-b-2 border-[#A88952]'
-                  : 'text-[#666666] hover:text-[#D9D7D2] hover:bg-[#171717]'
+                  ? 'text-[var(--ro-paper)] bg-[var(--ro-surface-raised)] border-b-2 border-[var(--ro-line-strong)]'
+                  : 'text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)] hover:bg-[var(--ro-surface)]'
               }`}
             >
               {tab.label}
@@ -283,28 +283,28 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             {/* Grid Superior: Próxima Ação & Resumo */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
-                <div className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm">
-                  <div className="flex items-center justify-between pb-4 border-b border-[#292929] mb-4">
-                    <span className="text-xs font-mono tracking-widest text-[#666666] uppercase">
+                <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm">
+                  <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)] mb-4">
+                    <span className="text-xs font-mono tracking-widest text-[var(--ro-ash)] uppercase">
                       Última Sessão Registrada
                     </span>
-                    <span className="text-xs font-mono text-[#A88952]">
+                    <span className="text-xs font-mono text-[var(--ro-copper)]">
                       Sessão #{String(campanha.sessaoAtual).padStart(2, '0')}
                     </span>
                   </div>
-                  <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">
+                  <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">
                     {sessoesCampanha[0]?.titulo || 'O que existe atrás da porta?'}
                   </h3>
-                  <p className="text-xs text-[#D9D7D2]/80 mt-2.5 leading-relaxed font-normal">
+                  <p className="text-xs text-[var(--ro-paper-muted)]/80 mt-2.5 leading-relaxed font-normal">
                     {sessoesCampanha[0]?.resumo || 'O grupo adentra o limiar onde a realidade mundana perde consistência. As paredes reverberam com o murmúrio da Vigília enfraquecida.'}
                   </p>
-                  <div className="pt-5 mt-5 border-t border-[#292929] flex items-center justify-between">
-                    <span className="text-[11px] font-mono text-[#666666]">
+                  <div className="pt-5 mt-5 border-t border-[var(--ro-line)] flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-[var(--ro-ash)]">
                       Data: {sessoesCampanha[0]?.data || campanha.ultimaSessaoData}
                     </span>
                     <button
                       onClick={() => onIniciarSessao(campanha)}
-                      className="text-xs font-mono text-[#A88952] hover:underline"
+                      className="text-xs font-mono text-[var(--ro-copper)] hover:underline"
                     >
                       Continuar na Mesa →
                     </button>
@@ -312,26 +312,26 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 </div>
 
                 {/* Lista de Pistas Recentes */}
-                <div className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm">
-                  <div className="flex items-center justify-between pb-4 border-b border-[#292929] mb-4">
-                    <span className="text-xs font-mono tracking-widest text-[#666666] uppercase">
+                <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm">
+                  <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)] mb-4">
+                    <span className="text-xs font-mono tracking-widest text-[var(--ro-ash)] uppercase">
                       Pistas Investigativas Ativas
                     </span>
                     <button
                       onClick={() => setAbaAtiva('pistas')}
-                      className="text-xs font-mono text-[#666666] hover:text-[#D9D7D2]"
+                      className="text-xs font-mono text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]"
                     >
                       Ver todas ({pistasCampanha.length})
                     </button>
                   </div>
                   <div className="space-y-3">
                     {pistasCampanha.slice(0, 2).map(pista => (
-                      <div key={pista.id} className="p-3 bg-[#0B0B0B] border border-[#292929] rounded-sm">
+                      <div key={pista.id} className="p-3 bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-[#F5F3EE] font-medium">{pista.titulo}</span>
-                          <span className="text-[10px] font-mono text-[#A88952] uppercase">{pista.tipo}</span>
+                          <span className="text-[var(--ro-paper)] font-medium">{pista.titulo}</span>
+                          <span className="text-[10px] font-mono text-[var(--ro-copper)] uppercase">{pista.tipo}</span>
                         </div>
-                        <p className="text-xs text-[#666666] mt-1 line-clamp-1">{pista.descricao}</p>
+                        <p className="text-xs text-[var(--ro-ash)] mt-1 line-clamp-1">{pista.descricao}</p>
                       </div>
                     ))}
                   </div>
@@ -340,17 +340,17 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
               {/* Coluna Direita: Status da Campanha & Ruptura */}
               <div className="space-y-6">
-                <div className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm">
-                  <span className="text-xs font-mono tracking-widest text-[#666666] uppercase block mb-3">
+                <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm">
+                  <span className="text-xs font-mono tracking-widest text-[var(--ro-ash)] uppercase block mb-3">
                     Índice de Ruptura da Crônica
                   </span>
                   <div className="flex items-baseline gap-2">
-                    <span className="font-serif text-4xl text-[#F5F3EE] font-normal">
+                    <span className="font-serif text-4xl text-[var(--ro-paper)] font-normal">
                       {campanha.rupturaGeral}
                     </span>
-                    <span className="text-xs font-mono text-[#666666]">/ 6</span>
+                    <span className="text-xs font-mono text-[var(--ro-ash)]">/ 6</span>
                   </div>
-                  <p className="text-xs text-[#666666] mt-2 leading-relaxed">
+                  <p className="text-xs text-[var(--ro-ash)] mt-2 leading-relaxed">
                     {campanha.rupturaGeral >= 4
                       ? 'O véu do Sonhar está gravemente instável. Anomalias espontâneas ocorrem na vigília.'
                       : campanha.rupturaGeral >= 2
@@ -359,8 +359,8 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                   </p>
                 </div>
 
-                <div className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm">
-                  <span className="text-xs font-mono tracking-widest text-[#666666] uppercase block mb-4">
+                <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm">
+                  <span className="text-xs font-mono tracking-widest text-[var(--ro-ash)] uppercase block mb-4">
                     Desvelados Vinculados
                   </span>
                   <div className="space-y-2.5">
@@ -368,13 +368,13 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                       <div
                         key={pj.id}
                         onClick={() => onAbrirFichaPersonagem(pj)}
-                        className="flex items-center justify-between p-2.5 bg-[#0B0B0B] border border-[#292929] hover:border-[#3a3a3a] cursor-pointer transition-colors rounded-sm"
+                        className="flex items-center justify-between p-2.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] hover:border-[var(--ro-line-strong)] cursor-pointer transition-colors rounded-sm"
                       >
                         <div>
-                          <div className="text-xs text-[#F5F3EE] font-medium">{pj.nome}</div>
-                          <div className="text-[10px] font-mono text-[#666666]">{pj.conceito} · Nível {pj.nivel}</div>
+                          <div className="text-xs text-[var(--ro-paper)] font-medium">{pj.nome}</div>
+                          <div className="text-[10px] font-mono text-[var(--ro-ash)]">{pj.conceito} · Nível {pj.nivel}</div>
                         </div>
-                        <div className="text-right text-[11px] font-mono text-[#D9D7D2]">
+                        <div className="text-right text-[11px] font-mono text-[var(--ro-paper-muted)]">
                           <span>{pj.vidaAtual}/{pj.vidaMaxima} V</span>
                         </div>
                       </div>
@@ -442,10 +442,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         {/* 22. ABA: PERSONAGENS */}
         {abaAtiva === 'personagens' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#292929]">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
               <div>
-                <h2 className="font-serif text-2xl text-[#F5F3EE]">Personagens Desvelados</h2>
-                <p className="text-xs text-[#666666] mt-0.5">Membros do grupo nesta crônica.</p>
+                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Personagens Desvelados</h2>
+                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Membros do grupo nesta crônica.</p>
               </div>
             </div>
 
@@ -454,30 +454,30 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 <div
                   key={pj.id}
                   onClick={() => onAbrirFichaPersonagem(pj)}
-                  className="bg-[#171717] border border-[#292929] p-5 rounded-sm hover:border-[#3a3a3a] cursor-pointer transition-colors flex flex-col justify-between"
+                  className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-5 rounded-sm hover:border-[var(--ro-line-strong)] cursor-pointer transition-colors flex flex-col justify-between"
                 >
                   <div>
                     {/* Retrato sutil */}
-                    <div className="h-32 bg-[#0B0B0B] border border-[#292929] mb-4 flex items-center justify-center text-2xl font-serif text-[#A88952]">
+                    <div className="h-32 bg-[var(--ro-bg)] border border-[var(--ro-line)] mb-4 flex items-center justify-center text-2xl font-serif text-[var(--ro-copper)]">
                       {pj.nome.slice(0, 1)}
                     </div>
 
-                    <h3 className="font-serif text-xl text-[#F5F3EE] font-normal leading-snug">
+                    <h3 className="font-serif text-xl text-[var(--ro-paper)] font-normal leading-snug">
                       {pj.nome}
                     </h3>
-                    <p className="text-[11px] font-mono text-[#666666] mt-1 uppercase tracking-wider">
+                    <p className="text-[11px] font-mono text-[var(--ro-ash)] mt-1 uppercase tracking-wider">
                       {pj.conceito} · Nível {pj.nivel}
                     </p>
                   </div>
 
-                  <div className="pt-4 mt-4 border-t border-[#292929] space-y-1.5 text-xs font-mono">
-                    <div className="flex items-center justify-between text-[#D9D7D2]">
-                      <span className="text-[#666666] uppercase text-[10px]">Vida</span>
+                  <div className="pt-4 mt-4 border-t border-[var(--ro-line)] space-y-1.5 text-xs font-mono">
+                    <div className="flex items-center justify-between text-[var(--ro-paper-muted)]">
+                      <span className="text-[var(--ro-ash)] uppercase text-[10px]">Vida</span>
                       <span>{pj.vidaAtual} / {pj.vidaMaxima}</span>
                     </div>
-                    <div className="flex items-center justify-between text-[#D9D7D2]">
-                      <span className="text-[#666666] uppercase text-[10px]">Ruptura</span>
-                      <span className={pj.ruptura >= 4 ? 'text-[#F5F3EE]' : 'text-[#A88952]'}>
+                    <div className="flex items-center justify-between text-[var(--ro-paper-muted)]">
+                      <span className="text-[var(--ro-ash)] uppercase text-[10px]">Ruptura</span>
+                      <span className={pj.ruptura >= 4 ? 'text-[var(--ro-paper)]' : 'text-[var(--ro-copper)]'}>
                         {pj.ruptura} / 6
                       </span>
                     </div>
@@ -491,14 +491,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         {/* 23. ABA: NPCs */}
         {abaAtiva === 'npcs' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#292929]">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
               <div>
-                <h2 className="font-serif text-2xl text-[#F5F3EE]">Personagens Não-Jogadores (NPCs)</h2>
-                <p className="text-xs text-[#666666] mt-0.5">Aliados, informantes e contatos da vigília.</p>
+                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Personagens Não-Jogadores (NPCs)</h2>
+                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Aliados, informantes e contatos da vigília.</p>
               </div>
               <button
                 onClick={() => setModalNovoItem('npcs')}
-                className="px-4 py-2 bg-[#292929] hover:bg-[#333333] text-[#F5F3EE] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[#333333]"
+                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Novo NPC
               </button>
@@ -506,15 +506,15 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {npcsCampanha.map(npc => (
-                <div key={npc.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-3">
+                <div key={npc.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">{npc.nome}</h3>
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#0B0B0B] border border-[#292929] text-[#A88952]">
+                    <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{npc.nome}</h3>
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[var(--ro-copper)]">
                       {npc.atitude}
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-[#666666]">{npc.papel} · {npc.localizacao}</p>
-                  <p className="text-xs text-[#D9D7D2]/80 leading-relaxed">{npc.descricao}</p>
+                  <p className="text-xs font-mono text-[var(--ro-ash)]">{npc.papel} · {npc.localizacao}</p>
+                  <p className="text-xs text-[var(--ro-paper-muted)]/80 leading-relaxed">{npc.descricao}</p>
                 </div>
               ))}
             </div>
@@ -524,14 +524,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         {/* ABA: ADVERSÁRIOS */}
         {abaAtiva === 'adversarios' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#292929]">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
               <div>
-                <h2 className="font-serif text-2xl text-[#F5F3EE]">Adversários & Ameaças</h2>
-                <p className="text-xs text-[#666666] mt-0.5">Pesadelos, sombras e corrompidos pelo Sonhar.</p>
+                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Adversários & Ameaças</h2>
+                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Pesadelos, sombras e corrompidos pelo Sonhar.</p>
               </div>
               <button
                 onClick={() => setModalNovoItem('adversarios')}
-                className="px-4 py-2 bg-[#292929] hover:bg-[#333333] text-[#F5F3EE] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[#333333]"
+                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Novo Adversário
               </button>
@@ -539,20 +539,20 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {adversariosCampanha.map(adv => (
-                <div key={adv.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-3">
+                <div key={adv.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">{adv.nome}</h3>
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#0B0B0B] border border-[#292929] text-[#D9D7D2]">
+                    <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{adv.nome}</h3>
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[var(--ro-paper-muted)]">
                       {adv.tipo} · Nível {adv.nivel}
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 text-xs font-mono text-[#666666]">
+                  <div className="flex items-center gap-4 text-xs font-mono text-[var(--ro-ash)]">
                     <span>Vida: {adv.vida}/{adv.vidaMaxima}</span>
                     <span>Defesa: {adv.defesa}</span>
                     <span>Resistência: {adv.resistencia}</span>
                   </div>
-                  <div className="text-xs font-mono text-[#A88952]">{adv.ataquePrincipal}</div>
-                  <p className="text-xs text-[#D9D7D2]/80 leading-relaxed">{adv.descricao}</p>
+                  <div className="text-xs font-mono text-[var(--ro-copper)]">{adv.ataquePrincipal}</div>
+                  <p className="text-xs text-[var(--ro-paper-muted)]/80 leading-relaxed">{adv.descricao}</p>
                 </div>
               ))}
             </div>
@@ -562,14 +562,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         {/* ABA: LOCAIS */}
         {abaAtiva === 'locais' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#292929]">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
               <div>
-                <h2 className="font-serif text-2xl text-[#F5F3EE]">Locais & Fronteiras</h2>
-                <p className="text-xs text-[#666666] mt-0.5">Espaços urbanos onde o Sonhar se manifesta.</p>
+                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Locais & Fronteiras</h2>
+                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Espaços urbanos onde o Sonhar se manifesta.</p>
               </div>
               <button
                 onClick={() => setModalNovoItem('locais')}
-                className="px-4 py-2 bg-[#292929] hover:bg-[#333333] text-[#F5F3EE] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[#333333]"
+                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Novo Local
               </button>
@@ -577,17 +577,17 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {locaisCampanha.map(loc => (
-                <div key={loc.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-3">
+                <div key={loc.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">{loc.nome}</h3>
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#0B0B0B] border border-[#292929] text-[#A88952]">
+                    <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{loc.nome}</h3>
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[var(--ro-copper)]">
                       {loc.tipo}
                     </span>
                   </div>
-                  <p className="text-xs text-[#D9D7D2]/80 leading-relaxed">{loc.descricao}</p>
+                  <p className="text-xs text-[var(--ro-paper-muted)]/80 leading-relaxed">{loc.descricao}</p>
                   {loc.anomaliaDetectada && (
-                    <div className="p-3 bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#666666]">
-                      <span className="text-[#A88952]">Anomalia: </span>
+                    <div className="p-3 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-ash)]">
+                      <span className="text-[var(--ro-copper)]">Anomalia: </span>
                       {loc.anomaliaDetectada}
                     </div>
                   )}
@@ -600,14 +600,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         {/* ABA: PISTAS */}
         {abaAtiva === 'pistas' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#292929]">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
               <div>
-                <h2 className="font-serif text-2xl text-[#F5F3EE]">Pistas & Evidências</h2>
-                <p className="text-xs text-[#666666] mt-0.5">Documentos, gravações e objetos anômalos.</p>
+                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Pistas & Evidências</h2>
+                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Documentos, gravações e objetos anômalos.</p>
               </div>
               <button
                 onClick={() => setModalNovoItem('pistas')}
-                className="px-4 py-2 bg-[#292929] hover:bg-[#333333] text-[#F5F3EE] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[#333333]"
+                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Nova Pista
               </button>
@@ -615,18 +615,18 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="space-y-4">
               {pistasCampanha.map(pista => (
-                <div key={pista.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm flex flex-col sm:flex-row justify-between gap-4">
+                <div key={pista.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm flex flex-col sm:flex-row justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 bg-[#0B0B0B] border border-[#292929] text-[#A88952]">
+                      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[var(--ro-copper)]">
                         {pista.tipo}
                       </span>
-                      <span className="text-xs font-mono text-[#666666]">
+                      <span className="text-xs font-mono text-[var(--ro-ash)]">
                         Status: {pista.status}
                       </span>
                     </div>
-                    <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">{pista.titulo}</h3>
-                    <p className="text-xs text-[#D9D7D2]/80 mt-2 leading-relaxed">{pista.descricao}</p>
+                    <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{pista.titulo}</h3>
+                    <p className="text-xs text-[var(--ro-paper-muted)]/80 mt-2 leading-relaxed">{pista.descricao}</p>
                   </div>
                 </div>
               ))}
@@ -637,14 +637,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         {/* ABA: LORE */}
         {abaAtiva === 'lore' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#292929]">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
               <div>
-                <h2 className="font-serif text-2xl text-[#F5F3EE]">Arquivos de Lore & Conhecimento</h2>
-                <p className="text-xs text-[#666666] mt-0.5">Tradição, leis do Sonhar e facções urbanas.</p>
+                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Arquivos de Lore & Conhecimento</h2>
+                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Tradição, leis do Sonhar e facções urbanas.</p>
               </div>
               <button
                 onClick={() => setModalNovoItem('lore')}
-                className="px-4 py-2 bg-[#292929] hover:bg-[#333333] text-[#F5F3EE] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[#333333]"
+                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Novo Arquivo
               </button>
@@ -652,12 +652,12 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="space-y-4">
               {loreCampanha.map(lore => (
-                <div key={lore.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-2">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[#A88952]">
+                <div key={lore.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm space-y-2">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--ro-copper)]">
                     {lore.categoria}
                   </span>
-                  <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">{lore.titulo}</h3>
-                  <p className="text-xs text-[#D9D7D2]/80 leading-relaxed">{lore.conteudo}</p>
+                  <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{lore.titulo}</h3>
+                  <p className="text-xs text-[var(--ro-paper-muted)]/80 leading-relaxed">{lore.conteudo}</p>
                 </div>
               ))}
             </div>
@@ -667,14 +667,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         {/* ABA: ANOTAÇÕES */}
         {abaAtiva === 'anotacoes' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[#292929]">
+            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
               <div>
-                <h2 className="font-serif text-2xl text-[#F5F3EE]">Anotações do Narrador</h2>
-                <p className="text-xs text-[#666666] mt-0.5">Planejamento secreto e notas da crônica.</p>
+                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Anotações do Narrador</h2>
+                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Planejamento secreto e notas da crônica.</p>
               </div>
               <button
                 onClick={() => setModalNovoItem('anotacoes')}
-                className="px-4 py-2 bg-[#292929] hover:bg-[#333333] text-[#F5F3EE] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[#333333]"
+                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Nova Anotação
               </button>
@@ -682,12 +682,12 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="space-y-4">
               {anotacoesCampanha.map(nota => (
-                <div key={nota.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono text-[#666666]">
+                <div key={nota.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm space-y-2">
+                  <div className="flex items-center justify-between text-xs font-mono text-[var(--ro-ash)]">
                     <span>{nota.atualizadaEm}</span>
                   </div>
-                  <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">{nota.titulo}</h3>
-                  <p className="text-xs text-[#D9D7D2]/80 leading-relaxed whitespace-pre-line">{nota.conteudo}</p>
+                  <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{nota.titulo}</h3>
+                  <p className="text-xs text-[var(--ro-paper-muted)]/80 leading-relaxed whitespace-pre-line">{nota.conteudo}</p>
                 </div>
               ))}
             </div>
@@ -697,9 +697,9 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         {/* ABA: CONFIGURAÇÕES */}
         {abaAtiva === 'configuracoes' && (
           <div className="max-w-2xl space-y-8">
-            <div className="pb-4 border-b border-[#292929]">
-              <h2 className="font-serif text-2xl text-[#F5F3EE]">Configurações da Campanha</h2>
-              <p className="text-xs text-[#666666] mt-0.5">Identificadores e sincronização da crônica.</p>
+            <div className="pb-4 border-b border-[var(--ro-line)]">
+              <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Configurações da Campanha</h2>
+              <p className="text-xs text-[var(--ro-ash)] mt-0.5">Identificadores e sincronização da crônica.</p>
             </div>
 
             <div className="space-y-6">
@@ -716,7 +716,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 />
               )}
               <div>
-                <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-2">
+                <label className="block text-xs font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-2">
                   Código de Conexão da Mesa
                 </label>
                 <div className="flex items-center gap-3">
@@ -724,26 +724,26 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                     type="text"
                     readOnly
                     value={campanha.codigo}
-                    className="bg-[#171717] border border-[#292929] px-4 py-2.5 text-xs font-mono text-[#F5F3EE] rounded-sm w-48"
+                    className="bg-[var(--ro-surface)] border border-[var(--ro-line)] px-4 py-2.5 text-xs font-mono text-[var(--ro-paper)] rounded-sm w-48"
                   />
                   <button
                     onClick={() => navigator.clipboard.writeText(campanha.codigo)}
-                    className="px-4 py-2.5 bg-[#292929] hover:bg-[#333333] text-xs text-[#D9D7D2] rounded-sm border border-[#292929]"
+                    className="px-4 py-2.5 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-xs text-[var(--ro-paper-muted)] rounded-sm border border-[var(--ro-line)]"
                   >
                     Copiar Código
                   </button>
                 </div>
-                <p className="text-[11px] text-[#666666] mt-1.5">
+                <p className="text-[11px] text-[var(--ro-ash)] mt-1.5">
                   Os jogadores utilizam este código para conectar seus Desvelados a esta mesa.
                 </p>
               </div>
 
               {onExcluirCampanha && (
-                <div className="pt-8 border-t border-[#292929]">
+                <div className="pt-8 border-t border-[var(--ro-line)]">
                   <h3 className="text-xs font-mono uppercase tracking-widest text-rose-400 mb-2">
                     Zona de Exclusão
                   </h3>
-                  <p className="text-xs text-[#666666] mb-4">
+                  <p className="text-xs text-[var(--ro-ash)] mb-4">
                     Remover esta campanha e suas referências locais.
                   </p>
                   <button
@@ -766,12 +766,12 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
       {/* Modal Criar Nova Sessão */}
       {modalNovaSessao && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-[#171717] border border-[#292929] max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto p-5 sm:p-6 rounded-sm">
-            <h3 className="font-serif text-2xl text-[#F5F3EE] mb-2">Criar Nova Sessão</h3>
-            <p className="text-xs text-[#666666] mb-5">Adicione o próximo capítulo à crônica.</p>
+          <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto p-5 sm:p-6 rounded-sm">
+            <h3 className="font-serif text-2xl text-[var(--ro-paper)] mb-2">Criar Nova Sessão</h3>
+            <p className="text-xs text-[var(--ro-ash)] mb-5">Adicione o próximo capítulo à crônica.</p>
             <form onSubmit={handleCriarSessaoSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Título da Sessão</label>
+                <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">Título da Sessão</label>
                 <input
                   type="text"
                   required
@@ -779,17 +779,17 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                   placeholder="Ex: A sombra sobre o asfalto..."
                   value={tituloNovaSessao}
                   onChange={(e) => setTituloNovaSessao(e.target.value)}
-                  className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#F5F3EE] rounded-sm focus:border-[#A88952] focus:outline-none"
+                  className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2.5 text-xs text-[var(--ro-paper)] rounded-sm focus:border-[var(--ro-line-strong)] focus:outline-none"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Data</label>
-                  <input type="date" value={dataNovaSessao} onChange={(e) => setDataNovaSessao(e.target.value)} className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#F5F3EE] rounded-sm" />
+                  <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">Data</label>
+                  <input type="date" value={dataNovaSessao} onChange={(e) => setDataNovaSessao(e.target.value)} className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2.5 text-xs text-[var(--ro-paper)] rounded-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Estado</label>
-                  <select value={statusNovaSessao} onChange={(e) => setStatusNovaSessao(e.target.value as SessaoStatus)} className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#F5F3EE] rounded-sm">
+                  <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">Estado</label>
+                  <select value={statusNovaSessao} onChange={(e) => setStatusNovaSessao(e.target.value as SessaoStatus)} className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2.5 text-xs text-[var(--ro-paper)] rounded-sm">
                     <option value="planejamento">Planejamento</option>
                     <option value="pronta">Pronta</option>
                     <option value="ao_vivo">Ao vivo</option>
@@ -798,24 +798,24 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Descrição</label>
-                <textarea rows={2} value={descricaoNovaSessao} onChange={(e) => setDescricaoNovaSessao(e.target.value)} className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#D9D7D2] rounded-sm resize-none" />
+                <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">Descrição</label>
+                <textarea rows={2} value={descricaoNovaSessao} onChange={(e) => setDescricaoNovaSessao(e.target.value)} className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2.5 text-xs text-[var(--ro-paper-muted)] rounded-sm resize-none" />
               </div>
               <div>
-                <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Notas do Mestre</label>
-                <textarea rows={2} value={notasMestreNovaSessao} onChange={(e) => setNotasMestreNovaSessao(e.target.value)} className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#D9D7D2] rounded-sm resize-none" />
+                <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">Notas do Mestre</label>
+                <textarea rows={2} value={notasMestreNovaSessao} onChange={(e) => setNotasMestreNovaSessao(e.target.value)} className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2.5 text-xs text-[var(--ro-paper-muted)] rounded-sm resize-none" />
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#292929]">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[var(--ro-line)]">
                 <button
                   type="button"
                   onClick={() => setModalNovaSessao(false)}
-                  className="px-4 py-2 text-xs text-[#666666] hover:text-[#D9D7D2]"
+                  className="px-4 py-2 text-xs text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-medium rounded-sm uppercase tracking-wider"
+                  className="px-5 py-2 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium rounded-sm uppercase tracking-wider"
                 >
                   Criar Sessão
                 </button>
@@ -828,58 +828,58 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
       {/* Modal Genérico para Adicionar Item (NPC, Adversário, Local, etc.) */}
       {modalNovoItem && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-3 sm:p-4">
-          <div className="bg-[#171717] border border-[#292929] max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto p-5 sm:p-6 rounded-sm">
-            <h3 className="font-serif text-2xl text-[#F5F3EE] mb-2 capitalize">
+          <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto p-5 sm:p-6 rounded-sm">
+            <h3 className="font-serif text-2xl text-[var(--ro-paper)] mb-2 capitalize">
               Adicionar {modalNovoItem === 'npcs' ? 'NPC' : modalNovoItem === 'adversarios' ? 'Adversário' : modalNovoItem === 'locais' ? 'Local' : modalNovoItem === 'pistas' ? 'Pista' : modalNovoItem === 'lore' ? 'Lore' : 'Anotação'}
             </h3>
             <form onSubmit={handleCriarItemSubmit} className="space-y-4 pt-3">
               <div>
-                <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Nome / Título</label>
+                <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">Nome / Título</label>
                 <input
                   type="text"
                   required
                   autoFocus
                   value={itemNome}
                   onChange={(e) => setItemNome(e.target.value)}
-                  className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#F5F3EE] rounded-sm focus:border-[#A88952] focus:outline-none"
+                  className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2.5 text-xs text-[var(--ro-paper)] rounded-sm focus:border-[var(--ro-line-strong)] focus:outline-none"
                 />
               </div>
 
               {(modalNovoItem === 'npcs' || modalNovoItem === 'adversarios' || modalNovoItem === 'locais') && (
                 <div>
-                  <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">
+                  <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">
                     {modalNovoItem === 'npcs' ? 'Papel / Conceito' : modalNovoItem === 'adversarios' ? 'Ataque Principal' : 'Anomalia Detectada'}
                   </label>
                   <input
                     type="text"
                     value={itemExtra}
                     onChange={(e) => setItemExtra(e.target.value)}
-                    className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#F5F3EE] rounded-sm focus:border-[#A88952] focus:outline-none"
+                    className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2.5 text-xs text-[var(--ro-paper)] rounded-sm focus:border-[var(--ro-line-strong)] focus:outline-none"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-mono text-[#666666] uppercase mb-1.5">Descrição / Conteúdo</label>
+                <label className="block text-xs font-mono text-[var(--ro-ash)] uppercase mb-1.5">Descrição / Conteúdo</label>
                 <textarea
                   rows={3}
                   value={itemDesc}
                   onChange={(e) => setItemDesc(e.target.value)}
-                  className="w-full bg-[#0B0B0B] border border-[#292929] px-3.5 py-2.5 text-xs text-[#D9D7D2] rounded-sm focus:border-[#A88952] focus:outline-none resize-none"
+                  className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2.5 text-xs text-[var(--ro-paper-muted)] rounded-sm focus:border-[var(--ro-line-strong)] focus:outline-none resize-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-[#292929]">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[var(--ro-line)]">
                 <button
                   type="button"
                   onClick={() => setModalNovoItem(null)}
-                  className="px-4 py-2 text-xs text-[#666666] hover:text-[#D9D7D2]"
+                  className="px-4 py-2 text-xs text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-medium rounded-sm uppercase tracking-wider"
+                  className="px-5 py-2 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium rounded-sm uppercase tracking-wider"
                 >
                   Salvar
                 </button>
