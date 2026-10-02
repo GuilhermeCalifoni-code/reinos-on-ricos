@@ -15,15 +15,15 @@ export function calcularResistencia(corpo: number): number {
 }
 
 export function calcularDefesa(
-  atributoPrincipal: AtributoNome, 
-  atributos: Atributos, 
-  nivel: number
+  _atributoPrincipal: AtributoNome,
+  atributos: Atributos,
+  _nivel: number
 ): { defesa: number; base: number; valorAtributo: number; bonusNivel: number } {
-  const prog = TABELA_PROGRESSAO[nivel] || TABELA_PROGRESSAO[1];
-  const valorAtributo = atributos[atributoPrincipal] ?? 0;
+  // Regra atual: Defesa = 8 + Corpo. O Atributo Principal não altera a Defesa.
+  const valorAtributo = atributos.corpo ?? 0;
   const base = 8;
-  const bonusNivel = prog.bonusDefesa;
-  const defesa = base + valorAtributo + bonusNivel;
+  const bonusNivel = 0;
+  const defesa = base + valorAtributo;
 
   return {
     defesa,
@@ -145,35 +145,27 @@ export function processarDano(
   resistencia: number,
   vidaAtual: number,
   poAtual: number,
-  usarPO: boolean
+  usarPO: boolean,
+  usarDanoMassivo: boolean = true
 ): ResolucaoDano {
+  // Reinos Oníricos não subtrai Resistência do dano para descobrir perda de PV.
+  // O dano é comparado à R e convertido em 1, 2 ou, pela regra opcional, 3 PV.
   const danoAposResistencia = Math.max(0, danoRecebido - resistencia);
-  let poUtilizada = 0;
-  let danoRestante = danoAposResistencia;
+  let vidaPerdidaBase = danoRecebido > resistencia ? 2 : 1;
+  if (usarDanoMassivo && danoRecebido > resistencia * 2) vidaPerdidaBase = 3;
 
-  if (usarPO && danoRestante > 0 && poAtual > 0) {
-    poUtilizada = Math.min(poAtual, danoRestante);
-    danoRestante -= poUtilizada;
-  }
-
-  const vidaPerdida = danoRestante;
+  const poUtilizada = usarPO && poAtual > 0 && vidaPerdidaBase > 0 ? 1 : 0;
+  const vidaPerdida = Math.max(0, vidaPerdidaBase - poUtilizada);
   const vidaRestante = Math.max(0, vidaAtual - vidaPerdida);
   const poRestante = Math.max(0, poAtual - poUtilizada);
   const absorvidoTotalmente = vidaPerdida === 0;
 
-  let explicacao = `Dano Bruto: ${danoRecebido}. Resistência (${resistencia}) abateu ${Math.min(danoRecebido, resistencia)}.`;
-  if (danoAposResistencia > 0) {
-    if (poUtilizada > 0) {
-      explicacao += ` Proteção Onírica absorveu ${poUtilizada} ponto(s).`;
-    }
-    if (vidaPerdida > 0) {
-      explicacao += ` Restaram ${vidaPerdida} de dano efetivo contra a Vida (Vida: ${vidaAtual} → ${vidaRestante}).`;
-    } else {
-      explicacao += ` Dano restante foi totalmente contido pela Proteção Onírica.`;
-    }
-  } else {
-    explicacao += ` O golpe não superou a Resistência física do alvo. Vida intacta.`;
-  }
+  const faixa = danoRecebido > resistencia * 2 && usarDanoMassivo
+    ? 'Dano Massivo: 3 PV'
+    : danoRecebido > resistencia
+      ? 'Dano > R: 2 PV'
+      : 'Dano ≤ R: 1 PV';
+  const explicacao = `Dano ${danoRecebido} vs R ${resistencia}. ${faixa}.${poUtilizada ? ' 1 PO reduz a perda em 1 PV.' : ''} Vida: ${vidaAtual} → ${vidaRestante}.`;
 
   return {
     danoRecebido,
@@ -215,7 +207,7 @@ export function executarTesteMundano(params: {
   const totalModificadores = params.modificadores.reduce((acc, m) => acc + m.valor, 0);
   const bonusFoco = params.usarFoco ? 2 : 0;
   const totalFinal = dadoEscolhido + params.valorAtributo + totalModificadores + bonusFoco;
-  const sucesso = totalFinal >= params.dt;
+  const sucesso = dadoEscolhido === 20 || totalFinal >= params.dt;
 
   const partesExplicacao: string[] = [
     `Dado: [${dadoEscolhido}]${dados.length > 1 ? ` (de ${dados.join(', ')})` : ''}`,
@@ -273,20 +265,20 @@ export function executarTesteOnirico(params: {
 
   if (sucessoRealidade && sucessoSonhar) {
     resultado = 'convergencia';
-    efeitoNarrativo = 'CONVERGÊNCIA: A intenção do Sonhador e a estabilidade da Realidade se harmonizam perfeitamente. A manifestação se concretiza sem distorções anômalas indesejadas e a ancoragem permanece firme.';
-    impactoRuptura = 0;
+    efeitoNarrativo = 'CONVERGÊNCIA: a manifestação acontece e é crítica. A trilha de Ruptura é reduzida em 1.';
+    impactoRuptura = -1;
   } else if (sucessoRealidade && !sucessoSonhar) {
     resultado = 'realidade_vence';
-    efeitoNarrativo = 'REALIDADE VENCE: A inércia física do mundo consensual resiste ao Sonhar. O efeito pode falhar em sua plenitude onírica ou ser atenuado e racionalizado pelas leis do mundo comum, mas o personagem mantém controle de sua presença.';
+    efeitoNarrativo = 'REALIDADE VENCE: a manifestação não acontece e a Ruptura não se altera.';
     impactoRuptura = 0;
   } else if (!sucessoRealidade && sucessoSonhar) {
     resultado = 'sonhar_vence';
-    efeitoNarrativo = 'SONHAR VENCE: O Sonhar invade a Realidade com potência descontrolada! O efeito se manifesta de forma intensa ou desmedida, mas o custo é a fratura da ancoragem com o mundo consensual (+1 de Ruptura).';
+    efeitoNarrativo = 'SONHAR VENCE: a manifestação acontece e a trilha de Ruptura aumenta em 1.';
     impactoRuptura = 1;
   } else {
     resultado = 'divergencia';
-    efeitoNarrativo = 'DIVERGÊNCIA: Colapso da manifestação. Nem a Realidade forneceu solo firme, nem o Sonhar atendeu à vontade do Sonhador. Ocorre uma falha com repercussão imprevisível e tensão acumulada.';
-    impactoRuptura = 0;
+    efeitoNarrativo = 'DIVERGÊNCIA: a manifestação não acontece e a trilha de Ruptura aumenta em 2.';
+    impactoRuptura = 2;
   }
 
   const explicacao = `Realidade: [${dadoRealidade}] + Atrib (${params.valorAtributo}) = ${totalRealidade} (${sucessoRealidade ? 'PASSOU' : 'FALHOU'}). Sonhar: [${dadoSonhar}] + Atrib (${params.valorAtributo}) = ${totalSonhar} (${sucessoSonhar ? 'PASSOU' : 'FALHOU'}).`;
