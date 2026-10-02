@@ -489,13 +489,13 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       {/* ========================================================================= */}
       {/* 1. TOPO DA CENA: POSTO DE COMANDO & ESTADO OPERACIONAL                    */}
       {/* ========================================================================= */}
-      <div className="bg-[#171717] border border-[#292929] p-5 rounded-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#292929] pb-4">
+      <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-5 rounded-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[var(--ro-line)] pb-4">
           
           {/* Identificação da Cena e Estado */}
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-mono tracking-widest uppercase text-[#A88952] border border-[#75603D]/60 px-1.5 py-0.5 rounded-sm">
+              <span className="text-[10px] font-mono tracking-widest uppercase text-[var(--ro-copper)] border border-[#75603D]/60 px-1.5 py-0.5 rounded-sm">
                 REINOS ONÍRICOS · MODO MESTRE
               </span>
               <span className="text-[#292929]">|</span>
@@ -506,7 +506,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                   setCena(prev => ({ ...prev, estado: est }));
                   registrarLog('mestre', `Estado da cena alterado para: ${est.toUpperCase()}`);
                 }}
-                className="bg-[#0B0B0B] border border-[#292929] text-xs font-mono uppercase text-[#D9D7D2] px-2 py-1 rounded-sm focus:outline-none"
+                className="bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono uppercase text-[var(--ro-paper-muted)] px-2 py-1 rounded-sm focus:outline-none"
               >
                 <option value="tensao">Cena de Tensão</option>
                 <option value="normal">Cena Normal</option>
@@ -517,48 +517,48 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
               </select>
             </div>
 
-            <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[#F5F3EE] tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl font-normal text-[var(--ro-paper)] tracking-tight">
               {cena.titulo}
             </h1>
           </div>
 
           {/* Rodada & Ação do Mestre Disponível */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="bg-[#0B0B0B] border border-[#292929] px-3.5 py-2 rounded-sm text-center font-mono">
-              <div className="text-[10px] text-[#666666] uppercase">Rodada Atual</div>
-              <div className="text-xl font-bold text-[#F5F3EE]">
+            <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] px-3.5 py-2 rounded-sm text-center font-mono">
+              <div className="text-[10px] text-[var(--ro-ash)] uppercase">Rodada Atual</div>
+              <div className="text-xl font-bold text-[var(--ro-paper)]">
                 {String(cena.fluxo.rodadaAtual).padStart(2, '0')}
               </div>
             </div>
 
             {/* Indicador Chamativo de Turno Alternado */}
             {cena.fluxo.mestreAcaoPendente ? (
-              <div className="bg-amber-950/30 border border-[#A88952] px-4 py-2 rounded-sm flex items-center gap-3">
-                <span className="w-2 h-2 rounded-full bg-[#A88952] animate-pulse" />
+              <div className="bg-amber-950/30 border border-[var(--ro-line-strong)] px-4 py-2 rounded-sm flex items-center gap-3">
+                <span className="w-2 h-2 rounded-full bg-[var(--ro-copper)] animate-pulse" />
                 <div>
-                  <div className="font-mono text-xs font-bold text-[#F5F3EE] uppercase tracking-wider">
+                  <div className="font-mono text-xs font-bold text-[var(--ro-paper)] uppercase tracking-wider">
                     Sua Vez · Ação do Mestre Disponível
                   </div>
-                  <div className="text-[10px] text-[#A88952] font-mono">
+                  <div className="text-[10px] text-[var(--ro-copper)] font-mono">
                     {ultimoJogador ? `${ultimoJogador.nome} acabou de agir.` : 'Reaja à ficção.'}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => abrirAcaoMestre('antagonista')}
-                  className="px-3 py-1 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-mono font-semibold uppercase tracking-wider rounded-sm transition-colors"
+                  className="px-3 py-1 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-mono font-semibold uppercase tracking-wider rounded-sm transition-colors"
                 >
                   Agir Agora →
                 </button>
               </div>
             ) : (
-              <div className="bg-[#0B0B0B] border border-[#292929] px-4 py-2 rounded-sm flex items-center gap-3">
+              <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] px-4 py-2 rounded-sm flex items-center gap-3">
                 <span className="w-2 h-2 rounded-full bg-emerald-500/80" />
                 <div>
-                  <div className="font-mono text-xs text-[#D9D7D2] uppercase tracking-wider">
+                  <div className="font-mono text-xs text-[var(--ro-paper-muted)] uppercase tracking-wider">
                     Vez dos Desvelados
                   </div>
-                  <div className="text-[10px] text-[#666666] font-mono">
+                  <div className="text-[10px] text-[var(--ro-ash)] font-mono">
                     {jogadoresPendentes.length} {jogadoresPendentes.length === 1 ? 'jogador falta' : 'jogadores faltam'} agir nesta rodada
                   </div>
                 </div>
@@ -570,7 +570,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setModalSonharAberto(true)}
-                className="px-3 py-2 bg-[#171717] hover:bg-[#292929] border border-[#292929] text-xs font-mono text-[#D9D7D2] rounded-sm transition-colors"
+                className="px-3 py-2 bg-[var(--ro-surface)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper-muted)] rounded-sm transition-colors"
               >
                 ✦ Resolver Sonhar
               </button>
@@ -578,7 +578,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setModalEncerrarCenaAberto(true)}
-                className="px-3 py-2 bg-[#171717] hover:bg-rose-950/30 border border-[#292929] hover:border-rose-900/60 text-xs font-mono text-[#D9D7D2] hover:text-rose-300 rounded-sm transition-colors"
+                className="px-3 py-2 bg-[var(--ro-surface)] hover:bg-rose-950/30 border border-[var(--ro-line)] hover:border-rose-900/60 text-xs font-mono text-[var(--ro-paper-muted)] hover:text-rose-300 rounded-sm transition-colors"
               >
                 Encerrar Cena
               </button>
@@ -591,27 +591,27 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
         {/* Sinopse da Cena & Elementos da Ficção */}
         <div className="pt-4 grid grid-cols-1 lg:grid-cols-3 gap-6 text-xs">
           <div className="lg:col-span-2 space-y-2">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-[#666666]">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-[var(--ro-ash)]">
               Atmosfera & Cenário Atual
             </div>
-            <p className="font-serif text-sm text-[#D9D7D2] leading-relaxed italic">
+            <p className="font-serif text-sm text-[var(--ro-paper-muted)] leading-relaxed italic">
               "{cena.descricao}"
             </p>
           </div>
 
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-[#666666] mb-1.5 flex items-center justify-between">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-[var(--ro-ash)] mb-1.5 flex items-center justify-between">
               <span>Elementos Importantes da Ficção</span>
-              <span className="text-[#A88952]">{cena.elementosFiccao.length} ativos</span>
+              <span className="text-[var(--ro-copper)]">{cena.elementosFiccao.length} ativos</span>
             </div>
             <div className="space-y-1">
               {cena.elementosFiccao.map((el, idx) => (
-                <div key={idx} className="flex items-start justify-between text-[#F5F3EE] bg-[#0B0B0B] border border-[#292929] px-2.5 py-1 rounded-sm text-[11px] font-mono">
+                <div key={idx} className="flex items-start justify-between text-[var(--ro-paper)] bg-[var(--ro-bg)] border border-[var(--ro-line)] px-2.5 py-1 rounded-sm text-[11px] font-mono">
                   <span>• {el}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoverElementoFiccao(idx)}
-                    className="text-[#666666] hover:text-rose-400 ml-2"
+                    className="text-[var(--ro-ash)] hover:text-rose-400 ml-2"
                   >
                     ×
                   </button>
@@ -624,11 +624,11 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                   value={novoElementoFiccao}
                   onChange={(e) => setNovoElementoFiccao(e.target.value)}
                   placeholder="+ Elemento físico ou onírico..."
-                  className="flex-1 bg-[#0B0B0B] border border-[#292929] text-[11px] font-mono text-[#F5F3EE] px-2 py-1 rounded-sm focus:outline-none"
+                  className="flex-1 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[11px] font-mono text-[var(--ro-paper)] px-2 py-1 rounded-sm focus:outline-none"
                 />
                 <button
                   type="submit"
-                  className="px-2 py-1 bg-[#292929] text-[#D9D7D2] text-[11px] font-mono rounded-sm hover:bg-[#333333]"
+                  className="px-2 py-1 bg-[var(--ro-surface-raised)] text-[var(--ro-paper-muted)] text-[11px] font-mono rounded-sm hover:bg-[var(--ro-accent-soft)]"
                 >
                   Adicionar
                 </button>
@@ -641,13 +641,13 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
       {/* ========================================================================= */}
       {/* 2. BARRA DE AÇÃO CENTRAL DO MESTRE                                       */}
       {/* ========================================================================= */}
-      <div className="bg-[#171717] border border-[#292929] p-4 rounded-sm">
+      <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 rounded-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 font-mono">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#A88952]">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[var(--ro-copper)]">
               Ações Rápidas do Mestre:
             </span>
-            <span className="text-[#666666] text-[11px] hidden md:inline">
+            <span className="text-[var(--ro-ash)] text-[11px] hidden md:inline">
               (Escolha como intervir na ficção após a ação de cada Desvelado)
             </span>
           </div>
@@ -656,7 +656,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
             <button
               type="button"
               onClick={() => abrirAcaoMestre('antagonista')}
-              className="px-3 py-2 bg-[#0B0B0B] hover:bg-[#292929] border border-[#292929] hover:border-[#A88952]/60 text-xs font-mono uppercase tracking-wider text-[#F5F3EE] rounded-sm transition-colors text-center"
+              className="px-3 py-2 bg-[var(--ro-bg)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] hover:border-[var(--ro-line-strong)]/60 text-xs font-mono uppercase tracking-wider text-[var(--ro-paper)] rounded-sm transition-colors text-center"
             >
               ⚔ Ativar Antagonista
             </button>
@@ -664,7 +664,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
             <button
               type="button"
               onClick={() => abrirAcaoMestre('ambiente')}
-              className="px-3 py-2 bg-[#0B0B0B] hover:bg-[#292929] border border-[#292929] hover:border-[#A88952]/60 text-xs font-mono uppercase tracking-wider text-[#F5F3EE] rounded-sm transition-colors text-center"
+              className="px-3 py-2 bg-[var(--ro-bg)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] hover:border-[var(--ro-line-strong)]/60 text-xs font-mono uppercase tracking-wider text-[var(--ro-paper)] rounded-sm transition-colors text-center"
             >
               ⚡ Ativar Ambiente
             </button>
@@ -672,7 +672,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
             <button
               type="button"
               onClick={() => abrirAcaoMestre('ficcao')}
-              className="px-3 py-2 bg-[#0B0B0B] hover:bg-[#292929] border border-[#292929] hover:border-[#A88952]/60 text-xs font-mono uppercase tracking-wider text-[#F5F3EE] rounded-sm transition-colors text-center"
+              className="px-3 py-2 bg-[var(--ro-bg)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] hover:border-[var(--ro-line-strong)]/60 text-xs font-mono uppercase tracking-wider text-[var(--ro-paper)] rounded-sm transition-colors text-center"
             >
               ✦ Mover Ficção
             </button>
@@ -680,7 +680,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
             <button
               type="button"
               onClick={() => abrirAcaoMestre('contador')}
-              className="px-3 py-2 bg-[#0B0B0B] hover:bg-[#292929] border border-[#292929] hover:border-[#A88952]/60 text-xs font-mono uppercase tracking-wider text-[#F5F3EE] rounded-sm transition-colors text-center"
+              className="px-3 py-2 bg-[var(--ro-bg)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] hover:border-[var(--ro-line-strong)]/60 text-xs font-mono uppercase tracking-wider text-[var(--ro-paper)] rounded-sm transition-colors text-center"
             >
               ⏳ Avançar Contador
             </button>
@@ -697,17 +697,17 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
         <div className="lg:col-span-3 space-y-6">
 
           {/* SEQUÊNCIA DA RODADA (Alternada e Colaborativa) */}
-          <div className="bg-[#171717] border border-[#292929] p-4 rounded-sm space-y-3">
-            <div className="flex items-center justify-between border-b border-[#292929] pb-2">
-              <span className="text-xs font-mono font-semibold uppercase tracking-widest text-[#F5F3EE]">
+          <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 rounded-sm space-y-3">
+            <div className="flex items-center justify-between border-b border-[var(--ro-line)] pb-2">
+              <span className="text-xs font-mono font-semibold uppercase tracking-widest text-[var(--ro-paper)]">
                 Sequência · Rodada {String(cena.fluxo.rodadaAtual).padStart(2, '0')}
               </span>
-              <span className="text-[10px] font-mono text-[#A88952]">
+              <span className="text-[10px] font-mono text-[var(--ro-copper)]">
                 {cena.fluxo.jogadoresQueAgiramIds.length}/{personagens.length} Agiram
               </span>
             </div>
 
-            <div className="text-[11px] text-[#666666] leading-snug font-mono">
+            <div className="text-[11px] text-[var(--ro-ash)] leading-snug font-mono">
               Os jogadores decidem quem age primeiro. A cada ação de um jogador, o Mestre tem uma ação.
             </div>
 
@@ -720,17 +720,17 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                     key={p.id}
                     className={`p-2.5 border rounded-sm transition-colors font-mono ${
                       jaAgiu
-                        ? 'bg-[#0B0B0B] border-[#292929] opacity-70'
-                        : 'bg-[#171717] border-[#333333] hover:border-[#A88952]/60'
+                        ? 'bg-[var(--ro-bg)] border-[var(--ro-line)] opacity-70'
+                        : 'bg-[var(--ro-surface)] border-[var(--ro-line-strong)] hover:border-[var(--ro-line-strong)]/60'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-semibold text-xs text-[#F5F3EE] flex items-center gap-1.5">
+                        <div className="font-semibold text-xs text-[var(--ro-paper)] flex items-center gap-1.5">
                           <span>{jaAgiu ? '✓' : '○'}</span>
                           <span>{p.nome}</span>
                         </div>
-                        <div className="text-[10px] text-[#666666] mt-0.5">
+                        <div className="text-[10px] text-[var(--ro-ash)] mt-0.5">
                           Vida {p.vidaAtual}/{p.vidaMaxima} · DEF {p.defesa} · Ruptura {p.ruptura}/6
                         </div>
                       </div>
@@ -739,7 +739,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                         <button
                           type="button"
                           onClick={() => handleJogadorAgiu(p.id)}
-                          className="px-2 py-1 bg-[#292929] hover:bg-[#A88952] hover:text-[#0B0B0B] text-[#D9D7D2] text-[10px] uppercase tracking-wider rounded-sm transition-colors"
+                          className="px-2 py-1 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-copper)] hover:text-[var(--ro-on-accent)] text-[var(--ro-paper-muted)] text-[10px] uppercase tracking-wider rounded-sm transition-colors"
                         >
                           Agiu →
                         </button>
@@ -755,8 +755,8 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
             </div>
 
             {/* Botão de Fechar / Forçar Próxima Rodada se necessário */}
-            <div className="pt-2 border-t border-[#292929] flex justify-between items-center text-[10px] font-mono">
-              <span className="text-[#666666]">
+            <div className="pt-2 border-t border-[var(--ro-line)] flex justify-between items-center text-[10px] font-mono">
+              <span className="text-[var(--ro-ash)]">
                 {jogadoresPendentes.length === 0 ? 'Todos agiram nesta rodada' : 'Aguardando ações'}
               </span>
               <button
@@ -774,7 +774,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                   }));
                   registrarLog('sistema', `Rodada ${cena.fluxo.rodadaAtual + 1} iniciada manualmente.`);
                 }}
-                className="text-[#A88952] hover:underline"
+                className="text-[var(--ro-copper)] hover:underline"
               >
                 Nova Rodada →
               </button>
@@ -782,9 +782,9 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
           </div>
 
           {/* OBJETIVOS DA CENA */}
-          <div className="bg-[#171717] border border-[#292929] p-4 rounded-sm space-y-3">
-            <div className="flex items-center justify-between border-b border-[#292929] pb-2">
-              <span className="text-xs font-mono font-semibold uppercase tracking-widest text-[#F5F3EE]">
+          <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 rounded-sm space-y-3">
+            <div className="flex items-center justify-between border-b border-[var(--ro-line)] pb-2">
+              <span className="text-xs font-mono font-semibold uppercase tracking-widest text-[var(--ro-paper)]">
                 Objetivos da Cena
               </span>
             </div>
@@ -793,14 +793,14 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
               {cena.objetivos.map(obj => (
                 <div
                   key={obj.id}
-                  className="p-2 bg-[#0B0B0B] border border-[#292929] rounded-sm font-mono text-xs space-y-1.5"
+                  className="p-2 bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm font-mono text-xs space-y-1.5"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <span className="text-[#D9D7D2] leading-snug">{obj.descricao}</span>
+                    <span className="text-[var(--ro-paper-muted)] leading-snug">{obj.descricao}</span>
                     <button
                       type="button"
                       onClick={() => handleRemoverObjetivo(obj.id)}
-                      className="text-[#666666] hover:text-rose-400 text-sm leading-none"
+                      className="text-[var(--ro-ash)] hover:text-rose-400 text-sm leading-none"
                     >
                       ×
                     </button>
@@ -815,12 +815,12 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                           ? 'bg-emerald-950/40 text-emerald-400 border border-emerald-800/40'
                           : obj.estado === 'falhou'
                           ? 'bg-rose-950/40 text-rose-400 border border-rose-800/40'
-                          : 'bg-[#292929] text-[#D9D7D2]'
+                          : 'bg-[var(--ro-surface-raised)] text-[var(--ro-paper-muted)]'
                       }`}
                     >
                       {obj.estado === 'concluido' ? '✓ Concluído' : obj.estado === 'falhou' ? '✕ Falhou' : '○ Em Andamento'}
                     </button>
-                    <span className="text-[10px] text-[#666666]">Clique p/ alternar</span>
+                    <span className="text-[10px] text-[var(--ro-ash)]">Clique p/ alternar</span>
                   </div>
                 </div>
               ))}
@@ -831,7 +831,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                   value={novoObjetivoTexto}
                   onChange={(e) => setNovoObjetivoTexto(e.target.value)}
                   placeholder="+ Novo objetivo narrativo..."
-                  className="w-full bg-[#0B0B0B] border border-[#292929] text-xs font-mono text-[#F5F3EE] p-2 rounded-sm focus:outline-none"
+                  className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm focus:outline-none"
                 />
               </form>
             </div>
@@ -842,17 +842,17 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
         {/* COLUNA CENTRAL (6 colunas): AMEAÇAS & ANTAGONISTAS COM PROGRESSIVE DISCLOSURE */}
         <div className="lg:col-span-6 space-y-4">
           
-          <div className="flex items-center justify-between border-b border-[#292929] pb-2 font-mono">
+          <div className="flex items-center justify-between border-b border-[var(--ro-line)] pb-2 font-mono">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#F5F3EE]">
+              <span className="text-xs font-semibold uppercase tracking-widest text-[var(--ro-paper)]">
                 Ameaças & Antagonistas Ativos
               </span>
-              <span className="text-[#666666] ml-2 text-[11px]">({cena.antagonistas.length})</span>
+              <span className="text-[var(--ro-ash)] ml-2 text-[11px]">({cena.antagonistas.length})</span>
             </div>
 
             {/* Menu Rápido de Adicionar Preset */}
             <div className="flex items-center gap-2 text-[11px]">
-              <span className="text-[#666666]">Adicionar Preset:</span>
+              <span className="text-[var(--ro-ash)]">Adicionar Preset:</span>
               <select
                 onChange={(e) => {
                   if (e.target.value !== '') {
@@ -861,7 +861,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                   }
                 }}
                 defaultValue=""
-                className="bg-[#171717] border border-[#292929] text-[#D9D7D2] px-2 py-1 rounded-sm focus:outline-none"
+                className="bg-[var(--ro-surface)] border border-[var(--ro-line)] text-[var(--ro-paper-muted)] px-2 py-1 rounded-sm focus:outline-none"
               >
                 <option value="" disabled>+ Selecionar Preset...</option>
                 {PRESETS_ANTAGONISTAS.map((pr, idx) => (
@@ -874,7 +874,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
           </div>
 
           {cena.antagonistas.length === 0 ? (
-            <div className="bg-[#171717] border border-[#292929] p-8 rounded-sm text-center font-mono text-xs text-[#666666]">
+            <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-8 rounded-sm text-center font-mono text-xs text-[var(--ro-ash)]">
               Nenhuma ameaça na cena atual. Use os presets acima ou crie um antagonista para conduzir o confronto.
             </div>
           ) : (
@@ -886,12 +886,12 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                 return (
                   <div
                     key={ant.id}
-                    className={`bg-[#171717] border rounded-sm transition-all font-mono ${
+                    className={`bg-[var(--ro-surface)] border rounded-sm transition-all font-mono ${
                       estaNeutralizado
-                        ? 'border-[#292929] opacity-50'
+                        ? 'border-[var(--ro-line)] opacity-50'
                         : isExpandido
-                        ? 'border-[#A88952]/80'
-                        : 'border-[#292929] hover:border-[#333333]'
+                        ? 'border-[var(--ro-line-strong)]/80'
+                        : 'border-[var(--ro-line)] hover:border-[var(--ro-line-strong)]'
                     }`}
                   >
                     {/* CARD PRINCIPAL (PROGRESSIVE DISCLOSURE: Mostra apenas o essencial) */}
@@ -899,10 +899,10 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                       <div>
                         <div className="flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${estaNeutralizado ? 'bg-zinc-600' : 'bg-rose-500'}`} />
-                          <h3 className="text-sm font-semibold text-[#F5F3EE] uppercase tracking-wide">
+                          <h3 className="text-sm font-semibold text-[var(--ro-paper)] uppercase tracking-wide">
                             {ant.nome}
                           </h3>
-                          <span className="text-[10px] text-[#666666] border border-[#292929] px-1.5 py-0.5 rounded-sm uppercase">
+                          <span className="text-[10px] text-[var(--ro-ash)] border border-[var(--ro-line)] px-1.5 py-0.5 rounded-sm uppercase">
                             {ant.tipo}
                           </span>
                         </div>
@@ -910,34 +910,34 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                         {/* Estatísticas Essenciais: Vida, Resistência, Defesa, Distância */}
                         <div className="flex items-center gap-4 mt-2 text-xs">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[#666666] text-[10px] uppercase">Vida:</span>
-                            <span className="font-bold text-[#F5F3EE]">{ant.vidaAtual}/{ant.vidaMaxima}</span>
+                            <span className="text-[var(--ro-ash)] text-[10px] uppercase">Vida:</span>
+                            <span className="font-bold text-[var(--ro-paper)]">{ant.vidaAtual}/{ant.vidaMaxima}</span>
                             <div className="flex items-center gap-1 ml-1">
                               <button
                                 type="button"
                                 onClick={() => alterarVidaAntagonista(ant.id, -1)}
-                                className="w-5 h-5 bg-[#0B0B0B] hover:bg-[#292929] border border-[#292929] rounded-sm text-center leading-none text-[#D9D7D2]"
+                                className="w-5 h-5 bg-[var(--ro-bg)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] rounded-sm text-center leading-none text-[var(--ro-paper-muted)]"
                               >
                                 -
                               </button>
                               <button
                                 type="button"
                                 onClick={() => alterarVidaAntagonista(ant.id, 1)}
-                                className="w-5 h-5 bg-[#0B0B0B] hover:bg-[#292929] border border-[#292929] rounded-sm text-center leading-none text-[#D9D7D2]"
+                                className="w-5 h-5 bg-[var(--ro-bg)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] rounded-sm text-center leading-none text-[var(--ro-paper-muted)]"
                               >
                                 +
                               </button>
                             </div>
                           </div>
 
-                          <div className="text-[#666666]">
+                          <div className="text-[var(--ro-ash)]">
                             <span className="text-[10px] uppercase">R: </span>
-                            <strong className="text-[#F5F3EE]">{ant.resistencia}</strong>
+                            <strong className="text-[var(--ro-paper)]">{ant.resistencia}</strong>
                           </div>
 
-                          <div className="text-[#666666]">
+                          <div className="text-[var(--ro-ash)]">
                             <span className="text-[10px] uppercase">DEF: </span>
-                            <strong className="text-[#F5F3EE]">{ant.defesa}</strong>
+                            <strong className="text-[var(--ro-paper)]">{ant.defesa}</strong>
                           </div>
                         </div>
                       </div>
@@ -946,23 +946,23 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                       <div className="flex items-center gap-3">
                         
                         {/* Seletor Visual Rápido [←] Distância [→] */}
-                        <div className="flex items-center bg-[#0B0B0B] border border-[#292929] rounded-sm p-0.5 text-xs">
+                        <div className="flex items-center bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm p-0.5 text-xs">
                           <button
                             type="button"
                             title="Aproximar (mais perto)"
                             onClick={() => alterarDistanciaAntagonista(ant.id, 'aproximar')}
-                            className="px-2 py-1 text-[#666666] hover:text-[#F5F3EE] transition-colors"
+                            className="px-2 py-1 text-[var(--ro-ash)] hover:text-[var(--ro-paper)] transition-colors"
                           >
                             ←
                           </button>
-                          <span className="px-2 py-0.5 text-[11px] uppercase tracking-wider text-[#A88952] font-semibold border-x border-[#292929]">
+                          <span className="px-2 py-0.5 text-[11px] uppercase tracking-wider text-[var(--ro-copper)] font-semibold border-x border-[var(--ro-line)]">
                             {DISTANCIAS_REINOS_ONIRICOS[ant.distancia].nome}
                           </span>
                           <button
                             type="button"
                             title="Afastar (mais longe)"
                             onClick={() => alterarDistanciaAntagonista(ant.id, 'afastar')}
-                            className="px-2 py-1 text-[#666666] hover:text-[#F5F3EE] transition-colors"
+                            className="px-2 py-1 text-[var(--ro-ash)] hover:text-[var(--ro-paper)] transition-colors"
                           >
                             →
                           </button>
@@ -974,7 +974,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                           onClick={() => {
                             abrirAcaoMestre('antagonista');
                           }}
-                          className="px-3 py-1.5 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors"
+                          className="px-3 py-1.5 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-semibold uppercase tracking-wider rounded-sm transition-colors"
                         >
                           Ativar
                         </button>
@@ -983,7 +983,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                         <button
                           type="button"
                           onClick={() => setAntagonistaExpandidoId(isExpandido ? null : ant.id)}
-                          className="px-2 py-1 bg-[#0B0B0B] hover:bg-[#292929] border border-[#292929] text-[#666666] hover:text-[#F5F3EE] text-xs rounded-sm transition-colors"
+                          className="px-2 py-1 bg-[var(--ro-bg)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] text-[var(--ro-ash)] hover:text-[var(--ro-paper)] text-xs rounded-sm transition-colors"
                           title="Detalhes, Ações, Passivas e Reações"
                         >
                           {isExpandido ? '▲' : '⋯'}
@@ -993,20 +993,20 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
 
                     {/* ÁREA EXPANDIDA CONTEXTUAL (PROGRESSIVE DISCLOSURE) */}
                     {isExpandido && (
-                      <div className="p-4 border-t border-[#292929] bg-[#0B0B0B] space-y-3 text-xs">
+                      <div className="p-4 border-t border-[var(--ro-line)] bg-[var(--ro-bg)] space-y-3 text-xs">
                         
                         {/* Ações */}
                         <div>
-                          <div className="text-[10px] uppercase tracking-widest text-[#666666] mb-1">
+                          <div className="text-[10px] uppercase tracking-widest text-[var(--ro-ash)] mb-1">
                             Ações Ofensivas & Táticas:
                           </div>
                           <div className="space-y-1">
                             {ant.acoes?.map(ac => (
-                              <div key={ac.id} className="p-2 bg-[#171717] border border-[#292929] rounded-sm flex items-center justify-between">
+                              <div key={ac.id} className="p-2 bg-[var(--ro-surface)] border border-[var(--ro-line)] rounded-sm flex items-center justify-between">
                                 <div>
-                                  <span className="text-[#F5F3EE] font-medium">{ac.nome}</span>
-                                  {ac.dano && <span className="text-[#A88952] ml-1.5 font-bold">[{ac.dano}]</span>}
-                                  <span className="text-[#666666] ml-2 text-[11px]">{ac.descricao}</span>
+                                  <span className="text-[var(--ro-paper)] font-medium">{ac.nome}</span>
+                                  {ac.dano && <span className="text-[var(--ro-copper)] ml-1.5 font-bold">[{ac.dano}]</span>}
+                                  <span className="text-[var(--ro-ash)] ml-2 text-[11px]">{ac.descricao}</span>
                                 </div>
                               </div>
                             ))}
@@ -1016,41 +1016,41 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                         {/* Reações e Passivas */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                           <div>
-                            <div className="text-[10px] uppercase tracking-widest text-[#666666] mb-1">
+                            <div className="text-[10px] uppercase tracking-widest text-[var(--ro-ash)] mb-1">
                               Reações Disponíveis (Com Gatilho Claro):
                             </div>
                             {ant.reacoes?.length > 0 ? (
                               ant.reacoes.map(r => (
-                                <div key={r.id} className="p-2 bg-[#171717] border border-[#292929] rounded-sm text-[11px]">
+                                <div key={r.id} className="p-2 bg-[var(--ro-surface)] border border-[var(--ro-line)] rounded-sm text-[11px]">
                                   <span className="text-amber-400 font-semibold block">{r.gatilho}</span>
-                                  <span className="text-[#D9D7D2]">{r.efeito}</span>
+                                  <span className="text-[var(--ro-paper-muted)]">{r.efeito}</span>
                                 </div>
                               ))
                             ) : (
-                              <div className="text-[#666666] text-[11px]">Nenhuma reação especial configurada.</div>
+                              <div className="text-[var(--ro-ash)] text-[11px]">Nenhuma reação especial configurada.</div>
                             )}
                           </div>
 
                           <div>
-                            <div className="text-[10px] uppercase tracking-widest text-[#666666] mb-1">
+                            <div className="text-[10px] uppercase tracking-widest text-[var(--ro-ash)] mb-1">
                               Habilidades Passivas:
                             </div>
                             {ant.passivas?.length > 0 ? (
                               ant.passivas.map(p => (
-                                <div key={p.id} className="p-2 bg-[#171717] border border-[#292929] rounded-sm text-[11px]">
-                                  <span className="text-[#F5F3EE] font-semibold block">{p.nome}</span>
-                                  <span className="text-[#666666]">{p.descricao}</span>
+                                <div key={p.id} className="p-2 bg-[var(--ro-surface)] border border-[var(--ro-line)] rounded-sm text-[11px]">
+                                  <span className="text-[var(--ro-paper)] font-semibold block">{p.nome}</span>
+                                  <span className="text-[var(--ro-ash)]">{p.descricao}</span>
                                 </div>
                               ))
                             ) : (
-                              <div className="text-[#666666] text-[11px]">Nenhuma passiva ativa.</div>
+                              <div className="text-[var(--ro-ash)] text-[11px]">Nenhuma passiva ativa.</div>
                             )}
                           </div>
                         </div>
 
                         {/* Notas & Remover */}
                         <div className="flex items-center justify-between pt-2 border-t border-[#1f1f1f] text-[11px]">
-                          <span className="text-[#666666] italic">
+                          <span className="text-[var(--ro-ash)] italic">
                             {ant.observacoes || 'Sem notas adicionais.'}
                           </span>
                           <button
@@ -1076,12 +1076,12 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
         <div className="lg:col-span-3 space-y-6">
 
           {/* CONTADORES DA CENA (CLOCKS: ████░░) */}
-          <div className="bg-[#171717] border border-[#292929] p-4 rounded-sm space-y-3 font-mono">
-            <div className="flex items-center justify-between border-b border-[#292929] pb-2">
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#F5F3EE]">
+          <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 rounded-sm space-y-3 font-mono">
+            <div className="flex items-center justify-between border-b border-[var(--ro-line)] pb-2">
+              <span className="text-xs font-semibold uppercase tracking-widest text-[var(--ro-paper)]">
                 Contadores da Cena
               </span>
-              <span className="text-[10px] text-[#A88952]">
+              <span className="text-[10px] text-[var(--ro-copper)]">
                 {cena.contadores.filter(c => c.concluido).length}/{cena.contadores.length} Concluídos
               </span>
             </div>
@@ -1090,18 +1090,18 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
               {cena.contadores.map(c => {
                 const progresso = Math.min(100, Math.round((c.valorAtual / c.valorMaximo) * 100));
                 return (
-                  <div key={c.id} className="p-2.5 bg-[#0B0B0B] border border-[#292929] rounded-sm space-y-2">
+                  <div key={c.id} className="p-2.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm space-y-2">
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="text-xs font-semibold text-[#F5F3EE]">{c.nome}</div>
+                        <div className="text-xs font-semibold text-[var(--ro-paper)]">{c.nome}</div>
                         {c.descricao && (
-                          <div className="text-[10px] text-[#666666] mt-0.5">{c.descricao}</div>
+                          <div className="text-[10px] text-[var(--ro-ash)] mt-0.5">{c.descricao}</div>
                         )}
                       </div>
                       <button
                         type="button"
                         onClick={() => handleRemoverContador(c.id)}
-                        className="text-[#666666] hover:text-rose-400 text-sm leading-none ml-1"
+                        className="text-[var(--ro-ash)] hover:text-rose-400 text-sm leading-none ml-1"
                       >
                         ×
                       </button>
@@ -1110,10 +1110,10 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                     {/* Representação em Blocos ████░░ */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-[#A88952] tracking-wider">
+                        <span className="text-[var(--ro-copper)] tracking-wider">
                           {'█'.repeat(c.valorAtual)}{'░'.repeat(Math.max(0, c.valorMaximo - c.valorAtual))}
                         </span>
-                        <span className="text-[#D9D7D2] font-bold">
+                        <span className="text-[var(--ro-paper-muted)] font-bold">
                           {c.valorAtual}/{c.valorMaximo}
                         </span>
                       </div>
@@ -1130,14 +1130,14 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                       <button
                         type="button"
                         onClick={() => handleAvancarContador(c.id, -1)}
-                        className="px-2 py-0.5 bg-[#171717] hover:bg-[#292929] text-[#D9D7D2] text-[10px] rounded-sm"
+                        className="px-2 py-0.5 bg-[var(--ro-surface)] hover:bg-[var(--ro-surface-raised)] text-[var(--ro-paper-muted)] text-[10px] rounded-sm"
                       >
                         -1
                       </button>
                       <button
                         type="button"
                         onClick={() => handleAvancarContador(c.id, 1)}
-                        className="px-2.5 py-0.5 bg-[#A88952] hover:bg-[#75603D] text-[#0B0B0B] font-bold text-[10px] rounded-sm"
+                        className="px-2.5 py-0.5 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] font-bold text-[10px] rounded-sm"
                       >
                         +1
                       </button>
@@ -1152,12 +1152,12 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                   value={novoContadorNome}
                   onChange={(e) => setNovoContadorNome(e.target.value)}
                   placeholder="+ Novo contador..."
-                  className="flex-1 bg-[#0B0B0B] border border-[#292929] text-xs p-1.5 rounded-sm focus:outline-none text-[#F5F3EE]"
+                  className="flex-1 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs p-1.5 rounded-sm focus:outline-none text-[var(--ro-paper)]"
                 />
                 <select
                   value={novoContadorMax}
                   onChange={(e) => setNovoContadorMax(Number(e.target.value))}
-                  className="bg-[#0B0B0B] border border-[#292929] text-xs p-1.5 rounded-sm text-[#F5F3EE]"
+                  className="bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs p-1.5 rounded-sm text-[var(--ro-paper)]"
                 >
                   <option value={4}>/4</option>
                   <option value={6}>/6</option>
@@ -1165,7 +1165,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
                 </select>
                 <button
                   type="submit"
-                  className="px-2 py-1 bg-[#292929] text-[#D9D7D2] text-xs rounded-sm hover:bg-[#333333]"
+                  className="px-2 py-1 bg-[var(--ro-surface-raised)] text-[var(--ro-paper-muted)] text-xs rounded-sm hover:bg-[var(--ro-accent-soft)]"
                 >
                   Criar
                 </button>
@@ -1174,31 +1174,31 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
           </div>
 
           {/* LOG DA CENA (Memória da Cena em Tempo Real) */}
-          <div className="bg-[#171717] border border-[#292929] p-4 rounded-sm space-y-3 font-mono">
-            <div className="flex items-center justify-between border-b border-[#292929] pb-2">
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#F5F3EE]">
+          <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 rounded-sm space-y-3 font-mono">
+            <div className="flex items-center justify-between border-b border-[var(--ro-line)] pb-2">
+              <span className="text-xs font-semibold uppercase tracking-widest text-[var(--ro-paper)]">
                 Log da Cena
               </span>
-              <span className="text-[10px] text-[#666666]">
+              <span className="text-[10px] text-[var(--ro-ash)]">
                 Histórico
               </span>
             </div>
 
             <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
               {cena.log.length === 0 ? (
-                <div className="text-[11px] text-[#666666] py-4 text-center">Nenhum evento registrado ainda.</div>
+                <div className="text-[11px] text-[var(--ro-ash)] py-4 text-center">Nenhum evento registrado ainda.</div>
               ) : (
                 cena.log.map(item => (
                   <div key={item.id} className="text-[11px] border-b border-[#1f1f1f] pb-1.5 last:border-none">
-                    <div className="flex items-center justify-between text-[#666666]">
+                    <div className="flex items-center justify-between text-[var(--ro-ash)]">
                       <span className="text-[10px]">{item.timestamp}</span>
-                      <span className="uppercase text-[9px] text-[#A88952]">{item.tipo}</span>
+                      <span className="uppercase text-[9px] text-[var(--ro-copper)]">{item.tipo}</span>
                     </div>
-                    <div className="text-[#D9D7D2] font-medium mt-0.5 leading-snug">
+                    <div className="text-[var(--ro-paper-muted)] font-medium mt-0.5 leading-snug">
                       {item.descricao}
                     </div>
                     {item.detalhes && (
-                      <div className="text-[10px] text-[#666666] mt-0.5 leading-relaxed">
+                      <div className="text-[10px] text-[var(--ro-ash)] mt-0.5 leading-relaxed">
                         {item.detalhes}
                       </div>
                     )}
