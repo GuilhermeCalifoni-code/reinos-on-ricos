@@ -8,6 +8,9 @@ export function useRemoteCampaigns(userId?: string) {
   useEffect(() => { void recarregar(); }, [recarregar]);
   const criar = useCallback(async (input: { nome: string; descricao: string; imagemUrl: string; tipo: CampanhaTipo }) => { const campanha = await campaignRepository.criar(input); await recarregar(); return campanha; }, [recarregar]);
   const entrarComCodigo = useCallback(async (codigo: string) => { const id = await campaignRepository.entrarComCodigo(codigo); await recarregar(); return id; }, [recarregar]);
+  const remover = useCallback(async (campaignId: string) => { await campaignRepository.remover(campaignId); await recarregar(); }, [recarregar]);
+  const regenerarCodigo = useCallback(async (campaignId: string) => { const code = await campaignRepository.regenerarCodigo(campaignId); await recarregar(); return code; }, [recarregar]);
+  const atualizarMembro = useCallback(async (campaignId: string, memberUserId: string, patch: Parameters<typeof campaignRepository.atualizarMembro>[2]) => { await campaignRepository.atualizarMembro(campaignId, memberUserId, patch); await recarregar(); }, [recarregar]);
   const roleDaCampanha = useMemo(() => (campaignId?: string) => membros.find(m => m.campaignId === campaignId && m.userId === userId)?.role, [membros, userId]);
-  return { campanhas, membros, carregando, erro, recarregar, criar, entrarComCodigo, roleDaCampanha };
+  return { campanhas, membros, carregando, erro, recarregar, criar, entrarComCodigo, remover, regenerarCodigo, atualizarMembro, roleDaCampanha };
 }
