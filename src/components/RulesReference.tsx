@@ -1,255 +1,186 @@
 import React, { useState } from 'react';
-import { BookOpen, Sparkles, AlertTriangle, Shield, Heart, Moon, Anchor, Compass } from 'lucide-react';
-import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS, ESTADOS_RUPTURA, DISTANCIAS_REINOS_ONIRICOS } from '../rules/rulesData';
+import { DESCRICAO_DOMINIOS, LINGUAGEM_DOMINIOS, TABELA_PROGRESSAO } from '../rules/rulesData';
+
+type Secao = 'testes' | 'sonhar' | 'combate' | 'sobrevivencia' | 'mesa';
+
+const Tab: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
+  <button type="button" onClick={onClick} className={active ? 'rules-reference__tab is-active' : 'rules-reference__tab'}>
+    {children}
+  </button>
+);
 
 export const RulesReference: React.FC = () => {
-  const [secaoAtiva, setSecaoAtiva] = useState<'fundamentos' | 'conflito' | 'ruptura' | 'dominios' | 'descanso'>('fundamentos');
+  const [secao, setSecao] = useState<Secao>('testes');
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12 font-mono text-xs">
-      
-      {/* Header */}
-      <div className="bg-[#12151e] border border-slate-800 rounded-lg p-5 shadow-lg flex items-center justify-between">
+    <section className="rules-reference">
+      <header className="rules-reference__header">
         <div>
-          <h2 className="text-lg font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-cyan-400" />
-            Fonte das Verdades · Livro Básico Oficial
-          </h2>
-          <p className="text-slate-400 text-xs mt-0.5">
-            Consulta rápida e fiel das regras de Reinos Oníricos RPG
-          </p>
+          <p className="ro-eyebrow">Referência de mesa</p>
+          <h2>Regras essenciais</h2>
         </div>
-      </div>
+        <p>Resumo alinhado ao Guia Autônomo de Playtest atual.</p>
+      </header>
 
-      {/* Abas */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { id: 'fundamentos', label: '1. Fundamentos & Testes', icon: BookOpen },
-          { id: 'conflito', label: '2. Vigília, Dano & Conflito', icon: Shield },
-          { id: 'ruptura', label: '3. Trilha de Ruptura (0-6)', icon: AlertTriangle },
-          { id: 'dominios', label: '4. Domínios & Progressão', icon: Sparkles },
-          { id: 'descanso', label: '5. Descanso & Ancoragem', icon: Moon }
-        ].map(tab => {
-          const Icone = tab.icon;
-          const ativo = secaoAtiva === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setSecaoAtiva(tab.id as any)}
-              className={`px-3 py-2 rounded border font-bold uppercase tracking-wider flex items-center gap-2 transition ${
-                ativo
-                  ? 'bg-cyan-950/80 border-cyan-400 text-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.15)]'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-              }`}
-            >
-              <Icone className="w-3.5 h-3.5" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      <nav className="rules-reference__tabs" aria-label="Seções de regras">
+        <Tab active={secao === 'testes'} onClick={() => setSecao('testes')}>Testes</Tab>
+        <Tab active={secao === 'sonhar'} onClick={() => setSecao('sonhar')}>Sonhar</Tab>
+        <Tab active={secao === 'combate'} onClick={() => setSecao('combate')}>Tensão</Tab>
+        <Tab active={secao === 'sobrevivencia'} onClick={() => setSecao('sobrevivencia')}>Dano & Morte</Tab>
+        <Tab active={secao === 'mesa'} onClick={() => setSecao('mesa')}>Mesa</Tab>
+      </nav>
 
-      {/* Conteúdo */}
-      <div className="bg-[#12151e] border border-slate-800 rounded-lg p-6 shadow-lg leading-relaxed text-slate-300 space-y-4">
-        
-        {secaoAtiva === 'fundamentos' && (
-          <div className="space-y-4">
-            <h3 className="text-base font-bold font-['Chakra_Petch'] text-cyan-300 uppercase">
-              Princípios e Resolução de Testes
-            </h3>
-
-            <div className="p-3.5 rounded bg-slate-950 border border-slate-800 space-y-2">
-              <h4 className="font-bold text-slate-100 uppercase text-xs">Ficção em Primeiro Lugar</h4>
-              <p className="text-slate-400 text-xs">
-                O jogo é conduzido pela narrativa. Nenhum teste de dados deve ser rolado a menos que haja incerteza significativa e consequências palpáveis na história. A ficção estabelece a posição, o que é possível e o que está em jogo.
-              </p>
+      {secao === 'testes' && (
+        <div className="rules-reference__content">
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Teste Mundano</p>
+            <h3>1d20 + Atributo ≥ DT</h3>
+            <p>Role apenas quando existir incerteza relevante e consequência interessante para a falha. Um 20 natural é sucesso automático; se o teste causar dano, o dano é crítico.</p>
+            <div className="rules-reference__grid rules-reference__grid--dt">
+              {[[8,'Trivial'],[10,'Fácil'],[12,'Comum'],[14,'Desafiador'],[16,'Difícil'],[18,'Muito difícil'],[20,'Extraordinário'],['>20','Onírico']].map(([dt,nome]) => <span key={String(dt)}><strong>{dt}</strong>{nome}</span>)}
             </div>
+          </article>
 
-            <div className="p-3.5 rounded bg-slate-950 border border-slate-800 space-y-2">
-              <h4 className="font-bold text-amber-400 uppercase text-xs">Teste Mundano: 1d20 + Atributo ≥ DT</h4>
-              <p className="text-slate-400 text-xs">
-                Utilizado para resolver ações convencionais na Vigília (pular um telhado, negociar, arrombar uma porta, disparar uma arma).
-              </p>
-              <ul className="list-disc list-inside text-slate-400 space-y-1 pl-1">
-                <li><strong>Vantagem:</strong> Rola 2d20 e escolhe o maior.</li>
-                <li><strong>Desvantagem:</strong> Rola 2d20 e escolhe o menor.</li>
-                <li><strong>Ponto de Foco:</strong> O Jogador pode gastar 1 PF antes da rolagem para receber +2 no Teste Mundano. Apenas 1 PF por teste. Foco NÃO pode ser usado no Sonhar.</li>
-                <li><strong>Crítico Natural:</strong> Um 20 natural no d20 garante um sucesso excepcional com benefícios narrativos imediatos.</li>
-              </ul>
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Teste Reflexo</p>
+            <h3>Um Teste Mundano em resposta a um gatilho</h3>
+            <p>O Mestre escolhe Atributo e DT conforme a ficção. Foco pode ser usado normalmente. Vantagem e Desvantagem aplicam-se a Testes Mundanos e Reflexos, nunca a Testes Oníricos.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Teste Onírico</p>
+            <h3>Realidade + Sonhar, cada dado contra a DT</h3>
+            <p>Role 2d20 + o mesmo Atributo apropriado. A DT é normalmente 13. Os dados não competem entre si e não existem margens de sucesso.</p>
+            <div className="rules-reference__outcomes">
+              <div><strong>Convergência</strong><span>ambos passam</span><p>Manifestação acontece; é crítico; Ruptura −1.</p></div>
+              <div><strong>Realidade vence</strong><span>Realidade passa</span><p>Manifestação não acontece; Ruptura 0.</p></div>
+              <div><strong>Sonhar vence</strong><span>Sonhar passa</span><p>Manifestação acontece; Ruptura +1.</p></div>
+              <div><strong>Divergência</strong><span>ambos falham</span><p>Manifestação não acontece; Ruptura +2.</p></div>
             </div>
+          </article>
+        </div>
+      )}
 
-            <div className="p-3.5 rounded bg-slate-950 border border-slate-800 space-y-2">
-              <h4 className="font-bold text-cyan-400 uppercase text-xs">Teste Onírico: 1d20 Realidade + 1d20 Sonhar vs DT 13</h4>
-              <p className="text-slate-400 text-xs">
-                Dois dados independentes com funções diferentes. O mesmo modificador de Atributo é somado a ambos os dados. A DT padrão é 13.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
-                <div className="p-2 rounded bg-emerald-950/40 border border-emerald-800 text-emerald-200">
-                  <strong>Convergência (Ambos passam):</strong> Manifestação perfeita, crítica. -1 Ruptura.
-                </div>
-                <div className="p-2 rounded bg-amber-950/40 border border-amber-800 text-amber-200">
-                  <strong>Realidade Vence (Realidade passa, Sonhar falha):</strong> Manifestação contida pela física. 0 Ruptura.
-                </div>
-                <div className="p-2 rounded bg-cyan-950/40 border border-cyan-800 text-cyan-200">
-                  <strong>Sonhar Vence (Realidade falha, Sonhar passa):</strong> O Sonhar impõe sua vontade com violência. +1 Ruptura.
-                </div>
-                <div className="p-2 rounded bg-rose-950/40 border border-rose-800 text-rose-200">
-                  <strong>Divergência (Ambos falham):</strong> Colapso ontológico. O efeito escapa ao controle. +2 Ruptura.
-                </div>
-              </div>
+      {secao === 'sonhar' && (
+        <div className="rules-reference__content">
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Princípio</p>
+            <h3>O Sonhar não possui lista fechada de poderes</h3>
+            <p>O Jogador declara o que deseja tornar possível. O Domínio determina a possibilidade; o nível determina a profundidade; a narrativa determina a forma; o Teste Onírico determina o encontro entre Sonhar e Realidade.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Linguagem dos níveis</p>
+            <div className="rules-reference__levels">
+              {LINGUAGEM_DOMINIOS.map(item => <div key={item.nivel}><strong>{item.nivel}</strong><span>{item.verbo}</span><p>{item.descricao}</p></div>)}
             </div>
-          </div>
-        )}
+          </article>
 
-        {secaoAtiva === 'conflito' && (
-          <div className="space-y-4">
-            <h3 className="text-base font-bold font-['Chakra_Petch'] text-cyan-300 uppercase">
-              Vigília, Dano e Cenas de Tensão
-            </h3>
-
-            <div className="p-3.5 rounded bg-slate-950 border border-slate-800 space-y-2">
-              <h4 className="font-bold text-slate-100 uppercase text-xs">A Rodada de Tensão</h4>
-              <p className="text-slate-400 text-xs">
-                Durante uma Cena de Tensão, o tempo é medido em Rodadas. Em seu turno, cada personagem possui direito a:
-              </p>
-              <ul className="list-disc list-inside text-slate-400 space-y-1 pl-1">
-                <li><strong>1 Movimento:</strong> Deslocar-se 1 grau de distância (Muito Próximo ↔ Perto ↔ Longe ↔ Muito Longe).</li>
-                <li><strong>1 Ação:</strong> Atacar, defender, usar um item, ou manifestar o Sonhar (Níveis 2 a 5).</li>
-                <li><strong>Percepção Onírica (Nível 1 de Domínio):</strong> NÃO consome a Ação da rodada.</li>
-              </ul>
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Domínios</p>
+            <div className="rules-reference__domains">
+              {Object.values(DESCRICAO_DOMINIOS).map(dominio => <div key={dominio.nome}><h4>{dominio.nome}</h4><p>{dominio.tema}</p><small>{dominio.manifestacoesTipicas}</small></div>)}
             </div>
+          </article>
 
-            <div className="p-3.5 rounded bg-slate-950 border border-slate-800 space-y-2">
-              <h4 className="font-bold text-rose-400 uppercase text-xs">Resolução de Dano vs Resistência</h4>
-              <p className="text-slate-400 text-xs">
-                A Resistência (R) de um personagem é calculada como <strong>6 + Corpo + Bônus de Vestimenta</strong>.
-              </p>
-              <ul className="list-disc list-inside text-slate-400 space-y-1 pl-1">
-                <li><strong>Dano ≤ Resistência:</strong> O personagem perde <strong>1 Ponto de Vida (V)</strong>.</li>
-                <li><strong>Dano &gt; Resistência:</strong> O personagem perde <strong>2 Pontos de Vida (V)</strong>.</li>
-                <li><strong>Regra Opcional Dano Maciço:</strong> Dano &gt; 2× Resistência causa a perda de <strong>3 Pontos de Vida (V)</strong>.</li>
-                <li><strong>Proteção Onírica (PO):</strong> Após comparar o dano à Resistência, o Jogador pode gastar 1 PO para reduzir em 1 V a perda causada pelo dano. Apenas 1 PO pode ser gasto por ocorrência de dano.</li>
-              </ul>
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Guia do Sonhar</p>
+            <h3>Fluxo de uma manifestação</h3>
+            <p>Intenção → Domínio → Nível → Combinação? → Alcance → Alvos/Área → Duração → Potência → Atributo → DT → Teste Onírico → Manifestação → Ruptura/Delírio → Consequências.</p>
+            <p><strong>Combinação:</strong> o Domínio Principal precisa possuir nível ao menos 1 maior que cada secundário. Para Potência, use o maior nível combinado. Os níveis não são somados.</p>
+          </article>
+        </div>
+      )}
+
+      {secao === 'combate' && (
+        <div className="rules-reference__content">
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Cena de Tensão</p>
+            <h3>Não há iniciativa</h3>
+            <p>Os Jogadores escolhem sua ordem e os Turnos alternam Jogador e Mestre. A Rodada termina quando todos os Jogadores tiveram um Turno. Mais Adversários não concedem automaticamente mais Ações ao Mestre.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Movimento</p>
+            <h3>Movimento integra a Ação</h3>
+            <p>O Movimento pode ser dividido antes e depois da Ação. O Deslocamento básico é Próximo. Correr exige Teste Reflexo de Corpo DT 15 ou mais; sucesso duplica o Deslocamento na Ação, falha mantém o normal.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Ações</p>
+            <div className="rules-reference__compact-list">
+              <p><strong>Ataque:</strong> Teste Mundano contra Dificuldade do Adversário ou Defesa de Personagem.</p>
+              <p><strong>Agarrar/Derrubar/Imobilizar:</strong> Teste Mundano de Corpo; sucesso pode impor uma Condição apropriada.</p>
+              <p><strong>Sonhar:</strong> Teste Onírico.</p>
+              <p><strong>Ataque + Sonhar:</strong> uma única Ação e um único Teste Onírico; DT = maior entre 13 e a Dificuldade do alvo.</p>
+              <p><strong>Ajudar:</strong> Vantagem no próximo Teste Mundano; para ajudar Sonhar, gaste a Ação e reduza a DT Onírica do aliado em 2.</p>
             </div>
+          </article>
+        </div>
+      )}
 
-            <div className="p-3.5 rounded bg-slate-950 border border-slate-800 space-y-2">
-              <h4 className="font-bold text-rose-500 uppercase text-xs">Movimento de Morte (0 Pontos de Vida)</h4>
-              <p className="text-slate-400 text-xs">
-                Ao chegar a 0 V, o jogador imediatamente realiza o Movimento de Morte, rolando 2d20 puros (Realidade e Sonhar) sem Atributo contra DT 13:
-              </p>
-              <p className="text-slate-400 text-xs">
-                Convergência: retorna com 2 V. Realidade vence: retorna com 1 V. Sonhar vence: retorna com 1 V e +2 Ruptura. Divergência: morte definitiva (reversível apenas com Vida Nível 5).
-              </p>
+      {secao === 'sobrevivencia' && (
+        <div className="rules-reference__content">
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Valores essenciais</p>
+            <div className="rules-reference__stats">
+              <span><strong>Resistência</strong>6 + Corpo</span>
+              <span><strong>Defesa</strong>8 + Corpo</span>
+              <span><strong>PO</strong>2</span>
+              <span><strong>Ruptura</strong>0 a 6</span>
             </div>
-          </div>
-        )}
+          </article>
 
-        {secaoAtiva === 'ruptura' && (
-          <div className="space-y-4">
-            <h3 className="text-base font-bold font-['Chakra_Petch'] text-rose-400 uppercase">
-              A Trilha de Ruptura (0 a 6)
-            </h3>
-
-            <p className="text-slate-400 text-xs">
-              A Ruptura mede a perda da coerência da Realidade em torno do Desvelado. Toda alteração deve ser registrada com clareza.
-            </p>
-
-            <div className="space-y-2">
-              {Object.values(ESTADOS_RUPTURA).map(e => (
-                <div key={e.nivel} className="p-3 rounded bg-slate-950 border border-slate-800">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-slate-100">Nível {e.nivel} — {e.nome}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">Livro Básico pág. 29</span>
-                  </div>
-                  <p className="text-slate-300 text-xs">{e.descricao}</p>
-                  <p className="text-slate-400 text-[11px] mt-1 italic">Sintomas: {e.sintomas}</p>
-                </div>
-              ))}
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Converter dano em PV</p>
+            <div className="rules-reference__compact-list">
+              <p><strong>Dano ≤ R:</strong> perde 1 PV.</p>
+              <p><strong>Dano &gt; R:</strong> perde 2 PV.</p>
+              <p><strong>Dano Massivo opcional:</strong> dano &gt; 2 × R causa perda de 3 PV.</p>
+              <p><strong>Proteção Onírica:</strong> depois da comparação, gaste no máximo 1 PO para reduzir a perda em 1 PV.</p>
             </div>
+          </article>
 
-            <div className="p-3.5 rounded bg-rose-950/80 border border-rose-600 text-rose-200 text-xs space-y-1">
-              <div className="font-bold uppercase">Regra do Nível 6:</div>
-              <p>
-                Quando a trilha alcança 6, o Mestre aplica o <strong>Efeito da Ruptura</strong> (estabelecendo Origem, Domínio e Pressão), e em seguida a trilha do personagem retorna para 0.
-              </p>
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Movimento de Morte</p>
+            <h3>0 PV → 2d20 sem Atributo contra DT 13</h3>
+            <div className="rules-reference__compact-list">
+              <p><strong>Convergência:</strong> recupere 2 PV.</p>
+              <p><strong>Realidade vence:</strong> recupere 1 PV.</p>
+              <p><strong>Sonhar vence:</strong> recupere 1 PV e +2 Ruptura.</p>
+              <p><strong>Divergência:</strong> o Personagem morre; a descrição pertence ao Jogador.</p>
             </div>
-          </div>
-        )}
+          </article>
+        </div>
+      )}
 
-        {secaoAtiva === 'dominios' && (
-          <div className="space-y-4">
-            <h3 className="text-base font-bold font-['Chakra_Petch'] text-cyan-300 uppercase">
-              Nova Progressão de Domínios por Nível
-            </h3>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400">
-                    <th className="py-2 px-3">Nível</th>
-                    <th className="py-2 px-3">Pontos de Sonhar</th>
-                    <th className="py-2 px-3">Máx em 1 Domínio</th>
-                    <th className="py-2 px-3">Defesa</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                  {Object.values(TABELA_PROGRESSAO).map(p => (
-                    <tr key={p.nivel}>
-                      <td className="py-2 px-3 font-bold text-cyan-400">Nível {p.nivel}</td>
-                      <td className="py-2 px-3">{p.pontosDeSonhar} Pontos</td>
-                      <td className="py-2 px-3">Nível {p.dominioMaximo}</td>
-                      <td className="py-2 px-3">8 + Atributo {p.bonusDefesa > 0 ? `+ ${p.bonusDefesa}` : ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-              {Object.values(DESCRICAO_DOMINIOS).map(d => (
-                <div key={d.nome} className="p-3 rounded bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="font-bold text-cyan-300 block">{d.nome}</span>
-                  <p className="text-slate-400 text-xs italic">"{d.tema}"</p>
-                  <p className="text-slate-300 text-[11px]">{d.manifestacoesTipicas}</p>
+      {secao === 'mesa' && (
+        <div className="rules-reference__content">
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Progressão</p>
+            <div className="rules-reference__progression">
+              {Object.values(TABELA_PROGRESSAO).map(nivel => (
+                <div key={nivel.nivel}>
+                  <strong>Nível {nivel.nivel}</strong>
+                  <span>{nivel.vidaBase} PV · {nivel.focoBase} PF · {nivel.protecaoOniricaBase} PO</span>
+                  <small>{nivel.pontosDeSonhar} Pontos de Sonhar · Domínio máx. {nivel.dominioMaximo}</small>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          </article>
 
-        {secaoAtiva === 'descanso' && (
-          <div className="space-y-4">
-            <h3 className="text-base font-bold font-['Chakra_Petch'] text-indigo-300 uppercase">
-              Descanso & Ancoragem (Livro Básico Pág. 36, 116)
-            </h3>
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Contadores</p>
+            <h3>Processos, pressão, perseguições e conflitos em etapas</h3>
+            <p>Defina valor inicial, objetivo, direção e gatilhos. Quando o Sonhar participa: Convergência progride 1 e −1 Ruptura; Realidade vence recua 1; Sonhar vence progride 1 e +1 Ruptura; Divergência recua 2 e +2 Ruptura, quando recuar fizer sentido.</p>
+          </article>
 
-            <p className="text-slate-400 text-xs">
-              Durante um Descanso (8h de sono), cada Jogador pode realizar <strong>2 Movimentos de Descanso</strong>. Se passar tempo com seu elo de Ancoragem, ganha <strong>1 Movimento Adicional (totalizando 3)</strong>.
-            </p>
-
-            <div className="space-y-2">
-              <div className="p-2.5 rounded bg-slate-950 border border-slate-800">
-                <strong className="text-rose-400">1. Cicatrização:</strong> Recupere todos os Pontos de Vida (V).
-              </div>
-              <div className="p-2.5 rounded bg-slate-950 border border-slate-800">
-                <strong className="text-cyan-400">2. Restaurar a Proteção:</strong> Recupere os Pontos de Proteção Onírica (PO).
-              </div>
-              <div className="p-2.5 rounded bg-slate-950 border border-slate-800">
-                <strong className="text-amber-400">3. Recuperar o Foco:</strong> Recupere todos os Pontos de Foco (PF) gastos.
-              </div>
-              <div className="p-2.5 rounded bg-slate-950 border border-slate-800">
-                <strong className="text-purple-400">4. Restaurar Ruptura:</strong> Seu marcador de Ruptura volta a 0.
-              </div>
-              <div className="p-2.5 rounded bg-slate-950 border border-slate-800">
-                <strong className="text-emerald-400">5. Remover Condição:</strong> Remove uma Condição apropriada (Oculto, Impedido, Vulnerável).
-              </div>
-            </div>
-          </div>
-        )}
-
-      </div>
-
-    </div>
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Ruptura & Delírio</p>
+            <p>Ao alcançar 6, resolva primeiro a manifestação que levou a trilha ao limite. Depois o Mestre estabelece um Efeito de Ruptura coerente e a trilha retorna a 0. Delírio Moderado ou Intenso acrescenta +1 Ruptura a todos os Desvelados presentes, independentemente da quantidade de testemunhas.</p>
+          </article>
+        </div>
+      )}
+    </section>
   );
 };
