@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, SessaoStatus } from '../types/campaign';
+import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, SessaoStatus, MembroCampanha } from '../types/campaign';
 import { Personagem } from '../types/character';
 import { SessionPlanner } from './campaign/SessionPlanner';
+import { CampaignMembersPanel } from './campaign/CampaignMembersPanel';
 
 export type CampaignTabType = 
   | 'visao_geral'
@@ -37,6 +38,11 @@ interface CampaignDetailViewProps {
   onAdicionarPista: (pista: Omit<Pista, 'id'>) => void;
   onAdicionarLore: (lore: Omit<LoreEntry, 'id'>) => void;
   onAdicionarAnotacao: (campanhaId: string, titulo: string, conteudo: string) => void;
+  membros?: MembroCampanha[];
+  currentUserId?: string;
+  canManageMembers?: boolean;
+  onRegenerarCodigo?: (campaignId: string) => Promise<string>;
+  onAtualizarMembro?: (campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) => Promise<void>;
   onExcluirCampanha?: (id: string) => void;
 }
 
@@ -59,6 +65,11 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   onAdicionarPista,
   onAdicionarLore,
   onAdicionarAnotacao,
+  membros = [],
+  currentUserId,
+  canManageMembers = false,
+  onRegenerarCodigo,
+  onAtualizarMembro,
   onExcluirCampanha
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<CampaignTabType>('visao_geral');
@@ -645,7 +656,18 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
               <p className="text-xs text-[#666666] mt-0.5">Identificadores e sincronização da crônica.</p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {membros.length > 0 && (
+                <CampaignMembersPanel
+                  campaignId={campanha.id}
+                  members={membros}
+                  inviteCode={campanha.codigo}
+                  currentUserId={currentUserId}
+                  canManage={canManageMembers}
+                  onRegenerateInvite={onRegenerarCodigo}
+                  onUpdateMember={onAtualizarMembro}
+                />
+              )}
               <div>
                 <label className="block text-xs font-mono uppercase tracking-widest text-[#666666] mb-2">
                   Código de Conexão da Mesa
