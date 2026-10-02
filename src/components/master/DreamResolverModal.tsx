@@ -49,6 +49,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
 
   // Executar Teste Onírico (Realidade e Sonho avaliados separadamente)
   const executarTesteOnirico = () => {
+    if (excedeNivelPJ) return;
     const dadoRealidade = Math.floor(Math.random() * 20) + 1;
     const totalRealidade = dadoRealidade + valorAtributoPJ;
     const sucessoRealidade = totalRealidade >= dtDificuldade;
@@ -255,14 +256,14 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </div>
               </div>
 
-              {/* Alerta Não-Bloqueante de Limite */}
+              {/* Limite mecânico do Domínio */}
               {excedeNivelPJ && (
                 <div className="bg-amber-950/20 border border-amber-900/60 p-3 rounded-sm text-xs font-mono text-amber-300 flex items-start gap-2">
                   <span>⚠</span>
                   <div className="space-y-1">
                     <p className="font-semibold">Esta manifestação excede o Domínio atual ({nivelDominioPJ}) do Desvelado.</p>
                     <p className="text-[11px] text-amber-400/80">
-                      Sugestão do Sistema: O Mestre pode permitir a tentativa aumentando a Dificuldade (+2 ou +4 DT), exigindo gasto de Foco adicional, ou convertendo a tentativa em um esforço instável que gera Ruptura imediata se falhar. Não bloqueie a criatividade: interprete o risco!
+                      O Nível do Domínio define o que é possível manifestar. Reformule a intenção para um efeito permitido pelo nível atual, combine Domínios quando a ficção justificar ou busque outra solução narrativa. Aumentar a DT não substitui um nível de Domínio que o Desvelado ainda não possui.
                     </p>
                   </div>
                 </div>
@@ -365,7 +366,8 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 <button
                   type="button"
                   onClick={executarTesteOnirico}
-                  className="px-6 py-2.5 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors flex items-center gap-2"
+                  disabled={excedeNivelPJ}
+                  className="px-6 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium font-mono uppercase tracking-wider rounded-sm transition-colors flex items-center gap-2"
                 >
                   <span>Executar Teste Onírico (Realidade & Sonho)</span>
                   <span>→</span>
