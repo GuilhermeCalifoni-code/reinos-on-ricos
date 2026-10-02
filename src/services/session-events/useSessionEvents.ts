@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { UserRole } from '../../types/auth';
 import { NewSessionEvent, SessionEvent } from '../../types/sessionEvent';
 import { sessionEventRepository } from './sessionEventRepository';
 
-interface SessionEventsOptions { campaignId?: string; sessionId?: string; userId?: string; role: UserRole; enabled: boolean; characterId?: string; }
+interface SessionEventsOptions { campaignId?: string; sessionId?: string; userId?: string; enabled: boolean; characterId?: string; }
 
-export function useSessionEvents({ campaignId, sessionId, userId, role, enabled, characterId }: SessionEventsOptions) {
+export function useSessionEvents({ campaignId, sessionId, userId, enabled, characterId }: SessionEventsOptions) {
   const [events, setEvents] = useState<SessionEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
