@@ -22,10 +22,11 @@ interface RollResult {
   actor: string;
   ability: string;
   kind: TipoTesteAtor;
-  die: number;
-  modifier: number;
-  total: number;
+  die?: number;
+  modifier?: number;
+  total?: number;
   dt: number;
+  atributo?: HabilidadeAtor['atributo'];
 }
 
 const uid = () => `hab-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -157,10 +158,16 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
 
   const rollAbility = (actorName: string, ability: HabilidadeAtor, fallbackDt: number) => {
     if (!ability.teste || ability.categoria === 'passiva') return;
+    const dt = ability.dt || fallbackDt;
+
+    if (ability.teste === 'reflexo') {
+      setRoll({ actor: actorName, ability: ability.nome, kind: 'reflexo', dt, atributo: ability.atributo || 'corpo' });
+      return;
+    }
+
     const die = Math.floor(Math.random() * 20) + 1;
     const modifier = ability.modificador || 0;
-    const dt = ability.dt || fallbackDt;
-    setRoll({ actor: actorName, ability: ability.nome, kind: ability.teste, die, modifier, total: die + modifier, dt });
+    setRoll({ actor: actorName, ability: ability.nome, kind: 'mundano', die, modifier, total: die + modifier, dt, atributo: ability.atributo });
   };
 
   const remove = async (id: string, name: string) => {
@@ -209,7 +216,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
                 {(['passiva','acao','reacao'] as CategoriaHabilidadeAtor[]).map(category => abilities.filter(a => a.categoria === category).map(ability => (
                   <div key={ability.id} className="actor-card__ability">
                     <div className="actor-card__ability-title"><span>{category === 'acao' ? 'Ação' : category === 'reacao' ? 'Reação' : 'Passiva'}</span><strong>{ability.nome}</strong>
-                      {ability.teste && category !== 'passiva' && <button onClick={() => rollAbility(name, ability, difficulty)}><Dice5 size={13} /> {ability.teste === 'reflexo' ? 'Reflexo' : 'Mundano'}</button>}
+                      {ability.teste && category !== 'passiva' && <button onClick={() => rollAbility(name, ability, difficulty)}><Dice5 size={13} /> {ability.teste === 'reflexo' ? 'Solicitar Reflexo' : 'Rolar Mundano'}</button>}
                     </div>
                     <p>{ability.descricao}</p>
                   </div>
@@ -262,8 +269,18 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
         <div className="actor-roll" onMouseDown={event => event.stopPropagation()}>
           <p className="ro-eyebrow">{roll.kind === 'reflexo' ? 'Teste Reflexo' : 'Teste Mundano'}</p>
           <h3>{roll.actor} · {roll.ability}</h3>
-          <div className="actor-roll__result"><strong>{roll.die}</strong><span>{roll.modifier >= 0 ? '+' : '−'} {Math.abs(roll.modifier)}</span><b>= {roll.total}</b></div>
-          <p>DT {roll.dt} · <strong className={roll.total >= roll.dt ? 'is-success' : 'is-failure'}>{roll.total >= roll.dt ? 'SUCESSO' : 'FRACASSO'}</strong></p>
+          {roll.kind === 'reflexo' ? (
+            <div className="actor-roll__request">
+              <strong>O alvo realiza o teste.</strong>
+              <p>Role 1d20 + {roll.atributo === 'vinculo' ? 'Vínculo' : roll.atributo === 'vontade' ? 'Vontade' : roll.atributo === 'mente' ? 'Mente' : 'Corpo'} contra DT {roll.dt}.</p>
+              <small>Teste Reflexo é um Teste Mundano de reação. O modificador pertence ao alvo, não ao NPC ou Adversário.</small>
+            </div>
+          ) : (
+            <>
+              <div className="actor-roll__result"><strong>{roll.die}</strong><span>{(roll.modifier || 0) >= 0 ? '+' : '−'} {Math.abs(roll.modifier || 0)}</span><b>= {roll.total}</b></div>
+              <p>DT {roll.dt} · <strong className={(roll.total || 0) >= roll.dt ? 'is-success' : 'is-failure'}>{(roll.total || 0) >= roll.dt ? 'SUCESSO' : 'FRACASSO'}</strong></p>
+            </>
+          )}
           <button className="ro-button" onClick={() => setRoll(null)}>Fechar</button>
         </div>
       </div>}
