@@ -1269,3 +1269,23 @@
 :root[data-theme='light'] .ro-button {
   color: #fffaf1;
 }
+
+
+/* O claro segue a diagramação interna: azul para hierarquia, cobre para ação. */
+:root[data-theme='light'] .ro-eyebrow { color: var(--ro-navy); }
+:root[data-theme='light'] .ro-nav-item--active,
+:root[data-theme='light'] .ro-campaign-nav--active {
+  border-left-color: var(--ro-navy);
+  background: linear-gradient(90deg, var(--ro-blue-soft), transparent);
+}
+:root[data-theme='light'] .ro-nav-item--active,
+:root[data-theme='light'] .ro-nav-item--active > span,
+:root[data-theme='light'] .ro-mobile-nav--active {
+  color: var(--ro-navy);
+}
+:root[data-theme='light'] .ro-mobile-nav--active { border-bottom-color: var(--ro-navy); }
+
+::selection {
+  background: color-mix(in srgb, var(--ro-copper) 28%, transparent);
+  color: var(--ro-paper);
+}
