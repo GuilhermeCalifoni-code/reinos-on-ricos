@@ -22,15 +22,15 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   const [atributoPrincipal, setAtributoPrincipal] = useState<AtributoNome>('mente');
   
   const [atributos, setAtributos] = useState({
-    corpo: 1,
-    mente: 2,
-    vontade: 1,
-    vinculo: 0
+    corpo: 2,
+    mente: 1,
+    vontade: 0,
+    vinculo: -1
   });
 
   const [dominios, setDominios] = useState<Record<DominioNome, number>>({
-    consciencia: 2,
-    espaco: 1,
+    consciencia: 3,
+    espaco: 2,
     fluxo: 0,
     substancia: 0,
     vida: 0
@@ -42,6 +42,14 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
 
   const prog = TABELA_PROGRESSAO[nivel] || TABELA_PROGRESSAO[1];
   const validacao = validarDistribuicaoDominios(dominios, nivel);
+  const pontosAtributoEsperados = 2 + prog.pontosAtributoAdicionais;
+  const somaAtributos = Object.values(atributos).reduce((total, valor) => total + valor, 0);
+  const atributosBaseValidos = nivel > 1 || [...Object.values(atributos)].sort((a, b) => a - b).join(',') === '-1,0,1,2';
+  const atributosValidos = Object.values(atributos).every(valor => valor >= -1 && valor <= 4)
+    && somaAtributos === pontosAtributoEsperados
+    && atributosBaseValidos;
+  const dominiosCompletos = validacao.valida && validacao.pontosUsados === validacao.pontosTotais;
+  const fichaValida = Boolean(nome.trim()) && atributosValidos && dominiosCompletos;
 
   const handleUpdateAtributo = (at: AtributoNome, val: number) => {
     setAtributos(prev => ({ ...prev, [at]: val }));
@@ -52,6 +60,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   };
 
   const handleCriar = () => {
+    if (!fichaValida) return;
     const resistencia = calcularResistencia(atributos.corpo);
     const defesa = calcularDefesa(atributoPrincipal, atributos, nivel).defesa;
     const vidaMaxima = calcularVidaMaxima(nivel);
@@ -59,6 +68,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
     const novoPersonagem: Personagem = {
       id: 'desvelado-' + Date.now(),
       nome: nome.trim() || 'Novo Desvelado',
+      jogador: jogador.trim() || 'Jogador',
       conceito,
       nivel,
       atributos,
@@ -67,10 +77,10 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
       defesa,
       vidaAtual: vidaMaxima,
       vidaMaxima,
-      focoAtual: 4,
-      focoMaximo: 4,
-      protecaoOniricaAtual: 2,
-      protecaoOniricaMaxima: 2,
+      focoAtual: prog.focoBase,
+      focoMaximo: prog.focoBase,
+      protecaoOniricaAtual: prog.protecaoOniricaBase,
+      protecaoOniricaMaxima: prog.protecaoOniricaBase,
       ruptura: 0,
       historicoRuptura: [
         {
@@ -186,8 +196,10 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
           {/* Atributos */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-slate-300 font-semibold">Atributos (-1 a +3):</label>
-              <span className="text-[10px] text-slate-400">Escolha o Atributo Principal que ancora a Defesa</span>
+              <label className="text-slate-300 font-semibold">Atributos:</label>
+              <span className={atributosValidos ? 'text-[10px] text-emerald-400' : 'text-[10px] text-rose-400'}>
+                Soma {somaAtributos}/{pontosAtributoEsperados} · Defesa = 8 + Corpo
+              </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
@@ -238,11 +250,19 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
             </div>
           </div>
 
+          {!atributosValidos && (
+            <div className="rounded border border-rose-900/60 bg-rose-950/30 p-2.5 text-[11px] text-rose-200">
+              {nivel === 1
+                ? 'No Nível 1 distribua exatamente +2, +1, 0 e -1 entre os quatro Atributos.'
+                : `A progressão deste nível exige soma total ${pontosAtributoEsperados} nos Atributos, preservando o limite mínimo -1 e máximo +4.`}
+            </div>
+          )}
+
           {/* Domínios */}
           <div>
             <div className="flex justify-between items-center mb-1">
               <label className="text-slate-300 font-semibold">Distribuição de Domínios:</label>
-              <span className={validacao.valida ? 'text-cyan-400 font-bold' : 'text-rose-400 font-bold'}>
+              <span className={dominiosCompletos ? 'text-cyan-400 font-bold' : 'text-rose-400 font-bold'}>
                 {validacao.pontosUsados} / {validacao.pontosTotais} Pontos (Máx {prog.dominioMaximo})
               </span>
             </div>
@@ -316,7 +336,8 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
           <button
             type="button"
             onClick={handleCriar}
-            className="px-4 py-1.5 text-slate-950 font-bold bg-cyan-400 hover:bg-cyan-300 rounded shadow-[0_0_12px_rgba(6,182,212,0.3)] flex items-center gap-1.5 transition"
+            disabled={!fichaValida}
+            className={`px-4 py-1.5 text-slate-950 font-bold bg-cyan-400 rounded shadow-[0_0_12px_rgba(6,182,212,0.3)] flex items-center gap-1.5 transition ${fichaValida ? 'hover:bg-cyan-300' : 'opacity-50 cursor-not-allowed'}`}
           >
             <Check className="w-4 h-4" />
             Criar Desvelado
