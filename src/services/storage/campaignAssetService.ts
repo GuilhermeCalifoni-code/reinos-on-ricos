@@ -21,6 +21,17 @@ export const campaignAssetService = {
     return path;
   },
 
+  async uploadHandout(campaignId: string, file: File) {
+    const extName = sanitize(file.name || 'arquivo');
+    const path = `campaigns/${campaignId}/handouts/${Date.now()}-${extName}`;
+    const { error } = await client().storage.from(BUCKET).upload(path, file, {
+      upsert: false,
+      contentType: file.type || undefined
+    });
+    if (error) throw error;
+    return path;
+  },
+
   async signedUrl(path: string, expiresIn = 3600) {
     const { data, error } = await client().storage.from(BUCKET).createSignedUrl(path, expiresIn);
     if (error) throw error;
