@@ -28,13 +28,13 @@ export async function testarConexaoSupabase(): Promise<{ ok: boolean; mensagem: 
   }
 
   try {
-    const { error } = await supabase.from('mesas').select('codigo').limit(1);
+    const { error } = await supabase.from('campaigns').select('id').limit(1);
     if (error) {
       // Se a tabela ainda não foi criada no banco
       if (error.code === '42P01') {
         return {
           ok: false,
-          mensagem: 'Conectado ao Supabase, mas as tabelas ainda não foram criadas. Execute a query SQL.'
+          mensagem: 'Conectado ao Supabase, mas o schema atual ainda não foi aplicado. Execute as migrations 001–009.'
         };
       }
       return { ok: false, mensagem: `Erro do Supabase: ${error.message}` };
