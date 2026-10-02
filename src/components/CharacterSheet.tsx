@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome } from '../types/character';
 import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS, ESTADOS_RUPTURA } from '../rules/rulesData';
-import { validarDistribuicaoDominios } from '../rules/rulesEngine';
+import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
 import { DamageModal } from './DamageModal';
 import { RestModal } from './RestModal';
@@ -69,19 +69,22 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
   // Modificação rápida de Atributos
   const handleUpdateAtributo = (atrib: AtributoNome, novoValor: number) => {
+    const atributos = { ...personagem.atributos, [atrib]: novoValor };
     onSalvar({
       ...personagem,
-      atributos: {
-        ...personagem.atributos,
-        [atrib]: novoValor
-      }
+      atributos,
+      resistencia: calcularResistencia(atributos.corpo),
+      defesa: calcularDefesa(personagem.atributoPrincipal, atributos, personagem.nivel).defesa,
+      atualizadoEm: new Date().toISOString()
     });
   };
 
   const handleSetAtributoPrincipal = (atrib: AtributoNome) => {
+    // O Atributo Principal continua registrado na ficha, mas Defesa é sempre 8 + Corpo.
     onSalvar({
       ...personagem,
-      atributoPrincipal: atrib
+      atributoPrincipal: atrib,
+      atualizadoEm: new Date().toISOString()
     });
   };
 
@@ -158,7 +161,22 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 <span>Nível:</span>
                 <select
                   value={personagem.nivel}
-                  onChange={(e) => onSalvar({ ...personagem, nivel: Number(e.target.value) })}
+                  onChange={(e) => {
+                    const novoNivel = Number(e.target.value);
+                    const novaProg = TABELA_PROGRESSAO[novoNivel] || TABELA_PROGRESSAO[1];
+                    onSalvar({
+                      ...personagem,
+                      nivel: novoNivel,
+                      vidaMaxima: novaProg.vidaBase,
+                      vidaAtual: Math.min(personagem.vidaAtual, novaProg.vidaBase),
+                      focoMaximo: novaProg.focoBase,
+                      focoAtual: Math.min(personagem.focoAtual, novaProg.focoBase),
+                      protecaoOniricaMaxima: novaProg.protecaoOniricaBase,
+                      protecaoOniricaAtual: Math.min(personagem.protecaoOniricaAtual, novaProg.protecaoOniricaBase),
+                      defesa: calcularDefesa(personagem.atributoPrincipal, personagem.atributos, novoNivel).defesa,
+                      atualizadoEm: new Date().toISOString()
+                    });
+                  }}
                   className="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-slate-200 focus:outline-none focus:border-cyan-500"
                 >
                   {[1, 2, 3, 4, 5].map(n => (
