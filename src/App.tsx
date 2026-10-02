@@ -111,6 +111,8 @@ export default function App() {
   const pistasAtuais = usandoRemoto ? conteudoRemoto.pistas : pistas;
   const loreAtual = usandoRemoto ? conteudoRemoto.loreEntries : loreEntries;
   const anotacoesAtuais = usandoRemoto ? conteudoRemoto.anotacoes : anotacoes;
+  const sessaoAtivaId = usandoRemoto ? sessoesAtuais.find(sessao => sessao.numero === campanhaAtiva?.sessaoAtual)?.id : undefined;
+  const membrosCampanha = usandoRemoto && campanhaAtivaId ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtivaId) : [];
   const personagensCampanha = usandoRemoto && campanhaAtivaId
     ? personagens.filter(personagem => personagem.campaignId === campanhaAtivaId)
     : personagens;
@@ -430,6 +432,8 @@ export default function App() {
             personagemJogadorId={personagemJogadorId}
             userId={session.authUserId}
             userName={session.nome}
+            sessionId={sessaoAtivaId}
+            members={membrosCampanha}
             registroOnline={usandoRemoto}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
             onAtualizarPersonagem={salvarPersonagem}
