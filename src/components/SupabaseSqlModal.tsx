@@ -40,13 +40,13 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-100 font-['Chakra_Petch'] tracking-wide flex items-center gap-2">
-                SCHEMA SUPABASE — REINOS ONÍRICOS
+                SETUP SUPABASE — REINOS ONÍRICOS
                 <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  SQL Completo
+                  Migrations 001–009
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
-                Execute este script no <strong>SQL Editor</strong> do Supabase para criar tabelas, RLS e Realtime.
+                Execute o conjunto versionado no <strong>SQL Editor</strong> para criar autenticação, campanhas, RLS, Realtime, Registro Vivo e Storage.
               </p>
             </div>
           </div>
@@ -102,11 +102,11 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
         {/* Rodapé com Informações das Tabelas */}
         <div className="p-4 bg-[#121622] text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-4 text-[11px] font-mono">
-            <span className="text-slate-300">Tabelas:</span>
-            <span className="text-emerald-400">mesas</span>
+            <span className="text-slate-300">Base:</span>
+            <span className="text-emerald-400">campaigns</span>
             <span className="text-cyan-400">personagens</span>
-            <span className="text-purple-400">cenas_tensao</span>
-            <span className="text-amber-400">rolagens</span>
+            <span className="text-purple-400">session_events</span>
+            <span className="text-amber-400">live table + storage</span>
           </div>
 
           <button
