@@ -4,6 +4,7 @@ import { Personagem } from '../types/character';
 import { SessionPlanner } from './campaign/SessionPlanner';
 import { CampaignMembersPanel } from './campaign/CampaignMembersPanel';
 import { CampaignAssetsPanel } from './campaign/CampaignAssetsPanel';
+import { CampaignActorsPanel } from './campaign/CampaignActorsPanel';
 
 export type CampaignTabType = 
   | 'visao_geral'
@@ -35,8 +36,12 @@ interface CampaignDetailViewProps {
   onIniciarSessao: (campanha: Campanha) => void;
   onAbrirFichaPersonagem: (personagem: Personagem) => void;
   onNovaSessao: (campanhaId: string, dados: NovaSessaoInput) => void;
-  onAdicionarNPC: (npc: Omit<NPC, 'id'>) => void;
-  onAdicionarAdversario: (adv: Omit<Adversario, 'id'>) => void;
+  onAdicionarNPC: (npc: Omit<NPC, 'id'>) => Promise<unknown> | unknown;
+  onAtualizarNPC: (id: string, patch: Partial<NPC>) => Promise<unknown> | unknown;
+  onRemoverNPC: (id: string) => Promise<unknown> | unknown;
+  onAdicionarAdversario: (adv: Omit<Adversario, 'id'>) => Promise<unknown> | unknown;
+  onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown> | unknown;
+  onRemoverAdversario: (id: string) => Promise<unknown> | unknown;
   onAdicionarLocal: (loc: Omit<Local, 'id'>) => void;
   onAdicionarPista: (pista: Omit<Pista, 'id'>) => void;
   onAdicionarLore: (lore: Omit<LoreEntry, 'id'>) => void;
@@ -71,7 +76,11 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   onAbrirFichaPersonagem,
   onNovaSessao,
   onAdicionarNPC,
+  onAtualizarNPC,
+  onRemoverNPC,
   onAdicionarAdversario,
+  onAtualizarAdversario,
+  onRemoverAdversario,
   onAdicionarLocal,
   onAdicionarPista,
   onAdicionarLore,
@@ -490,73 +499,38 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
         {/* 23. ABA: NPCs */}
         {abaAtiva === 'npcs' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
-              <div>
-                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Personagens Não-Jogadores (NPCs)</h2>
-                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Aliados, informantes e contatos da vigília.</p>
-              </div>
-              <button
-                onClick={() => setModalNovoItem('npcs')}
-                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
-              >
-                + Novo NPC
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {npcsCampanha.map(npc => (
-                <div key={npc.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{npc.nome}</h3>
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[var(--ro-copper)]">
-                      {npc.atitude}
-                    </span>
-                  </div>
-                  <p className="text-xs font-mono text-[var(--ro-ash)]">{npc.papel} · {npc.localizacao}</p>
-                  <p className="text-xs text-[var(--ro-paper-muted)]/80 leading-relaxed">{npc.descricao}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <CampaignActorsPanel
+            mode="npcs"
+            campaignId={campanha.id}
+            npcs={npcsCampanha}
+            adversarios={adversariosCampanha}
+            personagens={personagens}
+            canManage={canManageMembers}
+            onAddNpc={onAdicionarNPC}
+            onUpdateNpc={onAtualizarNPC}
+            onRemoveNpc={onRemoverNPC}
+            onAddAdversary={onAdicionarAdversario}
+            onUpdateAdversary={onAtualizarAdversario}
+            onRemoveAdversary={onRemoverAdversario}
+          />
         )}
 
         {/* ABA: ADVERSÁRIOS */}
         {abaAtiva === 'adversarios' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
-              <div>
-                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Adversários & Ameaças</h2>
-                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Pesadelos, sombras e corrompidos pelo Sonhar.</p>
-              </div>
-              <button
-                onClick={() => setModalNovoItem('adversarios')}
-                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
-              >
-                + Novo Adversário
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {adversariosCampanha.map(adv => (
-                <div key={adv.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{adv.nome}</h3>
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[var(--ro-paper-muted)]">
-                      {adv.tipo} · Nível {adv.nivel}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs font-mono text-[var(--ro-ash)]">
-                    <span>Vida: {adv.vida}/{adv.vidaMaxima}</span>
-                    <span>Defesa: {adv.defesa}</span>
-                    <span>Resistência: {adv.resistencia}</span>
-                  </div>
-                  <div className="text-xs font-mono text-[var(--ro-copper)]">{adv.ataquePrincipal}</div>
-                  <p className="text-xs text-[var(--ro-paper-muted)]/80 leading-relaxed">{adv.descricao}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <CampaignActorsPanel
+            mode="adversarios"
+            campaignId={campanha.id}
+            npcs={npcsCampanha}
+            adversarios={adversariosCampanha}
+            personagens={personagens}
+            canManage={canManageMembers}
+            onAddNpc={onAdicionarNPC}
+            onUpdateNpc={onAtualizarNPC}
+            onRemoveNpc={onRemoverNPC}
+            onAddAdversary={onAdicionarAdversario}
+            onUpdateAdversary={onAtualizarAdversario}
+            onRemoveAdversary={onRemoverAdversario}
+          />
         )}
 
         {/* ABA: LOCAIS */}

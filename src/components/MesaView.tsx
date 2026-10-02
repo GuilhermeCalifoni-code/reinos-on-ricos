@@ -1,5 +1,5 @@
 import React from 'react';
-import { Campanha, Contador, MapaNarrativo, MembroCampanha, TokenMapa } from '../types/campaign';
+import { Campanha, Cena, Contador, MapaNarrativo, MembroCampanha, TokenMapa } from '../types/campaign';
 import { UserRole } from '../types/auth';
 import { Personagem } from '../types/character';
 import { LiveTable } from './live/LiveTable';
@@ -14,6 +14,10 @@ interface MesaViewProps {
   sessionId?: string;
   members?: MembroCampanha[];
   registroOnline: boolean;
+  cenas: Cena[];
+  onAdicionarCena: (cena: Omit<Cena, 'id'>) => Promise<unknown> | unknown;
+  onAtualizarCena: (id: string, patch: Partial<Cena>) => Promise<unknown> | unknown;
+  onRemoverCena: (id: string) => Promise<unknown> | unknown;
   onVoltarParaCampanha: () => void;
   onAtualizarPersonagem: (p: Personagem) => void;
   onAbrirModalRupturaPara: (p: Personagem, delta: number, motivo: string) => void;
@@ -34,7 +38,7 @@ interface MesaViewProps {
 }
 
 export const MesaView: React.FC<MesaViewProps> = ({
-  campanha, personagens, role, personagemJogadorId, userId, userName, sessionId, members = [], registroOnline, onVoltarParaCampanha,
+  campanha, personagens, role, personagemJogadorId, userId, userName, sessionId, members = [], registroOnline, cenas, onAdicionarCena, onAtualizarCena, onRemoverCena, onVoltarParaCampanha,
   onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
   contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
   mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
@@ -49,6 +53,10 @@ export const MesaView: React.FC<MesaViewProps> = ({
     sessionId={sessionId}
     members={members}
     registroOnline={registroOnline}
+    cenas={cenas}
+    onAdicionarCena={onAdicionarCena}
+    onAtualizarCena={onAtualizarCena}
+    onRemoverCena={onRemoverCena}
     onVoltar={onVoltarParaCampanha}
     onAtualizarPersonagem={onAtualizarPersonagem}
     onAbrirRuptura={onAbrirModalRupturaPara}
