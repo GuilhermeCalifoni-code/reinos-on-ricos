@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Adversario, Anotacao, Local, LoreEntry, NPC, NovaSessaoInput, Pista, Sessao } from '../../types/campaign';
+import { Adversario, Anotacao, Cena, Handout, Local, LoreEntry, NPC, NovaSessaoInput, Pista, Sessao } from '../../types/campaign';
 import { campaignContentRepository } from './campaignContentRepository';
 
 const empty = {
@@ -9,7 +9,9 @@ const empty = {
   locais: [] as Local[],
   pistas: [] as Pista[],
   loreEntries: [] as LoreEntry[],
-  anotacoes: [] as Anotacao[]
+  anotacoes: [] as Anotacao[],
+  cenas: [] as Cena[],
+  handouts: [] as Handout[]
 };
 
 export function useRemoteCampaignContent(campaignId?: string, enabled = false) {
@@ -40,6 +42,12 @@ export function useRemoteCampaignContent(campaignId?: string, enabled = false) {
     adicionarLocal: (item: Omit<Local, 'id'>) => run(() => campaignContentRepository.adicionarLocal(item)),
     adicionarPista: (item: Omit<Pista, 'id'>) => run(() => campaignContentRepository.adicionarPista(item)),
     adicionarLore: (item: Omit<LoreEntry, 'id'>) => run(() => campaignContentRepository.adicionarLore(item)),
-    adicionarAnotacao: (id: string, titulo: string, conteudo: string) => run(() => campaignContentRepository.adicionarAnotacao(id, titulo, conteudo))
+    adicionarAnotacao: (id: string, titulo: string, conteudo: string) => run(() => campaignContentRepository.adicionarAnotacao(id, titulo, conteudo)),
+    adicionarCena: (item: Omit<Cena, 'id'>) => run(() => campaignContentRepository.adicionarCena(item)),
+    atualizarCena: (id: string, patch: Partial<Cena>) => run(() => campaignContentRepository.atualizarCena(id, patch)),
+    removerCena: (id: string) => run(() => campaignContentRepository.removerCena(id)),
+    adicionarHandout: (item: Omit<Handout, 'id'>) => run(() => campaignContentRepository.adicionarHandout(item)),
+    atualizarHandout: (id: string, patch: Partial<Handout>) => run(() => campaignContentRepository.atualizarHandout(id, patch)),
+    removerHandout: (id: string) => run(() => campaignContentRepository.removerHandout(id))
   };
 }
