@@ -27,6 +27,14 @@ export const authService = {
     const { error } = await requireClient().auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
     if (error) throw error;
   },
+  async atualizarSenha(novaSenha: string) {
+    const { error } = await requireClient().auth.updateUser({ password: novaSenha });
+    if (error) throw error;
+  },
+  onAuthStateChange(callback: (event: string) => void) {
+    const { data } = requireClient().auth.onAuthStateChange((event) => callback(event));
+    return data.subscription;
+  },
   async sessaoAtual(): Promise<Session | null> {
     const { data, error } = await requireClient().auth.getSession();
     if (error) throw error;
