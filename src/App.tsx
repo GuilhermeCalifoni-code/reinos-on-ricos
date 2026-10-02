@@ -75,8 +75,12 @@ export default function App() {
     criarSessao,
     npcs,
     adicionarNPC,
+    atualizarNPC,
+    removerNPC,
     adversarios,
     adicionarAdversario,
+    atualizarAdversario,
+    removerAdversario,
     locais,
     adicionarLocal,
     pistas,
@@ -128,7 +132,8 @@ export default function App() {
   const anotacoesAtuais = usandoRemoto ? conteudoRemoto.anotacoes : anotacoes;
   const cenasAtuais = usandoRemoto ? conteudoRemoto.cenas : cenas;
   const handoutsAtuais = usandoRemoto ? conteudoRemoto.handouts : handouts;
-  const sessaoAtivaId = usandoRemoto ? sessoesAtuais.find(sessao => sessao.numero === campanhaAtiva?.sessaoAtual)?.id : undefined;
+  const sessaoAtiva = sessoesAtuais.find(sessao => sessao.numero === campanhaAtiva?.sessaoAtual);
+  const sessaoAtivaId = sessaoAtiva?.id;
   const membrosCampanha = usandoRemoto && campanhaAtivaId ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtivaId) : [];
   const personagensCampanha = usandoRemoto && campanhaAtivaId
     ? personagens.filter(personagem => personagem.campaignId === campanhaAtivaId)
@@ -418,8 +423,12 @@ export default function App() {
             onIniciarSessao={handleContinuarCampanha}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
             onNovaSessao={(campaignId, dados) => usandoRemoto ? void conteudoRemoto.criarSessao(campaignId, dados) : void criarSessao(campaignId, dados)}
-            onAdicionarNPC={(item) => usandoRemoto ? void conteudoRemoto.adicionarNPC(item) : adicionarNPC(item)}
-            onAdicionarAdversario={(item) => usandoRemoto ? void conteudoRemoto.adicionarAdversario(item) : adicionarAdversario(item)}
+            onAdicionarNPC={(item) => usandoRemoto ? conteudoRemoto.adicionarNPC(item) : adicionarNPC(item)}
+            onAtualizarNPC={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarNPC(id, patch) : atualizarNPC(id, patch)}
+            onRemoverNPC={(id) => usandoRemoto ? conteudoRemoto.removerNPC(id) : removerNPC(id)}
+            onAdicionarAdversario={(item) => usandoRemoto ? conteudoRemoto.adicionarAdversario(item) : adicionarAdversario(item)}
+            onAtualizarAdversario={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarAdversario(id, patch) : atualizarAdversario(id, patch)}
+            onRemoverAdversario={(id) => usandoRemoto ? conteudoRemoto.removerAdversario(id) : removerAdversario(id)}
             onAdicionarLocal={(item) => usandoRemoto ? void conteudoRemoto.adicionarLocal(item) : adicionarLocal(item)}
             onAdicionarPista={(item) => usandoRemoto ? void conteudoRemoto.adicionarPista(item) : adicionarPista(item)}
             onAdicionarLore={(item) => usandoRemoto ? void conteudoRemoto.adicionarLore(item) : adicionarLore(item)}
@@ -458,6 +467,8 @@ export default function App() {
             userId={session.authUserId}
             userName={session.nome}
             sessionId={sessaoAtivaId}
+            sessionTitle={sessaoAtiva?.titulo}
+            sessionDescription={sessaoAtiva?.descricao}
             members={membrosCampanha}
             registroOnline={usandoRemoto}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}

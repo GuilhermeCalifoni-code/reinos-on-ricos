@@ -16,7 +16,7 @@ import { useCampaignRealtime } from '../../features/realtime/useCampaignRealtime
 import { ThemeToggle } from '../../design-system/ThemeToggle';
 
 interface LiveTableProps {
-  campanha: Campanha; personagens: Personagem[]; role: UserRole; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
+  campanha: Campanha; personagens: Personagem[]; role: UserRole; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
   onAtualizarPersonagem: (personagem: Personagem) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem) => void;
   contadores: Contador[]; onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarContador: (id: string, parcial: Partial<Contador>) => void; onRemoverContador: (id: string) => void; onDuplicarContador: (id: string) => void;
   mapas: MapaNarrativo[]; onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void; onRemoverMapa: (id: string) => void;
@@ -24,13 +24,17 @@ interface LiveTableProps {
 }
 
 export const LiveTable: React.FC<LiveTableProps> = (props) => {
-  const { campanha, personagens, role, personagemJogadorId, userId, userName, sessionId, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
+  const { campanha, personagens, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
   const mestre = role === 'mestre';
   const personagensVisiveis = useMemo(() => mestre ? personagens : personagens.filter(p => p.id === personagemJogadorId), [mestre, personagemJogadorId, personagens]);
   const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || personagens[0]?.id || '');
   const [ferramenta, setFerramenta] = useState<LiveTool>('nenhuma');
   const [conteudoLocal, setConteudoLocal] = useState<ConteudoDeCena>('ambientacao');
   const [mapaLocalId, setMapaLocalId] = useState<string | undefined>();
+  const [sceneCopyLocal, setSceneCopyLocal] = useState({
+    title: sessionTitle || 'A cidade contém a respiração',
+    description: sessionDescription || 'Ambientação da cena. O Mestre pode preparar imagem, mapa ou handout para esta área.'
+  });
   const [partyOpen, setPartyOpen] = useState(true);
   const [sessionOpen, setSessionOpen] = useState(true);
   const [cinematic, setCinematic] = useState(false);
@@ -44,15 +48,33 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const tokensAtuais = compartilhando ? realtime.tokens : tokensDaCampanha;
   const conteudo = compartilhando && realtime.state ? realtime.state.contentType : conteudoLocal;
   const mapaAtualId = compartilhando && realtime.state?.activeMapId ? realtime.state.activeMapId : mapaLocalId;
+  const sceneTitle = compartilhando && typeof realtime.state?.metadata?.sceneTitle === 'string'
+    ? realtime.state.metadata.sceneTitle
+    : sceneCopyLocal.title;
+  const sceneDescription = compartilhando && typeof realtime.state?.metadata?.sceneDescription === 'string'
+    ? realtime.state.metadata.sceneDescription
+    : sceneCopyLocal.description;
   const selecionado = personagens.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
   const registro = useSessionEvents({ campaignId: campanha.id, sessionId, userId, enabled: registroOnline, characterId: personagemJogadorId });
   const registrarSemFalhar = (event: Parameters<typeof registro.registrar>[0]) => { void registro.registrar(event).catch(() => undefined); };
 
   useEffect(() => { if (!mapaAtualId && mapasAtuais[0]) setMapaLocalId(mapasAtuais[0].id); }, [mapaAtualId, mapasAtuais]);
+  useEffect(() => {
+    if (compartilhando && realtime.state?.sessionId === sessionId) return;
+    setSceneCopyLocal({
+      title: sessionTitle || 'A cidade contém a respiração',
+      description: sessionDescription || 'Ambientação da cena. O Mestre pode preparar imagem, mapa ou handout para esta área.'
+    });
+  }, [compartilhando, realtime.state?.sessionId, sessionDescription, sessionId, sessionTitle]);
   const selecionarFerramenta = (proxima: LiveTool) => setFerramenta(atual => atual === proxima ? 'nenhuma' : proxima);
-  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeMapId?: string }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
+  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
   const mudarConteudo = (proximo: ConteudoDeCena) => { setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
   const selecionarMapa = (id: string) => { setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
+  const atualizarTextoCena = (title: string, description: string) => {
+    setSceneCopyLocal({ title, description });
+    salvarEstado({ metadata: { ...(realtime.state?.metadata || {}), sceneTitle: title, sceneDescription: description } });
+    registrarSemFalhar({ type: 'scene_change', content: `Cena atualizada: ${title}.`, metadata: { sceneTitle: title } });
+  };
   const atualizarPersonagemMesa = (personagem: Personagem) => { onAtualizarPersonagem(personagem); if (compartilhando && personagem.campaignId === campanha.id) void realtime.patchCharacterResources(personagem.id, { vidaAtual: personagem.vidaAtual, focoAtual: personagem.focoAtual, ruptura: personagem.ruptura, protecaoOniricaAtual: personagem.protecaoOniricaAtual }).catch(() => undefined); };
   const ajustar = (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => { const maximo = campo === 'vidaAtual' ? personagem.vidaMaxima : personagem.focoMaximo; atualizarPersonagemMesa({ ...personagem, [campo]: Math.max(0, Math.min(maximo, personagem[campo] + delta)), atualizadoEm: new Date().toISOString() }); if (campo === 'vidaAtual') registrarSemFalhar(sessionEventFactories.damage(personagem.id, personagem.nome, delta)); };
   const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addCounter(item).catch(() => undefined); else onAdicionarContador(item); };
@@ -66,7 +88,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const atualizarToken = (id: string, patch: Partial<TokenMapa>) => { if (compartilhando) void realtime.patchToken(id, patch).catch(() => undefined); else onAtualizarTokenMapa(id, patch); };
   const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(() => undefined); else onRemoverTokenMapa(id); };
   const statusTexto = !registroOnline ? 'Local' : realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
-  const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={conteudo} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
+  const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={conteudo} title={sceneTitle} description={sceneDescription} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
   const closeTool = () => setFerramenta('nenhuma');
   const toggleCinematic = () => {
     setCinematic(value => {
