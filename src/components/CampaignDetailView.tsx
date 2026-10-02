@@ -709,6 +709,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                   members={membros}
                   inviteCode={campanha.codigo}
                   currentUserId={currentUserId}
+                  characters={personagens}
                   canManage={canManageMembers}
                   onRegenerateInvite={onRegenerarCodigo}
                   onUpdateMember={onAtualizarMembro}
