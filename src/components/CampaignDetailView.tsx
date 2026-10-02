@@ -211,7 +211,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   return (
     <div className="w-full flex flex-col pb-20">
       {/* 20. HERO DA CAMPANHA (Cinematográfico, Atmosférico) */}
-      <section className="relative w-full h-80 sm:h-96 overflow-hidden bg-[#0B0B0B] border-b border-[#292929]">
+      <section className="relative w-full h-64 sm:h-80 overflow-hidden bg-[#0B0B0B] border-b border-[#292929]">
         <img
           src={campanha.imagemUrl}
           alt={campanha.nome}
@@ -222,19 +222,19 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         <div className="absolute inset-0 bg-black/20" />
 
         {/* Informações Hero */}
-        <div className="absolute inset-0 max-w-7xl mx-auto px-8 flex flex-col justify-end pb-10">
+        <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-8 flex flex-col justify-end pb-6 sm:pb-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
             <div className="max-w-2xl">
               <span className="text-[11px] font-mono tracking-widest text-[#A88952] uppercase block mb-2">
                 Código: {campanha.codigo} · {campanha.tipo}
               </span>
-              <h1 className="font-serif text-3xl sm:text-5xl font-normal text-[#F5F3EE] tracking-tight leading-tight">
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[#F5F3EE] tracking-tight leading-tight">
                 {campanha.nome}
               </h1>
               <p className="text-sm text-[#D9D7D2]/90 mt-3 font-normal leading-relaxed">
                 {campanha.descricao}
               </p>
-              <div className="flex items-center gap-4 mt-4 text-xs font-mono text-[#666666]">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] font-mono text-[#666666]">
                 <span>{campanha.jogadoresCount || personagens.length || 4} jogadores</span>
                 <span>·</span>
                 <span>{sessoesCampanha.length} sessões</span>
@@ -258,7 +258,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
       {/* Navegação de Abas (Visão Geral, Sessões, Personagens, etc.) */}
       <nav className="w-full border-b border-[#292929] bg-[#0B0B0B] sticky top-14 z-20">
-        <div className="max-w-7xl mx-auto px-8 flex items-center gap-1 overflow-x-auto py-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center gap-1 overflow-x-auto py-1.5 [scrollbar-width:none]">
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -276,14 +276,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
       </nav>
 
       {/* Conteúdo da Aba */}
-      <main className="max-w-7xl mx-auto px-8 py-10 w-full">
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-9 w-full">
         {/* ABA: VISÃO GERAL */}
         {abaAtiva === 'visao_geral' && (
           <div className="space-y-10">
             {/* Grid Superior: Próxima Ação & Resumo */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
-                <div className="bg-[#171717] border border-[#292929] p-6 rounded-sm">
+                <div className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm">
                   <div className="flex items-center justify-between pb-4 border-b border-[#292929] mb-4">
                     <span className="text-xs font-mono tracking-widest text-[#666666] uppercase">
                       Última Sessão Registrada
@@ -312,7 +312,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 </div>
 
                 {/* Lista de Pistas Recentes */}
-                <div className="bg-[#171717] border border-[#292929] p-6 rounded-sm">
+                <div className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm">
                   <div className="flex items-center justify-between pb-4 border-b border-[#292929] mb-4">
                     <span className="text-xs font-mono tracking-widest text-[#666666] uppercase">
                       Pistas Investigativas Ativas
@@ -340,7 +340,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
               {/* Coluna Direita: Status da Campanha & Ruptura */}
               <div className="space-y-6">
-                <div className="bg-[#171717] border border-[#292929] p-6 rounded-sm">
+                <div className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm">
                   <span className="text-xs font-mono tracking-widest text-[#666666] uppercase block mb-3">
                     Índice de Ruptura da Crônica
                   </span>
@@ -359,7 +359,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                   </p>
                 </div>
 
-                <div className="bg-[#171717] border border-[#292929] p-6 rounded-sm">
+                <div className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm">
                   <span className="text-xs font-mono tracking-widest text-[#666666] uppercase block mb-4">
                     Desvelados Vinculados
                   </span>
@@ -506,7 +506,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {npcsCampanha.map(npc => (
-                <div key={npc.id} className="bg-[#171717] border border-[#292929] p-6 rounded-sm space-y-3">
+                <div key={npc.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">{npc.nome}</h3>
                     <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#0B0B0B] border border-[#292929] text-[#A88952]">
@@ -539,7 +539,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {adversariosCampanha.map(adv => (
-                <div key={adv.id} className="bg-[#171717] border border-[#292929] p-6 rounded-sm space-y-3">
+                <div key={adv.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">{adv.nome}</h3>
                     <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#0B0B0B] border border-[#292929] text-[#D9D7D2]">
@@ -577,7 +577,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {locaisCampanha.map(loc => (
-                <div key={loc.id} className="bg-[#171717] border border-[#292929] p-6 rounded-sm space-y-3">
+                <div key={loc.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-serif text-2xl text-[#F5F3EE] font-normal">{loc.nome}</h3>
                     <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[#0B0B0B] border border-[#292929] text-[#A88952]">
@@ -615,7 +615,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="space-y-4">
               {pistasCampanha.map(pista => (
-                <div key={pista.id} className="bg-[#171717] border border-[#292929] p-6 rounded-sm flex flex-col sm:flex-row justify-between gap-4">
+                <div key={pista.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm flex flex-col sm:flex-row justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 bg-[#0B0B0B] border border-[#292929] text-[#A88952]">
@@ -652,7 +652,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="space-y-4">
               {loreCampanha.map(lore => (
-                <div key={lore.id} className="bg-[#171717] border border-[#292929] p-6 rounded-sm space-y-2">
+                <div key={lore.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-2">
                   <span className="text-[10px] font-mono uppercase tracking-widest text-[#A88952]">
                     {lore.categoria}
                   </span>
@@ -682,7 +682,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
             <div className="space-y-4">
               {anotacoesCampanha.map(nota => (
-                <div key={nota.id} className="bg-[#171717] border border-[#292929] p-6 rounded-sm space-y-2">
+                <div key={nota.id} className="bg-[#171717] border border-[#292929] p-4 sm:p-5 rounded-sm space-y-2">
                   <div className="flex items-center justify-between text-xs font-mono text-[#666666]">
                     <span>{nota.atualizadaEm}</span>
                   </div>
@@ -765,8 +765,8 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
       {/* Modal Criar Nova Sessão */}
       {modalNovaSessao && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#171717] border border-[#292929] max-w-md w-full p-6 rounded-sm">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-[#171717] border border-[#292929] max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto p-5 sm:p-6 rounded-sm">
             <h3 className="font-serif text-2xl text-[#F5F3EE] mb-2">Criar Nova Sessão</h3>
             <p className="text-xs text-[#666666] mb-5">Adicione o próximo capítulo à crônica.</p>
             <form onSubmit={handleCriarSessaoSubmit} className="space-y-4">
@@ -827,8 +827,8 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
       {/* Modal Genérico para Adicionar Item (NPC, Adversário, Local, etc.) */}
       {modalNovoItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#171717] border border-[#292929] max-w-md w-full p-6 rounded-sm">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-[#171717] border border-[#292929] max-w-md w-full max-h-[calc(100dvh-1.5rem)] overflow-y-auto p-5 sm:p-6 rounded-sm">
             <h3 className="font-serif text-2xl text-[#F5F3EE] mb-2 capitalize">
               Adicionar {modalNovoItem === 'npcs' ? 'NPC' : modalNovoItem === 'adversarios' ? 'Adversário' : modalNovoItem === 'locais' ? 'Local' : modalNovoItem === 'pistas' ? 'Pista' : modalNovoItem === 'lore' ? 'Lore' : 'Anotação'}
             </h3>
