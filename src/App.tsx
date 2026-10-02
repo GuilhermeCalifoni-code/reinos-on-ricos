@@ -403,7 +403,12 @@ export default function App() {
             onAdicionarPista={(item) => usandoRemoto ? void conteudoRemoto.adicionarPista(item) : adicionarPista(item)}
             onAdicionarLore={(item) => usandoRemoto ? void conteudoRemoto.adicionarLore(item) : adicionarLore(item)}
             onAdicionarAnotacao={(campaignId, titulo, conteudo) => usandoRemoto ? void conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo) : adicionarAnotacao(campaignId, titulo, conteudo)}
-            onExcluirCampanha={usandoRemoto ? () => alert('A exclusão de campanhas remotas ainda não faz parte desta fundação.') : removerCampanha}
+            membros={usandoRemoto ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id) : []}
+            currentUserId={session.authUserId}
+            canManageMembers={papelDaCampanha === 'mestre'}
+            onRegenerarCodigo={usandoRemoto ? campanhasRemotas.regenerarCodigo : undefined}
+            onAtualizarMembro={usandoRemoto ? campanhasRemotas.atualizarMembro : undefined}
+            onExcluirCampanha={usandoRemoto ? (id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); } : removerCampanha}
           />
         ) : (
           <DashboardView
@@ -548,7 +553,7 @@ export default function App() {
           personagem={modalRupturaGlobal.personagem}
           onClose={() => setModalRupturaGlobal({ aberto: false, personagem: null, delta: 1, motivo: '' })}
           onSalvar={(pAtualizado) => {
-            salvarPersonagem(pAtualizado);
+            salvarPersonagemPersistente(pAtualizado);
             setModalRupturaGlobal({ aberto: false, personagem: null, delta: 1, motivo: '' });
           }}
           ajusteSugerido={{
