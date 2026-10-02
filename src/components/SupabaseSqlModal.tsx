@@ -42,7 +42,7 @@ export const SupabaseSqlModal: React.FC<SupabaseSqlModalProps> = ({ isOpen, onCl
               <h2 className="text-lg font-bold text-slate-100 font-['Chakra_Petch'] tracking-wide flex items-center gap-2">
                 SETUP SUPABASE — REINOS ONÍRICOS
                 <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  Migrations 001–009
+                  Migrations 001–010
                 </span>
               </h2>
               <p className="text-xs text-slate-400">
