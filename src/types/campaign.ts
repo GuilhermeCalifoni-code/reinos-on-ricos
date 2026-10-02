@@ -79,6 +79,7 @@ export interface MapaNarrativo {
   campanhaId: string;
   titulo: string;
   imagemUrl?: string;
+  storagePath?: string;
   visibilidade: VisibilidadeConteudo;
   gradeVisivel?: boolean;
   criadoEm: string;
