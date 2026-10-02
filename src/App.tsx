@@ -2,12 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar, MobileNavigation, MainViewType } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
-import { CreateCampaignView } from './components/CreateCampaignView';
-import { CampaignDetailView } from './components/CampaignDetailView';
-import { MesaView } from './components/MesaView';
-import { CharactersListView } from './components/CharactersListView';
-import { SettingsView } from './components/SettingsView';
-import { CharacterSheet } from './components/CharacterSheet';
 import { CreateCharacterModal } from './components/CreateCharacterModal';
 import { RupturaModal } from './components/RupturaModal';
 import { LoginScreen } from './components/LoginScreen';
@@ -25,6 +19,19 @@ import { characterRepository } from './services/characters/characterRepository';
 import { campaignRepository } from './services/campaigns/campaignRepository';
 
 const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
+
+const CreateCampaignView = React.lazy(() => import('./components/CreateCampaignView').then(module => ({ default: module.CreateCampaignView })));
+const CampaignDetailView = React.lazy(() => import('./components/CampaignDetailView').then(module => ({ default: module.CampaignDetailView })));
+const MesaView = React.lazy(() => import('./components/MesaView').then(module => ({ default: module.MesaView })));
+const CharactersListView = React.lazy(() => import('./components/CharactersListView').then(module => ({ default: module.CharactersListView })));
+const SettingsView = React.lazy(() => import('./components/SettingsView').then(module => ({ default: module.SettingsView })));
+const CharacterSheet = React.lazy(() => import('./components/CharacterSheet').then(module => ({ default: module.CharacterSheet })));
+
+const ViewFallback = () => (
+  <div className="ro-empty-state m-6">
+    <span>Carregando arquivo da Vigília…</span>
+  </div>
+);
 
 export default function App() {
   const [session, setSession] = useState<UserSession | null>(() => {
@@ -551,7 +558,9 @@ export default function App() {
 
         {/* View renderizada */}
         <main className="flex-1 min-h-[calc(100vh-3.5rem)]">
-          {renderConteudoPrincipal()}
+          <React.Suspense fallback={<ViewFallback />}>
+            {renderConteudoPrincipal()}
+          </React.Suspense>
         </main>
       </div>
 
