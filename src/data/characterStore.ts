@@ -178,6 +178,14 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
 
   }, [personagemAtivoId, personagens]);
 
+  const mesclarPersonagens = useCallback((recebidos: Personagem[]) => {
+    setPersonagens(atuais => {
+      const porId = new Map(atuais.map(item => [item.id, item]));
+      recebidos.forEach(item => porId.set(item.id, item));
+      return Array.from(porId.values());
+    });
+  }, []);
+
   const restaurarExemplos = useCallback(() => {
     setPersonagens(PERSONAGENS_PRE_PRONTOS);
     setPersonagemAtivoId(PERSONAGENS_PRE_PRONTOS[0].id);
@@ -225,6 +233,7 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
     criarNovoPersonagem,
     duplicarPersonagem,
     excluirPersonagem,
+    mesclarPersonagens,
     restaurarExemplos,
     exportarJSON,
     importarJSON
