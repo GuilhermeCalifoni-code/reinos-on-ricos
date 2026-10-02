@@ -29,6 +29,7 @@ export interface MembroCampanha {
   userId: string;
   role: 'mestre' | 'jogador' | 'observador';
   characterId?: string;
+  nome?: string;
   status: 'ativo' | 'pendente' | 'removido';
   joinedAt: string;
 }
