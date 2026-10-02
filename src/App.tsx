@@ -468,6 +468,10 @@ export default function App() {
             sessionId={sessaoAtivaId}
             members={membrosCampanha}
             registroOnline={usandoRemoto}
+            cenas={cenasAtuais}
+            onAdicionarCena={(item) => usandoRemoto ? conteudoRemoto.adicionarCena(item) : adicionarCena(item)}
+            onAtualizarCena={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarCena(id, patch) : atualizarCena(id, patch)}
+            onRemoverCena={(id) => usandoRemoto ? conteudoRemoto.removerCena(id) : removerCena(id)}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
             onAtualizarPersonagem={salvarPersonagemPersistente}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
