@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { UserRole } from '../../types/auth';
 import { MembroCampanha } from '../../types/campaign';
 import { NewSessionEvent, SessionEvent, SessionEventType, SessionEventVisibility } from '../../types/sessionEvent';
@@ -48,11 +48,11 @@ export const SessionFeed: React.FC<SessionFeedProps> = ({
   const [sendError, setSendError] = useState('');
   const feedRef = useRef<HTMLDivElement>(null);
 
-  const recipients = members.filter(member =>
+  const recipients = useMemo(() => members.filter(member =>
     member.status === 'ativo'
     && member.userId !== userId
     && (role !== 'jogador' || member.role === 'mestre')
-  );
+  ), [members, role, userId]);
 
   useEffect(() => {
     setType(role === 'jogador' ? 'character_speech' : 'chat');
