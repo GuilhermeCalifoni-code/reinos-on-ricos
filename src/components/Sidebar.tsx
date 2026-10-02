@@ -25,7 +25,7 @@ const isSectionActive = (view: MainViewType, section: MainViewType) => view === 
 export const Sidebar: React.FC<SidebarProps> = ({
   viewAtiva, setViewAtiva, campanhas, campanhaAtivaId, onSelecionarCampanha, onNovaCampanha, onSair
 }) => (
-  <aside className="sticky top-0 hidden h-screen w-[244px] shrink-0 flex-col border-r border-[var(--ro-line)] bg-[#171512]/85 backdrop-blur-md lg:flex">
+  <aside className="sticky top-0 hidden h-screen w-[244px] shrink-0 flex-col border-r border-[var(--ro-line)] bg-[var(--ro-panel-bg)] backdrop-blur-md lg:flex">
     <button onClick={() => setViewAtiva('dashboard')} className="group border-b border-[var(--ro-line)] px-6 py-6 text-left">
       <span className="flex items-center gap-3">
         <span className="grid h-8 w-8 place-items-center border border-[var(--ro-line-strong)] font-serif text-sm text-[var(--ro-gold)]">RO</span>
@@ -71,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 export const MobileNavigation: React.FC<Pick<SidebarProps, 'viewAtiva' | 'setViewAtiva' | 'onNovaCampanha'>> = ({
   viewAtiva, setViewAtiva, onNovaCampanha
 }) => (
-  <nav aria-label="Navegação principal" className="flex h-12 items-stretch border-b border-[var(--ro-line)] bg-[#171512] lg:hidden">
+  <nav aria-label="Navegação principal" className="flex h-12 items-stretch border-b border-[var(--ro-line)] bg-[var(--ro-panel-bg)] lg:hidden">
     <button onClick={() => setViewAtiva('dashboard')} className={`ro-mobile-nav ${isSectionActive(viewAtiva, 'dashboard') ? 'ro-mobile-nav--active' : ''}`}>Início</button>
     <button onClick={() => setViewAtiva('campanhas')} className={`ro-mobile-nav ${isSectionActive(viewAtiva, 'campanhas') ? 'ro-mobile-nav--active' : ''}`}>Campanhas</button>
     <button onClick={() => setViewAtiva('personagens')} className={`ro-mobile-nav ${isSectionActive(viewAtiva, 'personagens') ? 'ro-mobile-nav--active' : ''}`}>Fichas</button>
