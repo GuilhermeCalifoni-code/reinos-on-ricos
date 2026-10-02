@@ -162,3 +162,136 @@
   .ro-button, .ro-button--quiet, .ro-icon-button { transition: none; }
   .ro-button:hover { transform: none; }
 }
+
+
+/* Referência de regras — leitura editorial durante a mesa */
+.rules-reference {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--ro-space-5);
+  color: var(--ro-paper);
+}
+.rules-reference__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--ro-space-4);
+  padding-bottom: var(--ro-space-4);
+  border-bottom: 1px solid var(--ro-line);
+}
+.rules-reference__header h2 {
+  margin-top: .35rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 400;
+}
+.rules-reference__header > p {
+  max-width: 28rem;
+  color: var(--ro-paper-muted);
+  font-size: .8rem;
+  line-height: 1.6;
+}
+.rules-reference__tabs {
+  display: flex;
+  gap: .25rem;
+  overflow-x: auto;
+  padding: var(--ro-space-3) 0;
+  border-bottom: 1px solid var(--ro-line);
+}
+.rules-reference__tab {
+  padding: .55rem .75rem;
+  color: var(--ro-paper-muted);
+  border-bottom: 1px solid transparent;
+  white-space: nowrap;
+  transition: color var(--ro-transition), border-color var(--ro-transition);
+}
+.rules-reference__tab:hover,
+.rules-reference__tab.is-active {
+  color: var(--ro-paper);
+  border-color: var(--ro-gold);
+}
+.rules-reference__content {
+  display: grid;
+  gap: var(--ro-space-4);
+  padding-top: var(--ro-space-4);
+}
+.rules-reference .ro-surface {
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+}
+.rules-reference .ro-surface h3 {
+  margin: .45rem 0 .65rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+.rules-reference .ro-surface > p:not(.ro-eyebrow) {
+  color: var(--ro-paper-muted);
+  line-height: 1.7;
+}
+.rules-reference__grid,
+.rules-reference__stats,
+.rules-reference__outcomes,
+.rules-reference__domains,
+.rules-reference__levels,
+.rules-reference__progression {
+  display: grid;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+.rules-reference__grid--dt { grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); }
+.rules-reference__grid span,
+.rules-reference__stats span {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  padding: .75rem;
+  border-top: 1px solid var(--ro-line);
+  color: var(--ro-paper-muted);
+  font-size: .75rem;
+}
+.rules-reference__grid strong,
+.rules-reference__stats strong { color: var(--ro-gold); font-size: 1rem; }
+.rules-reference__stats { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+.rules-reference__outcomes { grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+.rules-reference__outcomes > div,
+.rules-reference__domains > div,
+.rules-reference__levels > div,
+.rules-reference__progression > div {
+  padding: 1rem;
+  border-left: 1px solid var(--ro-line);
+}
+.rules-reference__outcomes strong,
+.rules-reference__domains h4,
+.rules-reference__levels strong,
+.rules-reference__progression strong { color: var(--ro-gold); }
+.rules-reference__outcomes span,
+.rules-reference__levels span,
+.rules-reference__progression span,
+.rules-reference__progression small { display: block; margin-top: .25rem; color: var(--ro-paper-muted); }
+.rules-reference__outcomes p,
+.rules-reference__domains p,
+.rules-reference__domains small,
+.rules-reference__levels p {
+  margin-top: .5rem;
+  color: var(--ro-paper-muted);
+  line-height: 1.55;
+}
+.rules-reference__domains { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.rules-reference__levels { grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+.rules-reference__progression { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.rules-reference__compact-list {
+  display: grid;
+  gap: .65rem;
+  margin-top: .8rem;
+}
+.rules-reference__compact-list p {
+  padding-bottom: .65rem;
+  border-bottom: 1px solid var(--ro-line);
+  color: var(--ro-paper-muted);
+}
+.rules-reference__compact-list strong { color: var(--ro-paper); }
+
+@media (max-width: 720px) {
+  .rules-reference { padding: var(--ro-space-3); }
+  .rules-reference__header { align-items: start; flex-direction: column; }
+}
