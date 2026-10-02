@@ -20,6 +20,7 @@ import { UserSession } from './types/auth';
 import { isSupabaseConfigured } from './lib/supabaseClient';
 import { authService } from './services/auth/authService';
 import { useRemoteCampaigns } from './services/campaigns/useRemoteCampaigns';
+import { useRemoteCampaignContent } from './services/campaigns/useRemoteCampaignContent';
 import { characterRepository } from './services/characters/characterRepository';
 import { campaignRepository } from './services/campaigns/campaignRepository';
 
@@ -48,6 +49,7 @@ export default function App() {
     criarNovoPersonagem,
     duplicarPersonagem,
     excluirPersonagem,
+    mesclarPersonagens,
     exportarJSON,
     importarJSON,
     restaurarExemplos
@@ -100,6 +102,46 @@ export default function App() {
   const papelDaCampanha = usandoRemoto ? campanhasRemotas.roleDaCampanha(campanhaAtivaId || undefined) || 'observador' : session?.role || 'observador';
   const membroRemotoAtivo = usandoRemoto ? campanhasRemotas.membros.find(membro => membro.campaignId === campanhaAtivaId && membro.userId === session?.authUserId) : undefined;
   const personagemJogadorId = usandoRemoto ? membroRemotoAtivo?.characterId : session?.personagemVinculadoId;
+
+  const conteudoRemoto = useRemoteCampaignContent(campanhaAtivaId || undefined, usandoRemoto);
+  const sessoesAtuais = usandoRemoto ? conteudoRemoto.sessoes : sessoes;
+  const npcsAtuais = usandoRemoto ? conteudoRemoto.npcs : npcs;
+  const adversariosAtuais = usandoRemoto ? conteudoRemoto.adversarios : adversarios;
+  const locaisAtuais = usandoRemoto ? conteudoRemoto.locais : locais;
+  const pistasAtuais = usandoRemoto ? conteudoRemoto.pistas : pistas;
+  const loreAtual = usandoRemoto ? conteudoRemoto.loreEntries : loreEntries;
+  const anotacoesAtuais = usandoRemoto ? conteudoRemoto.anotacoes : anotacoes;
+  const personagensCampanha = usandoRemoto && campanhaAtivaId
+    ? personagens.filter(personagem => personagem.campaignId === campanhaAtivaId)
+    : personagens;
+
+  useEffect(() => {
+    if (!usandoRemoto || !campanhaAtivaId) return;
+    let ativo = true;
+    void characterRepository.listar(campanhaAtivaId)
+      .then(remotos => { if (ativo) mesclarPersonagens(remotos); })
+      .catch(error => console.error('Erro ao carregar fichas remotas:', error));
+    return () => { ativo = false; };
+  }, [campanhaAtivaId, mesclarPersonagens, usandoRemoto]);
+
+  const salvarPersonagemPersistente = (personagemAtualizado: Personagem) => {
+    const remoto = usandoRemoto && campanhaAtivaId
+      ? {
+          ...personagemAtualizado,
+          campaignId: campanhaAtivaId,
+          ownerUserId: personagemAtualizado.ownerUserId || session?.authUserId
+        }
+      : personagemAtualizado;
+    salvarPersonagem(remoto);
+    if (usandoRemoto && campanhaAtivaId) {
+      void characterRepository.salvar(remoto).catch(error => console.error('Erro ao salvar ficha remota:', error));
+    }
+  };
+
+  const excluirPersonagemPersistente = (id: string) => {
+    excluirPersonagem(id);
+    if (usandoRemoto) void characterRepository.excluir(id).catch(error => console.error('Erro ao excluir ficha remota:', error));
+  };
 
   useEffect(() => {
     if (!isSupabaseConfigured() || session?.modoConexao === 'local') return;
@@ -186,7 +228,9 @@ export default function App() {
     if (personagemId && session?.authUserId) {
       const personagem = personagens.find(item => item.id === personagemId);
       if (personagem) {
-        await characterRepository.salvar({ ...personagem, campaignId: id, ownerUserId: session.authUserId });
+        const vinculado = { ...personagem, campaignId: id, ownerUserId: session.authUserId };
+        await characterRepository.salvar(vinculado);
+        salvarPersonagem(vinculado);
         await campaignRepository.vincularPersonagem(id, personagem.id);
       }
     }
@@ -287,7 +331,7 @@ export default function App() {
           <CharacterSheet
             personagem={personagemParaFicha}
             onSalvar={(atualizado) => {
-              salvarPersonagem(atualizado);
+              salvarPersonagemPersistente(atualizado);
               setPersonagemParaFicha(atualizado);
             }}
             onDuplicar={(p) => {
@@ -295,7 +339,7 @@ export default function App() {
               setPersonagemParaFicha(null);
             }}
             onExcluir={(id) => {
-              excluirPersonagem(id);
+              excluirPersonagemPersistente(id);
               setPersonagemParaFicha(null);
             }}
             onExportar={exportarJSON}
@@ -342,23 +386,23 @@ export default function App() {
         return campanhaAtiva ? (
           <CampaignDetailView
             campanha={campanhaAtiva}
-            personagens={personagens}
-            sessoes={sessoes}
-            npcs={npcs}
-            adversarios={adversarios}
-            locais={locais}
-            pistas={pistas}
-            loreEntries={loreEntries}
-            anotacoes={anotacoes}
+            personagens={personagensCampanha}
+            sessoes={sessoesAtuais}
+            npcs={npcsAtuais}
+            adversarios={adversariosAtuais}
+            locais={locaisAtuais}
+            pistas={pistasAtuais}
+            loreEntries={loreAtual}
+            anotacoes={anotacoesAtuais}
             onIniciarSessao={handleContinuarCampanha}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
-            onNovaSessao={criarSessao}
-            onAdicionarNPC={adicionarNPC}
-            onAdicionarAdversario={adicionarAdversario}
-            onAdicionarLocal={adicionarLocal}
-            onAdicionarPista={adicionarPista}
-            onAdicionarLore={adicionarLore}
-            onAdicionarAnotacao={adicionarAnotacao}
+            onNovaSessao={(campaignId, dados) => usandoRemoto ? void conteudoRemoto.criarSessao(campaignId, dados) : void criarSessao(campaignId, dados)}
+            onAdicionarNPC={(item) => usandoRemoto ? void conteudoRemoto.adicionarNPC(item) : adicionarNPC(item)}
+            onAdicionarAdversario={(item) => usandoRemoto ? void conteudoRemoto.adicionarAdversario(item) : adicionarAdversario(item)}
+            onAdicionarLocal={(item) => usandoRemoto ? void conteudoRemoto.adicionarLocal(item) : adicionarLocal(item)}
+            onAdicionarPista={(item) => usandoRemoto ? void conteudoRemoto.adicionarPista(item) : adicionarPista(item)}
+            onAdicionarLore={(item) => usandoRemoto ? void conteudoRemoto.adicionarLore(item) : adicionarLore(item)}
+            onAdicionarAnotacao={(campaignId, titulo, conteudo) => usandoRemoto ? void conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo) : adicionarAnotacao(campaignId, titulo, conteudo)}
             onExcluirCampanha={usandoRemoto ? () => alert('A exclusão de campanhas remotas ainda não faz parte desta fundação.') : removerCampanha}
           />
         ) : (
@@ -376,7 +420,7 @@ export default function App() {
         return campanhaAtiva ? (
           <MesaView
             campanha={campanhaAtiva}
-            personagens={personagens}
+            personagens={personagensCampanha}
             role={papelDaCampanha}
             personagemJogadorId={personagemJogadorId}
             userId={session.authUserId}
@@ -490,7 +534,7 @@ export default function App() {
           isOpen={modalCriarPersonagem}
           onClose={() => setModalCriarPersonagem(false)}
           onCriar={(novo) => {
-            salvarPersonagem(novo);
+            salvarPersonagemPersistente(novo);
             setPersonagemParaFicha(novo);
             setModalCriarPersonagem(false);
           }}
