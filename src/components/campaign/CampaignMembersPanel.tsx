@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { MembroCampanha } from '../../types/campaign';
+import { Personagem } from '../../types/character';
 
 interface CampaignMembersPanelProps {
   campaignId: string;
   members: MembroCampanha[];
   inviteCode: string;
   currentUserId?: string;
+  characters: Personagem[];
   canManage: boolean;
   onRegenerateInvite?: (campaignId: string) => Promise<string>;
   onUpdateMember?: (campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) => Promise<void>;
 }
 
 export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
-  campaignId, members, inviteCode, currentUserId, canManage, onRegenerateInvite, onUpdateMember
+  campaignId, members, inviteCode, currentUserId, characters, canManage, onRegenerateInvite, onUpdateMember
 }) => {
   const [busy, setBusy] = useState('');
   const [message, setMessage] = useState('');
@@ -72,6 +74,17 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
                       <option value="jogador">Jogador</option>
                       <option value="observador">Observador</option>
                       <option value="mestre">Mestre</option>
+                    </select>
+                    <select
+                      aria-label={`Personagem de ${member.nome || 'participante'}`}
+                      value={member.characterId || ''}
+                      disabled={busy === member.userId || member.role !== 'jogador'}
+                      onChange={event => void update(member, { characterId: event.target.value || null })}
+                    >
+                      <option value="">Sem personagem vinculado</option>
+                      {characters.map(character => (
+                        <option key={character.id} value={character.id}>{character.nome}</option>
+                      ))}
                     </select>
                     <button type="button" disabled={busy === member.userId} onClick={() => void update(member, { status: member.status === 'ativo' ? 'removido' : 'ativo' })}>
                       {member.status === 'ativo' ? 'Remover' : 'Reativar'}
