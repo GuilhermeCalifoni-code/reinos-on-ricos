@@ -1,5 +1,5 @@
 import React from 'react';
-import { Campanha, Contador, MapaNarrativo, TokenMapa } from '../types/campaign';
+import { Campanha, Contador, MapaNarrativo, MembroCampanha, TokenMapa } from '../types/campaign';
 import { UserRole } from '../types/auth';
 import { Personagem } from '../types/character';
 import { LiveTable } from './live/LiveTable';
@@ -11,6 +11,8 @@ interface MesaViewProps {
   personagemJogadorId?: string;
   userId?: string;
   userName?: string;
+  sessionId?: string;
+  members?: MembroCampanha[];
   registroOnline: boolean;
   onVoltarParaCampanha: () => void;
   onAtualizarPersonagem: (p: Personagem) => void;
@@ -32,7 +34,7 @@ interface MesaViewProps {
 }
 
 export const MesaView: React.FC<MesaViewProps> = ({
-  campanha, personagens, role, personagemJogadorId, userId, userName, registroOnline, onVoltarParaCampanha,
+  campanha, personagens, role, personagemJogadorId, userId, userName, sessionId, members = [], registroOnline, onVoltarParaCampanha,
   onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
   contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
   mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
@@ -44,6 +46,8 @@ export const MesaView: React.FC<MesaViewProps> = ({
     personagemJogadorId={personagemJogadorId}
     userId={userId}
     userName={userName}
+    sessionId={sessionId}
+    members={members}
     registroOnline={registroOnline}
     onVoltar={onVoltarParaCampanha}
     onAtualizarPersonagem={onAtualizarPersonagem}
