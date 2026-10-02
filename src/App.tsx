@@ -547,8 +547,8 @@ export default function App() {
         {/* 10. HEADER (Minimalista, Fundo #0B0B0B, Borda #292929) */}
         {viewAtiva !== 'modo_mesa' && <Header
           campanhaNome={
-            (viewAtiva === 'detalhe_campanha' || viewAtiva === 'modo_mesa') 
-              ? campanhaAtiva?.nome 
+            viewAtiva === 'detalhe_campanha'
+              ? campanhaAtiva?.nome
               : undefined
           }
           rupturaNivel={campanhaAtiva?.rupturaGeral || 0}
