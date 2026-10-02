@@ -189,7 +189,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
           return (
             <article key={raw.id} className="actor-card">
               <div className="actor-card__top">
-                <div><p className="ro-eyebrow">{mode === 'npc' ? npc!.papel : adv!.tipo}</p><h3>{name}</h3></div>
+                <div><p className="ro-eyebrow">{mode === 'npc' ? npc!.papel : adv!.tipo}</p><h3>{name}</h3><small className="actor-card__visibility">{raw.visibilidade === 'revelado_jogadores' ? 'Revelado' : raw.visibilidade === 'compartilhado' ? 'Compartilhado' : 'Mestre privado'}</small></div>
                 {canManage && <div className="actor-card__tools">
                   <button onClick={() => mode === 'npc' ? openEditNpc(npc!) : openEditAdv(adv!)} title="Editar"><Pencil size={14} /></button>
                   <button onClick={() => void remove(raw.id, name)} title="Excluir" className="is-danger"><Trash2 size={14} /></button>
@@ -244,6 +244,13 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
               <label>Dif<input type="number" min={1} value={(form as Adversario).dificuldade ?? 10} onChange={event => setForm({ ...form, dificuldade: Number(event.target.value) } as Adversario)} /></label>
               <label>Deslocamento<input value={(form as Adversario).deslocamento || 'Próximo'} onChange={event => setForm({ ...form, deslocamento: event.target.value } as Adversario)} /></label>
             </>}
+            <label>Visibilidade
+              <select value={form.visibilidade || 'mestre_privado'} onChange={event => setForm({ ...form, visibilidade: event.target.value as NPC['visibilidade'] } as NPC | Adversario)}>
+                <option value="mestre_privado">Mestre privado</option>
+                <option value="compartilhado">Compartilhado</option>
+                <option value="revelado_jogadores">Revelado aos jogadores</option>
+              </select>
+            </label>
             <label className="actor-editor__wide">Descrição<textarea rows={3} value={form.descricao} onChange={event => setForm({ ...form, descricao: event.target.value } as NPC | Adversario)} /></label>
             <div className="actor-editor__wide"><AbilityEditor abilities={form.habilidades || []} onChange={habilidades => setForm({ ...form, habilidades } as NPC | Adversario)} /></div>
           </div>
