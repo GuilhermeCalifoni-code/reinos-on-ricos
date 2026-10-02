@@ -172,6 +172,8 @@ alter table public.campaign_scenes enable row level security;
 alter table public.campaign_handouts enable row level security;
 
 -- Sessões e notas do Mestre ficam privadas nesta etapa; demais recursos respeitam visibilidade.
+drop policy if exists "masters manage sessions" on public.campaign_sessions;
+drop policy if exists "masters manage notes" on public.campaign_notes;
 create policy "masters manage sessions" on public.campaign_sessions for all using (public.is_campaign_master(campaign_id)) with check (public.is_campaign_master(campaign_id));
 create policy "masters manage notes" on public.campaign_notes for all using (public.is_campaign_master(campaign_id)) with check (public.is_campaign_master(campaign_id));
 
@@ -179,10 +181,15 @@ do $$
 declare t text;
 begin
   foreach t in array array['campaign_npcs','campaign_adversaries','campaign_locations','campaign_clues','campaign_lore','campaign_scenes','campaign_handouts'] loop
+    execute format('drop policy if exists "members read visible %s" on public.%I', t, t);
+    execute format('drop policy if exists "masters manage %s" on public.%I', t, t);
     execute format('create policy "members read visible %s" on public.%I for select using (public.can_read_campaign_content(campaign_id, visibilidade))', t, t);
     execute format('create policy "masters manage %s" on public.%I for all using (public.is_campaign_master(campaign_id)) with check (public.is_campaign_master(campaign_id))', t, t);
   end loop;
 end $$;
+
+drop policy if exists "masters delete campaigns" on public.campaigns;
+create policy "masters delete campaigns" on public.campaigns for delete using (public.is_campaign_master(id));
 
 -- Donos podem excluir a própria ficha remota. Mestres continuam cobertos pela policy existente.
 drop policy if exists "owners delete own characters" on public.personagens;
