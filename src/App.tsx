@@ -333,16 +333,16 @@ export default function App() {
   const renderConteudoPrincipal = () => {
     if (personagemParaFicha) {
       return (
-        <div className="max-w-7xl mx-auto px-6 py-6 w-full">
-          <div className="mb-6 flex items-center justify-between pb-4 border-b border-[#292929]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 w-full">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--ro-line)]">
             <button
               onClick={() => setPersonagemParaFicha(null)}
-              className="text-xs font-mono text-[#666666] hover:text-[#A88952] transition-colors flex items-center gap-1.5"
+              className="text-xs text-[var(--ro-paper-muted)] hover:text-[var(--ro-gold)] transition-colors flex items-center gap-1.5"
             >
               <span>←</span>
               <span>Voltar para o painel</span>
             </button>
-            <span className="text-xs font-mono uppercase text-[#A88952]">
+            <span className="text-[10px] sm:text-xs uppercase tracking-[.12em] text-[var(--ro-gold)]">
               Ficha do Desvelado · {personagemParaFicha.nome}
             </span>
           </div>
