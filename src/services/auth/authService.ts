@@ -31,8 +31,8 @@ export const authService = {
     const { error } = await requireClient().auth.updateUser({ password: novaSenha });
     if (error) throw error;
   },
-  onAuthStateChange(callback: (event: string) => void) {
-    const { data } = requireClient().auth.onAuthStateChange((event) => callback(event));
+  onAuthStateChange(callback: (event: string, session: Session | null) => void) {
+    const { data } = requireClient().auth.onAuthStateChange((event, session) => callback(event, session));
     return data.subscription;
   },
   async sessaoAtual(): Promise<Session | null> {

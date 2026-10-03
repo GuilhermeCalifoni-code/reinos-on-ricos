@@ -22,15 +22,32 @@ const isChunkLoadError = (error: Error) => {
 
 export class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
   state: AppErrorBoundaryState = { error: null };
+  private stableTimer?: number;
 
   static getDerivedStateFromError(error: Error): AppErrorBoundaryState {
     return { error };
+  }
+
+  componentDidMount() {
+    this.stableTimer = window.setTimeout(() => {
+      try {
+        sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      } catch {
+        // O guard é apenas uma proteção adicional; a aplicação segue normalmente.
+      }
+    }, 15000);
+  }
+
+  componentWillUnmount() {
+    if (this.stableTimer) window.clearTimeout(this.stableTimer);
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('[Reinos Oníricos] Falha não tratada na interface', error, info);
 
     if (!isChunkLoadError(error)) return;
+
+    if (this.stableTimer) window.clearTimeout(this.stableTimer);
 
     try {
       if (sessionStorage.getItem(CHUNK_RELOAD_KEY) === '1') return;
