@@ -31,9 +31,10 @@ A auditoria percorreu as regras de criação e progressão de Desvelados, Testes
 - Tentativas sucessivas e múltiplas manifestações documentadas na referência de mesa.
 - Delírio deixou de ser automático apenas por haver testemunha Velada; agora considera efeito Coincidente, Moderado ou Intenso.
 - Ruptura deixou de exibir estágios/sintomas inventados e agora representa apenas a trilha 0–6 e o Efeito de Ruptura ao alcançar 6.
-- Condições de Desvelados passaram a ser persistidas e o Descanso realmente remove uma Condição escolhida.
+- Condições de Desvelados passaram a ser persistidas, sincronizadas em Realtime e o Descanso realmente remove uma Condição escolhida.
 - Projeto Pessoal foi adicionado aos Movimentos de Descanso.
 - Criação de Desvelado passou a iniciar com Recursos 1 (Escasso).
+- Equipamentos de proteção agora aplicam automaticamente apenas o maior bônus não acumulativo (+1 R ou +2 R), conforme a VF5.
 - A tabela de dano da ficha deixou de associar intensidade do dado a um alcance fixo; Área e Distância são propriedades da fonte/narrativa.
 - Adversários passaram a usar referências de NA, Vida, Dificuldade, Resistência e Nível de Perigo da VF5.
 - Habilidades de NPC/Adversário agora suportam alvo, alcance, dano, consequência e gatilho de Reação.
