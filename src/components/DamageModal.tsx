@@ -27,9 +27,9 @@ export const DamageModal: React.FC<DamageModalProps> = ({
   const poDisponivel = personagem.protecaoOniricaAtual;
 
   // Mecânica oficial do Livro Básico (Pág. 11, 12, 117):
-  // Dano <= R -> perde 1 V
-  // Dano > R -> perde 2 V
-  // Dano Maciço (Opcional): Dano > 2*R -> perde 3 V
+  // Dano <= R -> perde 1 PV
+  // Dano > R -> perde 2 PV
+  // Dano Maciço (Opcional): Dano > 2*R -> perde 3 PV
   let perdaVidaCalculada = 0;
   if (usarDanoMacico && danoBruto > resistencia * 2) {
     perdaVidaCalculada = 3;
@@ -39,7 +39,7 @@ export const DamageModal: React.FC<DamageModalProps> = ({
     perdaVidaCalculada = 1;
   }
 
-  // Abatimento com Proteção Onírica (1 PO reduz em 1 V, máx 1 PO por ocorrência de dano)
+  // Abatimento com Proteção Onírica (1 PO reduz em 1 PV, máx 1 PO por ocorrência de dano)
   const poGasta = (usarPO && poDisponivel > 0 && perdaVidaCalculada > 0) ? 1 : 0;
   const perdaVidaFinal = Math.max(0, perdaVidaCalculada - poGasta);
   const novaVida = Math.max(0, personagem.vidaAtual - perdaVidaFinal);
@@ -94,7 +94,7 @@ export const DamageModal: React.FC<DamageModalProps> = ({
           <div>
             <div className="flex justify-between items-center mb-1">
               <label className="text-xs font-mono text-slate-300">
-                Valor Total do Dano Sofrido:
+                Valor total do dano sofrido:
               </label>
               <span className="text-xs font-mono text-cyan-400 font-bold">
                 {danoBruto} pontos
@@ -151,15 +151,15 @@ export const DamageModal: React.FC<DamageModalProps> = ({
             <div className="border-t border-slate-800 pt-2 text-slate-300 space-y-1">
               {danoBruto <= resistencia ? (
                 <p className="text-emerald-400">
-                  ✔ Dano ({danoBruto}) ≤ R ({resistencia}) → <strong>Perde 1 V</strong>
+                  ✔ Dano ({danoBruto}) ≤ R ({resistencia}) → <strong>Perde 1 PV</strong>
                 </p>
               ) : (usarDanoMacico && danoBruto > resistencia * 2) ? (
                 <p className="text-rose-400">
-                  ⚠ Dano ({danoBruto}) &gt; Dobro de R ({resistencia * 2}) → <strong>Dano Maciço: Perde 3 V</strong>
+                  ⚠ Dano ({danoBruto}) &gt; Dobro de R ({resistencia * 2}) → <strong>Dano Maciço: Perde 3 PV</strong>
                 </p>
               ) : (
                 <p className="text-amber-400">
-                  ⚠ Dano ({danoBruto}) &gt; R ({resistencia}) → <strong>Perde 2 V</strong>
+                  ⚠ Dano ({danoBruto}) &gt; R ({resistencia}) → <strong>Perde 2 PV</strong>
                 </p>
               )}
             </div>
@@ -175,11 +175,11 @@ export const DamageModal: React.FC<DamageModalProps> = ({
                   className="rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-cyan-500/40"
                 />
                 <span>
-                  Gastar 1 PO para reduzir 1 V ({poDisponivel} disponíveis)
+                  Gastar 1 PO para reduzir 1 PV ({poDisponivel} disponíveis)
                 </span>
               </label>
               {poGasta > 0 && (
-                <span className="text-cyan-400 font-bold">-1 V absorvido</span>
+                <span className="text-cyan-400 font-bold">-1 PV absorvido</span>
               )}
             </div>
 
@@ -215,7 +215,7 @@ export const DamageModal: React.FC<DamageModalProps> = ({
               <div className="p-2 mt-2 rounded bg-rose-950/90 border border-rose-600 text-rose-200 text-xs flex items-center gap-2">
                 <Skull className="w-5 h-5 text-rose-400 shrink-0" />
                 <span>
-                  <strong>Atenção:</strong> O personagem atingiu 0 V! É necessário realizar imediatamente o <strong>Movimento de Morte</strong> (2d20 vs DT 13).
+                  <strong>Atenção:</strong> O personagem atingiu 0 PV! É necessário realizar imediatamente o <strong>Movimento de Morte</strong> (2d20 vs DT 13).
                 </span>
               </div>
             )}
