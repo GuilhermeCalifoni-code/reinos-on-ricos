@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DominioNome, AtributoNome, Personagem, DistanciaFaixa } from '../../types/character';
 import { LINGUAGEM_DOMINIOS, DESCRICAO_DOMINIOS, DISTANCIAS_REINOS_ONIRICOS } from '../../rules/rulesData';
+import { passosPotenciaDoNivel } from '../../rules/referenceTables';
 import { TesteOniricoResultado } from '../../types/tension';
 
 interface DreamResolverModalProps {
@@ -26,12 +27,12 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
   const [intencaoJogador, setIntencaoJogador] = useState('');
   const [dominioSelecionado, setDominioSelecionado] = useState<DominioNome>('consciencia');
   const [nivelVerbo, setNivelVerbo] = useState<number>(1);
-  const [alcance, setAlcance] = useState<DistanciaFaixa>('proxima');
+  const [alcance, setAlcance] = useState<DistanciaFaixa>('muito_proxima');
   const [tipoAlvo, setTipoAlvo] = useState<'unico' | 'pequeno_grupo' | 'area_ampla'>('unico');
-  const [duracao, setDuracao] = useState<'instantanea' | 'sustentada' | 'cena'>('instantanea');
+  const [duracao, setDuracao] = useState<'instantanea' | 'rodada' | 'cena'>('instantanea');
   const [complexidade, setComplexidade] = useState<'simples' | 'complexa'>('simples');
   const [atributoEscolhido, setAtributoEscolhido] = useState<AtributoNome>('mente');
-  const [dtDificuldade, setDtDificuldade] = useState<number>(12);
+  const [dtDificuldade, setDtDificuldade] = useState<number>(13);
 
   // Resultado do Teste
   const [resultadoTeste, setResultadoTeste] = useState<TesteOniricoResultado | null>(null);
@@ -46,8 +47,9 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
   const nivelDominioPJ = personagemAtual?.dominios?.[dominioSelecionado] || 0;
   const excedeNivelPJ = nivelVerbo > nivelDominioPJ;
   const valorAtributoPJ = personagemAtual?.atributos?.[atributoEscolhido] || 0;
+  const passosPotencia = passosPotenciaDoNivel(nivelVerbo);
 
-  // Executar Teste Onírico (Realidade e Sonho avaliados separadamente)
+  // Executar Teste Onírico — cada dado é avaliado separadamente contra a mesma DT.
   const executarTesteOnirico = () => {
     if (excedeNivelPJ) return;
     const dadoRealidade = Math.floor(Math.random() * 20) + 1;
@@ -62,17 +64,17 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
     let consequencia = '';
 
     if (sucessoRealidade && sucessoSonho) {
-      interpretacao = 'Harmonia Onírica: A manifestação ocorre com precisão cirúrgica sem distorcer o tecido consensual.';
-      consequencia = 'O efeito se consolida exatamente como planejado. A ancoragem na Realidade permanece íntegra.';
+      interpretacao = 'CONVERGÊNCIA: a manifestação acontece e é crítica.';
+      consequencia = 'Reduza 1 de Ruptura. Se a manifestação causar dano, aplique Dano Crítico.';
     } else if (sucessoRealidade && !sucessoSonho) {
-      interpretacao = 'Manifestação Instável: O efeito material acontece, mas o Sonhar cobra um tributo ou gera desvio perceptivo.';
-      consequencia = 'O objetivo físico é alcançado, porém um eco da Ruptura transborda no ambiente ou uma complicação onírica surge.';
+      interpretacao = 'REALIDADE VENCE: a manifestação não acontece.';
+      consequencia = 'A Ruptura não se altera. Para tentar novamente, algo relevante precisa mudar.';
     } else if (!sucessoRealidade && sucessoSonho) {
-      interpretacao = 'Deslocamento da Realidade: O mundo físico resistiu, mas a substância do Sonhar se impôs de forma anômala.';
-      consequencia = 'A intenção física falha ou se desvia, mas a força onírica vaza no cenário de forma incontrolada (+1 Ruptura sugerido).';
+      interpretacao = 'SONHAR VENCE: a manifestação acontece.';
+      consequencia = 'Aumente 1 de Ruptura e aplique normalmente os efeitos da manifestação.';
     } else {
-      interpretacao = 'Colapso / Falha Dupla: Tanto a ancoragem consensual quanto o controle onírico falharam.';
-      consequencia = 'A manifestação não ocorre, há repercussão direta contra o Desvelado e o ambiente se torna hostil (+1 Ruptura e complicação imediata).';
+      interpretacao = 'DIVERGÊNCIA: a manifestação não acontece.';
+      consequencia = 'Aumente 2 de Ruptura. Para tentar novamente, algo relevante precisa mudar.';
     }
 
     const resultado: TesteOniricoResultado = {
@@ -94,7 +96,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
     onRegistrarNoLog(
       'sonhar',
       `${personagemAtual.nome} manifestou ${DESCRICAO_DOMINIOS[dominioSelecionado].nome} (${LINGUAGEM_DOMINIOS[nivelVerbo - 1]?.verbo})`,
-      `Realidade: ${dadoRealidade}+${valorAtributoPJ}=${totalRealidade} (${sucessoRealidade ? 'Sucesso' : 'Falha'}) | Sonho: ${dadoSonho}+${valorAtributoPJ}=${totalSonho} (${sucessoSonho ? 'Sucesso' : 'Falha'}) vs DT ${dtDificuldade}. ${interpretacao}`
+      `Realidade: ${dadoRealidade}+${valorAtributoPJ}=${totalRealidade} (${sucessoRealidade ? 'Sucesso' : 'Falha'}) | Sonhar: ${dadoSonho}+${valorAtributoPJ}=${totalSonho} (${sucessoSonho ? 'Sucesso' : 'Falha'}) vs DT ${dtDificuldade}. ${interpretacao}`
     );
   };
 
@@ -103,7 +105,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
     onRegistrarNoLog(
       'sonhar',
       `Percepção Onírica (${DESCRICAO_DOMINIOS[dominioPercepcao].nome}) por ${personagemAtual.nome}`,
-      `Observando: ${alvoPercepcao}. ${resultadoPercepcao ? 'Descoberta: ' + resultadoPercepcao : ''} (Ação puramente perceptiva não consome ação na rodada)`
+      `Observando: ${alvoPercepcao}. ${resultadoPercepcao ? 'Descoberta: ' + resultadoPercepcao : ''} (Perceber ou interpretar algo já presente não exige Teste Onírico; interferir, revelar ativamente algo oculto ou alterar a Realidade exige.)`
     );
     setAlvoPercepcao('');
     setResultadoPercepcao('');
@@ -280,11 +282,12 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                     onChange={(e) => setAlcance(e.target.value as DistanciaFaixa)}
                     className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                   >
-                    <option value="imediata">Imediata (Toque)</option>
-                    <option value="muito_proxima">Muito Próxima</option>
-                    <option value="proxima">Próxima</option>
-                    <option value="longe">Longe</option>
-                    <option value="muito_longe">Muito Longe</option>
+                    <option value="imediata">Corpo a Corpo (até 1,5 m)</option>
+                    <option value="muito_proxima">Muito Próximo (até 3 m)</option>
+                    <option value="proxima">Próximo (3–9 m)</option>
+                    <option value="longe">Longe (9–15 m)</option>
+                    <option value="muito_longe">Muito Longe (15–30 m)</option>
+                    <option value="alem">Além (&gt;30–60 m)</option>
                   </select>
                 </div>
 
@@ -312,9 +315,9 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                     onChange={(e) => setDuracao(e.target.value as any)}
                     className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                   >
-                    <option value="instantanea">Instantânea</option>
-                    <option value="sustentada">Sustentada (Foco)</option>
-                    <option value="cena">Cena Inteira</option>
+                    <option value="instantanea">Instantâneo</option>
+                    <option value="rodada">1 Rodada (Níveis 2–3)</option>
+                    <option value="cena">1 Cena (Níveis 4–5)</option>
                   </select>
                 </div>
 
@@ -358,6 +361,21 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                     onChange={(e) => setDtDificuldade(Number(e.target.value))}
                     className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm text-center"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] font-mono">
+                <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-2">
+                  <span className="text-[var(--ro-ash)]">Potência</span>
+                  <strong className="block text-[var(--ro-copper)] mt-0.5">{nivelVerbo === 1 ? 'Percepção Onírica' : `${passosPotencia} ${passosPotencia === 1 ? 'Passo' : 'Passos'}`}</strong>
+                </div>
+                <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-2">
+                  <span className="text-[var(--ro-ash)]">Alvos</span>
+                  <strong className="block text-[var(--ro-paper-muted)] mt-0.5">{tipoAlvo === 'unico' ? '1 alvo por padrão' : 'Múltiplos alvos exigem Área'}</strong>
+                </div>
+                <div className="bg-[var(--ro-bg)] border border-[var(--ro-line)] p-2">
+                  <span className="text-[var(--ro-ash)]">Lembrete</span>
+                  <strong className="block text-[var(--ro-paper-muted)] mt-0.5">DT Onírica normalmente 13</strong>
                 </div>
               </div>
 
@@ -440,7 +458,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </p>
                 <div className="p-2.5 bg-[var(--ro-surface)] border border-[var(--ro-line)] text-[var(--ro-paper)]">
                   <span className="text-[var(--ro-copper)]">Lembrete de Ação: </span>
-                  Uma Percepção Onírica que seja <strong className="text-[var(--ro-paper)]">exclusivamente perceptiva não consome Ação</strong> na rodada. Se a percepção tentar interferir, conter, modificar ou produzir impacto material, ela passa a ser uma Ação normal de Sonhar.
+                  Perceber ou interpretar aquilo que já está presente <strong className="text-[var(--ro-paper)]">não exige Teste Onírico</strong>. Quando o Desvelado tenta interferir, revelar ativamente algo oculto ou produzir uma alteração na Realidade, resolva normalmente uma manifestação do Sonhar.
                 </div>
               </div>
 
