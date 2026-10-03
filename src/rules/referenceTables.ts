@@ -130,3 +130,93 @@ export const resolverDanoEstrutura = (
   const resistencia = resistenciaEstrutura(material, tamanho);
   return { resistencia, rompe: dano > resistencia };
 };
+
+
+export const ALCANCE_SONHAR_POR_NIVEL = [
+  { nivel: 1, alcance: 'Muito Próximo', requerEspaco: false },
+  { nivel: 2, alcance: 'Próximo', requerEspaco: true },
+  { nivel: 3, alcance: 'Longe', requerEspaco: true },
+  { nivel: 4, alcance: 'Muito Longe', requerEspaco: true },
+  { nivel: 5, alcance: 'Além', requerEspaco: true }
+] as const;
+
+export const DURACAO_SONHAR_POR_NIVEL = [
+  { nivel: 1, duracao: 'Instantâneo' },
+  { nivel: 2, duracao: '1 Rodada' },
+  { nivel: 3, duracao: '1 Rodada' },
+  { nivel: 4, duracao: '1 Cena' },
+  { nivel: 5, duracao: '1 Cena' }
+] as const;
+
+export const DT_SONHAR_ATIVO: Record<number, number> = {
+  1: 10,
+  2: 12,
+  3: 14,
+  4: 16,
+  5: 18
+};
+
+export const INTENSIDADE_DANO = [
+  { dado: 'd4', intensidade: 'Leve', referencia: 'Dor, escoriação ou impacto limitado', exemplos: 'Socos, chutes, objetos pequenos, impactos leves' },
+  { dado: 'd6', intensidade: 'Moderado', referencia: 'Ferimento relevante, mas localizado', exemplos: 'Facas, bastões, fraturas e queimaduras localizadas' },
+  { dado: 'd8', intensidade: 'Grave', referencia: 'Ferimento com potencial impactante', exemplos: 'Pistolas, revólveres, lâminas grandes, múltiplos estilhaços' },
+  { dado: 'd10', intensidade: 'Severo', referencia: 'Ferimento capaz de atravessar, esmagar ou destruir parte do corpo', exemplos: 'Espingardas, fuzis, armas automáticas, esmagamento, grande impacto' },
+  { dado: 'd12', intensidade: 'Devastador', referencia: 'Ferimento capaz de destruir ou atingir múltiplas regiões', exemplos: 'Grande explosão, soterramento pesado, esmagamento intenso' },
+  { dado: 'd20', intensidade: 'Onírico', referencia: 'Ultrapassa referências físicas comuns', exemplos: 'Fenômenos Oníricos excepcionalmente poderosos; Sonhar 5' }
+] as const;
+
+export const AREA_DISTANCIA_DANO = [
+  { tipo: 'Corpo a Corpo', area: 'Alvo', distancia: 'Corpo a Corpo', exemplo: 'Luta, garrafa de bar' },
+  { tipo: 'Arma Branca ou Artefato Letal', area: 'Alvo ou Muito Próximo', distancia: 'Muito Próximo', exemplo: 'Faca, espada, bastão' },
+  { tipo: 'Arremesso improvisado', area: 'Alvo ou Muito Próximo', distancia: 'Próximo', exemplo: 'Garrafa, cadeira' },
+  { tipo: 'Arremesso Tático', area: 'Alvo ou Muito Próximo', distancia: 'Próximo', exemplo: 'Lança, granadas' },
+  { tipo: 'Efeitos ambientais menores', area: 'Alvo ou Muito Próximo', distancia: 'Próximo', exemplo: 'Queda, queimadura pequena' },
+  { tipo: 'Efeitos ambientais moderados', area: 'Muito Próximo até Próximo', distancia: 'Próximo', exemplo: 'Colisões e queimaduras moderadas' },
+  { tipo: 'Disparo / Balístico', area: 'Alvo ou Muito Próximo', distancia: 'Longe', exemplo: 'Pistolas, espingardas, metralhadoras' },
+  { tipo: 'Efeitos ambientais graves', area: 'Próximo', distancia: 'Longe', exemplo: 'Bombas, colisões, quedas graves, desabamentos, incêndio' }
+] as const;
+
+export const VIDA_CURA_FERIMENTO = [
+  { nivel: 1, recuperacao: 'Perceber', ferimento: 'Perceber' },
+  { nivel: 2, recuperacao: 'Fortalecer recuperação que o organismo ainda seja capaz de reparar', ferimento: 'Enfraquecer recuperação que o organismo ainda seja capaz de reparar' },
+  { nivel: 3, recuperacao: '1 PV — regenerar e reparar ativamente tecidos gravemente danificados', ferimento: '1 PV — alterar tecidos, estruturas ou funções biológicas, provocando novos ferimentos' },
+  { nivel: 4, recuperacao: '2 PV — criar tecidos, estruturas ou processos biológicos capazes de auxiliar a recuperação', ferimento: '2 PV — criar tecidos, estruturas ou processos biológicos capazes de provocar ferimentos' },
+  { nivel: 5, recuperacao: '3 PV — restaurar o organismo além de seus limites naturais', ferimento: '3 PV — ferir ou alterar o organismo além de seus limites naturais' }
+] as const;
+
+export const VIDA_ADVERSARIO_POR_NA: Record<number, number> = {
+  1: 3,
+  2: 5,
+  3: 7,
+  4: 9,
+  5: 12
+};
+
+export const DIFICULDADE_ADVERSARIO = [
+  { nome: 'Baixa', valor: 12 },
+  { nome: 'Padrão', valor: 14 },
+  { nome: 'Alta', valor: 16 },
+  { nome: 'Monstruosidade', valor: '>16' }
+] as const;
+
+export const RESISTENCIA_ADVERSARIO = [
+  { nome: 'Baixa', valor: 5 },
+  { nome: 'Padrão', valor: 6 },
+  { nome: 'Alta', valor: 8 },
+  { nome: 'Extrema', valor: 10 }
+] as const;
+
+export const PERIGO_ADVERSARIO = [
+  { nome: 'Baixo', dado: 'd4' },
+  { nome: 'Moderado', dado: 'd6' },
+  { nome: 'Grave', dado: 'd8' },
+  { nome: 'Severo', dado: 'd10' },
+  { nome: 'Devastador', dado: 'd12' },
+  { nome: 'Onírico', dado: 'd20' }
+] as const;
+
+export const vidaAdversarioPorNA = (nivelAmeaca: number): number =>
+  VIDA_ADVERSARIO_POR_NA[Math.max(1, Math.min(5, nivelAmeaca))] ?? 3;
+
+export const dtSonharAtivoPorNivel = (nivelDominio: number): number =>
+  DT_SONHAR_ATIVO[Math.max(1, Math.min(5, nivelDominio))] ?? 10;
