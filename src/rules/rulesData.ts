@@ -180,46 +180,11 @@ export const ESTADOS_RUPTURA: Record<number, {
   descricao: string;
   sintomas: string;
 }> = {
-  0: {
-    nivel: 0,
-    nome: 'Ancorado',
-    descricao: 'A mente e o corpo estão firmemente alinhados com a Realidade consensual.',
-    sintomas: 'Nenhuma interferência sensorial anormal.'
-  },
-  1: {
-    nivel: 1,
-    nome: 'Eco Leve',
-    descricao: 'O Sonhar murmura nas bordas da visão. Reflexos piscam sutilmente fora de compasso.',
-    sintomas: 'Vislumbres fugazes de geometrias anômalas em poças de chuva ou vidraças.'
-  },
-  2: {
-    nivel: 2,
-    nome: 'Ressonância',
-    descricao: 'A textura da metrópole responde fracamente à presença do personagem.',
-    sintomas: 'Luzes fluorescentes zumbem na sua frequência; sombras parecem mais densas.'
-  },
-  3: {
-    nivel: 3,
-    nome: 'Fissura',
-    descricao: 'A barreira entre Realidade e Sonhar torna-se permeável e instável.',
-    sintomas: 'Sussurros indistintos vindos de paredes ou grades de bueiro; sensação de déjà-vu persistente.'
-  },
-  4: {
-    nivel: 4,
-    nome: 'Distorção',
-    descricao: 'O ambiente imediato começa a reagir às emoções do sonhador sem comando explícito.',
-    sintomas: 'Superfícies de concreto adquirem pulsação tênue; relógios mecânicos hesitam.'
-  },
-  5: {
-    nivel: 5,
-    nome: 'Fratura Crítica',
-    descricao: 'O Sonhar invade ativamente a percepção sensorial. O Mestre pode impor intrusões do Sonhar.',
-    sintomas: 'Espelhos mostram versões estranhas do ambiente; o cheiro de ozônio e terra molhada impregna o ar.'
-  },
-  6: {
-    nivel: 6,
-    nome: 'Colapso Onírico',
-    descricao: 'A ancoragem com a Realidade consensual está em ponto de ruptura total.',
-    sintomas: 'A fronteira se desfaz; Pesadelos e entidades do Sonhar percebem a presença com clareza cristalina.'
-  }
+  0: { nivel: 0, nome: 'Ruptura 0', descricao: 'A trilha está em 0. Ruptura mede a tensão acumulada entre Realidade e Sonhar.', sintomas: '' },
+  1: { nivel: 1, nome: 'Ruptura 1', descricao: 'Tensão acumulada 1/6. Não há efeito mecânico automático apenas por estar neste valor.', sintomas: '' },
+  2: { nivel: 2, nome: 'Ruptura 2', descricao: 'Tensão acumulada 2/6. Não há efeito mecânico automático apenas por estar neste valor.', sintomas: '' },
+  3: { nivel: 3, nome: 'Ruptura 3', descricao: 'Tensão acumulada 3/6. Não há efeito mecânico automático apenas por estar neste valor.', sintomas: '' },
+  4: { nivel: 4, nome: 'Ruptura 4', descricao: 'Tensão acumulada 4/6. Não há efeito mecânico automático apenas por estar neste valor.', sintomas: '' },
+  5: { nivel: 5, nome: 'Ruptura 5', descricao: 'Tensão acumulada 5/6. O próximo aumento pode levar a trilha ao limite.', sintomas: '' },
+  6: { nivel: 6, nome: 'Limite de Ruptura', descricao: 'Resolva primeiro a manifestação que levou a trilha a 6. Depois o Mestre estabelece um Efeito de Ruptura coerente e a trilha retorna a 0.', sintomas: '' }
 };
