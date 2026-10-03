@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { DESCRICAO_DOMINIOS, LINGUAGEM_DOMINIOS, TABELA_PROGRESSAO } from '../rules/rulesData';
+import {
+  MATERIAIS_ESTRUTURA,
+  PASSOS_POTENCIA_POR_NIVEL,
+  REGRAS_PASSOS_POTENCIA,
+  RESISTENCIA_ESTRUTURAS,
+  TAMANHOS_OBJETO,
+  MaterialEstrutural,
+  TamanhoEstrutural,
+  resolverDanoEstrutura
+} from '../rules/referenceTables';
 
-type Secao = 'testes' | 'sonhar' | 'combate' | 'sobrevivencia' | 'mesa';
+type Secao = 'testes' | 'sonhar' | 'potencia' | 'estruturas' | 'combate' | 'sobrevivencia' | 'mesa';
 
 const Tab: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
   <button type="button" onClick={onClick} className={active ? 'rules-reference__tab is-active' : 'rules-reference__tab'}>
@@ -11,6 +21,13 @@ const Tab: React.FC<{ active: boolean; onClick: () => void; children: React.Reac
 
 export const RulesReference: React.FC = () => {
   const [secao, setSecao] = useState<Secao>('testes');
+  const [material, setMaterial] = useState<MaterialEstrutural>('comum');
+  const [tamanho, setTamanho] = useState<TamanhoEstrutural>('medio');
+  const [danoEstrutura, setDanoEstrutura] = useState(8);
+  const resultadoEstrutura = useMemo(
+    () => resolverDanoEstrutura(danoEstrutura, material, tamanho),
+    [danoEstrutura, material, tamanho]
+  );
 
   return (
     <section className="rules-reference">
@@ -19,12 +36,14 @@ export const RulesReference: React.FC = () => {
           <p className="ro-eyebrow">Referência de mesa</p>
           <h2>Regras essenciais</h2>
         </div>
-        <p>Resumo alinhado ao Guia Autônomo de Playtest atual.</p>
+        <p>Consulta rápida do Livro Básico para usar durante a sessão sem quebrar o ritmo da mesa.</p>
       </header>
 
       <nav className="rules-reference__tabs" aria-label="Seções de regras">
         <Tab active={secao === 'testes'} onClick={() => setSecao('testes')}>Testes</Tab>
         <Tab active={secao === 'sonhar'} onClick={() => setSecao('sonhar')}>Sonhar</Tab>
+        <Tab active={secao === 'potencia'} onClick={() => setSecao('potencia')}>Potência</Tab>
+        <Tab active={secao === 'estruturas'} onClick={() => setSecao('estruturas')}>Objetos</Tab>
         <Tab active={secao === 'combate'} onClick={() => setSecao('combate')}>Tensão</Tab>
         <Tab active={secao === 'sobrevivencia'} onClick={() => setSecao('sobrevivencia')}>Dano & Morte</Tab>
         <Tab active={secao === 'mesa'} onClick={() => setSecao('mesa')}>Mesa</Tab>
@@ -88,6 +107,142 @@ export const RulesReference: React.FC = () => {
             <h3>Fluxo de uma manifestação</h3>
             <p>Intenção → Domínio → Nível → Combinação? → Alcance → Alvos/Área → Duração → Potência → Atributo → DT → Teste Onírico → Manifestação → Ruptura/Delírio → Consequências.</p>
             <p><strong>Combinação:</strong> o Domínio Principal precisa possuir nível ao menos 1 maior que cada secundário. Para Potência, use o maior nível combinado. Os níveis não são somados.</p>
+          </article>
+        </div>
+      )}
+
+      {secao === 'potencia' && (
+        <div className="rules-reference__content">
+          <article className="ro-surface rules-reference__feature">
+            <p className="ro-eyebrow">Potência do Sonhar</p>
+            <h3>Nível diz o que pode ser feito. Potência diz quanto aquilo é afetado.</h3>
+            <p>Passos representam intensidade. Em cada manifestação, escolha uma única característica mecânica e aplique nela todos os Passos disponíveis. Os Passos não são uma moeda para dividir entre Dano, Defesa, Área, Resistência ou outras características.</p>
+            <div className="rules-reference__power-levels">
+              {PASSOS_POTENCIA_POR_NIVEL.map(item => (
+                <div key={item.nivel}>
+                  <span>Nível {item.nivel}</span>
+                  <strong>{item.referencia}</strong>
+                  <small>{item.linguagem}</small>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Tabela de Passos</p>
+            <h3>Traduzindo Potência em regras</h3>
+            <div className="rules-reference__power-table">
+              {REGRAS_PASSOS_POTENCIA.map(item => (
+                <div key={item.id}>
+                  <strong>{item.nome}</strong>
+                  <p>{item.regra}</p>
+                  {item.observacao && <small>{item.observacao}</small>}
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="ro-surface rules-reference__note">
+            <p className="ro-eyebrow">Uso correto</p>
+            <div className="rules-reference__compact-list">
+              <p><strong>Uma característica:</strong> todos os Passos vão para a característica escolhida.</p>
+              <p><strong>Consequências naturais:</strong> uma manifestação pode causar dano, queda ou deslocamento como consequências da mesma alteração sem transformar cada consequência em um “benefício” comprado por Passo.</p>
+              <p><strong>Dano:</strong> a progressão usual é d4 → d6 → d8 → d10 → d12. Potência não avança automaticamente para d20; d20 é reservado aos casos excepcionais indicados pelo livro.</p>
+              <p><strong>Tamanho:</strong> esta referência usa <em>Pequeno</em> como base porque é o valor indicado na regra detalhada de Potência e na seção de Objetos e Estruturas.</p>
+            </div>
+          </article>
+        </div>
+      )}
+
+      {secao === 'estruturas' && (
+        <div className="rules-reference__content">
+          <article className="ro-surface rules-reference__feature">
+            <p className="ro-eyebrow">Objetos & Estruturas</p>
+            <h3>Objetos não precisam de PV</h3>
+            <p>Compare cada ocorrência de dano diretamente à Resistência do objeto. Dano ≤ R: resiste. Dano &gt; R: quebra, perfura, rompe ou é destruído de forma compatível com a ação. Danos inferiores não se acumulam entre tentativas, salvo deterioração persistente justificada pela narrativa.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Resistência estrutural</p>
+            <h3>Material × quantidade de estrutura comprometida</h3>
+            <div className="rules-reference__table-wrap">
+              <table className="rules-reference__matrix">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Pequeno</th>
+                    <th>Médio</th>
+                    <th>Grande</th>
+                    <th>Imenso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {MATERIAIS_ESTRUTURA.map(item => (
+                    <tr key={item.id}>
+                      <th>{item.nome}</th>
+                      <td>{RESISTENCIA_ESTRUTURAS[item.id].pequeno}</td>
+                      <td>{RESISTENCIA_ESTRUTURAS[item.id].medio}</td>
+                      <td>{RESISTENCIA_ESTRUTURAS[item.id].grande}</td>
+                      <td>{RESISTENCIA_ESTRUTURAS[item.id].imenso}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="rules-reference__material-notes">
+              {MATERIAIS_ESTRUTURA.map(item => <p key={item.id}><strong>{item.nome}:</strong> {item.exemplos}</p>)}
+            </div>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Tamanho de objetos</p>
+            <div className="rules-reference__sizes">
+              {TAMANHOS_OBJETO.map(item => (
+                <div key={item.id}><strong>{item.nome}</strong><p>{item.exemplos}</p></div>
+              ))}
+            </div>
+            <p className="rules-reference__after-grid">O Tamanho representa quanto material precisa ser comprometido para obter o resultado, não necessariamente o tamanho total do prédio, veículo ou estrutura.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Teste rápido de estrutura</p>
+            <h3>O dano atravessa a Resistência?</h3>
+            <div className="rules-reference__structure-tool">
+              <label>
+                <span>Material</span>
+                <select value={material} onChange={event => setMaterial(event.target.value as MaterialEstrutural)}>
+                  {MATERIAIS_ESTRUTURA.map(item => <option key={item.id} value={item.id}>{item.nome}</option>)}
+                </select>
+              </label>
+              <label>
+                <span>Tamanho</span>
+                <select value={tamanho} onChange={event => setTamanho(event.target.value as TamanhoEstrutural)}>
+                  <option value="pequeno">Pequeno</option>
+                  <option value="medio">Médio</option>
+                  <option value="grande">Grande</option>
+                  <option value="imenso">Imenso</option>
+                </select>
+              </label>
+              <label>
+                <span>Dano</span>
+                <input type="number" min={0} value={danoEstrutura} onChange={event => setDanoEstrutura(Math.max(0, Number(event.target.value) || 0))} />
+              </label>
+              <div className={resultadoEstrutura.rompe ? 'rules-reference__structure-result is-broken' : 'rules-reference__structure-result'}>
+                <span>R {resultadoEstrutura.resistencia}</span>
+                <strong>{resultadoEstrutura.rompe ? 'ROMPE / QUEBRA' : 'RESISTE'}</strong>
+              </div>
+            </div>
+            <p className="rules-reference__warning">A comparação só vale se a fonte de dano puder afetar aquele material daquela maneira. Um resultado alto não transforma um soco comum em ferramenta capaz de romper concreto maciço.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Potência em estruturas</p>
+            <div className="rules-reference__compact-list">
+              <p><strong>Resistência de materiais:</strong> cada Passo move uma categoria entre Frágil → Comum → Resistente → Muito Resistente. Os extremos são limites.</p>
+              <p><strong>Tamanho:</strong> cada Passo desloca uma categoria, partindo de Pequeno como referência.</p>
+              <p><strong>Não acumula automaticamente:</strong> escolher Tamanho não aumenta ao mesmo tempo a Resistência do material.</p>
+              <p><strong>Peso e carga:</strong> use a escala de Tamanho como referência; Pequeno corresponde ao que uma pessoa comum consegue levar normalmente e uma categoria acima pode ser carregada com esforço.</p>
+            </div>
           </article>
         </div>
       )}

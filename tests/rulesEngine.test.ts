@@ -3,6 +3,7 @@ import test from 'node:test';
 import { calcularDefesa, executarTesteMundano, executarTesteOnirico, processarDano } from '../src/rules/rulesEngine';
 import { TABELA_PROGRESSAO } from '../src/rules/rulesData';
 import { PERSONAGENS_PRE_PRONTOS } from '../src/data/presetCharacters';
+import { passosPotenciaDoNivel, resistenciaEstrutura, resolverDanoEstrutura } from '../src/rules/referenceTables';
 
 const withRandom = <T>(values: number[], run: () => T): T => {
   const original = Math.random;
@@ -86,4 +87,21 @@ test('Personagens pré-prontos usam Defesa = 8 + Corpo', () => {
       `${personagem.nome} deve usar Corpo na Defesa`
     );
   }
+});
+
+
+test('Potência fornece 0/1/2/2/3 Passos nos níveis 1–5', () => {
+  assert.deepEqual([1,2,3,4,5].map(passosPotenciaDoNivel), [0,1,2,2,3]);
+});
+
+test('Resistência estrutural segue a matriz Material × Tamanho', () => {
+  assert.equal(resistenciaEstrutura('fragil', 'pequeno'), 4);
+  assert.equal(resistenciaEstrutura('comum', 'medio'), 8);
+  assert.equal(resistenciaEstrutura('resistente', 'grande'), 12);
+  assert.equal(resistenciaEstrutura('muito_resistente', 'imenso'), 16);
+});
+
+test('Estrutura só rompe quando dano supera R', () => {
+  assert.deepEqual(resolverDanoEstrutura(10, 'resistente', 'medio'), { resistencia: 10, rompe: false });
+  assert.deepEqual(resolverDanoEstrutura(11, 'resistente', 'medio'), { resistencia: 10, rompe: true });
 });
