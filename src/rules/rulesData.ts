@@ -77,9 +77,9 @@ export const DISTANCIAS_REINOS_ONIRICOS: Record<DistanciaFaixa, {
   exemplos: string;
 }> = {
   imediata: {
-    nome: 'Imediata',
-    descricao: 'Contato corpo a corpo ou toque direto.',
-    exemplos: 'Luta corpo a corpo, sussurrar ao ouvido, segurar pelo braço.'
+    nome: 'Corpo a Corpo',
+    descricao: 'Até aproximadamente 1,5 m.',
+    exemplos: 'Luta, toque direto, agarrar alguém ou usar uma arma corpo a corpo.'
   },
   muito_proxima: {
     nome: 'Muito Próxima',
@@ -98,10 +98,51 @@ export const DISTANCIAS_REINOS_ONIRICOS: Record<DistanciaFaixa, {
   },
   muito_longe: {
     nome: 'Muito Longe',
-    descricao: 'Limite da visão clara urbana ou alcance extremo de tiro.',
-    exemplos: 'Topo de um edifício vizinho, fim da avenida, requer aproximação significativa.'
+    descricao: 'De aproximadamente 15 m a 30 m.',
+    exemplos: 'Outro lado de uma avenida larga, grande salão ou extremo de uma área aberta.'
+  },
+  alem: {
+    nome: 'Além',
+    descricao: 'Mais de 30 m até cerca de 60 m.',
+    exemplos: 'Trecho longo de avenida, outro prédio próximo ou limite de uma grande área aberta.'
   }
 };
+
+export const DT_SONHAR_POR_NIVEL: Record<number, number> = {
+  1: 10,
+  2: 12,
+  3: 14,
+  4: 16,
+  5: 18
+};
+
+export const TABELA_VIDA_FERIMENTO = [
+  { nivel: 1, recuperacao: 'Perceber', ferimento: 'Perceber' },
+  { nivel: 2, recuperacao: 'Fortalecer a recuperação que o organismo ainda é capaz de realizar.', ferimento: 'Enfraquecer a recuperação que o organismo ainda é capaz de realizar.' },
+  { nivel: 3, recuperacao: 'Recupere 1 PV ao regenerar/reparar ativamente tecidos gravemente danificados.', ferimento: 'Cause 1 PV ao alterar diretamente tecidos, estruturas ou funções biológicas.' },
+  { nivel: 4, recuperacao: 'Recupere 2 PV ao criar tecidos, estruturas ou processos biológicos de recuperação.', ferimento: 'Cause 2 PV ao criar tecidos, estruturas ou processos biológicos capazes de ferir.' },
+  { nivel: 5, recuperacao: 'Recupere 3 PV ao restaurar o organismo além de seus limites naturais.', ferimento: 'Cause 3 PV ao ferir ou alterar o organismo além de seus limites naturais.' }
+] as const;
+
+export const TABELA_INTENSIDADE_DANO = [
+  { dado: 'd4', intensidade: 'Leve', exemplos: 'Socos, chutes, objetos pequenos e impactos leves.' },
+  { dado: 'd6', intensidade: 'Moderado', exemplos: 'Facas, bastões, fraturas e queimaduras.' },
+  { dado: 'd8', intensidade: 'Grave', exemplos: 'Pistolas, revólveres, lâminas grandes e múltiplos estilhaços.' },
+  { dado: 'd10', intensidade: 'Severo', exemplos: 'Espingardas, fuzis, armas automáticas, esmagamento e grande impacto.' },
+  { dado: 'd12', intensidade: 'Devastador', exemplos: 'Grande explosão, soterramento pesado e esmagamento intenso.' },
+  { dado: 'd20', intensidade: 'Onírico', exemplos: 'Fenômenos e criaturas Oníricas excepcionalmente poderosos; Sonhar 5.' }
+] as const;
+
+export const TABELA_AREA_DISTANCIA_DANO = [
+  { tipo: 'Corpo a Corpo', area: 'Alvo', distancia: 'Corpo a Corpo', exemplo: 'Luta, garrafa de bar.' },
+  { tipo: 'Arma Branca ou Artefato Letal', area: 'Alvo ou Muito Próximo', distancia: 'Muito Próximo', exemplo: 'Faca, espada, bastão.' },
+  { tipo: 'Arremesso improvisado', area: 'Alvo ou Muito Próximo', distancia: 'Próximo', exemplo: 'Garrafa, cadeira.' },
+  { tipo: 'Arremesso Tático', area: 'Alvo ou Muito Próximo', distancia: 'Próximo', exemplo: 'Lança, granada.' },
+  { tipo: 'Efeitos ambientais menores', area: 'Alvo ou Muito Próximo', distancia: 'Próximo', exemplo: 'Queda, queimadura pequena.' },
+  { tipo: 'Efeitos ambientais moderados', area: 'Muito Próximo até Próximo', distancia: 'Próximo', exemplo: 'Colisão moderada, queimadura moderada.' },
+  { tipo: 'Disparo balístico', area: 'Alvo ou Muito Próximo', distancia: 'Longe', exemplo: 'Pistolas, espingardas, metralhadoras.' },
+  { tipo: 'Efeitos ambientais graves', area: 'Próximo', distancia: 'Longe', exemplo: 'Bombas, colisões, quedas graves, desabamentos e incêndio.' }
+] as const;
 
 export const LINGUAGEM_DOMINIOS = [
   {
@@ -166,55 +207,5 @@ export const DESCRICAO_DOMINIOS: Record<DominioNome, {
     tema: 'Organismos e processos vitais.',
     esfera: 'Tecidos, órgãos, crescimento, recuperação e estruturas biológicas.',
     manifestacoesTipicas: 'Fortalecer recuperação, transformar tecidos, criar estruturas biológicas possíveis ou Sonhar vida além dos limites naturais.'
-  }
-};
-
-export const ESTADOS_RUPTURA: Record<number, {
-  nivel: number;
-  nome: string;
-  descricao: string;
-  sintomas: string;
-}> = {
-  0: {
-    nivel: 0,
-    nome: 'Ancorado',
-    descricao: 'A mente e o corpo estão firmemente alinhados com a Realidade consensual.',
-    sintomas: 'Nenhuma interferência sensorial anormal.'
-  },
-  1: {
-    nivel: 1,
-    nome: 'Eco Leve',
-    descricao: 'O Sonhar murmura nas bordas da visão. Reflexos piscam sutilmente fora de compasso.',
-    sintomas: 'Vislumbres fugazes de geometrias anômalas em poças de chuva ou vidraças.'
-  },
-  2: {
-    nivel: 2,
-    nome: 'Ressonância',
-    descricao: 'A textura da metrópole responde fracamente à presença do personagem.',
-    sintomas: 'Luzes fluorescentes zumbem na sua frequência; sombras parecem mais densas.'
-  },
-  3: {
-    nivel: 3,
-    nome: 'Fissura',
-    descricao: 'A barreira entre Realidade e Sonhar torna-se permeável e instável.',
-    sintomas: 'Sussurros indistintos vindos de paredes ou grades de bueiro; sensação de déjà-vu persistente.'
-  },
-  4: {
-    nivel: 4,
-    nome: 'Distorção',
-    descricao: 'O ambiente imediato começa a reagir às emoções do sonhador sem comando explícito.',
-    sintomas: 'Superfícies de concreto adquirem pulsação tênue; relógios mecânicos hesitam.'
-  },
-  5: {
-    nivel: 5,
-    nome: 'Fratura Crítica',
-    descricao: 'O Sonhar invade ativamente a percepção sensorial. O Mestre pode impor intrusões do Sonhar.',
-    sintomas: 'Espelhos mostram versões estranhas do ambiente; o cheiro de ozônio e terra molhada impregna o ar.'
-  },
-  6: {
-    nivel: 6,
-    nome: 'Colapso Onírico',
-    descricao: 'A ancoragem com a Realidade consensual está em ponto de ruptura total.',
-    sintomas: 'A fronteira se desfaz; Pesadelos e entidades do Sonhar percebem a presença com clareza cristalina.'
   }
 };
