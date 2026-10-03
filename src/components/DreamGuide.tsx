@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Personagem, DominioNome } from '../types/character';
 import { DESCRICAO_DOMINIOS, LINGUAGEM_DOMINIOS } from '../rules/rulesData';
+import { passosPotenciaDoNivel } from '../rules/referenceTables';
 
 interface DreamGuideProps {
   personagemAtivo: Personagem | null;
@@ -33,6 +34,7 @@ export const DreamGuide: React.FC<DreamGuideProps> = ({
   const domInfo = DESCRICAO_DOMINIOS[dominioSelecionado];
   const nivelPersonagem = personagemAtivo?.dominios[dominioSelecionado] || 0;
   const podeManifestar = nivelPersonagem >= nivelSelecionado;
+  const passosPotencia = passosPotenciaDoNivel(nivelSelecionado);
 
   const iconesDom: Record<DominioNome, any> = {
     consciencia: Brain,
@@ -217,6 +219,15 @@ export const DreamGuide: React.FC<DreamGuideProps> = ({
                 <span>Nível Solicitado:</span>
                 <strong className="text-cyan-400">Nível {nivelSelecionado}</strong>
               </div>
+              <div className="flex justify-between items-center text-slate-300">
+                <span>Potência disponível:</span>
+                <strong className="text-[var(--ro-copper)]">
+                  {nivelSelecionado === 1 ? 'Percepção Onírica' : `${passosPotencia} ${passosPotencia === 1 ? 'Passo' : 'Passos'}`}
+                </strong>
+              </div>
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                Quando houver intensidade mecânica, todos os Passos são aplicados a uma única característica da manifestação.
+              </p>
               <div className="flex justify-between items-center text-slate-300 border-t border-slate-800/80 pt-1.5">
                 <span>Disponibilidade na Ficha:</span>
                 <span className={podeManifestar ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
