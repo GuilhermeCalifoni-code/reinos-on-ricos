@@ -302,3 +302,89 @@ export function executarTesteOnirico(params: {
     timestamp: new Date().toLocaleTimeString('pt-BR')
   };
 }
+
+
+export interface ResultadoMovimentoMorte {
+  dadoRealidade: number;
+  dadoSonhar: number;
+  sucessoRealidade: boolean;
+  sucessoSonhar: boolean;
+  tipo: ResultadoOniricoTipo;
+  titulo: string;
+  efeito: string;
+  recuperaVida: number;
+  recebeRuptura: number;
+  ficaConsciente: boolean;
+  morre: boolean;
+}
+
+export function resolverMovimentoMorte(
+  rolarD20: () => number = () => Math.floor(Math.random() * 20) + 1
+): ResultadoMovimentoMorte {
+  const dadoRealidade = rolarD20();
+  const dadoSonhar = rolarD20();
+  const sucessoRealidade = dadoRealidade >= 13;
+  const sucessoSonhar = dadoSonhar >= 13;
+
+  if (sucessoRealidade && sucessoSonhar) {
+    return {
+      dadoRealidade,
+      dadoSonhar,
+      sucessoRealidade,
+      sucessoSonhar,
+      tipo: 'convergencia',
+      titulo: 'CONVERGÊNCIA',
+      efeito: 'Realidade e Sonhar encontram uma maneira de mantê-lo aqui. Recupere 2 PV e fique Consciente.',
+      recuperaVida: 2,
+      recebeRuptura: 0,
+      ficaConsciente: true,
+      morre: false
+    };
+  }
+
+  if (sucessoRealidade && !sucessoSonhar) {
+    return {
+      dadoRealidade,
+      dadoSonhar,
+      sucessoRealidade,
+      sucessoSonhar,
+      tipo: 'realidade_vence',
+      titulo: 'REALIDADE VENCE',
+      efeito: 'Seu corpo resiste, mas você permanece Inconsciente com 0 PV. Precisa de cuidados ou Descanso.',
+      recuperaVida: 0,
+      recebeRuptura: 0,
+      ficaConsciente: false,
+      morre: false
+    };
+  }
+
+  if (!sucessoRealidade && sucessoSonhar) {
+    return {
+      dadoRealidade,
+      dadoSonhar,
+      sucessoRealidade,
+      sucessoSonhar,
+      tipo: 'sonhar_vence',
+      titulo: 'SONHAR VENCE',
+      efeito: 'Algo impossível impede sua morte. Recupere 1 PV, receba +2 Ruptura e fique Consciente.',
+      recuperaVida: 1,
+      recebeRuptura: 2,
+      ficaConsciente: true,
+      morre: false
+    };
+  }
+
+  return {
+    dadoRealidade,
+    dadoSonhar,
+    sucessoRealidade,
+    sucessoSonhar,
+    tipo: 'divergencia',
+    titulo: 'DIVERGÊNCIA',
+    efeito: 'Nem Realidade nem Sonhar conseguem sustentá-lo. O Personagem morre.',
+    recuperaVida: 0,
+    recebeRuptura: 0,
+    ficaConsciente: false,
+    morre: true
+  };
+}
