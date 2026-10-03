@@ -1452,3 +1452,200 @@
   font-size: .66rem;
   line-height: 1.5;
 }
+
+
+/* Referência de mesa — Potência, Objetos e Estruturas */
+.rules-reference__feature {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ro-blue) 8%, transparent), transparent 55%),
+    var(--ro-surface-raised);
+}
+.rules-reference__power-levels {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .6rem;
+  margin-top: 1rem;
+}
+.rules-reference__power-levels > div {
+  min-width: 0;
+  padding: .85rem;
+  border: 1px solid var(--ro-line);
+  background: color-mix(in srgb, var(--ro-surface) 88%, transparent);
+}
+.rules-reference__power-levels span,
+.rules-reference__power-levels small {
+  display: block;
+  color: var(--ro-paper-muted);
+  font-size: .64rem;
+}
+.rules-reference__power-levels strong {
+  display: block;
+  margin: .25rem 0;
+  color: var(--ro-copper);
+  font: 400 1.15rem Georgia, serif;
+}
+.rules-reference__power-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: .65rem;
+  margin-top: 1rem;
+}
+.rules-reference__power-table > div {
+  padding: .85rem;
+  border-left: 2px solid var(--ro-line-strong);
+  background: color-mix(in srgb, var(--ro-surface) 90%, transparent);
+}
+.rules-reference__power-table strong { color: var(--ro-paper); }
+.rules-reference__power-table p {
+  margin-top: .3rem;
+  color: var(--ro-paper-muted);
+  font-size: .74rem;
+  line-height: 1.5;
+}
+.rules-reference__power-table small {
+  display: block;
+  margin-top: .35rem;
+  color: var(--ro-ash);
+  font-size: .64rem;
+  line-height: 1.45;
+}
+.rules-reference__note { border-left: 2px solid var(--ro-copper); }
+
+.rules-reference__table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--ro-line);
+}
+.rules-reference__matrix {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: collapse;
+  font-size: .74rem;
+}
+.rules-reference__matrix th,
+.rules-reference__matrix td {
+  padding: .7rem .75rem;
+  border-right: 1px solid var(--ro-line);
+  border-bottom: 1px solid var(--ro-line);
+  text-align: center;
+}
+.rules-reference__matrix thead th {
+  background: var(--ro-blue-soft);
+  color: var(--ro-paper);
+  font-size: .64rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.rules-reference__matrix tbody th {
+  color: var(--ro-copper);
+  text-align: left;
+  font-weight: 600;
+}
+.rules-reference__matrix td {
+  color: var(--ro-paper);
+  font: 500 .9rem Georgia, serif;
+}
+.rules-reference__material-notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: .5rem 1rem;
+  margin-top: .9rem;
+}
+.rules-reference__material-notes p,
+.rules-reference__after-grid,
+.rules-reference__warning {
+  color: var(--ro-paper-muted);
+  font-size: .7rem;
+  line-height: 1.55;
+}
+.rules-reference__material-notes strong { color: var(--ro-paper); }
+
+.rules-reference__sizes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: .65rem;
+  margin-top: .85rem;
+}
+.rules-reference__sizes > div {
+  padding: .8rem;
+  border-top: 1px solid var(--ro-line);
+}
+.rules-reference__sizes strong { color: var(--ro-copper); }
+.rules-reference__sizes p {
+  margin-top: .25rem;
+  color: var(--ro-paper-muted);
+  font-size: .7rem;
+  line-height: 1.5;
+}
+.rules-reference__after-grid { margin-top: .8rem; }
+
+.rules-reference__structure-tool {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(8rem, 1fr)) minmax(10rem, 1.1fr);
+  gap: .65rem;
+  align-items: end;
+  margin-top: 1rem;
+}
+.rules-reference__structure-tool label {
+  display: grid;
+  gap: .35rem;
+}
+.rules-reference__structure-tool label > span {
+  color: var(--ro-ash);
+  font-size: .62rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.rules-reference__structure-tool select,
+.rules-reference__structure-tool input {
+  width: 100%;
+  min-height: 2.6rem;
+  border: 1px solid var(--ro-line);
+  background: var(--ro-input);
+  color: var(--ro-paper);
+  padding: .55rem .65rem;
+  outline: none;
+}
+.rules-reference__structure-tool select:focus,
+.rules-reference__structure-tool input:focus {
+  border-color: var(--ro-blue);
+  box-shadow: var(--ro-focus);
+}
+.rules-reference__structure-result {
+  min-height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem;
+  padding: .55rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--ro-safe) 45%, var(--ro-line));
+  background: color-mix(in srgb, var(--ro-safe) 9%, transparent);
+}
+.rules-reference__structure-result span {
+  color: var(--ro-paper-muted);
+  font-size: .68rem;
+}
+.rules-reference__structure-result strong {
+  color: var(--ro-safe);
+  font-size: .72rem;
+  letter-spacing: .07em;
+}
+.rules-reference__structure-result.is-broken {
+  border-color: color-mix(in srgb, var(--ro-danger) 50%, var(--ro-line));
+  background: var(--ro-rupture-soft);
+}
+.rules-reference__structure-result.is-broken strong { color: var(--ro-danger); }
+.rules-reference__warning {
+  margin-top: .8rem;
+  padding-left: .7rem;
+  border-left: 1px solid var(--ro-rift);
+}
+
+@media (max-width: 840px) {
+  .rules-reference__power-levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rules-reference__structure-tool { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .rules-reference__power-levels,
+  .rules-reference__structure-tool { grid-template-columns: 1fr; }
+}
