@@ -40,6 +40,7 @@ export interface EquipamentoItem {
   descricao?: string;
   pesoOuCarga?: string;
   propriedades?: string;
+  bonusResistencia?: 0 | 1 | 2;
 }
 
 export interface VinculoItem {
