@@ -106,7 +106,7 @@ const AbilityEditor: React.FC<{
           )}
           {ability.categoria !== 'passiva' && ability.teste && (
             <div className="actor-editor__roll-config">
-              <label>DT <input type="number" min={1} value={ability.dt ?? 10} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
+              <label>{ability.teste === 'reflexo' ? 'DT do Reflexo' : 'Defesa/DT sugerida'} <input type="number" min={1} value={ability.dt ?? 10} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
               {ability.teste === 'mundano' && <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>}
               <label>{ability.teste === 'reflexo' ? 'Atributo do alvo' : 'Atributo'}
                 <select value={ability.atributo || 'corpo'} onChange={event => update(ability.id, { atributo: event.target.value as HabilidadeAtor['atributo'] })}>
@@ -180,9 +180,21 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
       return;
     }
 
+    setRoll({
+      actor: actorName,
+      ability: ability.nome,
+      kind: 'mundano',
+      modifier: ability.modificador || 0,
+      dt,
+      atributo: ability.atributo
+    });
+  };
+
+  const executarRolagemMundanaDoAtor = () => {
+    if (!roll || roll.kind !== 'mundano') return;
     const die = Math.floor(Math.random() * 20) + 1;
-    const modifier = ability.modificador || 0;
-    setRoll({ actor: actorName, ability: ability.nome, kind: 'mundano', die, modifier, total: die + modifier, dt, atributo: ability.atributo });
+    const modifier = roll.modifier || 0;
+    setRoll({ ...roll, die, total: die + modifier });
   };
 
   const remove = async (id: string, name: string) => {
@@ -301,8 +313,25 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
             </div>
           ) : (
             <>
-              <div className="actor-roll__result"><strong>{roll.die}</strong><span>{(roll.modifier || 0) >= 0 ? '+' : '−'} {Math.abs(roll.modifier || 0)}</span><b>= {roll.total}</b></div>
-              <p>DT {roll.dt} · <strong className={(roll.total || 0) >= roll.dt ? 'is-success' : 'is-failure'}>{(roll.total || 0) >= roll.dt ? 'SUCESSO' : 'FRACASSO'}</strong></p>
+              <label className="actor-roll__target-dt">
+                <span>Defesa / DT do alvo</span>
+                <input type="number" min={1} value={roll.dt} onChange={event => setRoll({ ...roll, dt: Math.max(1, Number(event.target.value) || 1), die: undefined, total: undefined })} />
+              </label>
+              {roll.die === undefined ? (
+                <div className="actor-roll__request">
+                  <strong>Pronto para rolar.</strong>
+                  <p>Role 1d20{(roll.modifier || 0) !== 0 ? ` ${(roll.modifier || 0) > 0 ? '+' : '−'} ${Math.abs(roll.modifier || 0)}` : ''} contra Defesa/DT {roll.dt}.</p>
+                  <small>O Nível de Ameaça não é somado automaticamente à rolagem de ataque.</small>
+                  <button type="button" className="ro-button" onClick={executarRolagemMundanaDoAtor}><Dice5 size={14} /> Rolar 1d20</button>
+                </div>
+              ) : (
+                <>
+                  <div className="actor-roll__result"><strong>{roll.die}</strong><span>{(roll.modifier || 0) >= 0 ? '+' : '−'} {Math.abs(roll.modifier || 0)}</span><b>= {roll.total}</b></div>
+                  <p>Defesa/DT {roll.dt} · <strong className={(roll.total || 0) >= roll.dt || roll.die === 20 ? 'is-success' : 'is-failure'}>{(roll.total || 0) >= roll.dt || roll.die === 20 ? 'SUCESSO' : 'FRACASSO'}</strong></p>
+                  {roll.die === 20 && <small className="actor-roll__critical">20 natural: acerto crítico. Se causar dano, use máximo do dado + nova rolagem + modificadores.</small>}
+                  <button type="button" className="ro-button--quiet" onClick={() => setRoll({ ...roll, die: undefined, total: undefined })}>Rolar novamente</button>
+                </>
+              )}
             </>
           )}
           <button className="ro-button" onClick={() => setRoll(null)}>Fechar</button>
