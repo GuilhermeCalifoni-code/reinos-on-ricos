@@ -284,11 +284,12 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                     onChange={(e) => setAlcance(e.target.value as DistanciaFaixa)}
                     className="w-full bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                   >
-                    <option value="imediata">Imediata (Toque)</option>
+                    <option value="imediata">Corpo a Corpo (até 1,5 m)</option>
                     <option value="muito_proxima">Muito Próxima</option>
                     <option value="proxima">Próxima</option>
                     <option value="longe">Longe</option>
                     <option value="muito_longe">Muito Longe</option>
+                    <option value="alem">Além</option>
                   </select>
                 </div>
 
