@@ -78,7 +78,7 @@ supabase/migrations/
 010_actor_sheets.sql
 ~~~
 
-Para um projeto novo, execute as migrations **na ordem**. A tela “Configurar Supabase” também monta o setup completo a partir desses arquivos versionados.
+Para um projeto novo, execute as migrations **na ordem**. A configuração de infraestrutura é feita fora da interface do produto, diretamente no Supabase e pelas variáveis de ambiente.
 
 Variáveis de ambiente:
 
