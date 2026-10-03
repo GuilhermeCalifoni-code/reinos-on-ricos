@@ -34,7 +34,7 @@ export async function testarConexaoSupabase(): Promise<{ ok: boolean; mensagem: 
       if (error.code === '42P01') {
         return {
           ok: false,
-          mensagem: 'Conectado ao Supabase, mas o schema atual ainda não foi aplicado. Execute as migrations 001–010.'
+          mensagem: 'Conectado ao Supabase, mas o schema atual ainda não foi aplicado. Execute as migrations 001–011.'
         };
       }
       return { ok: false, mensagem: `Erro do Supabase: ${error.message}` };
@@ -72,6 +72,7 @@ export async function syncPersonagemComSupabase(
       protecao_onirica_maxima: personagem.protecaoOniricaMaxima,
       ruptura: personagem.ruptura,
       historico_ruptura: personagem.historicoRuptura,
+      condicoes: personagem.condicoes || { oculto: false, impedido: false, vulneravel: false },
       dominios: personagem.dominios,
       ancoragem: personagem.ancoragem,
       vinculos: personagem.vinculos,
@@ -129,6 +130,7 @@ export async function carregarPersonagensDoSupabase(
       protecaoOniricaMaxima: row.protecao_onirica_maxima,
       ruptura: row.ruptura,
       historicoRuptura: row.historico_ruptura || [],
+      condicoes: row.condicoes || { oculto: false, impedido: false, vulneravel: false },
       dominios: row.dominios,
       ancoragem: row.ancoragem || '',
       vinculos: row.vinculos || [],
