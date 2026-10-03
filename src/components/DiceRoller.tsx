@@ -19,7 +19,7 @@ import {
   ResultadoTesteOnirico,
   ResultadoOniricoTipo
 } from '../types/character';
-import { executarTesteMundano, executarTesteOnirico } from '../rules/rulesEngine';
+import { executarTesteMundano, executarTesteOnirico, resolverMovimentoMorte } from '../rules/rulesEngine';
 import { NewSessionEvent } from '../types/sessionEvent';
 
 interface DiceRollerProps {
@@ -119,58 +119,19 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     }
   };
 
-  // Executar Movimento de Morte (Livro Básico pág. 32)
+  // Executar Movimento de Morte (Livro Básico VF5)
   const handleRolarMovimentoMorte = () => {
-    const rolarD20 = () => Math.floor(Math.random() * 20) + 1;
-    const dRealidade = rolarD20();
-    const dSonhar = rolarD20();
-    const dt = 13;
-
-    const sucRealidade = dRealidade >= dt;
-    const sucSonhar = dSonhar >= dt;
-
-    let tipo: ResultadoOniricoTipo;
-    let titulo = '';
-    let efeito = '';
-    let recuperaVida = 0;
-    let recebeRuptura = 0;
-
-    if (sucRealidade && sucSonhar) {
-      tipo = 'convergencia';
-      titulo = 'CONVERGÊNCIA';
-      efeito = 'Realidade e Sonhar encontram uma maneira de mantê-lo aqui. Retorna à vida com 2 V.';
-      recuperaVida = 2;
-      recebeRuptura = 0;
-    } else if (sucRealidade && !sucSonhar) {
-      tipo = 'realidade_vence';
-      titulo = 'REALIDADE VENCE';
-      efeito = 'Seu corpo físico resiste ao abismo. Retorna à vida com 1 V.';
-      recuperaVida = 1;
-      recebeRuptura = 0;
-    } else if (!sucRealidade && sucSonhar) {
-      tipo = 'sonhar_vence';
-      titulo = 'SONHAR VENCE';
-      efeito = 'Algo impossível impede sua morte. Retorna com 1 V e recebe +2 de Ruptura.';
-      recuperaVida = 1;
-      recebeRuptura = 2;
-    } else {
-      tipo = 'divergencia';
-      titulo = 'DIVERGÊNCIA';
-      efeito = 'Nem a Realidade nem o Sonhar conseguem sustentá-lo. Seu personagem morre. (Reversível apenas por Vida 5).';
-      recuperaVida = 0;
-      recebeRuptura = 0;
-    }
-
+    const res = resolverMovimentoMorte();
     setResultadoMorte({
-      dadoRealidade: dRealidade,
-      dadoSonhar: dSonhar,
-      sucessoRealidade: sucRealidade,
-      sucessoSonhar: sucSonhar,
-      tipo,
-      titulo,
-      efeito,
-      recuperaVida,
-      recebeRuptura
+      dadoRealidade: res.dadoRealidade,
+      dadoSonhar: res.dadoSonhar,
+      sucessoRealidade: res.sucessoRealidade,
+      sucessoSonhar: res.sucessoSonhar,
+      tipo: res.tipo,
+      titulo: res.titulo,
+      efeito: res.efeito,
+      recuperaVida: res.recuperaVida,
+      recebeRuptura: res.recebeRuptura
     });
   };
 
@@ -186,7 +147,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
       ruptura: novaRuptura,
       atualizadoEm: new Date().toISOString()
     });
-    alert(`Resultado do Movimento de Morte aplicado! Vida: ${novaVida} V, Ruptura: ${novaRuptura}/6.`);
+    alert(`Resultado do Movimento de Morte aplicado! Vida: ${novaVida} PV, Ruptura: ${novaRuptura}/6.`);
   };
 
   return (
