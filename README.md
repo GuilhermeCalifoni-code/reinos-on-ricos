@@ -76,6 +76,7 @@ supabase/migrations/
 008_live_table_realtime.sql
 009_campaign_content_and_storage.sql
 010_actor_sheets.sql
+011_character_conditions.sql
 ~~~
 
 Para um projeto novo, execute as migrations **na ordem**. A configuração de infraestrutura é feita fora da interface do produto, diretamente no Supabase e pelas variáveis de ambiente.
