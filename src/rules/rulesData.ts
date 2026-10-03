@@ -77,29 +77,34 @@ export const DISTANCIAS_REINOS_ONIRICOS: Record<DistanciaFaixa, {
   exemplos: string;
 }> = {
   imediata: {
-    nome: 'Imediata',
-    descricao: 'Contato corpo a corpo ou toque direto.',
-    exemplos: 'Luta corpo a corpo, sussurrar ao ouvido, segurar pelo braço.'
+    nome: 'Corpo a Corpo',
+    descricao: 'Contato direto até aproximadamente 1,5 m.',
+    exemplos: 'Luta, agarrar, tocar ou usar uma arma corpo a corpo.'
   },
   muito_proxima: {
-    nome: 'Muito Próxima',
-    descricao: 'Poucos passos dentro do mesmo cômodo.',
-    exemplos: 'Mesa ao lado, cruzar uma sala pequena, alcance de um golpe com passo.'
+    nome: 'Muito Próximo',
+    descricao: 'Até aproximadamente 3 m.',
+    exemplos: 'Poucos passos, outro lado de uma sala pequena.'
   },
   proxima: {
-    nome: 'Próxima',
-    descricao: 'Distância de um salão amplo, pátio ou travessia de rua.',
-    exemplos: 'Outro lado de uma sala grande, calçada oposta, alcance de arremesso.'
+    nome: 'Próximo',
+    descricao: 'De aproximadamente 3 m a 9 m.',
+    exemplos: 'Sala ampla, pátio, outro lado da rua.'
   },
   longe: {
     nome: 'Longe',
-    descricao: 'Extensão de um quarteirão, corredor longo ou saguão de metrô.',
-    exemplos: 'Final do quarteirão, topo de uma escada monumental, disparo à distância.'
+    descricao: 'De aproximadamente 9 m a 15 m.',
+    exemplos: 'Corredor longo, saguão, disparo balístico.'
   },
   muito_longe: {
     nome: 'Muito Longe',
-    descricao: 'Limite da visão clara urbana ou alcance extremo de tiro.',
-    exemplos: 'Topo de um edifício vizinho, fim da avenida, requer aproximação significativa.'
+    descricao: 'De aproximadamente 15 m a 30 m.',
+    exemplos: 'Grande salão, trecho de avenida, alcance extremo dentro de uma Cena.'
+  },
+  alem: {
+    nome: 'Além',
+    descricao: 'Acima de 30 m até cerca de 60 m.',
+    exemplos: 'Outro prédio, trecho distante de uma avenida ou alcance excepcional.'
   }
 };
 
