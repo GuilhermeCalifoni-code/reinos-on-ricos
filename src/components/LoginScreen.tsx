@@ -8,14 +8,13 @@ import { ThemeToggle } from '../design-system/ThemeToggle';
 interface LoginScreenProps {
   personagens: Personagem[];
   onLogin: (session: UserSession) => void;
-  onAbrirModalSql: () => void;
   onCriarNovoPersonagem: (nome?: string) => Personagem;
 }
 
 type AuthMode = 'entrar' | 'cadastro' | 'local' | 'nova_senha';
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
-  personagens, onLogin, onAbrirModalSql, onCriarNovoPersonagem
+  personagens, onLogin, onCriarNovoPersonagem
 }) => {
   const remoto = isSupabaseConfigured();
   const [modo, setModo] = useState<AuthMode>('entrar');
@@ -129,10 +128,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           <span className="login-onirico__brand">REINOS ONÍRICOS</span>
           <small>Companheiro de mesa</small>
         </div>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <button type="button" onClick={onAbrirModalSql} className="ro-button--quiet">Configurar Supabase</button>
-        </div>
+        <ThemeToggle />
       </header>
 
       <main className="login-onirico__main">

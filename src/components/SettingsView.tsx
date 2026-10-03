@@ -5,14 +5,12 @@ import { useTheme } from '../design-system/theme';
 
 interface SettingsViewProps {
   session: UserSession | null;
-  onAbrirModalSql: () => void;
   onTrocarSessao: () => void;
   onRestaurarExemplos: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
   session,
-  onAbrirModalSql,
   onTrocarSessao,
   onRestaurarExemplos
 }) => {
@@ -24,7 +22,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           Configurações do Sistema
         </h1>
         <p className="text-xs text-[var(--ro-ash)] mt-1">
-          Parâmetros de ambiente, perfil ativo e persistência em nuvem.
+          Aparência, perfil ativo e preferências da experiência.
         </p>
       </div>
 
@@ -60,26 +58,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-xs text-[var(--ro-paper-muted)] rounded-sm transition-colors"
           >
             Trocar Perfil / Sair
-          </button>
-        </div>
-      </div>
-
-      {/* Nuvem & Banco de Dados Supabase */}
-      <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-6 rounded-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xs font-mono uppercase tracking-widest text-[var(--ro-copper)]">
-              Persistência & Sincronização Supabase
-            </h2>
-            <p className="text-xs text-[var(--ro-ash)] mt-1">
-              Esquema SQL e variáveis de ambiente configuradas para campanhas, fichas e rolagens em tempo real.
-            </p>
-          </div>
-          <button
-            onClick={onAbrirModalSql}
-            className="px-4 py-2 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium uppercase tracking-wider rounded-sm transition-colors"
-          >
-            Ver Script SQL
           </button>
         </div>
       </div>

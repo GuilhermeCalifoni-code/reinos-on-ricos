@@ -5,7 +5,6 @@ import { DashboardView } from './components/DashboardView';
 import { CreateCharacterModal } from './components/CreateCharacterModal';
 import { RupturaModal } from './components/RupturaModal';
 import { LoginScreen } from './components/LoginScreen';
-import { SupabaseSqlModal } from './components/SupabaseSqlModal';
 import { useCharacterStorage } from './data/characterStore';
 import { useCampaignStorage } from './data/campaignStore';
 import { Personagem, AtributoNome, DominioNome } from './types/character';
@@ -182,7 +181,6 @@ export default function App() {
 
   // Modais
   const [modalCriarPersonagem, setModalCriarPersonagem] = useState<boolean>(false);
-  const [modalSqlAberto, setModalSqlAberto] = useState<boolean>(false);
 
   // Ruptura modal global
   const [modalRupturaGlobal, setModalRupturaGlobal] = useState<{
@@ -318,17 +316,10 @@ export default function App() {
         <LoginScreen
           personagens={personagens}
           onLogin={handleLogin}
-          onAbrirModalSql={() => setModalSqlAberto(true)}
           onCriarNovoPersonagem={(nome) => {
             const novo = criarNovoPersonagem(nome);
             return novo;
           }}
-        />
-
-        {/* Modal da Query SQL do Supabase */}
-        <SupabaseSqlModal
-          isOpen={modalSqlAberto}
-          onClose={() => setModalSqlAberto(false)}
         />
       </>
     );
@@ -505,7 +496,6 @@ export default function App() {
         return (
           <SettingsView
             session={session}
-            onAbrirModalSql={() => setModalSqlAberto(true)}
             onTrocarSessao={handleTrocarSessao}
             onRestaurarExemplos={restaurarExemplos}
           />
@@ -564,7 +554,6 @@ export default function App() {
           }
           rupturaNivel={campanhaAtiva?.rupturaGeral || 0}
           session={session}
-          onAbrirSql={() => setModalSqlAberto(true)}
         />}
 
         {/* View renderizada */}
@@ -605,12 +594,6 @@ export default function App() {
           }}
         />
       )}
-
-      {/* Modal da Query SQL do Supabase */}
-      <SupabaseSqlModal
-        isOpen={modalSqlAberto}
-        onClose={() => setModalSqlAberto(false)}
-      />
     </div>
   );
 }
