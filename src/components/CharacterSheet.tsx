@@ -53,16 +53,19 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [modalDanoAberto, setModalDanoAberto] = useState<boolean>(false);
   const [modalDescansoAberto, setModalDescansoAberto] = useState<boolean>(false);
 
-  // Estados de condições
-  const [condicoes, setCondicoes] = useState<{
-    oculto: boolean;
-    impedido: boolean;
-    vulneravel: boolean;
-  }>({
+  const condicoes = personagem.condicoes || {
     oculto: false,
     impedido: false,
     vulneravel: false
-  });
+  };
+
+  const handleToggleCondicao = (chave: keyof typeof condicoes) => {
+    onSalvar({
+      ...personagem,
+      condicoes: { ...condicoes, [chave]: !condicoes[chave] },
+      atualizadoEm: new Date().toISOString()
+    });
+  };
 
   const progNivel = TABELA_PROGRESSAO[personagem.nivel] || TABELA_PROGRESSAO[1];
   const validacaoDom = validarDistribuicaoDominios(personagem.dominios, personagem.nivel);
@@ -460,11 +463,11 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                             ? 'bg-amber-500 border-amber-400'
                             : 'bg-slate-950 border-slate-700'
                         }`}
-                        title="Gasta 1 PF para receber +2 no Teste Mundano"
+                        title="Gasta 1 PF para receber +2 em um Teste"
                       />
                     ))}
                   </div>
-                  <div className="text-[10px] text-slate-400">+2 em Teste Mundano</div>
+                  <div className="text-[10px] text-slate-400">1 PF = +2 em um Teste</div>
                 </div>
 
               </div>
@@ -529,7 +532,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                       <button
                         key={c.id}
                         type="button"
-                        onClick={() => setCondicoes(prev => ({ ...prev, [chave]: !prev[chave] }))}
+                        onClick={() => handleToggleCondicao(chave)}
                         className={`p-2 rounded border text-left transition-all ${
                           ativo
                             ? 'bg-rose-950/70 border-rose-600 text-rose-200'
