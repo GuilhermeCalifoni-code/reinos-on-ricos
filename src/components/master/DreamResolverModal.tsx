@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DominioNome, AtributoNome, Personagem, DistanciaFaixa } from '../../types/character';
 import { LINGUAGEM_DOMINIOS, DESCRICAO_DOMINIOS, DISTANCIAS_REINOS_ONIRICOS } from '../../rules/rulesData';
 import { TesteOniricoResultado } from '../../types/tension';
+import { executarTesteOnirico as resolverTesteOnirico } from '../../rules/rulesEngine';
 
 interface DreamResolverModalProps {
   isOpen: boolean;
@@ -31,7 +32,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
   const [duracao, setDuracao] = useState<'instantanea' | 'sustentada' | 'cena'>('instantanea');
   const [complexidade, setComplexidade] = useState<'simples' | 'complexa'>('simples');
   const [atributoEscolhido, setAtributoEscolhido] = useState<AtributoNome>('mente');
-  const [dtDificuldade, setDtDificuldade] = useState<number>(12);
+  const [dtDificuldade, setDtDificuldade] = useState<number>(13);
 
   // Resultado do Teste
   const [resultadoTeste, setResultadoTeste] = useState<TesteOniricoResultado | null>(null);
@@ -47,46 +48,49 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
   const excedeNivelPJ = nivelVerbo > nivelDominioPJ;
   const valorAtributoPJ = personagemAtual?.atributos?.[atributoEscolhido] || 0;
 
-  // Executar Teste Onírico (Realidade e Sonho avaliados separadamente)
+  // Executar Teste Onírico conforme a VF5
   const executarTesteOnirico = () => {
     if (excedeNivelPJ) return;
-    const dadoRealidade = Math.floor(Math.random() * 20) + 1;
-    const totalRealidade = dadoRealidade + valorAtributoPJ;
-    const sucessoRealidade = totalRealidade >= dtDificuldade;
 
-    const dadoSonho = Math.floor(Math.random() * 20) + 1;
-    const totalSonho = dadoSonho + valorAtributoPJ;
-    const sucessoSonho = totalSonho >= dtDificuldade;
+    const res = resolverTesteOnirico({
+      atributo: atributoEscolhido,
+      valorAtributo: valorAtributoPJ,
+      dt: dtDificuldade,
+      modificadores: []
+    });
 
-    let interpretacao = '';
-    let consequencia = '';
+    const leituras = {
+      convergencia: {
+        interpretacao: 'Convergência',
+        consequencia: 'A manifestação acontece, é crítica e a Ruptura é reduzida em 1.'
+      },
+      realidade_vence: {
+        interpretacao: 'Realidade vence',
+        consequencia: 'A manifestação não acontece e a Ruptura não se altera.'
+      },
+      sonhar_vence: {
+        interpretacao: 'Sonhar vence',
+        consequencia: 'A manifestação acontece e a Ruptura aumenta em 1.'
+      },
+      divergencia: {
+        interpretacao: 'Divergência',
+        consequencia: 'A manifestação não acontece e a Ruptura aumenta em 2.'
+      }
+    } as const;
 
-    if (sucessoRealidade && sucessoSonho) {
-      interpretacao = 'Harmonia Onírica: A manifestação ocorre com precisão cirúrgica sem distorcer o tecido consensual.';
-      consequencia = 'O efeito se consolida exatamente como planejado. A ancoragem na Realidade permanece íntegra.';
-    } else if (sucessoRealidade && !sucessoSonho) {
-      interpretacao = 'Manifestação Instável: O efeito material acontece, mas o Sonhar cobra um tributo ou gera desvio perceptivo.';
-      consequencia = 'O objetivo físico é alcançado, porém um eco da Ruptura transborda no ambiente ou uma complicação onírica surge.';
-    } else if (!sucessoRealidade && sucessoSonho) {
-      interpretacao = 'Deslocamento da Realidade: O mundo físico resistiu, mas a substância do Sonhar se impôs de forma anômala.';
-      consequencia = 'A intenção física falha ou se desvia, mas a força onírica vaza no cenário de forma incontrolada (+1 Ruptura sugerido).';
-    } else {
-      interpretacao = 'Colapso / Falha Dupla: Tanto a ancoragem consensual quanto o controle onírico falharam.';
-      consequencia = 'A manifestação não ocorre, há repercussão direta contra o Desvelado e o ambiente se torna hostil (+1 Ruptura e complicação imediata).';
-    }
-
+    const leitura = leituras[res.resultado];
     const resultado: TesteOniricoResultado = {
       atributoNome: atributoEscolhido,
       atributoValor: valorAtributoPJ,
       dt: dtDificuldade,
-      realidadeDado: dadoRealidade,
-      realidadeTotal: totalRealidade,
-      realidadeSucesso: sucessoRealidade,
-      sonhoDado: dadoSonho,
-      sonhoTotal: totalSonho,
-      sonhoSucesso: sucessoSonho,
-      interpretacao,
-      consequenciaSugerida: consequencia
+      realidadeDado: res.dadoRealidade,
+      realidadeTotal: res.totalRealidade,
+      realidadeSucesso: res.sucessoRealidade,
+      sonhoDado: res.dadoSonhar,
+      sonhoTotal: res.totalSonhar,
+      sonhoSucesso: res.sucessoSonhar,
+      interpretacao: leitura.interpretacao,
+      consequenciaSugerida: leitura.consequencia
     };
 
     setResultadoTeste(resultado);
@@ -94,7 +98,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
     onRegistrarNoLog(
       'sonhar',
       `${personagemAtual.nome} manifestou ${DESCRICAO_DOMINIOS[dominioSelecionado].nome} (${LINGUAGEM_DOMINIOS[nivelVerbo - 1]?.verbo})`,
-      `Realidade: ${dadoRealidade}+${valorAtributoPJ}=${totalRealidade} (${sucessoRealidade ? 'Sucesso' : 'Falha'}) | Sonho: ${dadoSonho}+${valorAtributoPJ}=${totalSonho} (${sucessoSonho ? 'Sucesso' : 'Falha'}) vs DT ${dtDificuldade}. ${interpretacao}`
+      `Realidade: ${res.dadoRealidade}+${valorAtributoPJ}=${res.totalRealidade} (${res.sucessoRealidade ? 'Sucesso' : 'Falha'}) | Sonhar: ${res.dadoSonhar}+${valorAtributoPJ}=${res.totalSonhar} (${res.sucessoSonhar ? 'Sucesso' : 'Falha'}) vs DT ${dtDificuldade}. ${leitura.interpretacao}: ${leitura.consequencia}`
     );
   };
 
@@ -103,7 +107,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
     onRegistrarNoLog(
       'sonhar',
       `Percepção Onírica (${DESCRICAO_DOMINIOS[dominioPercepcao].nome}) por ${personagemAtual.nome}`,
-      `Observando: ${alvoPercepcao}. ${resultadoPercepcao ? 'Descoberta: ' + resultadoPercepcao : ''} (Ação puramente perceptiva não consome ação na rodada)`
+      `Observando: ${alvoPercepcao}. ${resultadoPercepcao ? 'Descoberta: ' + resultadoPercepcao : ''} (Perceber ou interpretar algo já presente não exige Teste Onírico; a Percepção Onírica não substitui investigação.)`
     );
     setAlvoPercepcao('');
     setResultadoPercepcao('');
@@ -440,7 +444,7 @@ export const DreamResolverModal: React.FC<DreamResolverModalProps> = ({
                 </p>
                 <div className="p-2.5 bg-[var(--ro-surface)] border border-[var(--ro-line)] text-[var(--ro-paper)]">
                   <span className="text-[var(--ro-copper)]">Lembrete de Ação: </span>
-                  Uma Percepção Onírica que seja <strong className="text-[var(--ro-paper)]">exclusivamente perceptiva não consome Ação</strong> na rodada. Se a percepção tentar interferir, conter, modificar ou produzir impacto material, ela passa a ser uma Ação normal de Sonhar.
+                  Perceber ou interpretar algo já presente <strong className="text-[var(--ro-paper)]">não exige Teste Onírico</strong>. Se a intenção for revelar ativamente algo oculto, interferir ou alterar a Realidade, resolva uma manifestação normalmente.
                 </div>
               </div>
 
