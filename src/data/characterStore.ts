@@ -120,6 +120,7 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
       focoAtual: 4,
       ruptura: 0,
       historicoRuptura: [],
+      condicoes: { oculto: false, impedido: false, vulneravel: false },
       dominios: {
         consciencia: 0,
         espaco: 2,
