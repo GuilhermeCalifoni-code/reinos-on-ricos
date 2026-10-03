@@ -6,12 +6,21 @@ import {
   DominioNome, 
   ResultadoTesteMundano, 
   ResultadoTesteOnirico,
-  ResultadoOniricoTipo
+  ResultadoOniricoTipo,
+  EquipamentoItem
 } from '../types/character';
 import { TABELA_PROGRESSAO } from './rulesData';
 
 export function calcularResistencia(corpo: number): number {
   return 6 + corpo;
+}
+
+export function calcularBonusResistenciaEquipamentos(equipamentos: EquipamentoItem[] = []): number {
+  return Math.max(0, ...equipamentos.map(item => item.bonusResistencia || 0));
+}
+
+export function calcularResistenciaTotal(corpo: number, equipamentos: EquipamentoItem[] = []): number {
+  return calcularResistencia(corpo) + calcularBonusResistenciaEquipamentos(equipamentos);
 }
 
 export function calcularDefesa(
