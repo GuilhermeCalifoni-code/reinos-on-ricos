@@ -16,6 +16,7 @@ export const RestModal: React.FC<RestModalProps> = ({
   onSalvar
 }) => {
   const [usarAncoragem, setUsarAncoragem] = useState<boolean>(true);
+  const [condicaoParaRemover, setCondicaoParaRemover] = useState<'oculto' | 'impedido' | 'vulneravel'>('oculto');
   const [escolhas, setEscolhas] = useState<{
     cicatrizacao: boolean;
     restaurarPO: boolean;
@@ -51,6 +52,7 @@ export const RestModal: React.FC<RestModalProps> = ({
     let novoFoco = personagem.focoAtual;
     let novaRuptura = personagem.ruptura;
     let novoHistorico = [...(personagem.historicoRuptura || [])];
+    let novasCondicoes = { ...(personagem.condicoes || { oculto: false, impedido: false, vulneravel: false }) };
 
     if (escolhas.cicatrizacao) {
       novaVida = personagem.vidaMaxima;
@@ -60,6 +62,9 @@ export const RestModal: React.FC<RestModalProps> = ({
     }
     if (escolhas.restaurarFoco) {
       novoFoco = personagem.focoMaximo;
+    }
+    if (escolhas.removerCondicoes) {
+      novasCondicoes = { ...novasCondicoes, [condicaoParaRemover]: false };
     }
     if (escolhas.restaurarRuptura && personagem.ruptura > 0) {
       novoHistorico.unshift({
@@ -80,6 +85,7 @@ export const RestModal: React.FC<RestModalProps> = ({
       focoAtual: novoFoco,
       ruptura: novaRuptura,
       historicoRuptura: novoHistorico,
+      condicoes: novasCondicoes,
       atualizadoEm: new Date().toISOString()
     };
 
@@ -185,10 +191,18 @@ export const RestModal: React.FC<RestModalProps> = ({
               {
                 id: 'removerCondicoes',
                 titulo: 'Remover Condição',
-                desc: 'Remove uma Condição apropriada (Oculto, Impedido ou Vulnerável).',
+                desc: 'Remove uma Condição apropriada cuja causa possa ser superada durante o Descanso.',
                 icon: Sparkles,
                 ativo: escolhas.removerCondicoes,
                 cor: 'text-emerald-400'
+              },
+              {
+                id: 'projetoPessoal',
+                titulo: 'Projeto Pessoal',
+                desc: 'Investigue, aprenda, construa ou crie algo relacionado aos objetivos do Desvelado.',
+                icon: Sparkles,
+                ativo: escolhas.projetoPessoal,
+                cor: 'text-indigo-300'
               }
             ].map(m => {
               const Icone = m.icon;
@@ -217,6 +231,24 @@ export const RestModal: React.FC<RestModalProps> = ({
               );
             })}
           </div>
+
+          {escolhas.removerCondicoes && (
+            <label className="grid gap-1 text-xs font-mono text-slate-400">
+              Condição a remover
+              <select
+                value={condicaoParaRemover}
+                onChange={(e) => setCondicaoParaRemover(e.target.value as 'oculto' | 'impedido' | 'vulneravel')}
+                className="bg-slate-950 border border-slate-700 rounded px-3 py-2 text-slate-200"
+              >
+                <option value="oculto" disabled={!personagem.condicoes?.oculto}>Oculto</option>
+                <option value="impedido" disabled={!personagem.condicoes?.impedido}>Impedido</option>
+                <option value="vulneravel" disabled={!personagem.condicoes?.vulneravel}>Vulnerável</option>
+              </select>
+              {!personagem.condicoes?.oculto && !personagem.condicoes?.impedido && !personagem.condicoes?.vulneravel && (
+                <span className="text-[10px] text-amber-300">Nenhuma Condição está ativa na ficha.</span>
+              )}
+            </label>
+          )}
 
         </div>
 
