@@ -640,14 +640,14 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
               <div className="mt-3 p-2.5 rounded bg-slate-950 border border-slate-800/80 font-mono text-xs">
                 <div className="flex justify-between items-center text-slate-300 mb-1">
                   <span className="font-bold text-rose-400">{estadoRupturaInfo?.nome} (Nível {personagem.ruptura})</span>
-                  <span className="text-[10px] text-slate-500">Livro Básico pág. 29</span>
+                  <span className="text-[10px] text-slate-500">Livro Básico · Efeitos da Ruptura</span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
                   {estadoRupturaInfo?.descricao}
                 </p>
-                {personagem.ruptura >= 3 && (
+                {estadoRupturaInfo?.sintomas && (
                   <p className="text-[10px] text-amber-400/90 mt-1 italic">
-                    Sintomas: {estadoRupturaInfo?.sintomas}
+                    {estadoRupturaInfo.sintomas}
                   </p>
                 )}
               </div>
