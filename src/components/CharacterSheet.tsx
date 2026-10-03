@@ -21,7 +21,7 @@ import {
   Info
 } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome } from '../types/character';
-import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS, ESTADOS_RUPTURA } from '../rules/rulesData';
+import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS } from '../rules/rulesData';
 import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
 import { DamageModal } from './DamageModal';
@@ -129,8 +129,6 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       protecaoOniricaAtual: npo
     });
   };
-
-  const estadoRupturaInfo = ESTADOS_RUPTURA[personagem.ruptura];
 
   return (
     <div className="space-y-6 pb-12">
@@ -396,7 +394,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   Vigília & Combate
                 </h3>
                 <span className="text-[11px] font-mono text-slate-400">
-                  Resistência = 6 + Corpo · Defesa = 8 + Principal (+ Nível)
+                  Resistência = 6 + Corpo · Defesa = 8 + Corpo
                 </span>
               </div>
 
@@ -415,7 +413,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   <div className="text-[11px] text-slate-400 uppercase">Defesa</div>
                   <div className="text-2xl font-bold text-cyan-400 my-0.5">{personagem.defesa}</div>
                   <div className="text-[10px] text-slate-400">
-                    8 + {personagem.atributos[personagem.atributoPrincipal]} {progNivel.bonusDefesa > 0 ? `+ ${progNivel.bonusDefesa} (Nív)` : ''}
+                    8 + {personagem.atributos.corpo} (Corpo)
                   </div>
                 </div>
 
@@ -436,11 +434,11 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                             ? 'bg-cyan-500 border-cyan-400 text-slate-950 font-bold'
                             : 'bg-slate-950 border-slate-700 text-slate-600'
                         }`}
-                        title="Gasta 1 PO para abater 1 V após comparar dano à Resistência"
+                        title="Gasta 1 PO para reduzir em 1 PV a perda após comparar dano à Resistência"
                       />
                     ))}
                   </div>
-                  <div className="text-[10px] text-slate-400">Abate 1 V por dano</div>
+                  <div className="text-[10px] text-slate-400">Máx. 1 PO por ocorrência de dano</div>
                 </div>
 
                 {/* Foco (PF) */}
@@ -566,7 +564,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                       <th className="py-1 px-2">Intensidade</th>
                       <th className="py-1 px-2">Dado</th>
                       <th className="py-1 px-2">Exemplos</th>
-                      <th className="py-1 px-2">Alcance Máximo</th>
+                      
                     </tr>
                   </thead>
                   <tbody className="text-slate-300 divide-y divide-slate-800/60">
@@ -574,41 +572,38 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                       <td className="py-1.5 px-2 text-slate-400">Leve</td>
                       <td className="py-1.5 px-2 font-bold text-cyan-400">d4</td>
                       <td className="py-1.5 px-2">Socos, chutes, impactos leves</td>
-                      <td className="py-1.5 px-2">Muito Próximo</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Moderado</td>
                       <td className="py-1.5 px-2 font-bold text-cyan-400">d6</td>
                       <td className="py-1.5 px-2">Facas, bastões, armas improvisadas</td>
-                      <td className="py-1.5 px-2">Muito Próximo</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Grave</td>
                       <td className="py-1.5 px-2 font-bold text-amber-400">d8</td>
                       <td className="py-1.5 px-2">Pistolas, revólveres, lâminas grandes</td>
-                      <td className="py-1.5 px-2">Longe</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Severo</td>
                       <td className="py-1.5 px-2 font-bold text-rose-400">d10</td>
                       <td className="py-1.5 px-2">Espingardas, fuzis, atropelamento</td>
-                      <td className="py-1.5 px-2">Muito Longe</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Devastador</td>
                       <td className="py-1.5 px-2 font-bold text-rose-500">d12</td>
                       <td className="py-1.5 px-2">Armamento pesado, explosões</td>
-                      <td className="py-1.5 px-2">Muito Longe</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Onírico</td>
                       <td className="py-1.5 px-2 font-bold text-purple-400">d20</td>
                       <td className="py-1.5 px-2">O impossível ferindo a Realidade</td>
-                      <td className="py-1.5 px-2">Escala do Sonhar</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
+              <p className="mt-2 text-[10px] text-slate-500 font-mono leading-relaxed">
+                O dado representa intensidade. Área e Distância Máxima são definidas separadamente pela fonte e pela narrativa; consulte “Mais → Dano & Morte”.
+              </p>
             </div>
 
           </div>
@@ -654,27 +649,22 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                     >
                       <span className="text-sm">{num}</span>
                       <span className="text-[8px] uppercase">
-                        {num === 0 ? 'Firme' : num === 6 ? 'Efeito' : `E${num}`}
+                        {num === 0 ? '0' : num === 6 ? 'Efeito' : `${num}/6`}
                       </span>
                     </button>
                   );
                 })}
               </div>
 
-              {/* Estado Narrativo Atual da Ruptura */}
+              {/* Leitura oficial da Ruptura */}
               <div className="mt-3 p-2.5 rounded bg-slate-950 border border-slate-800/80 font-mono text-xs">
                 <div className="flex justify-between items-center text-slate-300 mb-1">
-                  <span className="font-bold text-rose-400">{estadoRupturaInfo?.nome} (Nível {personagem.ruptura})</span>
-                  <span className="text-[10px] text-slate-500">Livro Básico pág. 29</span>
+                  <span className="font-bold text-rose-400">Ruptura {personagem.ruptura}/6</span>
+                  <span className="text-[10px] text-slate-500">Tensão entre Realidade e Sonhar</span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  {estadoRupturaInfo?.descricao}
+                  A trilha não possui estados ou sintomas automáticos por valor. Ao alcançar 6, resolva a manifestação, estabeleça um Efeito de Ruptura coerente e então retorne a trilha a 0.
                 </p>
-                {personagem.ruptura >= 3 && (
-                  <p className="text-[10px] text-amber-400/90 mt-1 italic">
-                    Sintomas: {estadoRupturaInfo?.sintomas}
-                  </p>
-                )}
               </div>
 
               {/* Consequências Rápidas */}
@@ -767,14 +757,14 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 })}
               </div>
 
-              {/* Percepção Onírica (Livro Básico Pág. 59) */}
+              {/* Percepção Onírica (Nível 1 de Domínio) */}
               <div className="p-3 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-2">
                 <div className="flex items-center gap-2 text-cyan-300 font-bold">
                   <Eye className="w-4 h-4 text-cyan-400" />
                   <span>Percepção Onírica (Nível 1 de Domínio)</span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Usar Nível 1 de um Domínio para perceber ou compreender a Realidade <strong>NÃO consome sua Ação</strong> na Rodada.
+                  Perceber ou interpretar algo que já está presente <strong>não exige Teste Onírico</strong>. A percepção não é onisciência e não substitui investigação.
                 </p>
                 <textarea
                   value={personagem.percepcaoOniricaNotas || ''}

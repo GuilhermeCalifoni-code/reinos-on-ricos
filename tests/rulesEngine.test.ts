@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { calcularDefesa, executarTesteMundano, executarTesteOnirico, processarDano } from '../src/rules/rulesEngine';
-import { TABELA_PROGRESSAO } from '../src/rules/rulesData';
+import { calcularDefesa, executarTesteMundano, executarTesteOnirico, processarDano, resolverMovimentoMorte } from '../src/rules/rulesEngine';
+import { DT_SONHAR_POR_NIVEL, TABELA_PROGRESSAO } from '../src/rules/rulesData';
 import { PERSONAGENS_PRE_PRONTOS } from '../src/data/presetCharacters';
 import { passosPotenciaDoNivel, resistenciaEstrutura, resolverDanoEstrutura } from '../src/rules/referenceTables';
 
@@ -104,4 +104,31 @@ test('Resistência estrutural segue a matriz Material × Tamanho', () => {
 test('Estrutura só rompe quando dano supera R', () => {
   assert.deepEqual(resolverDanoEstrutura(10, 'resistente', 'medio'), { resistencia: 10, rompe: false });
   assert.deepEqual(resolverDanoEstrutura(11, 'resistente', 'medio'), { resistencia: 10, rompe: true });
+});
+
+
+test('Movimento de Morte segue os quatro resultados da VF5', () => {
+  const rolls = [
+    { dados: [20, 20], tipo: 'convergencia', vida: 2, ruptura: 0, consciente: true, morre: false },
+    { dados: [20, 1], tipo: 'realidade_vence', vida: 0, ruptura: 0, consciente: false, morre: false },
+    { dados: [1, 20], tipo: 'sonhar_vence', vida: 1, ruptura: 2, consciente: true, morre: false },
+    { dados: [1, 1], tipo: 'divergencia', vida: 0, ruptura: 0, consciente: false, morre: true }
+  ] as const;
+
+  for (const esperado of rolls) {
+    let index = 0;
+    const result = resolverMovimentoMorte(() => esperado.dados[index++]);
+    assert.equal(result.tipo, esperado.tipo);
+    assert.equal(result.recuperaVida, esperado.vida);
+    assert.equal(result.recebeRuptura, esperado.ruptura);
+    assert.equal(result.ficaConsciente, esperado.consciente);
+    assert.equal(result.morre, esperado.morre);
+  }
+});
+
+test('DT do Sonhar para superar manifestações segue 10/12/14/16/18', () => {
+  assert.deepEqual(
+    [1, 2, 3, 4, 5].map(nivel => DT_SONHAR_POR_NIVEL[nivel]),
+    [10, 12, 14, 16, 18]
+  );
 });

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, History, ArrowRight, X, Check, RefreshCw } from 'lucide-react';
 import { Personagem, RupturaLog } from '../types/character';
-import { ESTADOS_RUPTURA } from '../rules/rulesData';
 
 interface RupturaModalProps {
   personagem: Personagem;
@@ -33,8 +32,8 @@ export const RupturaModal: React.FC<RupturaModalProps> = ({
   const atingiuLimite6 = novoCalculado === 6;
 
   const handleConfirmar = () => {
-    let novoValorFinal = novoCalculado;
-    let historicoAdicional: RupturaLog[] = [];
+    const novoValorFinal = novoCalculado;
+    const historicoAdicional: RupturaLog[] = [];
 
     const logEntrada: RupturaLog = {
       id: 'rup-' + Date.now(),
@@ -46,19 +45,7 @@ export const RupturaModal: React.FC<RupturaModalProps> = ({
     };
     historicoAdicional.push(logEntrada);
 
-    // Se atingiu 6, a regra estipula:
-    // "Quando sua trilha de Ruptura alcança 6, o Mestre aplica o Efeito da Ruptura e, em seguida sua trilha retorna para 0."
-    if (atingiuLimite6) {
-      novoValorFinal = 0;
-      historicoAdicional.push({
-        id: 'rup-reset-' + Date.now(),
-        dataHora: new Date().toLocaleTimeString('pt-BR'),
-        valorAnterior: 6,
-        novoValor: 0,
-        motivo: 'Efeito da Ruptura aplicado pelo Mestre (Trilha reiniciada para 0 conforme as regras do Livro Básico).',
-        origem: 'automatica'
-      });
-    }
+
 
     const atualizado: Personagem = {
       ...personagem,
@@ -69,9 +56,6 @@ export const RupturaModal: React.FC<RupturaModalProps> = ({
     onSalvar(atualizado);
     onClose();
   };
-
-  const estadoAtualInfo = ESTADOS_RUPTURA[valorAtual];
-  const estadoNovoInfo = ESTADOS_RUPTURA[novoCalculado];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -154,7 +138,7 @@ export const RupturaModal: React.FC<RupturaModalProps> = ({
                       >
                         <span className="text-base">{num}</span>
                         <span className="text-[9px] uppercase tracking-tighter opacity-70">
-                          {num === 0 ? 'Firme' : num === 6 ? 'Colapso' : `E${num}`}
+                          {num === 0 ? '0' : num === 6 ? 'Efeito' : `${num}/6`}
                         </span>
                       </button>
                     );
@@ -165,12 +149,12 @@ export const RupturaModal: React.FC<RupturaModalProps> = ({
               {/* Comparativo de Alteração */}
               <div className="bg-slate-950/80 border border-slate-800 rounded p-3 text-xs font-mono space-y-2">
                 <div className="flex items-center justify-between text-slate-300">
-                  <span>Valor Anterior: <strong className="text-slate-100">{valorAtual}</strong> ({estadoAtualInfo?.nome})</span>
+                  <span>Valor Anterior: <strong className="text-slate-100">{valorAtual}/6</strong></span>
                   <ArrowRight className="w-4 h-4 text-cyan-400" />
-                  <span>Novo Valor: <strong className="text-rose-400">{novoCalculado}</strong> ({estadoNovoInfo?.nome})</span>
+                  <span>Novo Valor: <strong className="text-rose-400">{novoCalculado}/6</strong></span>
                 </div>
-                <p className="text-[11px] text-slate-400 border-t border-slate-800/80 pt-1.5 italic">
-                  "{estadoNovoInfo?.sintomas || estadoNovoInfo?.descricao}"
+                <p className="text-[11px] text-slate-400 border-t border-slate-800/80 pt-1.5">
+                  A Ruptura mede tensão acumulada. O livro não atribui estados ou sintomas automáticos aos valores intermediários.
                 </p>
               </div>
 
@@ -180,7 +164,7 @@ export const RupturaModal: React.FC<RupturaModalProps> = ({
                     <AlertTriangle className="w-4 h-4" /> Alerta de Ruptura Nível 6!
                   </div>
                   <p className="text-[11px] leading-relaxed">
-                    O Sonhar não pode mais permanecer estável. O Mestre introduz um <strong>Efeito de Ruptura</strong> (Origem, Domínio e Pressão). Após estabelecido o efeito, a trilha retornará automaticamente para 0.
+                    Resolva primeiro a manifestação. Em seguida, o Mestre estabelece um <strong>Efeito de Ruptura</strong> usando Origem, Domínio e Pressão. Depois que o efeito estiver estabelecido, a trilha deve retornar a 0.
                   </p>
                 </div>
               )}
@@ -238,6 +222,19 @@ export const RupturaModal: React.FC<RupturaModalProps> = ({
                   Zerar (Descanso)
                 </button>
               </div>
+
+              {valorAtual === 6 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDelta(-6);
+                    setMotivo('Efeito de Ruptura estabelecido pelo Mestre; trilha retorna a 0.');
+                  }}
+                  className="w-full px-3 py-2 text-xs rounded bg-rose-950/80 hover:bg-rose-900 text-rose-200 border border-rose-600 font-mono"
+                >
+                  Efeito de Ruptura estabelecido → zerar trilha
+                </button>
+              )}
 
               {/* Campo de Motivo */}
               <div>

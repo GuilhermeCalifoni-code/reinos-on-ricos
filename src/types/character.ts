@@ -20,11 +20,12 @@ export interface Dominios {
 }
 
 export type DistanciaFaixa = 
-  | 'imediata'      // Contato corpo a corpo
-  | 'muito_proxima' // Poucos passos no mesmo cômodo
-  | 'proxima'       // Mesmo ambiente amplo / do outro lado da rua
-  | 'longe'         // Alcance de quarteirão / corredor longo
-  | 'muito_longe';  // Linha de visão distante / alcance de tiro longo
+  | 'imediata'      // Compatibilidade interna: Corpo a Corpo (até 1,5 m)
+  | 'muito_proxima'
+  | 'proxima'
+  | 'longe'
+  | 'muito_longe'
+  | 'alem';
 
 export interface RecursoItem {
   id: string;
@@ -75,7 +76,7 @@ export interface Personagem {
   vidaAtual: number;
   
   resistencia: number; // 6 + Corpo
-  defesa: number;      // 8 + Atributo Principal (+ bônus por nível)
+  defesa: number;      // 8 + Corpo
   
   protecaoOniricaMaxima: number; // Base 2
   protecaoOniricaAtual: number;

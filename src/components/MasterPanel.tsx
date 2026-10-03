@@ -24,7 +24,8 @@ const DISTANCIAS_ORDEM: DistanciaFaixa[] = [
   'muito_proxima',
   'proxima',
   'longe',
-  'muito_longe'
+  'muito_longe',
+  'alem'
 ];
 
 const PRESETS_ANTAGONISTAS: Omit<AntagonistaCena, 'id'>[] = [
@@ -69,7 +70,7 @@ const PRESETS_ANTAGONISTAS: Omit<AntagonistaCena, 'id'>[] = [
       { id: 'a-5', nome: 'Dobrar Pavimento', descricao: 'Prende as pernas do alvo no asfalto (exige teste de Corpo DT 12 para soltar).', tipo: 'controle' }
     ],
     reacoes: [
-      { id: 'r-2', gatilho: 'Quando sofrer dano', efeito: 'Estilhaços de concreto ricocheteiam atingindo quem estiver em distância Imediata.' }
+      { id: 'r-2', gatilho: 'Quando sofrer dano', efeito: 'Estilhaços de concreto ricocheteiam atingindo quem estiver em distância Corpo a Corpo.' }
     ],
     observacoes: 'Manifestação da metrópole ferida. Responde a vibrações de passos.'
   },
@@ -186,7 +187,7 @@ export const MasterPanel: React.FC<MasterPanelProps> = ({
           { id: 'a-4', nome: 'Dobrar Asfalto', descricao: 'Prende pés dos alvos no chão.', tipo: 'controle' }
         ],
         reacoes: [
-          { id: 'r-2', gatilho: 'Ao sofrer dano', efeito: 'Estilhaços afiados atingem distância Imediata.' }
+          { id: 'r-2', gatilho: 'Ao sofrer dano', efeito: 'Estilhaços afiados atingem distância Corpo a Corpo.' }
         ],
         observacoes: 'Surgindo da parede lateral úmida.'
       }
