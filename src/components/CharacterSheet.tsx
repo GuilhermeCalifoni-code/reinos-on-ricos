@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome } from '../types/character';
 import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS, ESTADOS_RUPTURA } from '../rules/rulesData';
-import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
+import { calcularBonusResistenciaEquipamentos, calcularDefesa, calcularResistenciaTotal, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
 import { DamageModal } from './DamageModal';
 import { RestModal } from './RestModal';
@@ -76,7 +76,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     onSalvar({
       ...personagem,
       atributos,
-      resistencia: calcularResistencia(atributos.corpo),
+      resistencia: calcularResistenciaTotal(atributos.corpo, personagem.equipamentos),
       defesa: calcularDefesa(personagem.atributoPrincipal, atributos, personagem.nivel).defesa,
       atualizadoEm: new Date().toISOString()
     });
@@ -945,7 +945,8 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                       const novoItem = {
                         id: 'item-' + Date.now(),
                         nome: 'Novo Item',
-                        descricao: 'Pertence de sobrevivência urbana'
+                        descricao: 'Pertence de sobrevivência urbana',
+                        bonusResistencia: 0 as const
                       };
                       onSalvar({
                         ...personagem,
@@ -960,14 +961,14 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
                 <div className="space-y-1.5">
                   {personagem.equipamentos?.map((it, idx) => (
-                    <div key={it.id} className="p-2 rounded bg-slate-950 border border-slate-800 flex items-center justify-between text-xs font-mono">
-                      <div className="flex-1">
+                    <div key={it.id} className="p-2 rounded bg-slate-950 border border-slate-800 flex items-start justify-between gap-2 text-xs font-mono">
+                      <div className="flex-1 min-w-0">
                         <input
                           type="text"
                           value={it.nome}
                           onChange={(e) => {
                             const ne = [...personagem.equipamentos];
-                            ne[idx].nome = e.target.value;
+                            ne[idx] = { ...ne[idx], nome: e.target.value };
                             onSalvar({ ...personagem, equipamentos: ne });
                           }}
                           className="bg-transparent font-semibold text-slate-200 focus:outline-none w-full"
@@ -977,18 +978,42 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                           value={it.descricao || ''}
                           onChange={(e) => {
                             const ne = [...personagem.equipamentos];
-                            ne[idx].descricao = e.target.value;
+                            ne[idx] = { ...ne[idx], descricao: e.target.value };
                             onSalvar({ ...personagem, equipamentos: ne });
                           }}
                           className="bg-transparent text-[10px] text-slate-400 focus:outline-none w-full"
                           placeholder="Observação / uso"
                         />
+                        <label className="mt-1.5 flex items-center gap-2 text-[10px] text-slate-500">
+                          Proteção
+                          <select
+                            value={it.bonusResistencia || 0}
+                            onChange={(e) => {
+                              const bonus = Number(e.target.value) as 0 | 1 | 2;
+                              const ne = personagem.equipamentos.map((item, itemIdx) => itemIdx === idx ? { ...item, bonusResistencia: bonus } : item);
+                              onSalvar({
+                                ...personagem,
+                                equipamentos: ne,
+                                resistencia: calcularResistenciaTotal(personagem.atributos.corpo, ne)
+                              });
+                            }}
+                            className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300"
+                          >
+                            <option value={0}>Sem bônus</option>
+                            <option value={1}>+1 R · tático/especializado</option>
+                            <option value={2}>+2 R · antiterrorismo/militar</option>
+                          </select>
+                        </label>
                       </div>
                       <button
                         type="button"
                         onClick={() => {
                           const ne = personagem.equipamentos.filter(x => x.id !== it.id);
-                          onSalvar({ ...personagem, equipamentos: ne });
+                          onSalvar({
+                            ...personagem,
+                            equipamentos: ne,
+                            resistencia: calcularResistenciaTotal(personagem.atributos.corpo, ne)
+                          });
                         }}
                         className="text-slate-600 hover:text-rose-400 p-1"
                       >
@@ -997,6 +1022,9 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                     </div>
                   ))}
                 </div>
+                <p className="text-[10px] text-slate-500 font-mono leading-relaxed">
+                  Equipamentos de proteção não acumulam. O sistema aplica apenas o maior bônus: +1 R para equipamento tático/especializado ou +2 R para equipamento antiterrorismo/militar. Bônus atual: +{calcularBonusResistenciaEquipamentos(personagem.equipamentos)} R.
+                </p>
               </div>
 
             </div>
