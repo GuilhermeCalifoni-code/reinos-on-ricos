@@ -28,6 +28,10 @@ interface RollResult {
   total?: number;
   dt: number;
   atributo?: HabilidadeAtor['atributo'];
+  danoDado?: HabilidadeAtor['danoDado'];
+  danoBonus?: number;
+  danoRolado?: number;
+  danoCritico?: boolean;
 }
 
 const uid = () => `hab-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -186,7 +190,9 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
       kind: 'mundano',
       modifier: ability.modificador || 0,
       dt,
-      atributo: ability.atributo
+      atributo: ability.atributo,
+      danoDado: ability.danoDado,
+      danoBonus: ability.danoBonus || 0
     });
   };
 
@@ -195,6 +201,16 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
     const die = Math.floor(Math.random() * 20) + 1;
     const modifier = roll.modifier || 0;
     setRoll({ ...roll, die, total: die + modifier });
+  };
+
+  const rolarDanoDoAtor = () => {
+    if (!roll?.danoDado) return;
+    const faces = Number(roll.danoDado.slice(1));
+    const rolagem = Math.floor(Math.random() * faces) + 1;
+    const bonus = roll.danoBonus || 0;
+    const critico = roll.die === 20;
+    const total = critico ? faces + rolagem + bonus : rolagem + bonus;
+    setRoll({ ...roll, danoRolado: total, danoCritico: critico });
   };
 
   const remove = async (id: string, name: string) => {
@@ -328,8 +344,20 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
                 <>
                   <div className="actor-roll__result"><strong>{roll.die}</strong><span>{(roll.modifier || 0) >= 0 ? '+' : '−'} {Math.abs(roll.modifier || 0)}</span><b>= {roll.total}</b></div>
                   <p>Defesa/DT {roll.dt} · <strong className={(roll.total || 0) >= roll.dt || roll.die === 20 ? 'is-success' : 'is-failure'}>{(roll.total || 0) >= roll.dt || roll.die === 20 ? 'SUCESSO' : 'FRACASSO'}</strong></p>
-                  {roll.die === 20 && <small className="actor-roll__critical">20 natural: acerto crítico. Se causar dano, use máximo do dado + nova rolagem + modificadores.</small>}
-                  <button type="button" className="ro-button--quiet" onClick={() => setRoll({ ...roll, die: undefined, total: undefined })}>Rolar novamente</button>
+                  {roll.die === 20 && <small className="actor-roll__critical">20 natural: acerto crítico.</small>}
+                  {(roll.total || 0) >= roll.dt || roll.die === 20 ? (
+                    roll.danoDado && (
+                      <div className="actor-roll__damage">
+                        <span>Dano {roll.danoDado}{(roll.danoBonus || 0) ? `+${roll.danoBonus}` : ''}</span>
+                        {roll.danoRolado === undefined ? (
+                          <button type="button" className="ro-button" onClick={rolarDanoDoAtor}>Rolar dano</button>
+                        ) : (
+                          <strong>{roll.danoCritico ? 'CRÍTICO · ' : ''}{roll.danoRolado}</strong>
+                        )}
+                      </div>
+                    )
+                  ) : null}
+                  <button type="button" className="ro-button--quiet" onClick={() => setRoll({ ...roll, die: undefined, total: undefined, danoRolado: undefined, danoCritico: undefined })}>Rolar novamente</button>
                 </>
               )}
             </>
