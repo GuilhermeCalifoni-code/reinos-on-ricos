@@ -44,7 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   session,
   onSelecionarPersonagem,
   onNovoPersonagem,
-  onImportarFicha
+  onImportarFicha,
   onTrocarSessao
 }) => {
   const personagemAtivo = personagens.find(p => p.id === personagemAtivoId) || personagens[0] || null;
