@@ -29,7 +29,7 @@ export const DreamGuide: React.FC<DreamGuideProps> = ({
   const [dominioSelecionado, setDominioSelecionado] = useState<DominioNome>('consciencia');
   const [nivelSelecionado, setNivelSelecionado] = useState<number>(1);
   const [intencaoNarrativa, setIntencaoNarrativa] = useState<string>('');
-  const [haVeladosTestemunhando, setHaVeladosTestemunhando] = useState<boolean>(false);
+  const [grauDelirio, setGrauDelirio] = useState<'sem_velados' | 'coincidente' | 'moderado' | 'intenso'>('sem_velados');
 
   const domInfo = DESCRICAO_DOMINIOS[dominioSelecionado];
   const nivelPersonagem = personagemAtivo?.dominios[dominioSelecionado] || 0;
@@ -262,32 +262,38 @@ export const DreamGuide: React.FC<DreamGuideProps> = ({
               />
             </div>
 
-            {/* Testemunhas Veladas e Risco de Delírio (Pág. 11, 29) */}
+            {/* Delírio */}
             <div className="p-3 rounded bg-slate-950 border border-slate-800 space-y-2">
-              <label className="flex items-start gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={haVeladosTestemunhando}
-                  onChange={(e) => setHaVeladosTestemunhando(e.target.checked)}
-                  className="mt-0.5 rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-cyan-500/40"
-                />
-                <div>
-                  <span className="font-bold text-slate-200 block">
-                    Há Velados testemunhando o efeito? (Risco de Delírio)
-                  </span>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">
-                    Quando pessoas comuns (Velados) presenciam o impossível, suas mentes entram em colapso e o choque gera <strong>Delírio (+1 Ruptura imediato)</strong>.
-                  </p>
-                </div>
-              </label>
+              <div>
+                <span className="font-bold text-slate-200 block">Delírio e testemunhas Veladas</span>
+                <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">
+                  Nem toda manifestação vista por um Velado provoca Delírio. Classifique o efeito pela clareza e intensidade com que contradiz a Realidade.
+                </p>
+              </div>
+              <select
+                value={grauDelirio}
+                onChange={(e) => setGrauDelirio(e.target.value as typeof grauDelirio)}
+                className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-2 text-slate-200"
+              >
+                <option value="sem_velados">Sem Velados testemunhando</option>
+                <option value="coincidente">Efeito Coincidente / leve — sem Delírio</option>
+                <option value="moderado">Delírio moderado — +1 Ruptura a todos os Desvelados presentes</option>
+                <option value="intenso">Delírio intenso — +1 Ruptura a todos os Desvelados presentes</option>
+              </select>
 
-              {haVeladosTestemunhando && (
-                <div className="p-2 rounded bg-amber-950/70 border border-amber-600/60 text-amber-200 text-[11px]">
-                  ⚠ A manifestação causará Delírio nos observadores. Esteja preparado para somar +1 de Ruptura além dos resultados do Teste Onírico!
+              {grauDelirio === 'coincidente' && (
+                <div className="p-2 rounded bg-slate-900 border border-slate-700 text-slate-300 text-[11px]">
+                  Efeito sutil, breve ou plausivelmente explicável. Pode causar dúvida ou estranheza, mas não provoca Delírio.
                 </div>
               )}
+              {(grauDelirio === 'moderado' || grauDelirio === 'intenso') && (
+                <div className="p-2 rounded bg-amber-950/70 border border-amber-600/60 text-amber-200 text-[11px]">
+                  ⚠ O Delírio acrescenta +1 de Ruptura a todos os Desvelados presentes. A quantidade de testemunhas não multiplica esse valor.
+                  {grauDelirio === 'intenso' ? ' Efeitos intensos podem envolver pânico irracional, convulsões ou colapso mental.' : ' Efeitos moderados podem provocar freezing, medo, fuga ou desmaio.'}
+                </div>
+              )}
+              <p className="text-[10px] text-slate-500">Fotografias, vídeos, gravações e transmissões ao vivo não provocam Delírio por si mesmas.</p>
             </div>
-
           </div>
 
           {/* Botão de Envio para o Rolador */}
