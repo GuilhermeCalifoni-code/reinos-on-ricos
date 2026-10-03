@@ -1708,3 +1708,21 @@
 @media (max-width: 460px) {
   .actor-editor__action-details { grid-template-columns: 1fr; }
 }
+
+.actor-roll__damage {
+  margin: .75rem 0;
+  padding: .7rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  border: 1px solid var(--ro-line);
+  background: color-mix(in srgb, var(--ro-copper) 7%, var(--ro-surface));
+  color: var(--ro-paper-muted);
+  font-size: .68rem;
+}
+.actor-roll__damage strong {
+  color: var(--ro-copper);
+  font: 600 .9rem ui-monospace, monospace;
+}
+.actor-roll__damage .ro-button { margin: 0; }
