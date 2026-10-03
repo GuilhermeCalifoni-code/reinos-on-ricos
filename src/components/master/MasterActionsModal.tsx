@@ -589,11 +589,12 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                       onChange={(e) => setNovaDistancia(e.target.value as DistanciaFaixa)}
                       className="w-full bg-[var(--ro-surface)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-paper)] p-2 rounded-sm"
                     >
-                      <option value="imediata">Corpo a Corpo / Imediata</option>
+                      <option value="imediata">Corpo a Corpo</option>
                       <option value="muito_proxima">Muito Próxima</option>
                       <option value="proxima">Próxima</option>
                       <option value="longe">Longe</option>
                       <option value="muito_longe">Muito Longe</option>
+                      <option value="alem">Além</option>
                     </select>
                   </div>
                 </div>
