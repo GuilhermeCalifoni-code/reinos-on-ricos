@@ -27,7 +27,7 @@ Conteúdo de campanha pode usar os estados de visibilidade mestre_privado, compa
 
 ## Regras automatizadas
 
-O motor segue a versão atual do Guia Autônomo de Playtest:
+O motor segue a versão atual do Livro Básico de Reinos Oníricos (VF5):
 
 - Teste Mundano: 1d20 + Atributo ≥ DT;
 - 20 natural é sucesso automático;
@@ -40,7 +40,10 @@ O motor segue a versão atual do Guia Autônomo de Playtest:
 - Defesa: 8 + Corpo;
 - dano é convertido em perda de 1/2 PV, ou 3 PV com Dano Massivo opcional;
 - no máximo 1 PO reduz a perda em 1 PV por ocorrência;
-- Movimento de Morte usa 2d20 contra DT 13;
+- Movimento de Morte usa 2d20 contra DT 13: Convergência recupera 2 PV; Realidade vence mantém 0 PV e Inconsciente; Sonhar vence recupera 1 PV e +2 Ruptura; Divergência resulta em morte;
+- Efeitos do Sonhar usam DT 10/12/14/16/18 conforme o Nível efetivamente utilizado;
+- Potência usa 0/1/2/2/3 Passos e todos os Passos afetam uma única característica mecânica;
+- objetos e estruturas usam Resistência por Material × Tamanho, sem PV;
 - não há iniciativa em Cena de Tensão;
 - Movimento integra a Ação;
 - Contadores podem resolver processos em etapas.
