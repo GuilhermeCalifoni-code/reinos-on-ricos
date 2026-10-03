@@ -594,6 +594,7 @@ export const MasterActionsModal: React.FC<MasterActionsModalProps> = ({
                       <option value="proxima">Próxima</option>
                       <option value="longe">Longe</option>
                       <option value="muito_longe">Muito Longe</option>
+                      <option value="alem">Além</option>
                     </select>
                   </div>
                 </div>
