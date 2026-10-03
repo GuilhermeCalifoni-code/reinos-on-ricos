@@ -21,7 +21,7 @@ import {
   Info
 } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome } from '../types/character';
-import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS, ESTADOS_RUPTURA } from '../rules/rulesData';
+import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS } from '../rules/rulesData';
 import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
 import { DamageModal } from './DamageModal';
@@ -129,8 +129,6 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       protecaoOniricaAtual: npo
     });
   };
-
-  const estadoRupturaInfo = ESTADOS_RUPTURA[personagem.ruptura];
 
   return (
     <div className="space-y-6 pb-12">
@@ -415,7 +413,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   <div className="text-[11px] text-slate-400 uppercase">Defesa</div>
                   <div className="text-2xl font-bold text-cyan-400 my-0.5">{personagem.defesa}</div>
                   <div className="text-[10px] text-slate-400">
-                    8 + {personagem.atributos[personagem.atributoPrincipal]} {progNivel.bonusDefesa > 0 ? `+ ${progNivel.bonusDefesa} (Nív)` : ''}
+                    8 + {personagem.atributos.corpo} (Corpo)
                   </div>
                 </div>
 
@@ -661,20 +659,15 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 })}
               </div>
 
-              {/* Estado Narrativo Atual da Ruptura */}
+              {/* Leitura oficial da Ruptura */}
               <div className="mt-3 p-2.5 rounded bg-slate-950 border border-slate-800/80 font-mono text-xs">
                 <div className="flex justify-between items-center text-slate-300 mb-1">
-                  <span className="font-bold text-rose-400">{estadoRupturaInfo?.nome} (Nível {personagem.ruptura})</span>
-                  <span className="text-[10px] text-slate-500">Livro Básico pág. 29</span>
+                  <span className="font-bold text-rose-400">Ruptura {personagem.ruptura}/6</span>
+                  <span className="text-[10px] text-slate-500">Tensão entre Realidade e Sonhar</span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  {estadoRupturaInfo?.descricao}
+                  A trilha não possui estados ou sintomas automáticos por valor. Ao alcançar 6, resolva a manifestação, estabeleça um Efeito de Ruptura coerente e então retorne a trilha a 0.
                 </p>
-                {personagem.ruptura >= 3 && (
-                  <p className="text-[10px] text-amber-400/90 mt-1 italic">
-                    Sintomas: {estadoRupturaInfo?.sintomas}
-                  </p>
-                )}
               </div>
 
               {/* Consequências Rápidas */}
@@ -767,14 +760,14 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 })}
               </div>
 
-              {/* Percepção Onírica (Livro Básico Pág. 59) */}
+              {/* Percepção Onírica (Nível 1 de Domínio) */}
               <div className="p-3 rounded bg-slate-950 border border-slate-800 text-xs font-mono space-y-2">
                 <div className="flex items-center gap-2 text-cyan-300 font-bold">
                   <Eye className="w-4 h-4 text-cyan-400" />
                   <span>Percepção Onírica (Nível 1 de Domínio)</span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Usar Nível 1 de um Domínio para perceber ou compreender a Realidade <strong>NÃO consome sua Ação</strong> na Rodada.
+                  Perceber ou interpretar algo que já está presente <strong>não exige Teste Onírico</strong>. A percepção não é onisciência e não substitui investigação.
                 </p>
                 <textarea
                   value={personagem.percepcaoOniricaNotas || ''}
