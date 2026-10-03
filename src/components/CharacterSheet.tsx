@@ -394,7 +394,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   Vigília & Combate
                 </h3>
                 <span className="text-[11px] font-mono text-slate-400">
-                  Resistência = 6 + Corpo · Defesa = 8 + Principal (+ Nível)
+                  Resistência = 6 + Corpo · Defesa = 8 + Corpo
                 </span>
               </div>
 
@@ -434,11 +434,11 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                             ? 'bg-cyan-500 border-cyan-400 text-slate-950 font-bold'
                             : 'bg-slate-950 border-slate-700 text-slate-600'
                         }`}
-                        title="Gasta 1 PO para abater 1 V após comparar dano à Resistência"
+                        title="Gasta 1 PO para reduzir em 1 PV a perda após comparar dano à Resistência"
                       />
                     ))}
                   </div>
-                  <div className="text-[10px] text-slate-400">Abate 1 V por dano</div>
+                  <div className="text-[10px] text-slate-400">Máx. 1 PO por ocorrência de dano</div>
                 </div>
 
                 {/* Foco (PF) */}
