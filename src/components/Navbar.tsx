@@ -12,8 +12,7 @@ import {
   Plus,
   Upload,
   Crown,
-  LogOut,
-  Database
+  LogOut
 } from 'lucide-react';
 import { Personagem } from '../types/character';
 import { UserSession } from '../types/auth';
@@ -35,7 +34,6 @@ interface NavbarProps {
   onNovoPersonagem: () => void;
   onImportarFicha: () => void;
   onTrocarSessao: () => void;
-  onAbrirModalSql: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -46,9 +44,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   session,
   onSelecionarPersonagem,
   onNovoPersonagem,
-  onImportarFicha,
-  onTrocarSessao,
-  onAbrirModalSql
+  onImportarFicha
+  onTrocarSessao
 }) => {
   const personagemAtivo = personagens.find(p => p.id === personagemAtivoId) || personagens[0] || null;
 
@@ -225,16 +222,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </nav>
 
-            {/* Ações Auxiliares: Query SQL e Trocar Perfil */}
+            {/* Ações Auxiliares */}
             <div className="flex items-center gap-1.5 pl-2 border-l border-slate-800">
-              <button
-                onClick={onAbrirModalSql}
-                className="p-1.5 rounded bg-slate-900 border border-slate-700 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-300 transition"
-                title="Ver Script SQL Supabase"
-              >
-                <Database className="w-3.5 h-3.5" />
-              </button>
-
               <button
                 onClick={onTrocarSessao}
                 className="p-1.5 rounded bg-slate-900 border border-slate-700 hover:border-rose-500/50 text-slate-400 hover:text-rose-300 transition flex items-center gap-1 text-[11px] font-mono"
