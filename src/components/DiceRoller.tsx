@@ -16,10 +16,9 @@ import {
   Personagem, 
   AtributoNome, 
   ResultadoTesteMundano, 
-  ResultadoTesteOnirico,
-  ResultadoOniricoTipo
+  ResultadoTesteOnirico
 } from '../types/character';
-import { executarTesteMundano, executarTesteOnirico } from '../rules/rulesEngine';
+import { executarTesteMundano, executarTesteOnirico, resolverMovimentoMorte, ResultadoMovimentoMorte } from '../rules/rulesEngine';
 import { NewSessionEvent } from '../types/sessionEvent';
 
 interface DiceRollerProps {
@@ -55,17 +54,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   const [resultadoOnirico, setResultadoOnirico] = useState<ResultadoTesteOnirico | null>(null);
 
   // Estado do Movimento de Morte
-  const [resultadoMorte, setResultadoMorte] = useState<{
-    dadoRealidade: number;
-    dadoSonhar: number;
-    sucessoRealidade: boolean;
-    sucessoSonhar: boolean;
-    tipo: ResultadoOniricoTipo;
-    titulo: string;
-    efeito: string;
-    recuperaVida: number;
-    recebeRuptura: number;
-  } | null>(null);
+  const [resultadoMorte, setResultadoMorte] = useState<ResultadoMovimentoMorte | null>(null);
 
   // Executar Teste Mundano
   const handleRolarMundano = () => {
@@ -119,66 +108,34 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     }
   };
 
-  // Executar Movimento de Morte (Livro Básico pág. 32)
+  // Executar Movimento de Morte — 2d20 sem Atributo contra DT 13
   const handleRolarMovimentoMorte = () => {
     const rolarD20 = () => Math.floor(Math.random() * 20) + 1;
-    const dRealidade = rolarD20();
-    const dSonhar = rolarD20();
-    const dt = 13;
-
-    const sucRealidade = dRealidade >= dt;
-    const sucSonhar = dSonhar >= dt;
-
-    let tipo: ResultadoOniricoTipo;
-    let titulo = '';
-    let efeito = '';
-    let recuperaVida = 0;
-    let recebeRuptura = 0;
-
-    if (sucRealidade && sucSonhar) {
-      tipo = 'convergencia';
-      titulo = 'CONVERGÊNCIA';
-      efeito = 'Realidade e Sonhar encontram uma maneira de mantê-lo aqui. Retorna à vida com 2 V.';
-      recuperaVida = 2;
-      recebeRuptura = 0;
-    } else if (sucRealidade && !sucSonhar) {
-      tipo = 'realidade_vence';
-      titulo = 'REALIDADE VENCE';
-      efeito = 'Seu corpo físico resiste ao abismo. Retorna à vida com 1 V.';
-      recuperaVida = 1;
-      recebeRuptura = 0;
-    } else if (!sucRealidade && sucSonhar) {
-      tipo = 'sonhar_vence';
-      titulo = 'SONHAR VENCE';
-      efeito = 'Algo impossível impede sua morte. Retorna com 1 V e recebe +2 de Ruptura.';
-      recuperaVida = 1;
-      recebeRuptura = 2;
-    } else {
-      tipo = 'divergencia';
-      titulo = 'DIVERGÊNCIA';
-      efeito = 'Nem a Realidade nem o Sonhar conseguem sustentá-lo. Seu personagem morre. (Reversível apenas por Vida 5).';
-      recuperaVida = 0;
-      recebeRuptura = 0;
-    }
-
-    setResultadoMorte({
-      dadoRealidade: dRealidade,
-      dadoSonhar: dSonhar,
-      sucessoRealidade: sucRealidade,
-      sucessoSonhar: sucSonhar,
-      tipo,
-      titulo,
-      efeito,
-      recuperaVida,
-      recebeRuptura
+    const resultado = resolverMovimentoMorte(rolarD20(), rolarD20());
+    setResultadoMorte(resultado);
+    onRegistrarRolagem?.({
+      type: 'roll',
+      content: `${personagemAtivo?.nome || 'Mesa'} · Movimento de Morte: Realidade ${resultado.dadoRealidade} · Sonhar ${resultado.dadoSonhar} — ${resultado.titulo}.`,
+      metadata: {
+        kind: 'movimento_morte',
+        realidade: resultado.dadoRealidade,
+        sonhar: resultado.dadoSonhar,
+        resultado: resultado.tipo,
+        recuperaVida: resultado.recuperaVida,
+        ruptura: resultado.recebeRuptura,
+        consciente: resultado.consciente,
+        morreu: resultado.morreu
+      }
     });
   };
 
   const aplicarResultadoMorte = () => {
     if (!resultadoMorte || !personagemAtivo || !onSalvarPersonagem) return;
 
-    let novaVida = Math.min(personagemAtivo.vidaMaxima, personagemAtivo.vidaAtual + resultadoMorte.recuperaVida);
-    let novaRuptura = Math.min(6, personagemAtivo.ruptura + resultadoMorte.recebeRuptura);
+    const novaVida = resultadoMorte.tipo === 'realidade_vence'
+      ? 0
+      : Math.min(personagemAtivo.vidaMaxima, personagemAtivo.vidaAtual + resultadoMorte.recuperaVida);
+    const novaRuptura = Math.min(6, personagemAtivo.ruptura + resultadoMorte.recebeRuptura);
 
     onSalvarPersonagem({
       ...personagemAtivo,
@@ -186,7 +143,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
       ruptura: novaRuptura,
       atualizadoEm: new Date().toISOString()
     });
-    alert(`Resultado do Movimento de Morte aplicado! Vida: ${novaVida} V, Ruptura: ${novaRuptura}/6.`);
+    alert(`Resultado do Movimento de Morte aplicado. Vida: ${novaVida} PV · Ruptura: ${novaRuptura}/6${resultadoMorte.consciente ? ' · Consciente' : resultadoMorte.morreu ? ' · Morto' : ' · Inconsciente/estável'}.`);
   };
 
   return (
