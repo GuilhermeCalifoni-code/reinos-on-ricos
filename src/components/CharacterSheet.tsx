@@ -749,7 +749,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   <span>Percepção Onírica (Nível 1 de Domínio)</span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Usar Nível 1 de um Domínio para perceber ou compreender a Realidade <strong>NÃO consome sua Ação</strong> na Rodada.
+                  Perceber ou interpretar algo que já está presente <strong>não exige Teste Onírico</strong>. Revelar ativamente algo oculto, interferir ou produzir uma alteração na Realidade exige uma manifestação normal do Sonhar.
                 </p>
                 <textarea
                   value={personagem.percepcaoOniricaNotas || ''}
