@@ -397,7 +397,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                     </div>
                     <p className="text-xs">
                       {resultadoMundano.dadoBruto === 20
-                        ? '20 Natural no d20! Sucesso crítico garantido (dano crítico máximo + dado rolado se aplicável).'
+                        ? '20 natural! Sucesso automático. Se a ação causar dano: valor máximo do dado + resultado da rolagem + modificador aplicável.'
                         : resultadoMundano.sucesso
                         ? 'Ação superou a Dificuldade do Teste!'
                         : 'Ação não alcançou a Dificuldade do Teste.'}
