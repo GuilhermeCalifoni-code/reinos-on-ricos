@@ -11,6 +11,36 @@ export default defineConfig(() => {
         '@': path.resolve(import.meta.dirname, '.'),
       },
     },
+    build: {
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            groups: [
+              {
+                name: 'react-vendor',
+                test: /node_modules[\\/](react|react-dom)/,
+                priority: 40,
+              },
+              {
+                name: 'supabase-vendor',
+                test: /node_modules[\\/]@supabase/,
+                priority: 30,
+              },
+              {
+                name: 'motion-vendor',
+                test: /node_modules[\\/](motion|motion-dom|motion-utils)/,
+                priority: 20,
+              },
+              {
+                name: 'lucide-vendor',
+                test: /node_modules[\\/]lucide-react/,
+                priority: 15,
+              },
+            ],
+          },
+        },
+      },
+    },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.

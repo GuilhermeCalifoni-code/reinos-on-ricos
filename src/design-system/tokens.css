@@ -1649,3 +1649,81 @@
   .rules-reference__power-levels,
   .rules-reference__structure-tool { grid-template-columns: 1fr; }
 }
+
+
+/* Estado operacional global */
+.system-connection-banner {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  padding: .55rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--ro-copper) 55%, var(--ro-line));
+  background: color-mix(in srgb, var(--ro-bg) 94%, var(--ro-copper) 6%);
+  color: var(--ro-paper);
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  font-size: .72rem;
+  line-height: 1.4;
+}
+.system-connection-banner strong {
+  color: var(--ro-copper);
+  white-space: nowrap;
+}
+.system-connection-banner span {
+  color: var(--ro-paper-muted);
+}
+
+.system-failure {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at 20% 10%, color-mix(in srgb, var(--ro-blue) 10%, transparent), transparent 42%),
+    var(--ro-bg);
+  color: var(--ro-paper);
+}
+.system-failure__card {
+  width: min(42rem, 100%);
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  border: 1px solid var(--ro-line);
+  background: var(--ro-surface-raised);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .28);
+}
+.system-failure__card h1 {
+  margin-top: .35rem;
+  font: 500 clamp(1.8rem, 5vw, 3rem)/1 Georgia, serif;
+  letter-spacing: -.02em;
+}
+.system-failure__card > p {
+  margin: .9rem 0 1.2rem;
+  max-width: 36rem;
+  color: var(--ro-paper-muted);
+  line-height: 1.65;
+}
+.system-failure__card details {
+  margin-top: 1rem;
+  color: var(--ro-ash);
+  font-size: .68rem;
+}
+.system-failure__card details code {
+  display: block;
+  margin-top: .5rem;
+  padding: .7rem;
+  border: 1px solid var(--ro-line);
+  background: var(--ro-input);
+  color: var(--ro-paper-muted);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .system-connection-banner {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .15rem;
+    padding-inline: .75rem;
+  }
+}
