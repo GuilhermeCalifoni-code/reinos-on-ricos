@@ -1,13 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "git": {
-    "deploymentEnabled": {
-      "*": false,
-      "main": true,
-      "preview": true,
-      "preview/*": true
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
@@ -30,5 +22,6 @@
         }
       ]
     }
-  ]
+  ],
+  "ignoreCommand": "node -e \"const b=process.env.VERCEL_GIT_COMMIT_REF||''; process.exit(b==='main'||b==='preview'||b.startsWith('preview/')?1:0)\""
 }
