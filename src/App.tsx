@@ -44,6 +44,11 @@ export default function App() {
     }
     return null;
   });
+  const sessionRef = useRef<UserSession | null>(session);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   // Storage de Personagens
   const {
@@ -167,12 +172,83 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (!isSupabaseConfigured() || session?.modoConexao === 'local') return;
-    authService.sessaoAtual().then(async (supabaseSession) => {
-      if (!supabaseSession?.user) return;
+    if (!isSupabaseConfigured()) return;
+
+    let ativo = true;
+
+    const persistirSessaoRemota = async (supabaseSession: Awaited<ReturnType<typeof authService.sessaoAtual>>) => {
+      if (!ativo || !supabaseSession?.user || sessionRef.current?.modoConexao === 'local') return;
+
       const profile = await authService.perfil(supabaseSession.user);
-      setSession({ id: supabaseSession.user.id, authUserId: supabaseSession.user.id, role: 'observador', nome: profile.nome, email: supabaseSession.user.email, mesaCodigo: '', modoConexao: 'supabase' });
-    }).catch(() => undefined);
+      if (!ativo) return;
+
+      const restaurada: UserSession = {
+        id: supabaseSession.user.id,
+        authUserId: supabaseSession.user.id,
+        role: 'observador',
+        nome: profile.nome,
+        email: supabaseSession.user.email,
+        mesaCodigo: '',
+        modoConexao: 'supabase'
+      };
+
+      sessionRef.current = restaurada;
+      setSession(restaurada);
+      try {
+        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(restaurada));
+      } catch (error) {
+        console.error('Erro ao sincronizar sessão autenticada:', error);
+      }
+    };
+
+    const limparSessaoRemotaEmCache = () => {
+      if (sessionRef.current?.modoConexao !== 'supabase') return;
+      sessionRef.current = null;
+      try {
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+      } catch (error) {
+        console.error('Erro ao limpar sessão autenticada inválida:', error);
+      }
+      setSession(null);
+    };
+
+    if (sessionRef.current?.modoConexao !== 'local') {
+      void authService.sessaoAtual()
+        .then(async (supabaseSession) => {
+          if (!ativo) return;
+          if (!supabaseSession?.user) {
+            limparSessaoRemotaEmCache();
+            return;
+          }
+          await persistirSessaoRemota(supabaseSession);
+        })
+        .catch(() => {
+          // Falha de rede não deve expulsar o usuário. A sessão em cache permanece
+          // e a interface pode se recuperar quando a conectividade voltar.
+        });
+    }
+
+    const subscription = authService.onAuthStateChange((event, supabaseSession) => {
+      if (!ativo) return;
+
+      if (event === 'SIGNED_OUT') {
+        limparSessaoRemotaEmCache();
+        return;
+      }
+
+      if (
+        supabaseSession?.user &&
+        sessionRef.current?.modoConexao !== 'local' &&
+        (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED')
+      ) {
+        void persistirSessaoRemota(supabaseSession).catch(() => undefined);
+      }
+    });
+
+    return () => {
+      ativo = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Navegação Principal do Produto
@@ -199,6 +275,7 @@ export default function App() {
 
   // Manipuladores de Sessão
   const handleLogin = (novaSession: UserSession) => {
+    sessionRef.current = novaSession;
     setSession(novaSession);
     try {
       localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(novaSession));
@@ -227,6 +304,7 @@ export default function App() {
     } catch (e) {
       console.error('Erro ao limpar sessão:', e);
     }
+    sessionRef.current = null;
     setSession(null);
   };
 
