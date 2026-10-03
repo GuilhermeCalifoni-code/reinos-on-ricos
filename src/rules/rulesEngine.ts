@@ -6,12 +6,21 @@ import {
   DominioNome, 
   ResultadoTesteMundano, 
   ResultadoTesteOnirico,
-  ResultadoOniricoTipo
+  ResultadoOniricoTipo,
+  EquipamentoItem
 } from '../types/character';
 import { TABELA_PROGRESSAO } from './rulesData';
 
 export function calcularResistencia(corpo: number): number {
   return 6 + corpo;
+}
+
+export function calcularBonusResistenciaEquipamentos(equipamentos: EquipamentoItem[] = []): number {
+  return Math.max(0, ...equipamentos.map(item => item.bonusResistencia || 0));
+}
+
+export function calcularResistenciaTotal(corpo: number, equipamentos: EquipamentoItem[] = []): number {
+  return calcularResistencia(corpo) + calcularBonusResistenciaEquipamentos(equipamentos);
 }
 
 export function calcularDefesa(
@@ -300,5 +309,91 @@ export function executarTesteOnirico(params: {
     impactoRuptura,
     explicacao,
     timestamp: new Date().toLocaleTimeString('pt-BR')
+  };
+}
+
+
+export interface ResultadoMovimentoMorte {
+  dadoRealidade: number;
+  dadoSonhar: number;
+  sucessoRealidade: boolean;
+  sucessoSonhar: boolean;
+  tipo: ResultadoOniricoTipo;
+  titulo: string;
+  efeito: string;
+  recuperaVida: number;
+  recebeRuptura: number;
+  consciente: boolean;
+  morreu: boolean;
+}
+
+export function resolverMovimentoMorte(
+  dadoRealidade: number,
+  dadoSonhar: number,
+  dt: number = 13
+): ResultadoMovimentoMorte {
+  const sucessoRealidade = dadoRealidade >= dt;
+  const sucessoSonhar = dadoSonhar >= dt;
+
+  if (sucessoRealidade && sucessoSonhar) {
+    return {
+      dadoRealidade,
+      dadoSonhar,
+      sucessoRealidade,
+      sucessoSonhar,
+      tipo: 'convergencia',
+      titulo: 'CONVERGÊNCIA',
+      efeito: 'Realidade e Sonhar encontram uma maneira de mantê-lo aqui. Recupere 2 PV e fique consciente.',
+      recuperaVida: 2,
+      recebeRuptura: 0,
+      consciente: true,
+      morreu: false
+    };
+  }
+
+  if (sucessoRealidade) {
+    return {
+      dadoRealidade,
+      dadoSonhar,
+      sucessoRealidade,
+      sucessoSonhar,
+      tipo: 'realidade_vence',
+      titulo: 'REALIDADE VENCE',
+      efeito: 'Seu corpo estabiliza. Permaneça inconsciente com 0 PV até receber cuidados ou realizar Descanso.',
+      recuperaVida: 0,
+      recebeRuptura: 0,
+      consciente: false,
+      morreu: false
+    };
+  }
+
+  if (sucessoSonhar) {
+    return {
+      dadoRealidade,
+      dadoSonhar,
+      sucessoRealidade,
+      sucessoSonhar,
+      tipo: 'sonhar_vence',
+      titulo: 'SONHAR VENCE',
+      efeito: 'Algo impossível impede sua morte. Recupere 1 PV, receba +2 de Ruptura e fique consciente.',
+      recuperaVida: 1,
+      recebeRuptura: 2,
+      consciente: true,
+      morreu: false
+    };
+  }
+
+  return {
+    dadoRealidade,
+    dadoSonhar,
+    sucessoRealidade,
+    sucessoSonhar,
+    tipo: 'divergencia',
+    titulo: 'DIVERGÊNCIA',
+    efeito: 'Nem Realidade nem Sonhar conseguem sustentá-lo. O Personagem morre.',
+    recuperaVida: 0,
+    recebeRuptura: 0,
+    consciente: false,
+    morreu: true
   };
 }

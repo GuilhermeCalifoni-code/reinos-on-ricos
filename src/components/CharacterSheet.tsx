@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome } from '../types/character';
 import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS, ESTADOS_RUPTURA } from '../rules/rulesData';
-import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
+import { calcularBonusResistenciaEquipamentos, calcularDefesa, calcularResistenciaTotal, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
 import { DamageModal } from './DamageModal';
 import { RestModal } from './RestModal';
@@ -53,16 +53,19 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [modalDanoAberto, setModalDanoAberto] = useState<boolean>(false);
   const [modalDescansoAberto, setModalDescansoAberto] = useState<boolean>(false);
 
-  // Estados de condições
-  const [condicoes, setCondicoes] = useState<{
-    oculto: boolean;
-    impedido: boolean;
-    vulneravel: boolean;
-  }>({
+  const condicoes = personagem.condicoes || {
     oculto: false,
     impedido: false,
     vulneravel: false
-  });
+  };
+
+  const handleToggleCondicao = (chave: keyof typeof condicoes) => {
+    onSalvar({
+      ...personagem,
+      condicoes: { ...condicoes, [chave]: !condicoes[chave] },
+      atualizadoEm: new Date().toISOString()
+    });
+  };
 
   const progNivel = TABELA_PROGRESSAO[personagem.nivel] || TABELA_PROGRESSAO[1];
   const validacaoDom = validarDistribuicaoDominios(personagem.dominios, personagem.nivel);
@@ -73,7 +76,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     onSalvar({
       ...personagem,
       atributos,
-      resistencia: calcularResistencia(atributos.corpo),
+      resistencia: calcularResistenciaTotal(atributos.corpo, personagem.equipamentos),
       defesa: calcularDefesa(personagem.atributoPrincipal, atributos, personagem.nivel).defesa,
       atualizadoEm: new Date().toISOString()
     });
@@ -460,11 +463,11 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                             ? 'bg-amber-500 border-amber-400'
                             : 'bg-slate-950 border-slate-700'
                         }`}
-                        title="Gasta 1 PF para receber +2 no Teste Mundano"
+                        title="Gasta 1 PF para receber +2 em um Teste"
                       />
                     ))}
                   </div>
-                  <div className="text-[10px] text-slate-400">+2 em Teste Mundano</div>
+                  <div className="text-[10px] text-slate-400">1 PF = +2 em um Teste</div>
                 </div>
 
               </div>
@@ -519,9 +522,9 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 <div className="text-[11px] text-slate-400 uppercase mb-2">Condições Ativas:</div>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { id: 'oculto', label: 'Oculto', desc: 'Desvantagem para quem tentar percebê-lo ou localizá-lo.' },
-                    { id: 'impedido', label: 'Impedido', desc: 'Desvantagem em ações afetadas pela limitação física/sensorial.' },
-                    { id: 'vulneravel', label: 'Vulnerável', desc: 'Desvantagem em ações próprias; ataques contra si recebem Vantagem.' }
+                    { id: 'oculto', label: 'Oculto', desc: 'Localizar/perceber sofre Desvantagem quando for difícil; se for impossível, a ação não pode ser realizada.' },
+                    { id: 'impedido', label: 'Impedido', desc: 'Se a causa dificulta muito uma ação, ela sofre Desvantagem; se a torna impossível, a ação não ocorre.' },
+                    { id: 'vulneravel', label: 'Vulnerável', desc: 'Ações próprias podem sofrer Desvantagem e ações contra você podem receber Vantagem quando exploram a fraqueza.' }
                   ].map(c => {
                     const chave = c.id as keyof typeof condicoes;
                     const ativo = condicoes[chave];
@@ -529,7 +532,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                       <button
                         key={c.id}
                         type="button"
-                        onClick={() => setCondicoes(prev => ({ ...prev, [chave]: !prev[chave] }))}
+                        onClick={() => handleToggleCondicao(chave)}
                         className={`p-2 rounded border text-left transition-all ${
                           ativo
                             ? 'bg-rose-950/70 border-rose-600 text-rose-200'
@@ -558,56 +561,28 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 </h3>
               </div>
 
-              {/* Tabela de Dano do Livro Básico */}
+              {/* Intensidade de Dano — Área e Distância dependem da fonte, não do dado */}
               <div className="overflow-x-auto">
                 <table className="w-full text-xs font-mono text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-800 text-slate-400">
                       <th className="py-1 px-2">Intensidade</th>
                       <th className="py-1 px-2">Dado</th>
-                      <th className="py-1 px-2">Exemplos</th>
-                      <th className="py-1 px-2">Alcance Máximo</th>
+                      <th className="py-1 px-2">Referência / exemplos</th>
                     </tr>
                   </thead>
                   <tbody className="text-slate-300 divide-y divide-slate-800/60">
-                    <tr>
-                      <td className="py-1.5 px-2 text-slate-400">Leve</td>
-                      <td className="py-1.5 px-2 font-bold text-cyan-400">d4</td>
-                      <td className="py-1.5 px-2">Socos, chutes, impactos leves</td>
-                      <td className="py-1.5 px-2">Muito Próximo</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-2 text-slate-400">Moderado</td>
-                      <td className="py-1.5 px-2 font-bold text-cyan-400">d6</td>
-                      <td className="py-1.5 px-2">Facas, bastões, armas improvisadas</td>
-                      <td className="py-1.5 px-2">Muito Próximo</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-2 text-slate-400">Grave</td>
-                      <td className="py-1.5 px-2 font-bold text-amber-400">d8</td>
-                      <td className="py-1.5 px-2">Pistolas, revólveres, lâminas grandes</td>
-                      <td className="py-1.5 px-2">Longe</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-2 text-slate-400">Severo</td>
-                      <td className="py-1.5 px-2 font-bold text-rose-400">d10</td>
-                      <td className="py-1.5 px-2">Espingardas, fuzis, atropelamento</td>
-                      <td className="py-1.5 px-2">Muito Longe</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-2 text-slate-400">Devastador</td>
-                      <td className="py-1.5 px-2 font-bold text-rose-500">d12</td>
-                      <td className="py-1.5 px-2">Armamento pesado, explosões</td>
-                      <td className="py-1.5 px-2">Muito Longe</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-2 text-slate-400">Onírico</td>
-                      <td className="py-1.5 px-2 font-bold text-purple-400">d20</td>
-                      <td className="py-1.5 px-2">O impossível ferindo a Realidade</td>
-                      <td className="py-1.5 px-2">Escala do Sonhar</td>
-                    </tr>
+                    <tr><td className="py-1.5 px-2">Leve</td><td className="py-1.5 px-2 font-bold text-cyan-400">d4</td><td className="py-1.5 px-2">Dor, escoriação, socos, chutes e impactos leves.</td></tr>
+                    <tr><td className="py-1.5 px-2">Moderado</td><td className="py-1.5 px-2 font-bold text-cyan-400">d6</td><td className="py-1.5 px-2">Ferimento localizado; facas, bastões, fraturas e queimaduras.</td></tr>
+                    <tr><td className="py-1.5 px-2">Grave</td><td className="py-1.5 px-2 font-bold text-amber-400">d8</td><td className="py-1.5 px-2">Pistolas, revólveres, lâminas grandes e múltiplos estilhaços.</td></tr>
+                    <tr><td className="py-1.5 px-2">Severo</td><td className="py-1.5 px-2 font-bold text-rose-400">d10</td><td className="py-1.5 px-2">Espingardas, fuzis, armas automáticas, esmagamento e grande impacto.</td></tr>
+                    <tr><td className="py-1.5 px-2">Devastador</td><td className="py-1.5 px-2 font-bold text-rose-500">d12</td><td className="py-1.5 px-2">Grande explosão, soterramento pesado e esmagamento intenso.</td></tr>
+                    <tr><td className="py-1.5 px-2">Onírico</td><td className="py-1.5 px-2 font-bold text-purple-400">d20</td><td className="py-1.5 px-2">Fenômenos Oníricos excepcionalmente poderosos e efeitos compatíveis com Sonhar 5.</td></tr>
                   </tbody>
                 </table>
+                <p className="mt-2 text-[10px] text-slate-500 font-mono leading-relaxed">
+                  Área e Distância Máxima são determinadas pela natureza da fonte de dano e pela narrativa. Consulte “Mais → Dano & Morte” para a tabela completa.
+                </p>
               </div>
             </div>
 
@@ -665,14 +640,14 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
               <div className="mt-3 p-2.5 rounded bg-slate-950 border border-slate-800/80 font-mono text-xs">
                 <div className="flex justify-between items-center text-slate-300 mb-1">
                   <span className="font-bold text-rose-400">{estadoRupturaInfo?.nome} (Nível {personagem.ruptura})</span>
-                  <span className="text-[10px] text-slate-500">Livro Básico pág. 29</span>
+                  <span className="text-[10px] text-slate-500">Livro Básico · Efeitos da Ruptura</span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
                   {estadoRupturaInfo?.descricao}
                 </p>
-                {personagem.ruptura >= 3 && (
+                {estadoRupturaInfo?.sintomas && (
                   <p className="text-[10px] text-amber-400/90 mt-1 italic">
-                    Sintomas: {estadoRupturaInfo?.sintomas}
+                    {estadoRupturaInfo.sintomas}
                   </p>
                 )}
               </div>
@@ -774,7 +749,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                   <span>Percepção Onírica (Nível 1 de Domínio)</span>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
-                  Usar Nível 1 de um Domínio para perceber ou compreender a Realidade <strong>NÃO consome sua Ação</strong> na Rodada.
+                  Perceber ou interpretar algo que já está presente <strong>não exige Teste Onírico</strong>. Revelar ativamente algo oculto, interferir ou produzir uma alteração na Realidade exige uma manifestação normal do Sonhar.
                 </p>
                 <textarea
                   value={personagem.percepcaoOniricaNotas || ''}
@@ -970,7 +945,8 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                       const novoItem = {
                         id: 'item-' + Date.now(),
                         nome: 'Novo Item',
-                        descricao: 'Pertence de sobrevivência urbana'
+                        descricao: 'Pertence de sobrevivência urbana',
+                        bonusResistencia: 0 as const
                       };
                       onSalvar({
                         ...personagem,
@@ -985,14 +961,14 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
                 <div className="space-y-1.5">
                   {personagem.equipamentos?.map((it, idx) => (
-                    <div key={it.id} className="p-2 rounded bg-slate-950 border border-slate-800 flex items-center justify-between text-xs font-mono">
-                      <div className="flex-1">
+                    <div key={it.id} className="p-2 rounded bg-slate-950 border border-slate-800 flex items-start justify-between gap-2 text-xs font-mono">
+                      <div className="flex-1 min-w-0">
                         <input
                           type="text"
                           value={it.nome}
                           onChange={(e) => {
                             const ne = [...personagem.equipamentos];
-                            ne[idx].nome = e.target.value;
+                            ne[idx] = { ...ne[idx], nome: e.target.value };
                             onSalvar({ ...personagem, equipamentos: ne });
                           }}
                           className="bg-transparent font-semibold text-slate-200 focus:outline-none w-full"
@@ -1002,18 +978,42 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                           value={it.descricao || ''}
                           onChange={(e) => {
                             const ne = [...personagem.equipamentos];
-                            ne[idx].descricao = e.target.value;
+                            ne[idx] = { ...ne[idx], descricao: e.target.value };
                             onSalvar({ ...personagem, equipamentos: ne });
                           }}
                           className="bg-transparent text-[10px] text-slate-400 focus:outline-none w-full"
                           placeholder="Observação / uso"
                         />
+                        <label className="mt-1.5 flex items-center gap-2 text-[10px] text-slate-500">
+                          Proteção
+                          <select
+                            value={it.bonusResistencia || 0}
+                            onChange={(e) => {
+                              const bonus = Number(e.target.value) as 0 | 1 | 2;
+                              const ne = personagem.equipamentos.map((item, itemIdx) => itemIdx === idx ? { ...item, bonusResistencia: bonus } : item);
+                              onSalvar({
+                                ...personagem,
+                                equipamentos: ne,
+                                resistencia: calcularResistenciaTotal(personagem.atributos.corpo, ne)
+                              });
+                            }}
+                            className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300"
+                          >
+                            <option value={0}>Sem bônus</option>
+                            <option value={1}>+1 R · tático/especializado</option>
+                            <option value={2}>+2 R · antiterrorismo/militar</option>
+                          </select>
+                        </label>
                       </div>
                       <button
                         type="button"
                         onClick={() => {
                           const ne = personagem.equipamentos.filter(x => x.id !== it.id);
-                          onSalvar({ ...personagem, equipamentos: ne });
+                          onSalvar({
+                            ...personagem,
+                            equipamentos: ne,
+                            resistencia: calcularResistenciaTotal(personagem.atributos.corpo, ne)
+                          });
                         }}
                         className="text-slate-600 hover:text-rose-400 p-1"
                       >
@@ -1022,6 +1022,9 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                     </div>
                   ))}
                 </div>
+                <p className="text-[10px] text-slate-500 font-mono leading-relaxed">
+                  Equipamentos de proteção não acumulam. O sistema aplica apenas o maior bônus: +1 R para equipamento tático/especializado ou +2 R para equipamento antiterrorismo/militar. Bônus atual: +{calcularBonusResistenciaEquipamentos(personagem.equipamentos)} R.
+                </p>
               </div>
 
             </div>

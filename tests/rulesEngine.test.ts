@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { calcularDefesa, executarTesteMundano, executarTesteOnirico, processarDano } from '../src/rules/rulesEngine';
+import { calcularDefesa, calcularResistenciaTotal, executarTesteMundano, executarTesteOnirico, processarDano, resolverMovimentoMorte } from '../src/rules/rulesEngine';
 import { TABELA_PROGRESSAO } from '../src/rules/rulesData';
 import { PERSONAGENS_PRE_PRONTOS } from '../src/data/presetCharacters';
-import { passosPotenciaDoNivel, resistenciaEstrutura, resolverDanoEstrutura } from '../src/rules/referenceTables';
+import { dtSonharAtivoPorNivel, passosPotenciaDoNivel, resistenciaEstrutura, resolverDanoEstrutura, vidaAdversarioPorNA, VIDA_CURA_FERIMENTO } from '../src/rules/referenceTables';
 
 const withRandom = <T>(values: number[], run: () => T): T => {
   const original = Math.random;
@@ -104,4 +104,46 @@ test('Resistência estrutural segue a matriz Material × Tamanho', () => {
 test('Estrutura só rompe quando dano supera R', () => {
   assert.deepEqual(resolverDanoEstrutura(10, 'resistente', 'medio'), { resistencia: 10, rompe: false });
   assert.deepEqual(resolverDanoEstrutura(11, 'resistente', 'medio'), { resistencia: 10, rompe: true });
+});
+
+
+test('Movimento de Morte mantém 0 PV quando a Realidade vence', () => {
+  const result = resolverMovimentoMorte(13, 12);
+  assert.equal(result.tipo, 'realidade_vence');
+  assert.equal(result.recuperaVida, 0);
+  assert.equal(result.consciente, false);
+  assert.equal(result.morreu, false);
+});
+
+test('Movimento de Morte cobre os quatro resultados da VF5', () => {
+  assert.equal(resolverMovimentoMorte(13, 13).tipo, 'convergencia');
+  assert.equal(resolverMovimentoMorte(13, 12).tipo, 'realidade_vence');
+  assert.equal(resolverMovimentoMorte(12, 13).tipo, 'sonhar_vence');
+  assert.equal(resolverMovimentoMorte(12, 12).tipo, 'divergencia');
+  assert.equal(resolverMovimentoMorte(13, 13).recuperaVida, 2);
+  assert.equal(resolverMovimentoMorte(12, 13).recebeRuptura, 2);
+  assert.equal(resolverMovimentoMorte(12, 12).morreu, true);
+});
+
+test('DT de manifestação ativa escala 10/12/14/16/18', () => {
+  assert.deepEqual([1,2,3,4,5].map(dtSonharAtivoPorNivel), [10,12,14,16,18]);
+});
+
+test('Vida de Adversário segue NA 1–5 da VF5', () => {
+  assert.deepEqual([1,2,3,4,5].map(vidaAdversarioPorNA), [3,5,7,9,12]);
+});
+
+test('Vida 3/4/5 recupera 1/2/3 PV pela tabela da VF5', () => {
+  assert.match(VIDA_CURA_FERIMENTO[2].recuperacao, /1 PV/);
+  assert.match(VIDA_CURA_FERIMENTO[3].recuperacao, /2 PV/);
+  assert.match(VIDA_CURA_FERIMENTO[4].recuperacao, /3 PV/);
+});
+
+
+test('Equipamentos de proteção usam apenas o maior bônus de Resistência', () => {
+  assert.equal(calcularResistenciaTotal(1, []), 7);
+  assert.equal(calcularResistenciaTotal(1, [
+    { id: 'a', nome: 'Colete', bonusResistencia: 1 },
+    { id: 'b', nome: 'Kit militar', bonusResistencia: 2 }
+  ]), 9);
 });

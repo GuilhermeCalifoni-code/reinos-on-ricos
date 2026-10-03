@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Dice5, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { Adversario, CategoriaHabilidadeAtor, HabilidadeAtor, NPC, TipoTesteAtor } from '../../types/campaign';
+import { vidaAdversarioPorNA } from '../../rules/referenceTables';
 
 type Mode = 'npc' | 'adversario';
 
@@ -27,6 +28,10 @@ interface RollResult {
   total?: number;
   dt: number;
   atributo?: HabilidadeAtor['atributo'];
+  danoDado?: HabilidadeAtor['danoDado'];
+  danoBonus?: number;
+  danoRolado?: number;
+  danoCritico?: boolean;
 }
 
 const uid = () => `hab-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -89,9 +94,23 @@ const AbilityEditor: React.FC<{
             ) : <span className="actor-editor__passive">Sem rolagem</span>}
           </div>
           <textarea rows={2} value={ability.descricao} onChange={event => update(ability.id, { descricao: event.target.value })} placeholder="Descreva o efeito da habilidade." />
+          {ability.categoria === 'reacao' && (
+            <input value={ability.gatilho || ''} onChange={event => update(ability.id, { gatilho: event.target.value })} placeholder="Gatilho da Reação (ex.: quando um Desvelado se afastar)" />
+          )}
+          {ability.categoria !== 'passiva' && (
+            <div className="actor-editor__action-details">
+              <input value={ability.alvo || ''} onChange={event => update(ability.id, { alvo: event.target.value })} placeholder="Alvo (ex.: 1 criatura)" />
+              <input value={ability.alcance || ''} onChange={event => update(ability.id, { alcance: event.target.value })} placeholder="Alcance (ex.: Próximo)" />
+              <select value={ability.danoDado || ''} onChange={event => update(ability.id, { danoDado: (event.target.value || undefined) as HabilidadeAtor['danoDado'] })}>
+                <option value="">Sem dano</option><option value="d4">d4</option><option value="d6">d6</option><option value="d8">d8</option><option value="d10">d10</option><option value="d12">d12</option><option value="d20">d20</option>
+              </select>
+              {ability.danoDado && <input type="number" value={ability.danoBonus ?? 0} onChange={event => update(ability.id, { danoBonus: Number(event.target.value) || 0 })} placeholder="Bônus de dano" />}
+              <input value={ability.consequencia || ''} onChange={event => update(ability.id, { consequencia: event.target.value })} placeholder="Consequência (Condição, deslocamento, etc.)" />
+            </div>
+          )}
           {ability.categoria !== 'passiva' && ability.teste && (
             <div className="actor-editor__roll-config">
-              <label>DT <input type="number" min={1} value={ability.dt ?? 10} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
+              <label>{ability.teste === 'reflexo' ? 'DT do Reflexo' : 'Defesa/DT sugerida'} <input type="number" min={1} value={ability.dt ?? 10} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
               {ability.teste === 'mundano' && <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>}
               <label>{ability.teste === 'reflexo' ? 'Atributo do alvo' : 'Atributo'}
                 <select value={ability.atributo || 'corpo'} onChange={event => update(ability.id, { atributo: event.target.value as HabilidadeAtor['atributo'] })}>
@@ -123,7 +142,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
     nivelAmeaca: 0, vida: 1, resistencia: 0, dificuldade: 10, deslocamento: 'Próximo', habilidades: []
   }), [campanhaId, editingNpc]);
   const advDraft = useMemo<Adversario>(() => normalizeAdversary(editingAdv || {
-    id: '', campanhaId, nome: '', tipo: 'pesadelo', nivel: 1, vida: 3, vidaMaxima: 3, defesa: 10, resistencia: 8,
+    id: '', campanhaId, nome: '', tipo: 'onirico', nivel: 1, vida: 3, vidaMaxima: 3, defesa: 10, resistencia: 6,
     dificuldade: 14, deslocamento: 'Próximo', habilidades: [], ataquePrincipal: '', descricao: ''
   }), [campanhaId, editingAdv]);
 
@@ -165,9 +184,33 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
       return;
     }
 
+    setRoll({
+      actor: actorName,
+      ability: ability.nome,
+      kind: 'mundano',
+      modifier: ability.modificador || 0,
+      dt,
+      atributo: ability.atributo,
+      danoDado: ability.danoDado,
+      danoBonus: ability.danoBonus || 0
+    });
+  };
+
+  const executarRolagemMundanaDoAtor = () => {
+    if (!roll || roll.kind !== 'mundano') return;
     const die = Math.floor(Math.random() * 20) + 1;
-    const modifier = ability.modificador || 0;
-    setRoll({ actor: actorName, ability: ability.nome, kind: 'mundano', die, modifier, total: die + modifier, dt, atributo: ability.atributo });
+    const modifier = roll.modifier || 0;
+    setRoll({ ...roll, die, total: die + modifier });
+  };
+
+  const rolarDanoDoAtor = () => {
+    if (!roll?.danoDado) return;
+    const faces = Number(roll.danoDado.slice(1));
+    const rolagem = Math.floor(Math.random() * faces) + 1;
+    const bonus = roll.danoBonus || 0;
+    const critico = roll.die === 20;
+    const total = critico ? faces + rolagem + bonus : rolagem + bonus;
+    setRoll({ ...roll, danoRolado: total, danoCritico: critico });
   };
 
   const remove = async (id: string, name: string) => {
@@ -218,7 +261,12 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
                     <div className="actor-card__ability-title"><span>{category === 'acao' ? 'Ação' : category === 'reacao' ? 'Reação' : 'Passiva'}</span><strong>{ability.nome}</strong>
                       {ability.teste && category !== 'passiva' && <button onClick={() => rollAbility(name, ability, difficulty)}><Dice5 size={13} /> {ability.teste === 'reflexo' ? 'Solicitar Reflexo' : 'Rolar Mundano'}</button>}
                     </div>
+                    {ability.gatilho && <small className="actor-card__ability-meta"><strong>Gatilho:</strong> {ability.gatilho}</small>}
+                    {(ability.alvo || ability.alcance || ability.danoDado) && <small className="actor-card__ability-meta">
+                      {[ability.alvo && `Alvo: ${ability.alvo}`, ability.alcance && `Alcance: ${ability.alcance}`, ability.danoDado && `Dano: ${ability.danoDado}${ability.danoBonus ? `+${ability.danoBonus}` : ''}`].filter(Boolean).join(' · ')}
+                    </small>}
                     <p>{ability.descricao}</p>
+                    {ability.consequencia && <small className="actor-card__ability-meta"><strong>Consequência:</strong> {ability.consequencia}</small>}
                   </div>
                 )))}
               </div>}
@@ -243,8 +291,12 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
               <label>Deslocamento<input value={(form as NPC).deslocamento || 'Próximo'} onChange={event => setForm({ ...form, deslocamento: event.target.value } as NPC)} /></label>
               <label>Atitude<select value={(form as NPC).atitude} onChange={event => setForm({ ...form, atitude: event.target.value as NPC['atitude'] } as NPC)}><option value="aliado">Aliado</option><option value="neutro">Neutro</option><option value="hostil">Hostil</option><option value="desconhecido">Desconhecido</option></select></label>
             </> : <>
-              <label>Tipo<select value={(form as Adversario).tipo} onChange={event => setForm({ ...form, tipo: event.target.value as Adversario['tipo'] } as Adversario)}><option value="humano">Humano</option><option value="pesadelo">Pesadelo</option><option value="aberracao">Aberração</option><option value="sombra">Sombra</option></select></label>
-              <label>NA<input type="number" min={1} max={5} value={(form as Adversario).nivel} onChange={event => setForm({ ...form, nivel: Number(event.target.value) } as Adversario)} /></label>
+              <label>Tipo<select value={(form as Adversario).tipo} onChange={event => setForm({ ...form, tipo: event.target.value as Adversario['tipo'] } as Adversario)}><option value="humano">Humano</option><option value="onirico">Onírico</option><option value="pesadelo">Pesadelo</option><option value="aberracao">Aberração</option><option value="sombra">Sombra</option></select></label>
+              <label>NA<input type="number" min={1} max={5} value={(form as Adversario).nivel} onChange={event => {
+                const nivel = Math.max(1, Math.min(5, Number(event.target.value) || 1));
+                const vidaReferencia = vidaAdversarioPorNA(nivel);
+                setForm({ ...form, nivel, ...(creating ? { vida: vidaReferencia, vidaMaxima: vidaReferencia } : {}) } as Adversario);
+              }} /></label>
               <label>PV atual<input type="number" min={0} value={(form as Adversario).vida} onChange={event => setForm({ ...form, vida: Number(event.target.value) } as Adversario)} /></label>
               <label>PV máximo<input type="number" min={1} value={(form as Adversario).vidaMaxima} onChange={event => setForm({ ...form, vidaMaxima: Number(event.target.value) } as Adversario)} /></label>
               <label>R<input type="number" min={0} value={(form as Adversario).resistencia} onChange={event => setForm({ ...form, resistencia: Number(event.target.value) } as Adversario)} /></label>
@@ -277,8 +329,37 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
             </div>
           ) : (
             <>
-              <div className="actor-roll__result"><strong>{roll.die}</strong><span>{(roll.modifier || 0) >= 0 ? '+' : '−'} {Math.abs(roll.modifier || 0)}</span><b>= {roll.total}</b></div>
-              <p>DT {roll.dt} · <strong className={(roll.total || 0) >= roll.dt ? 'is-success' : 'is-failure'}>{(roll.total || 0) >= roll.dt ? 'SUCESSO' : 'FRACASSO'}</strong></p>
+              <label className="actor-roll__target-dt">
+                <span>Defesa / DT do alvo</span>
+                <input type="number" min={1} value={roll.dt} onChange={event => setRoll({ ...roll, dt: Math.max(1, Number(event.target.value) || 1), die: undefined, total: undefined })} />
+              </label>
+              {roll.die === undefined ? (
+                <div className="actor-roll__request">
+                  <strong>Pronto para rolar.</strong>
+                  <p>Role 1d20{(roll.modifier || 0) !== 0 ? ` ${(roll.modifier || 0) > 0 ? '+' : '−'} ${Math.abs(roll.modifier || 0)}` : ''} contra Defesa/DT {roll.dt}.</p>
+                  <small>O Nível de Ameaça não é somado automaticamente à rolagem de ataque.</small>
+                  <button type="button" className="ro-button" onClick={executarRolagemMundanaDoAtor}><Dice5 size={14} /> Rolar 1d20</button>
+                </div>
+              ) : (
+                <>
+                  <div className="actor-roll__result"><strong>{roll.die}</strong><span>{(roll.modifier || 0) >= 0 ? '+' : '−'} {Math.abs(roll.modifier || 0)}</span><b>= {roll.total}</b></div>
+                  <p>Defesa/DT {roll.dt} · <strong className={(roll.total || 0) >= roll.dt || roll.die === 20 ? 'is-success' : 'is-failure'}>{(roll.total || 0) >= roll.dt || roll.die === 20 ? 'SUCESSO' : 'FRACASSO'}</strong></p>
+                  {roll.die === 20 && <small className="actor-roll__critical">20 natural: acerto crítico.</small>}
+                  {(roll.total || 0) >= roll.dt || roll.die === 20 ? (
+                    roll.danoDado && (
+                      <div className="actor-roll__damage">
+                        <span>Dano {roll.danoDado}{(roll.danoBonus || 0) ? `+${roll.danoBonus}` : ''}</span>
+                        {roll.danoRolado === undefined ? (
+                          <button type="button" className="ro-button" onClick={rolarDanoDoAtor}>Rolar dano</button>
+                        ) : (
+                          <strong>{roll.danoCritico ? 'CRÍTICO · ' : ''}{roll.danoRolado}</strong>
+                        )}
+                      </div>
+                    )
+                  ) : null}
+                  <button type="button" className="ro-button--quiet" onClick={() => setRoll({ ...roll, die: undefined, total: undefined, danoRolado: undefined, danoCritico: undefined })}>Rolar novamente</button>
+                </>
+              )}
             </>
           )}
           <button className="ro-button" onClick={() => setRoll(null)}>Fechar</button>

@@ -25,8 +25,9 @@ export const DamageModal: React.FC<DamageModalProps> = ({
 
   const resistencia = personagem.resistencia;
   const poDisponivel = personagem.protecaoOniricaAtual;
+  const rolarDado = (faces: number) => setDanoBruto(Math.floor(Math.random() * faces) + 1);
 
-  // Mecânica oficial do Livro Básico (Pág. 11, 12, 117):
+  // Mecânica da VF5:
   // Dano <= R -> perde 1 V
   // Dano > R -> perde 2 V
   // Dano Maciço (Opcional): Dano > 2*R -> perde 3 V
@@ -120,25 +121,30 @@ export const DamageModal: React.FC<DamageModalProps> = ({
             </div>
           </div>
 
-          {/* Dados de Referência Rápida (d4 a d20) */}
-          <div className="flex flex-wrap gap-1.5">
-            {[
-              { label: 'Soco (d4)', val: 3 },
-              { label: 'Faca (d6)', val: 5 },
-              { label: 'Pistola (d8)', val: 7 },
-              { label: 'Fuzil (d10)', val: 9 },
-              { label: 'Pesado (d12)', val: 11 },
-              { label: 'Onírico (d20)', val: 16 }
-            ].map(preset => (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => setDanoBruto(preset.val)}
-                className="text-[10px] font-mono px-2 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300 hover:border-slate-700"
-              >
-                {preset.label}
-              </button>
-            ))}
+          {/* Rolagem rápida por Intensidade de Dano */}
+          <div>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { label: 'Leve d4', faces: 4 },
+                { label: 'Moderado d6', faces: 6 },
+                { label: 'Grave d8', faces: 8 },
+                { label: 'Severo d10', faces: 10 },
+                { label: 'Devastador d12', faces: 12 },
+                { label: 'Onírico d20', faces: 20 }
+              ].map(preset => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => rolarDado(preset.faces)}
+                  className="text-[10px] font-mono px-2 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300 hover:border-slate-700"
+                >
+                  Rolar {preset.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-[10px] text-slate-500 font-mono">
+              O dado representa a intensidade do dano. Área e Distância Máxima dependem da fonte e da narrativa.
+            </p>
           </div>
 
           {/* Painel de Cálculo Transparente */}
@@ -215,7 +221,7 @@ export const DamageModal: React.FC<DamageModalProps> = ({
               <div className="p-2 mt-2 rounded bg-rose-950/90 border border-rose-600 text-rose-200 text-xs flex items-center gap-2">
                 <Skull className="w-5 h-5 text-rose-400 shrink-0" />
                 <span>
-                  <strong>Atenção:</strong> O personagem atingiu 0 V! É necessário realizar imediatamente o <strong>Movimento de Morte</strong> (2d20 vs DT 13).
+                  <strong>Atenção:</strong> O personagem atingiu 0 PV. Realize o <strong>Movimento de Morte</strong> (2d20 vs DT 13).
                 </span>
               </div>
             )}

@@ -19,12 +19,13 @@ export interface Dominios {
   vida: number;
 }
 
-export type DistanciaFaixa = 
-  | 'imediata'      // Contato corpo a corpo
-  | 'muito_proxima' // Poucos passos no mesmo cômodo
-  | 'proxima'       // Mesmo ambiente amplo / do outro lado da rua
-  | 'longe'         // Alcance de quarteirão / corredor longo
-  | 'muito_longe';  // Linha de visão distante / alcance de tiro longo
+export type DistanciaFaixa =
+  | 'imediata'      // Corpo a Corpo, até 1,5 m (chave legada preservada)
+  | 'muito_proxima' // até 3 m
+  | 'proxima'       // 3 a 9 m
+  | 'longe'         // 9 a 15 m
+  | 'muito_longe'   // 15 a 30 m
+  | 'alem';         // acima de 30 m até cerca de 60 m
 
 export interface RecursoItem {
   id: string;
@@ -39,6 +40,7 @@ export interface EquipamentoItem {
   descricao?: string;
   pesoOuCarga?: string;
   propriedades?: string;
+  bonusResistencia?: 0 | 1 | 2;
 }
 
 export interface VinculoItem {
@@ -55,6 +57,12 @@ export interface RupturaLog {
   novoValor: number;
   motivo: string;
   origem: 'automatica' | 'manual';
+}
+
+export interface CondicoesPersonagem {
+  oculto: boolean;
+  impedido: boolean;
+  vulneravel: boolean;
 }
 
 export interface Personagem {
@@ -75,7 +83,7 @@ export interface Personagem {
   vidaAtual: number;
   
   resistencia: number; // 6 + Corpo
-  defesa: number;      // 8 + Atributo Principal (+ bônus por nível)
+  defesa: number;      // 8 + Corpo
   
   protecaoOniricaMaxima: number; // Base 2
   protecaoOniricaAtual: number;
@@ -85,6 +93,7 @@ export interface Personagem {
   
   ruptura: number; // Trilha de 0 a 6
   historicoRuptura: RupturaLog[];
+  condicoes?: CondicoesPersonagem;
   
   // Domínios do Sonhar
   dominios: Dominios;

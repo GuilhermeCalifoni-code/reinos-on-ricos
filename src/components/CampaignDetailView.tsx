@@ -159,14 +159,25 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
       onAdicionarAdversario({
         campanhaId: campanha.id,
         nome: itemNome.trim(),
-        tipo: 'pesadelo',
+        tipo: 'onirico',
         nivel: 1,
-        vida: 6,
-        vidaMaxima: 6,
+        vida: 3,
+        vidaMaxima: 3,
         defesa: 10,
-        resistencia: 7,
-        ataquePrincipal: itemExtra.trim() || 'Golpe de Tensão (1d6)',
-        descricao: itemDesc.trim() || 'Aberração do Sonhar.'
+        resistencia: 6,
+        dificuldade: 14,
+        deslocamento: 'Próximo',
+        habilidades: [{
+          id: `hab-${Date.now()}`,
+          categoria: 'acao',
+          nome: 'Ação',
+          descricao: itemExtra.trim() || 'Ataque do Adversário.',
+          teste: 'mundano',
+          danoDado: 'd6',
+          danoBonus: 1
+        }],
+        ataquePrincipal: itemExtra.trim() || 'Ataque (1d6+1)',
+        descricao: itemDesc.trim() || 'Criatura Onírica.'
       });
     } else if (modalNovoItem === 'locais') {
       onAdicionarLocal({

@@ -24,7 +24,8 @@ const DISTANCIAS_ORDEM: DistanciaFaixa[] = [
   'muito_proxima',
   'proxima',
   'longe',
-  'muito_longe'
+  'muito_longe',
+  'alem'
 ];
 
 const PRESETS_ANTAGONISTAS: Omit<AntagonistaCena, 'id'>[] = [

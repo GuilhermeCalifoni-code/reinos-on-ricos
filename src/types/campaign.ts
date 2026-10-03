@@ -146,6 +146,12 @@ export interface HabilidadeAtor {
   atributo?: 'corpo' | 'mente' | 'vontade' | 'vinculo';
   dt?: number;
   modificador?: number;
+  alvo?: string;
+  alcance?: string;
+  danoDado?: 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20';
+  danoBonus?: number;
+  consequencia?: string;
+  gatilho?: string;
 }
 
 export interface NPC {
@@ -170,11 +176,11 @@ export interface Adversario {
   id: string;
   campanhaId: string;
   nome: string;
-  tipo: 'humano' | 'pesadelo' | 'aberracao' | 'sombra';
+  tipo: 'humano' | 'onirico' | 'pesadelo' | 'aberracao' | 'sombra';
   nivel: number;
   vida: number;
   vidaMaxima: number;
-  defesa: number;
+  defesa: number; // legado/compatibilidade; ataques contra Adversários usam Dificuldade
   resistencia: number;
   dificuldade?: number;
   deslocamento?: string;

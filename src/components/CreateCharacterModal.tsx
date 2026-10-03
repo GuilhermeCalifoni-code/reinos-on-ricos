@@ -92,6 +92,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
           origem: 'manual'
         }
       ],
+      condicoes: { oculto: false, impedido: false, vulneravel: false },
       dominios,
       ancoragem: ancoragem.trim() || 'Um relógio de bolso antigo herdado da família.',
       vinculos: [],
@@ -99,7 +100,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
         { id: 'eq-1', nome: 'Smartphone com bateria reserva', descricao: 'Comunicação e lanterna' },
         { id: 'eq-2', nome: 'Casaco pesado impermeável', descricao: 'Vestimenta de proteção cotidiana' }
       ],
-      recursos: [{ id: 'rec-1', nome: 'Recursos Estáveis', quantidade: 3, descricao: 'Nível 3 (Estável)' }],
+      recursos: [{ id: 'rec-1', nome: 'Recursos 1', quantidade: 1, descricao: 'Escasso' }],
       percepcaoOniricaNotas: '',
       anotacoesGerais: '',
       criadoEm: new Date().toISOString(),

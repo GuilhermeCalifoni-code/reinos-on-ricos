@@ -1649,3 +1649,80 @@
   .rules-reference__power-levels,
   .rules-reference__structure-tool { grid-template-columns: 1fr; }
 }
+
+
+/* VF5 — detalhes operacionais de ações e rolagens de atores */
+.actor-editor__action-details {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .5rem;
+  margin-top: .5rem;
+}
+.actor-editor__action-details input,
+.actor-editor__action-details select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--ro-line);
+  background: var(--ro-input);
+  color: var(--ro-paper);
+  padding: .55rem .6rem;
+  font-size: .68rem;
+}
+.actor-card__ability-meta {
+  display: block;
+  margin-top: .32rem;
+  color: var(--ro-ash);
+  font-size: .62rem;
+  line-height: 1.45;
+}
+.actor-card__ability-meta strong { color: var(--ro-paper-muted); }
+.actor-roll__target-dt {
+  display: grid;
+  grid-template-columns: 1fr 5.2rem;
+  gap: .6rem;
+  align-items: center;
+  margin: .85rem 0;
+  color: var(--ro-paper-muted);
+  font-size: .68rem;
+  text-align: left;
+}
+.actor-roll__target-dt input {
+  width: 100%;
+  border: 1px solid var(--ro-line);
+  background: var(--ro-input);
+  color: var(--ro-paper);
+  padding: .55rem;
+  text-align: center;
+}
+.actor-roll__request .ro-button { margin-top: .75rem; }
+.actor-roll__critical {
+  display: block;
+  margin: .6rem 0;
+  color: var(--ro-copper);
+  font-size: .66rem;
+  line-height: 1.45;
+}
+@media (max-width: 720px) {
+  .actor-editor__action-details { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 460px) {
+  .actor-editor__action-details { grid-template-columns: 1fr; }
+}
+
+.actor-roll__damage {
+  margin: .75rem 0;
+  padding: .7rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  border: 1px solid var(--ro-line);
+  background: color-mix(in srgb, var(--ro-copper) 7%, var(--ro-surface));
+  color: var(--ro-paper-muted);
+  font-size: .68rem;
+}
+.actor-roll__damage strong {
+  color: var(--ro-copper);
+  font: 600 .9rem ui-monospace, monospace;
+}
+.actor-roll__damage .ro-button { margin: 0; }
