@@ -6,10 +6,9 @@ interface HeaderProps {
   campanhaNome?: string;
   rupturaNivel?: number;
   session: UserSession | null;
-  onAbrirSql?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ campanhaNome, rupturaNivel = 0, session, onAbrirSql }) => (
+export const Header: React.FC<HeaderProps> = ({ campanhaNome, rupturaNivel = 0, session }) => (
   <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[var(--ro-line)] bg-[var(--ro-header-bg)] px-5 backdrop-blur-md sm:px-7">
     <div className="min-w-0">
       <p className="ro-eyebrow">{campanhaNome ? 'Campanha ativa' : 'Arquivo pessoal'}</p>
@@ -23,7 +22,6 @@ export const Header: React.FC<HeaderProps> = ({ campanhaNome, rupturaNivel = 0, 
         </div>
       )}
       <ThemeToggle compact />
-      {onAbrirSql && <button onClick={onAbrirSql} className="ro-icon-button" title="Estrutura e conexão Supabase" aria-label="Abrir informações do Supabase">☁</button>}
       <div className="ml-1 flex items-center gap-2 border-l border-[var(--ro-line)] pl-3">
         <span className="grid h-8 w-8 place-items-center border border-[var(--ro-line-strong)] bg-[var(--ro-accent-soft)] font-mono text-[10px] text-[var(--ro-gold)]">
           {session?.nome ? session.nome.slice(0, 2).toUpperCase() : 'RO'}
