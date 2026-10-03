@@ -1,5 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { DESCRICAO_DOMINIOS, LINGUAGEM_DOMINIOS, TABELA_PROGRESSAO } from '../rules/rulesData';
+import {
+  DESCRICAO_DOMINIOS,
+  DT_SONHAR_POR_NIVEL,
+  LINGUAGEM_DOMINIOS,
+  TABELA_AREA_DISTANCIA_DANO,
+  TABELA_INTENSIDADE_DANO,
+  TABELA_PROGRESSAO,
+  TABELA_VIDA_FERIMENTO
+} from '../rules/rulesData';
 import {
   MATERIAIS_ESTRUTURA,
   PASSOS_POTENCIA_POR_NIVEL,
@@ -107,6 +115,18 @@ export const RulesReference: React.FC = () => {
             <h3>Fluxo de uma manifestação</h3>
             <p>Intenção → Domínio → Nível → Combinação? → Alcance → Alvos/Área → Duração → Potência → Atributo → DT → Teste Onírico → Manifestação → Ruptura/Delírio → Consequências.</p>
             <p><strong>Combinação:</strong> o Domínio Principal precisa possuir nível ao menos 1 maior que cada secundário. Para Potência, use o maior nível combinado. Os níveis não são somados.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Efeitos do Sonhar</p>
+            <h3>DT para agir contra o que já foi manifestado</h3>
+            <p>A manifestação acontece primeiro. Só peça um novo teste quando alguém tentar agir diretamente contra, resistir ou superar aquilo que o Sonhar tornou real. Superar a DT permite realizar aquela tentativa; não desfaz automaticamente a manifestação.</p>
+            <div className="rules-reference__grid rules-reference__grid--dt">
+              {Object.entries(DT_SONHAR_POR_NIVEL).map(([nivel, dt]) => (
+                <span key={nivel}><strong>DT {dt}</strong>Nível {nivel}</span>
+              ))}
+            </div>
+            <p>Se várias manifestações interferirem na mesma tentativa, use apenas a maior DT aplicável.</p>
           </article>
         </div>
       )}
@@ -297,13 +317,66 @@ export const RulesReference: React.FC = () => {
           </article>
 
           <article className="ro-surface">
+            <p className="ro-eyebrow">Intensidade de dano</p>
+            <div className="rules-reference__power-table">
+              {TABELA_INTENSIDADE_DANO.map(item => (
+                <div key={item.dado}>
+                  <strong>{item.dado} · {item.intensidade}</strong>
+                  <p>{item.exemplos}</p>
+                </div>
+              ))}
+            </div>
+            <p className="rules-reference__after-grid">Dano produzido ou manipulado diretamente pelo Sonhar soma o nível do Desvelado ao resultado do dado. O d20 é reservado a fenômenos/Criaturas Oníricas excepcionalmente poderosos e manifestações compatíveis com Sonhar 5.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Área & Distância máxima</p>
+            <div className="rules-reference__table-wrap">
+              <table className="rules-reference__matrix">
+                <thead><tr><th>Fonte</th><th>Área</th><th>Distância</th><th>Exemplo</th></tr></thead>
+                <tbody>
+                  {TABELA_AREA_DISTANCIA_DANO.map(item => (
+                    <tr key={item.tipo}><th>{item.tipo}</th><td>{item.area}</td><td>{item.distancia}</td><td>{item.exemplo}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="rules-reference__after-grid">Área não vem automaticamente do dado de dano. Quando houver Área, faça um único ataque contra a maior Defesa entre os alvos e role o dano uma vez; o mesmo resultado vale para todos os atingidos.</p>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Dano Contínuo</p>
+            <p>Perigos como fogo, eletricidade e ácido causam o dano inicial normalmente. Se a exposição continuar, aplique o mesmo dado novamente ao final de cada Rodada até o alvo sair da área, interromper a fonte ou deixar de permanecer exposto.</p>
+          </article>
+
+          <article className="ro-surface">
             <p className="ro-eyebrow">Movimento de Morte</p>
             <h3>0 PV → 2d20 sem Atributo contra DT 13</h3>
             <div className="rules-reference__compact-list">
               <p><strong>Convergência:</strong> recupere 2 PV.</p>
-              <p><strong>Realidade vence:</strong> recupere 1 PV.</p>
+              <p><strong>Realidade vence:</strong> permanece Inconsciente com 0 PV; precisa de cuidados ou Descanso.</p>
               <p><strong>Sonhar vence:</strong> recupere 1 PV e +2 Ruptura.</p>
               <p><strong>Divergência:</strong> o Personagem morre; a descrição pertence ao Jogador.</p>
+            </div>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Vida: Cura & Ferimento</p>
+            <h3>O nível de Vida determina quanto o organismo pode ser alterado</h3>
+            <div className="rules-reference__table-wrap">
+              <table className="rules-reference__matrix">
+                <thead><tr><th>Vida</th><th>Recuperação</th><th>Ferimento</th></tr></thead>
+                <tbody>
+                  {TABELA_VIDA_FERIMENTO.map(item => (
+                    <tr key={item.nivel}><th>Nível {item.nivel}</th><td>{item.recuperacao}</td><td>{item.ferimento}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="rules-reference__compact-list">
+              <p><strong>Potência:</strong> recuperar PV é exceção específica; a quantidade da tabela não aumenta por Passos.</p>
+              <p><strong>Condições:</strong> recuperar PV não remove automaticamente veneno, doença ou outra Condição.</p>
+              <p><strong>Morte:</strong> Vida 4 pode preservar/restaurar funções vitais de alguém vivo, mas não reverte uma morte determinada pelo Movimento de Morte. Vida 5 pode restaurar alguém morto; em sucesso, retorna com 1 PV.</p>
             </div>
           </article>
         </div>
@@ -321,6 +394,20 @@ export const RulesReference: React.FC = () => {
                   <small>{nivel.pontosDeSonhar} Pontos de Sonhar · Domínio máx. {nivel.dominioMaximo}</small>
                 </div>
               ))}
+            </div>
+          </article>
+
+          <article className="ro-surface">
+            <p className="ro-eyebrow">Descanso</p>
+            <h3>8 horas de sono · 2 Movimentos de Descanso</h3>
+            <div className="rules-reference__compact-list">
+              <p><strong>Ancoragem:</strong> passar tempo com ela concede 1 Movimento adicional.</p>
+              <p><strong>Cicatrização:</strong> recupere todos os PV.</p>
+              <p><strong>Remover Condição:</strong> remova uma Condição apropriada.</p>
+              <p><strong>Restaurar Proteção:</strong> recupere todos os PO.</p>
+              <p><strong>Restaurar Ruptura:</strong> a trilha volta a 0.</p>
+              <p><strong>Recuperar Foco:</strong> recupere todos os PF gastos.</p>
+              <p><strong>Projeto Pessoal:</strong> investigue, aprenda, construa ou crie algo ligado aos seus objetivos.</p>
             </div>
           </article>
 
