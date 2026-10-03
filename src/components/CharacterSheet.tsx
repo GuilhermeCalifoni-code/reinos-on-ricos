@@ -564,7 +564,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                       <th className="py-1 px-2">Intensidade</th>
                       <th className="py-1 px-2">Dado</th>
                       <th className="py-1 px-2">Exemplos</th>
-                      <th className="py-1 px-2">Alcance Máximo</th>
+                      
                     </tr>
                   </thead>
                   <tbody className="text-slate-300 divide-y divide-slate-800/60">
@@ -572,41 +572,38 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                       <td className="py-1.5 px-2 text-slate-400">Leve</td>
                       <td className="py-1.5 px-2 font-bold text-cyan-400">d4</td>
                       <td className="py-1.5 px-2">Socos, chutes, impactos leves</td>
-                      <td className="py-1.5 px-2">Muito Próximo</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Moderado</td>
                       <td className="py-1.5 px-2 font-bold text-cyan-400">d6</td>
                       <td className="py-1.5 px-2">Facas, bastões, armas improvisadas</td>
-                      <td className="py-1.5 px-2">Muito Próximo</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Grave</td>
                       <td className="py-1.5 px-2 font-bold text-amber-400">d8</td>
                       <td className="py-1.5 px-2">Pistolas, revólveres, lâminas grandes</td>
-                      <td className="py-1.5 px-2">Longe</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Severo</td>
                       <td className="py-1.5 px-2 font-bold text-rose-400">d10</td>
                       <td className="py-1.5 px-2">Espingardas, fuzis, atropelamento</td>
-                      <td className="py-1.5 px-2">Muito Longe</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Devastador</td>
                       <td className="py-1.5 px-2 font-bold text-rose-500">d12</td>
                       <td className="py-1.5 px-2">Armamento pesado, explosões</td>
-                      <td className="py-1.5 px-2">Muito Longe</td>
                     </tr>
                     <tr>
                       <td className="py-1.5 px-2 text-slate-400">Onírico</td>
                       <td className="py-1.5 px-2 font-bold text-purple-400">d20</td>
                       <td className="py-1.5 px-2">O impossível ferindo a Realidade</td>
-                      <td className="py-1.5 px-2">Escala do Sonhar</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
+              <p className="mt-2 text-[10px] text-slate-500 font-mono leading-relaxed">
+                O dado representa intensidade. Área e Distância Máxima são definidas separadamente pela fonte e pela narrativa; consulte “Mais → Dano & Morte”.
+              </p>
             </div>
 
           </div>
@@ -652,7 +649,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                     >
                       <span className="text-sm">{num}</span>
                       <span className="text-[8px] uppercase">
-                        {num === 0 ? 'Firme' : num === 6 ? 'Efeito' : `E${num}`}
+                        {num === 0 ? '0' : num === 6 ? 'Efeito' : `${num}/6`}
                       </span>
                     </button>
                   );
