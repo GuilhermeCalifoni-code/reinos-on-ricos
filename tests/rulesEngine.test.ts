@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { calcularDefesa, executarTesteMundano, executarTesteOnirico, processarDano, resolverMovimentoMorte } from '../src/rules/rulesEngine';
+import { calcularDefesa, calcularResistenciaTotal, executarTesteMundano, executarTesteOnirico, processarDano, resolverMovimentoMorte } from '../src/rules/rulesEngine';
 import { TABELA_PROGRESSAO } from '../src/rules/rulesData';
 import { PERSONAGENS_PRE_PRONTOS } from '../src/data/presetCharacters';
 import { dtSonharAtivoPorNivel, passosPotenciaDoNivel, resistenciaEstrutura, resolverDanoEstrutura, vidaAdversarioPorNA, VIDA_CURA_FERIMENTO } from '../src/rules/referenceTables';
@@ -137,4 +137,13 @@ test('Vida 3/4/5 recupera 1/2/3 PV pela tabela da VF5', () => {
   assert.match(VIDA_CURA_FERIMENTO[2].recuperacao, /1 PV/);
   assert.match(VIDA_CURA_FERIMENTO[3].recuperacao, /2 PV/);
   assert.match(VIDA_CURA_FERIMENTO[4].recuperacao, /3 PV/);
+});
+
+
+test('Equipamentos de proteção usam apenas o maior bônus de Resistência', () => {
+  assert.equal(calcularResistenciaTotal(1, []), 7);
+  assert.equal(calcularResistenciaTotal(1, [
+    { id: 'a', nome: 'Colete', bonusResistencia: 1 },
+    { id: 'b', nome: 'Kit militar', bonusResistencia: 2 }
+  ]), 9);
 });
