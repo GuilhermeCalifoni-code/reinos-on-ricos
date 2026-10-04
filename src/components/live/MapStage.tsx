@@ -109,7 +109,15 @@ export const MapStage: React.FC<MapStageProps> = ({
     let ativo = true;
     if (!mapaAtual?.storagePath) {
       setImagemResolvida(mapaAtual?.imagemUrl || '');
-      return (
+      return () => { ativo = false; };
+    }
+    setImagemResolvida('');
+    void campaignAssetService.signedUrl(mapaAtual.storagePath)
+      .then(url => { if (ativo) setImagemResolvida(url); })
+      .catch(() => { if (ativo) setImagemResolvida(''); });
+    return () => { ativo = false; };
+  }, [mapaAtual?.imagemUrl, mapaAtual?.storagePath]);
+  return (
     <section className="map-stage map-stage--v4">
       <header className="map-stage__head">
         <div>
