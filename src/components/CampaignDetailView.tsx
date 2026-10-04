@@ -226,50 +226,35 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   }, [abaAtiva, canManageMembers]);
 
   return (
-    <div className="w-full flex flex-col pb-20">
-      {/* 20. HERO DA CAMPANHA (Cinematográfico, Atmosférico) */}
-      <section className="ro-campaign-hero relative w-full h-64 sm:h-80 overflow-hidden bg-[var(--ro-media-fallback)] border-b border-[var(--ro-line)]">
-        <img
-          src={campanha.imagemUrl}
-          alt={campanha.nome}
-          onError={(event) => { event.currentTarget.style.display = 'none'; }} className="w-full h-full object-cover filter brightness-[0.45] contrast-[0.9] grayscale-[30%]"
-        />
-        {/* Overlay escuro em camadas */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0B0B] via-[#0B0B0B]/70 to-transparent" />
-        <div className="absolute inset-0 bg-black/20" />
-
-        {/* Informações Hero */}
-        <div className="absolute inset-0 max-w-7xl mx-auto px-4 sm:px-8 flex flex-col justify-end pb-6 sm:pb-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-            <div className="max-w-2xl">
-              <span className="text-[11px] font-mono tracking-widest text-[var(--ro-media-accent)] uppercase block mb-2">
-                Código: {campanha.codigo} · {campanha.tipo}
-              </span>
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[var(--ro-media-text)] tracking-tight leading-tight">
-                {campanha.nome}
-              </h1>
-              <p className="text-sm text-[var(--ro-media-muted)] mt-3 font-normal leading-relaxed">
-                {campanha.descricao}
-              </p>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-[11px] font-mono text-[var(--ro-media-muted)]">
-                <span>{campanha.jogadoresCount || personagens.length || 4} jogadores</span>
-                <span>·</span>
-                <span>{sessoesCampanha.length} sessões</span>
-                <span>·</span>
-                <span className="text-[var(--ro-media-accent)]">Em andamento</span>
-              </div>
-            </div>
-
-            <div>
-              <button
-                onClick={() => onIniciarSessao(campanha)}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium tracking-wider uppercase transition-colors rounded-sm shadow-none"
-              >
-                <span>Iniciar Sessão</span>
-                <span className="text-xs">→</span>
-              </button>
-            </div>
+    <div className="campaign-v4 w-full flex flex-col pb-20">
+      {/* Hero editorial da campanha */}
+      <section className="ro-campaign-hero ro-campaign-hero--v4">
+        <div className="ro-campaign-hero__copy">
+          <p className="ro-eyebrow">Campanha · ${campanha.tipo}</p>
+          <h1>{campanha.nome}</h1>
+          <p className="ro-campaign-hero__description">{campanha.descricao}</p>
+          <div className="ro-campaign-hero__meta">
+            <span>{campanha.jogadoresCount || personagens.length || 0} membros</span>
+            <span>{sessoesCampanha.length} sessões</span>
+            <span>Ruptura {campanha.rupturaGeral}/6</span>
+            <span className="is-live">Em andamento</span>
           </div>
+        </div>
+
+        <div className="ro-campaign-hero__media" aria-hidden="true">
+          <img
+            src={campanha.imagemUrl}
+            alt=""
+            onError={(event) => { event.currentTarget.style.display = 'none'; }}
+          />
+          <div className="ro-campaign-hero__sigil"><img src="/ro-mark.svg" alt="" /></div>
+        </div>
+
+        <div className="ro-campaign-hero__actions">
+          <span className="ro-campaign-hero__code">Código · {campanha.codigo}</span>
+          <button onClick={() => onIniciarSessao(campanha)} className="ro-button">
+            Continuar última sessão <span aria-hidden="true">→</span>
+          </button>
         </div>
       </section>
 
