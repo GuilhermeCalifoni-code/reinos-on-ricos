@@ -18,7 +18,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 }) => {
   const remoto = isSupabaseConfigured();
   const [modo, setModo] = useState<AuthMode>('entrar');
-  const usarRemoto = remoto && modo !== 'local';
+  const usarRemoto = modo !== 'local';
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
@@ -27,6 +27,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [erro, setErro] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
+
+  const trocarModo = (proximo: AuthMode) => {
+    setModo(proximo);
+    setErro('');
+    setMensagem('');
+  };
 
   useEffect(() => {
     if (!remoto) return;
@@ -56,6 +62,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     event.preventDefault();
     setErro('');
     setMensagem('');
+
+    if (!remoto) {
+      setErro('O acesso online ainda não está configurado neste deploy. Você pode usar o Modo local agora.');
+      return;
+    }
+
     setEnviando(true);
     try {
       if (modo === 'nova_senha') {
@@ -88,6 +100,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const recuperar = async () => {
     setErro('');
     setMensagem('');
+    if (!remoto) {
+      setErro('A recuperação de conta depende da conexão online, que ainda não está configurada neste deploy.');
+      return;
+    }
     if (!email.trim()) {
       setErro('Informe seu e-mail primeiro.');
       return;
@@ -117,12 +133,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     ? 'Criar sua conta'
     : modo === 'nova_senha'
       ? 'Definir nova senha'
-      : usarRemoto
-        ? 'Entre na Vigília'
-        : 'Modo local';
+      : modo === 'local'
+        ? 'Modo local'
+        : 'Bem-vindo de volta.';
 
   return (
-    <div className="login-onirico login-onirico--urban">
+    <div className="login-onirico login-onirico--urban login-onirico--reference">
       <header className="login-onirico__header">
         <a className="login-onirico__identity" href="/" aria-label="Reinos Oníricos RPG">
           <img src="/ro-mark.svg" alt="" className="login-onirico__mark" />
@@ -136,111 +152,161 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
       <main className="login-onirico__main login-onirico__main--urban">
         <section className="login-onirico__intro login-onirico__intro--urban">
-          <div className="login-onirico__sigil" aria-hidden="true">
-            <img src="/ro-mark.svg" alt="" />
-          </div>
-          <p className="ro-eyebrow">Fantasia urbana · Vigília · Sonhar</p>
-          <h1>Entre na Vigília.<br />Atravesse o Sonhar.</h1>
-          <p className="login-onirico__lead">
-            Reinos Oníricos é um RPG de fantasia urbana sobre o que existe entre o real e o impossível.
-            A plataforma acompanha a sua mesa sem tomar o lugar da narrativa.
-          </p>
+          <div className="login-onirico__intro-content">
+            <div className="login-onirico__wordmark">
+              <img src="/ro-mark.svg" alt="" />
+              <div>
+                <strong>REINOS<br />ONÍRICOS</strong>
+                <small>RPG</small>
+              </div>
+            </div>
 
-          <div className="login-onirico__pillars" aria-label="Pilares da experiência">
-            <article><span>01</span><strong>Prepare</strong><small>Campanhas, cenas, pistas, personagens e arquivos.</small></article>
-            <article><span>02</span><strong>Conduza</strong><small>Mesa Ao Vivo, Registro Vivo, mapas e contadores.</small></article>
-            <article><span>03</span><strong>Desvende</strong><small>Realidade, Sonhar e Ruptura integrados à sessão.</small></article>
+            <p className="ro-eyebrow">Fantasia urbana · Vigília · Sonhar</p>
+            <h1>Entre na Vigília.<br />Atravesse o Sonhar.</h1>
+            <p className="login-onirico__lead">
+              Reinos Oníricos RPG é uma plataforma de fantasia urbana onde o real e o onírico se encontram.
+              Crie campanhas, reúna seu grupo, desenvolva personagens e conduza histórias que atravessam cidades,
+              sonhos e outras realidades.
+            </p>
+            <blockquote>“Entre o concreto e o impossível, existem aqueles que ainda investigam.”</blockquote>
           </div>
-
-          <blockquote>“A realidade é só o começo.”</blockquote>
         </section>
 
-        <section className="login-onirico__panel login-onirico__panel--urban">
-          <div className="login-onirico__panel-brand">
-            <img src="/ro-mark.svg" alt="" />
-            <div>
-              <p className="ro-eyebrow">{modo === 'nova_senha' ? 'Recuperação de acesso' : 'Portal da mesa'}</p>
-              <h2>{titulo}</h2>
+        <section className="login-onirico__access-column">
+          <section className="login-onirico__panel login-onirico__panel--urban">
+            <div className="login-onirico__panel-brand">
+              <img src="/ro-mark.svg" alt="" />
+              <div>
+                <p className="ro-eyebrow">{modo === 'nova_senha' ? 'Recuperação de acesso' : 'Portal da mesa'}</p>
+                <h2>{titulo}</h2>
+              </div>
             </div>
-          </div>
-          <p>{usarRemoto
-            ? 'Acesse suas campanhas e fichas. O papel de Mestre, Jogador ou Observador é definido dentro de cada campanha.'
-            : 'Use o modo local para demonstração ou jogo no mesmo dispositivo, sem sincronização online.'}</p>
 
-          {remoto && modo !== 'nova_senha' && (
-            <div className="login-onirico__switch" role="tablist" aria-label="Forma de acesso">
-              <button type="button" onClick={() => setModo('entrar')} className={modo === 'entrar' ? 'is-active' : ''}>Entrar</button>
-              <button type="button" onClick={() => setModo('cadastro')} className={modo === 'cadastro' ? 'is-active' : ''}>Criar conta</button>
-              <button type="button" onClick={() => setModo('local')} className={modo === 'local' ? 'is-active' : ''}>Modo local</button>
-            </div>
-          )}
+            <p className="login-onirico__panel-copy">
+              {modo === 'entrar' && 'Acesse sua conta para continuar na Vigília e retomar suas campanhas.'}
+              {modo === 'cadastro' && 'Crie sua conta para organizar campanhas, fichas e sessões compartilhadas.'}
+              {modo === 'local' && 'Use o modo local para demonstração ou jogo no mesmo dispositivo, sem sincronização online.'}
+              {modo === 'nova_senha' && 'Escolha uma nova senha para recuperar seu acesso.'}
+            </p>
 
-          <form onSubmit={usarRemoto ? autenticar : entrarLocal} className="login-onirico__form">
-            {(modo === 'cadastro' || !usarRemoto) && (
-              <label>
-                <span>Nome</span>
-                <input autoComplete="name" value={nome} onChange={event => setNome(event.target.value)} placeholder="Como devemos chamar você?" />
-              </label>
+            {modo !== 'nova_senha' && (
+              <div className="login-onirico__switch" role="tablist" aria-label="Forma de acesso">
+                <button type="button" onClick={() => trocarModo('entrar')} className={modo === 'entrar' ? 'is-active' : ''}>Entrar</button>
+                <button type="button" onClick={() => trocarModo('cadastro')} className={modo === 'cadastro' ? 'is-active' : ''}>Criar conta</button>
+                <button type="button" onClick={() => trocarModo('local')} className={modo === 'local' ? 'is-active' : ''}>Modo local</button>
+              </div>
             )}
 
-            {usarRemoto && modo !== 'nova_senha' && (
-              <label>
-                <span>E-mail</span>
-                <input type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="voce@exemplo.com" />
-              </label>
-            )}
-
-            {usarRemoto ? (
-              <>
+            <form onSubmit={usarRemoto ? autenticar : entrarLocal} className="login-onirico__form">
+              {(modo === 'cadastro' || modo === 'local') && (
                 <label>
-                  <span>{modo === 'nova_senha' ? 'Nova senha' : 'Senha'}</span>
-                  <input
-                    type="password"
-                    autoComplete={modo === 'nova_senha' ? 'new-password' : modo === 'cadastro' ? 'new-password' : 'current-password'}
-                    required
-                    minLength={6}
-                    value={senha}
-                    onChange={event => setSenha(event.target.value)}
-                    placeholder="••••••••"
-                  />
+                  <span>Nome</span>
+                  <input autoComplete="name" value={nome} onChange={event => setNome(event.target.value)} placeholder="Como devemos chamar você?" />
                 </label>
-                {modo === 'nova_senha' && (
+              )}
+
+              {usarRemoto && modo !== 'nova_senha' && (
+                <label>
+                  <span>E-mail</span>
+                  <input type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="voce@exemplo.com" />
+                </label>
+              )}
+
+              {usarRemoto ? (
+                <>
                   <label>
-                    <span>Confirmar nova senha</span>
-                    <input type="password" autoComplete="new-password" required minLength={6} value={confirmacao} onChange={event => setConfirmacao(event.target.value)} placeholder="••••••••" />
+                    <span>{modo === 'nova_senha' ? 'Nova senha' : 'Senha'}</span>
+                    <input
+                      type="password"
+                      autoComplete={modo === 'nova_senha' ? 'new-password' : modo === 'cadastro' ? 'new-password' : 'current-password'}
+                      required
+                      minLength={6}
+                      value={senha}
+                      onChange={event => setSenha(event.target.value)}
+                      placeholder="••••••••"
+                    />
                   </label>
-                )}
-                {modo === 'entrar' && (
-                  <button type="button" onClick={() => void recuperar()} className="login-onirico__link">
-                    Esqueci minha senha
+
+                  {modo === 'nova_senha' && (
+                    <label>
+                      <span>Confirmar nova senha</span>
+                      <input type="password" autoComplete="new-password" required minLength={6} value={confirmacao} onChange={event => setConfirmacao(event.target.value)} placeholder="••••••••" />
+                    </label>
+                  )}
+
+                  {modo === 'entrar' && (
+                    <button type="button" onClick={() => void recuperar()} className="login-onirico__link">
+                      Esqueci minha senha
+                    </button>
+                  )}
+                </>
+              ) : (
+                <label>
+                  <span>Código da mesa local</span>
+                  <input value={codigo} onChange={event => setCodigo(event.target.value)} placeholder="ONIRICO-01" />
+                </label>
+              )}
+
+              {erro && <p className="login-onirico__error" role="alert">{erro}</p>}
+              {mensagem && <p className="login-onirico__message" role="status">{mensagem}</p>}
+
+              <button className="ro-button login-onirico__submit" disabled={enviando}>
+                {enviando
+                  ? 'Aguarde…'
+                  : modo === 'entrar'
+                    ? 'Entrar na Vigília'
+                    : modo === 'cadastro'
+                      ? 'Criar conta'
+                      : modo === 'local'
+                        ? 'Acessar modo local'
+                        : 'Salvar nova senha'}
+                {!enviando && <span aria-hidden="true">→</span>}
+              </button>
+            </form>
+
+            {modo === 'entrar' && (
+              <>
+                <div className="login-onirico__separator"><span>ou</span></div>
+
+                <div className="login-onirico__entry-options">
+                  <button type="button" onClick={() => trocarModo('cadastro')} className="login-onirico__entry-card">
+                    <span className="login-onirico__entry-icon">＋</span>
+                    <span><strong>Criar uma conta</strong><small>Organize campanhas, personagens e mesas compartilhadas.</small></span>
+                    <b aria-hidden="true">→</b>
                   </button>
-                )}
+
+                  <button type="button" onClick={() => trocarModo('local')} className="login-onirico__entry-card">
+                    <span className="login-onirico__entry-icon">◇</span>
+                    <span><strong>Acessar modo local</strong><small>Explore a plataforma sem sincronização online.</small></span>
+                    <b aria-hidden="true">→</b>
+                  </button>
+                </div>
               </>
-            ) : (
-              <label>
-                <span>Código da mesa local</span>
-                <input value={codigo} onChange={event => setCodigo(event.target.value)} placeholder="ONIRICO-01" />
-              </label>
             )}
 
-            {erro && <p className="login-onirico__error" role="alert">{erro}</p>}
-            {mensagem && <p className="login-onirico__message" role="status">{mensagem}</p>}
-            <button className="ro-button login-onirico__submit" disabled={enviando}>
-              {enviando ? 'Aguarde…' : modo === 'entrar' ? 'Entrar' : titulo}
-              {!enviando && <span aria-hidden="true">→</span>}
-            </button>
-          </form>
+            {!remoto && modo !== 'local' && modo !== 'nova_senha' && (
+              <div className="login-onirico__offline-note login-onirico__offline-note--remote">
+                <strong>Acesso online aguardando configuração</strong>
+                <span>Entrar e Criar conta já estão na interface, mas precisam das variáveis do Supabase no Vercel para autenticar de verdade.</span>
+              </div>
+            )}
 
-          {!remoto && (
-            <div className="login-onirico__offline-note">
-              <strong>Modo local ativo</strong>
-              <span>Configure o Supabase para habilitar contas, campanhas compartilhadas e Realtime.</span>
+            {modo === 'local' && (
+              <div className="login-onirico__offline-note">
+                <strong>Modo local</strong>
+                <span>Os dados ficam neste dispositivo e não são sincronizados com outras pessoas.</span>
+              </div>
+            )}
+
+            {modo === 'nova_senha' && (
+              <button type="button" onClick={() => trocarModo('entrar')} className="login-onirico__local">Voltar para o login</button>
+            )}
+
+            <div className="login-onirico__roles-note">
+              <span>ⓘ</span>
+              <p>Papéis como Mestre, Jogador e Observador são definidos em cada campanha.</p>
             </div>
-          )}
-
-          {remoto && modo === 'nova_senha' && (
-            <button type="button" onClick={() => setModo('entrar')} className="login-onirico__local">Voltar para o login</button>
-          )}
+          </section>
         </section>
       </main>
     </div>
