@@ -162,6 +162,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
           </div>
         </section>
 
+        <div className="login-onirico__art-column" aria-hidden="true">
+          <div className="login-onirico__art-image" />
+        </div>
+
         <section className="login-onirico__access-column">
           <section className="login-onirico__panel login-onirico__panel--urban">
             {modo !== 'nova_senha' && (
