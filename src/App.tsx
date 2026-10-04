@@ -283,18 +283,12 @@ export default function App() {
       console.error('Erro ao persistir sessão:', e);
     }
 
-    if (novaSession.role === 'mestre') {
-      setViewAtiva('dashboard');
-    } else {
-      if (novaSession.personagemVinculadoId) {
-        setPersonagemAtivoId(novaSession.personagemVinculadoId);
-        const p = personagens.find(x => x.id === novaSession.personagemVinculadoId);
-        if (p) {
-          setPersonagemParaFicha(p);
-        }
-      }
-      setViewAtiva('personagens');
+    if (novaSession.personagemVinculadoId) {
+      setPersonagemAtivoId(novaSession.personagemVinculadoId);
     }
+    // Contas remotas não têm um papel global: Mestre/Jogador/Observador é definido por campanha.
+    // O Dashboard é o ponto de entrada correto para qualquer conta autenticada.
+    setViewAtiva('dashboard');
   };
 
   const handleTrocarSessao = () => {
@@ -459,7 +453,11 @@ export default function App() {
         return (
           <DashboardView
             campanhas={campanhas}
+            userName={session.nome}
+            personagens={personagens}
             onNovaCampanha={handleIniciarCriacaoCampanha}
+            onNovoPersonagem={() => setModalCriarPersonagem(true)}
+            onAbrirPersonagem={handleAbrirFichaPersonagem}
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             personagensParaVinculo={usandoRemoto ? personagens : undefined}
