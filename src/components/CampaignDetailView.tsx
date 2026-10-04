@@ -230,7 +230,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
       {/* Hero editorial da campanha */}
       <section className="ro-campaign-hero ro-campaign-hero--v4">
         <div className="ro-campaign-hero__copy">
-          <p className="ro-eyebrow">Campanha · ${campanha.tipo}</p>
+          <p className="ro-eyebrow">Campanha · {campanha.tipo}</p>
           <h1>{campanha.nome}</h1>
           <p className="ro-campaign-hero__description">{campanha.descricao}</p>
           <div className="ro-campaign-hero__meta">
