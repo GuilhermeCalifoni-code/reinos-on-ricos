@@ -1980,3 +1980,540 @@
     padding: 1.35rem 1rem;
   }
 }
+
+
+/* ========================================================================== */
+/* LOGIN — composição integrada fiel à referência aprovada                    */
+/* ========================================================================== */
+
+.login-onirico--reference {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 9% 8%, rgba(156,103,42,.045), transparent 19rem),
+    radial-gradient(circle at 86% 84%, rgba(20,26,32,.035), transparent 26rem),
+    #f8f4ec;
+}
+
+.login-onirico--reference::before,
+.login-onirico--reference::after {
+  position: absolute;
+  z-index: 0;
+  content: '';
+  pointer-events: none;
+}
+
+.login-onirico--reference::before {
+  inset: -8rem auto auto -8rem;
+  width: 28rem;
+  height: 28rem;
+  border: 1px solid rgba(166,109,43,.11);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 5.2rem rgba(166,109,43,.035),
+    0 0 0 10.6rem rgba(166,109,43,.025);
+}
+
+.login-onirico--reference::after {
+  right: -8rem;
+  bottom: -10rem;
+  width: 30rem;
+  height: 30rem;
+  border: 1px solid rgba(166,109,43,.08);
+  border-radius: 50%;
+}
+
+.login-onirico--reference .login-onirico__main--urban {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* Esquerda: conteúdo editorial flutuando sobre a mesma composição. */
+.login-onirico--reference .login-onirico__intro--urban {
+  position: absolute;
+  z-index: 4;
+  inset: 0 auto 0 0;
+  display: flex;
+  width: 42%;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+  padding:
+    clamp(3rem, 6vh, 5.2rem)
+    1.5rem
+    clamp(2.4rem, 5vh, 4.5rem)
+    clamp(4.4rem, 6.3vw, 7rem);
+  background:
+    linear-gradient(
+      90deg,
+      #f8f4ec 0%,
+      rgba(248,244,236,.99) 62%,
+      rgba(248,244,236,.88) 78%,
+      rgba(248,244,236,.10) 100%
+    ) !important;
+}
+
+.login-onirico--reference .login-onirico__intro--urban::before,
+.login-onirico--reference .login-onirico__intro--urban::after {
+  display: none !important;
+}
+
+.login-onirico--reference .login-onirico__intro-content {
+  position: relative;
+  z-index: 5;
+  width: min(100%, 31rem);
+  min-width: 0;
+  margin: 0;
+}
+
+.login-onirico--reference .login-onirico__wordmark {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: .55rem;
+  margin: 0 0 1.65rem;
+  color: #10161b;
+}
+
+.login-onirico--reference .login-onirico__wordmark > img {
+  width: 3.6rem;
+  height: 4.15rem;
+  flex: 0 0 auto;
+}
+
+.login-onirico--reference .login-onirico__wordmark strong {
+  display: block;
+  font: 500 clamp(2.25rem, 2.85vw, 3.35rem)/.78 Georgia, 'Times New Roman', serif;
+  letter-spacing: .005em;
+}
+
+.login-onirico--reference .login-onirico__wordmark small {
+  display: block;
+  margin-top: .58rem;
+  color: #8f6028;
+  font: 600 .7rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .56em;
+  text-align: center;
+}
+
+.login-onirico--reference .ro-eyebrow {
+  color: #6e5233;
+  font-size: .55rem;
+  letter-spacing: .31em;
+}
+
+.login-onirico--reference .login-onirico__intro--urban h1 {
+  max-width: 7.2ch;
+  margin: .95rem 0 0;
+  color: #11161b;
+  font: 400 clamp(3.7rem, 5.25vw, 6.25rem)/.93 Georgia, 'Times New Roman', serif;
+  letter-spacing: -.043em;
+}
+
+.login-onirico--reference .login-onirico__lead {
+  max-width: 29rem !important;
+  margin: 1.35rem 0 0 !important;
+  color: #545b61 !important;
+  font: .94rem/1.55 Georgia, 'Times New Roman', serif !important;
+}
+
+.login-onirico--reference .login-onirico__intro--urban blockquote {
+  max-width: 27rem;
+  margin: 1.65rem 0 0;
+  padding: .35rem 0 .35rem 1rem;
+  border-left: 1px solid #a66d2b;
+  color: #666a6d;
+  font: italic .92rem/1.5 Georgia, 'Times New Roman', serif;
+}
+
+/* Centro: a arte deixa de ser uma coluna e vira parte da composição. */
+.login-onirico--reference .login-onirico__art-column {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  left: 26%;
+  width: 44%;
+  min-height: 100vh;
+  overflow: visible;
+  background: transparent;
+}
+
+.login-onirico--reference .login-onirico__art-column::before {
+  position: absolute;
+  inset: -4% -18%;
+  z-index: 0;
+  content: '';
+  opacity: .20;
+  filter: blur(20px) saturate(.78);
+  transform: scale(1.08);
+  background: inherit;
+}
+
+.login-onirico--reference .login-onirico__art-column::after {
+  position: absolute;
+  z-index: 3;
+  inset: 0 -2%;
+  content: '';
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      #f8f4ec 0%,
+      rgba(248,244,236,.58) 7%,
+      rgba(248,244,236,.06) 19%,
+      transparent 29%,
+      transparent 74%,
+      rgba(248,244,236,.18) 84%,
+      rgba(248,244,236,.80) 96%,
+      #f8f4ec 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(248,244,236,.12) 0%,
+      transparent 16%,
+      transparent 84%,
+      rgba(248,244,236,.10) 100%
+    );
+}
+
+.login-onirico--reference .login-onirico__art-image {
+  position: absolute;
+  z-index: 1;
+  inset: 0 -10%;
+  transform: scaleX(1.12);
+  transform-origin: center;
+  background-position: center center !important;
+  background-size: auto 100% !important;
+  background-repeat: no-repeat !important;
+  filter: contrast(1.01) saturate(.90);
+}
+
+/* Um segundo passe suave da mesma arte dá largura sem criar uma faixa rígida. */
+.login-onirico--reference .login-onirico__art-image::before {
+  position: absolute;
+  inset: 0;
+  content: '';
+  opacity: .22;
+  filter: blur(13px);
+  transform: scale(1.35, 1.04);
+  background: inherit;
+  background-position: center !important;
+  background-size: auto 100% !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Direita: painel passa a sobrepor levemente a arte, como na referência. */
+.login-onirico--reference .login-onirico__access-column {
+  position: absolute;
+  z-index: 5;
+  inset: 0 0 0 auto;
+  display: flex;
+  width: 43%;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: flex-end;
+  overflow-y: auto;
+  padding:
+    clamp(2.2rem, 4.5vh, 4rem)
+    clamp(4rem, 5vw, 5.7rem)
+    clamp(2.2rem, 4.5vh, 4rem)
+    clamp(1rem, 2vw, 2.3rem);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(248,244,236,0) 0%,
+      rgba(248,244,236,.42) 11%,
+      rgba(248,244,236,.88) 25%,
+      #f8f4ec 53%,
+      #f8f4ec 100%
+    );
+}
+
+.login-onirico--reference .login-onirico__panel--urban {
+  width: min(100%, 38rem);
+  min-height: min(80vh, 47rem);
+  margin: auto 0;
+  padding:
+    clamp(2rem, 3.4vh, 2.65rem)
+    clamp(2rem, 2.8vw, 2.65rem)
+    clamp(1.8rem, 3vh, 2.4rem);
+  border: 1px solid rgba(25,29,32,.12);
+  border-radius: 10px;
+  background: rgba(255,253,249,.94);
+  box-shadow: 0 26px 78px rgba(48,42,34,.12);
+  backdrop-filter: blur(14px);
+}
+
+.login-onirico--reference .login-onirico__panel--urban::before {
+  display: none;
+}
+
+.login-onirico--reference .login-onirico__switch {
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0 0 2rem;
+  border-bottom: 1px solid rgba(18,23,28,.13);
+}
+
+.login-onirico--reference .login-onirico__switch button {
+  min-height: 3.1rem;
+  padding: .6rem .3rem;
+  color: #656b70;
+  font: 500 .88rem/1 Georgia, 'Times New Roman', serif;
+}
+
+.login-onirico--reference .login-onirico__switch button.is-active {
+  color: #15191d;
+}
+
+.login-onirico--reference .login-onirico__switch button.is-active::after {
+  right: 1rem;
+  left: 1rem;
+  height: 2px;
+  background: #161b20;
+}
+
+.login-onirico--reference .login-onirico__title {
+  margin: 0;
+  color: #171b1f;
+  font: 400 clamp(2.15rem, 2.55vw, 3rem)/1.02 Georgia, 'Times New Roman', serif;
+  letter-spacing: -.026em;
+}
+
+.login-onirico--reference .login-onirico__panel-copy {
+  min-height: 0;
+  margin: .45rem 0 1.65rem !important;
+  color: #777c80 !important;
+  font-size: .84rem !important;
+  line-height: 1.45 !important;
+}
+
+.login-onirico--reference .login-onirico__form {
+  gap: .95rem;
+}
+
+.login-onirico--reference .login-onirico__form label {
+  gap: .4rem;
+}
+
+.login-onirico--reference .login-onirico__form label > span {
+  color: #6b7074;
+  font-size: .60rem;
+  letter-spacing: .10em;
+}
+
+.login-onirico--reference .login-onirico__field-control input,
+.login-onirico--reference .login-onirico__form > label > input {
+  min-height: 3.5rem;
+  border: 1px solid rgba(22,27,31,.15);
+  border-radius: 5px;
+  background: rgba(255,255,255,.72);
+  color: #171b1f;
+  font: .90rem/1.2 Georgia, 'Times New Roman', serif;
+}
+
+.login-onirico--reference .login-onirico__field-control input {
+  padding-left: 3rem;
+  padding-right: 3rem;
+}
+
+.login-onirico--reference .login-onirico__link {
+  margin-top: -.35rem;
+  color: #6f4f2c;
+  font-size: .72rem;
+}
+
+.login-onirico--reference .login-onirico__submit {
+  min-height: 3.65rem;
+  margin-top: .15rem;
+  border-radius: 5px;
+  padding-inline: 1.2rem;
+  background:
+    radial-gradient(circle at 7% 50%, rgba(214,158,75,.22), transparent 3rem),
+    #11171c;
+  color: #fff9ef;
+  font: 600 .92rem/1 Georgia, 'Times New Roman', serif;
+  letter-spacing: .005em;
+}
+
+.login-onirico--reference .login-onirico__separator {
+  margin: 1.35rem 0 1.05rem;
+}
+
+.login-onirico--reference .login-onirico__entry-options {
+  gap: .85rem;
+}
+
+.login-onirico--reference .login-onirico__entry-card {
+  grid-template-columns: 3rem minmax(0,1fr) auto;
+  min-height: 5.45rem;
+  gap: .85rem;
+  padding: .85rem .95rem;
+  border: 1px solid rgba(18,23,28,.09);
+  border-radius: 5px;
+  background: rgba(248,243,235,.80);
+}
+
+.login-onirico--reference .login-onirico__entry-icon {
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 0;
+  color: #a66d2b;
+  font-size: 1.45rem;
+}
+
+.login-onirico--reference .login-onirico__entry-card strong {
+  font-size: .88rem;
+}
+
+.login-onirico--reference .login-onirico__entry-card small {
+  max-width: 18rem;
+  color: #777c80;
+  font-size: .66rem;
+  line-height: 1.42;
+}
+
+.login-onirico--reference .login-onirico__entry-cta {
+  min-width: 8.45rem;
+  padding: .84rem .82rem;
+  border: 1px solid rgba(18,23,28,.13);
+  border-radius: 5px;
+  background: rgba(255,253,249,.77);
+  color: #1b2024;
+  font: 600 .68rem/1 Georgia, 'Times New Roman', serif;
+}
+
+.login-onirico--reference .login-onirico__offline-note {
+  margin-top: 1rem;
+  font-size: .69rem;
+}
+
+/* 1440–1599: aproximações suaves sem quebrar a composição. */
+@media (max-width: 1599px) and (min-width: 1081px) {
+  .login-onirico--reference .login-onirico__intro--urban {
+    width: 43%;
+    padding-left: clamp(3rem, 5vw, 5rem);
+  }
+
+  .login-onirico--reference .login-onirico__art-column {
+    left: 25%;
+    width: 45%;
+  }
+
+  .login-onirico--reference .login-onirico__access-column {
+    width: 44%;
+    padding-right: 3.5rem;
+  }
+
+  .login-onirico--reference .login-onirico__panel--urban {
+    width: min(100%, 36rem);
+  }
+
+  .login-onirico--reference .login-onirico__intro--urban h1 {
+    font-size: clamp(3.35rem, 5vw, 5.35rem);
+  }
+}
+
+/* Tablet: primeiro empilha identidade+arte, depois o painel. */
+@media (max-width: 1080px) {
+  .login-onirico--reference {
+    overflow: auto;
+  }
+
+  .login-onirico--reference .login-onirico__main--urban {
+    display: grid;
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .login-onirico--reference .login-onirico__intro--urban,
+  .login-onirico--reference .login-onirico__art-column,
+  .login-onirico--reference .login-onirico__access-column {
+    position: relative;
+    inset: auto;
+    width: 100%;
+  }
+
+  .login-onirico--reference .login-onirico__intro--urban {
+    min-height: 44rem;
+    padding: 4.4rem 1.4rem 3rem;
+    background:
+      linear-gradient(90deg, #f8f4ec 0%, rgba(248,244,236,.95) 48%, rgba(248,244,236,.2) 100%) !important;
+  }
+
+  .login-onirico--reference .login-onirico__intro-content {
+    width: min(72%, 31rem);
+  }
+
+  .login-onirico--reference .login-onirico__art-column {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    left: auto;
+    width: 66%;
+    min-height: 44rem;
+    pointer-events: none;
+  }
+
+  .login-onirico--reference .login-onirico__access-column {
+    min-height: auto;
+    padding: 2rem 1rem 3rem;
+    background: #f8f4ec;
+  }
+
+  .login-onirico--reference .login-onirico__panel--urban {
+    width: min(100%, 42rem);
+    min-height: 0;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-onirico--reference .login-onirico__intro--urban {
+    min-height: 38rem;
+    padding-top: 3rem;
+  }
+
+  .login-onirico--reference .login-onirico__intro-content {
+    width: 76%;
+  }
+
+  .login-onirico--reference .login-onirico__art-column {
+    width: 74%;
+    min-height: 38rem;
+  }
+
+  .login-onirico--reference .login-onirico__wordmark strong {
+    font-size: 1.9rem;
+  }
+
+  .login-onirico--reference .login-onirico__intro--urban h1 {
+    font-size: 3.15rem;
+  }
+
+  .login-onirico--reference .login-onirico__lead {
+    font-size: .80rem !important;
+  }
+
+  .login-onirico--reference .login-onirico__panel--urban {
+    padding: 1.35rem 1rem;
+  }
+
+  .login-onirico--reference .login-onirico__entry-card {
+    grid-template-columns: 2.6rem 1fr;
+  }
+
+  .login-onirico--reference .login-onirico__entry-cta {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: .2rem;
+  }
+}
