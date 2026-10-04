@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, SessaoStatus, MembroCampanha, Cena, Handout } from '../types/campaign';
 import { Personagem } from '../types/character';
 import { SessionPlanner } from './campaign/SessionPlanner';
@@ -201,7 +201,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
     setModalNovoItem(null);
   };
 
-  const tabs: { id: CampaignTabType; label: string }[] = [
+  const tabsBase: { id: CampaignTabType; label: string }[] = [
     { id: 'visao_geral', label: 'Visão Geral' },
     { id: 'sessoes', label: 'Sessões' },
     { id: 'personagens', label: 'Personagens' },
@@ -216,6 +216,13 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
     { id: 'anotacoes', label: 'Anotações' },
     { id: 'configuracoes', label: 'Configurações' }
   ];
+
+  const masterOnlyTabs = new Set<CampaignTabType>(['sessoes', 'anotacoes', 'configuracoes']);
+  const tabs = canManageMembers ? tabsBase : tabsBase.filter(tab => !masterOnlyTabs.has(tab.id));
+
+  useEffect(() => {
+    if (!canManageMembers && masterOnlyTabs.has(abaAtiva)) setAbaAtiva('visao_geral');
+  }, [abaAtiva, canManageMembers]);
 
   return (
     <div className="w-full flex flex-col pb-20">
@@ -539,12 +546,12 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Locais & Fronteiras</h2>
                 <p className="text-xs text-[var(--ro-ash)] mt-0.5">Espaços urbanos onde o Sonhar se manifesta.</p>
               </div>
-              <button
+              {canManageMembers && (<button
                 onClick={() => setModalNovoItem('locais')}
                 className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Novo Local
-              </button>
+              </button>)}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -577,12 +584,12 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Pistas & Evidências</h2>
                 <p className="text-xs text-[var(--ro-ash)] mt-0.5">Documentos, gravações e objetos anômalos.</p>
               </div>
-              <button
+              {canManageMembers && (<button
                 onClick={() => setModalNovoItem('pistas')}
                 className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Nova Pista
-              </button>
+              </button>)}
             </div>
 
             <div className="space-y-4">
@@ -614,12 +621,12 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Arquivos de Lore & Conhecimento</h2>
                 <p className="text-xs text-[var(--ro-ash)] mt-0.5">Tradição, leis do Sonhar e facções urbanas.</p>
               </div>
-              <button
+              {canManageMembers && (<button
                 onClick={() => setModalNovoItem('lore')}
                 className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Novo Arquivo
-              </button>
+              </button>)}
             </div>
 
             <div className="space-y-4">
@@ -644,12 +651,12 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Anotações do Narrador</h2>
                 <p className="text-xs text-[var(--ro-ash)] mt-0.5">Planejamento secreto e notas da crônica.</p>
               </div>
-              <button
+              {canManageMembers && (<button
                 onClick={() => setModalNovoItem('anotacoes')}
                 className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
               >
                 + Nova Anotação
-              </button>
+              </button>)}
             </div>
 
             <div className="space-y-4">
