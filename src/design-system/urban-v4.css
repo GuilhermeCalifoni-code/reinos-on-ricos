@@ -2517,3 +2517,120 @@
     margin-top: .2rem;
   }
 }
+
+
+/* ---------- Login precision pass — 1672x941 reference ---------- */
+@media (min-width: 1081px) {
+  .login-onirico--reference .login-onirico__intro--urban {
+    width: 41.5%;
+    justify-content: flex-start;
+    padding-top: 5.15rem;
+    padding-left: clamp(4.8rem, 6.2vw, 6.5rem);
+  }
+
+  .login-onirico--reference .login-onirico__intro-content {
+    width: min(100%, 30.5rem);
+  }
+
+  .login-onirico--reference .login-onirico__wordmark {
+    gap: .72rem;
+    margin-bottom: 2rem;
+  }
+
+  .login-onirico--reference .login-onirico__wordmark > img {
+    width: 4.9rem;
+    height: 5.55rem;
+  }
+
+  .login-onirico--reference .login-onirico__wordmark strong {
+    font-size: clamp(3.05rem, 3.25vw, 3.5rem);
+    line-height: .76;
+    letter-spacing: -.012em;
+  }
+
+  .login-onirico--reference .login-onirico__wordmark small {
+    margin-top: .72rem;
+    font-size: .74rem;
+    letter-spacing: .72em;
+  }
+
+  .login-onirico--reference .ro-eyebrow {
+    font-size: .55rem;
+    letter-spacing: .34em;
+  }
+
+  .login-onirico--reference .login-onirico__intro--urban h1 {
+    max-width: 7.35ch;
+    margin-top: 1.05rem;
+    font-size: clamp(3.55rem, 4.25vw, 4.75rem);
+    line-height: .94;
+    letter-spacing: -.045em;
+  }
+
+  .login-onirico--reference .login-onirico__lead {
+    max-width: 28.5rem !important;
+    margin-top: 1.45rem !important;
+    font-size: .93rem !important;
+  }
+
+  .login-onirico--reference .login-onirico__intro--urban blockquote {
+    margin-top: 1.85rem;
+  }
+
+  .login-onirico--reference .login-onirico__art-column {
+    left: 25%;
+    width: 45%;
+  }
+
+  .login-onirico--reference .login-onirico__art-image {
+    inset: 0 -13%;
+    transform: scaleX(1.55);
+    filter: contrast(.98) saturate(.84) brightness(1.015);
+  }
+
+  .login-onirico--reference .login-onirico__art-image::before {
+    opacity: .16;
+    transform: scale(1.22, 1.02);
+    filter: blur(16px);
+  }
+
+  .login-onirico--reference .login-onirico__art-column::after {
+    background:
+      linear-gradient(
+        90deg,
+        #f8f4ec 0%,
+        rgba(248,244,236,.72) 5%,
+        rgba(248,244,236,.13) 17%,
+        transparent 28%,
+        transparent 72%,
+        rgba(248,244,236,.10) 84%,
+        rgba(248,244,236,.70) 96%,
+        #f8f4ec 100%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(248,244,236,.08) 0%,
+        transparent 13%,
+        transparent 88%,
+        rgba(248,244,236,.08) 100%
+      );
+  }
+
+  .login-onirico--reference .login-onirico__access-column {
+    width: 43.2%;
+    padding-right: clamp(4.5rem, 5.2vw, 5.8rem);
+    padding-left: clamp(1.2rem, 2vw, 2.2rem);
+  }
+
+  .login-onirico--reference .login-onirico__panel--urban {
+    width: min(100%, 37.8rem);
+    min-height: min(80.5vh, 47.5rem);
+    padding: 2.25rem 2.35rem 2.25rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  .login-onirico--reference .login-onirico__access-column {
+    width: 42.8%;
+  }
+}
