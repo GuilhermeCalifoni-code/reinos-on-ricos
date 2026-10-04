@@ -3,7 +3,6 @@ import { Personagem } from '../types/character';
 import { UserSession } from '../types/auth';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
 import { authService } from '../services/auth/authService';
-import { ThemeToggle } from '../design-system/ThemeToggle';
 
 interface LoginScreenProps {
   personagens: Personagem[];
@@ -27,6 +26,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [erro, setErro] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const trocarModo = (proximo: AuthMode) => {
     setModo(proximo);
@@ -139,16 +139,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
   return (
     <div className="login-onirico login-onirico--urban login-onirico--reference">
-      <header className="login-onirico__header">
-        <a className="login-onirico__identity" href="/" aria-label="Reinos Oníricos RPG">
-          <img src="/ro-mark.svg" alt="" className="login-onirico__mark" />
-          <span>
-            <strong>REINOS ONÍRICOS</strong>
-            <small>RPG · Plataforma de mesa</small>
-          </span>
-        </a>
-        <ThemeToggle />
-      </header>
 
       <main className="login-onirico__main login-onirico__main--urban">
         <section className="login-onirico__intro login-onirico__intro--urban">
@@ -174,13 +164,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         <section className="login-onirico__access-column">
           <section className="login-onirico__panel login-onirico__panel--urban">
-            <div className="login-onirico__panel-brand">
-              <img src="/ro-mark.svg" alt="" />
-              <div>
-                <p className="ro-eyebrow">{modo === 'nova_senha' ? 'Recuperação de acesso' : 'Portal da mesa'}</p>
-                <h2>{titulo}</h2>
-              </div>
-            </div>
+            <p className="login-onirico__panel-kicker">{modo === 'nova_senha' ? 'Recuperação de acesso' : 'Portal da mesa'}</p>
 
             <p className="login-onirico__panel-copy">
               {modo === 'entrar' && 'Acesse sua conta para continuar na Vigília e retomar suas campanhas.'}
@@ -197,6 +181,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </div>
             )}
 
+            <h2 className="login-onirico__title">{titulo}</h2>
+
             <form onSubmit={usarRemoto ? autenticar : entrarLocal} className="login-onirico__form">
               {(modo === 'cadastro' || modo === 'local') && (
                 <label>
@@ -208,7 +194,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               {usarRemoto && modo !== 'nova_senha' && (
                 <label>
                   <span>E-mail</span>
-                  <input type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="voce@exemplo.com" />
+                  <div className="login-onirico__field-control">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6.5h18v11H3zM4 7l8 6 8-6" /></svg>
+                    <input type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="voce@exemplo.com" />
+                  </div>
                 </label>
               )}
 
@@ -216,15 +205,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 <>
                   <label>
                     <span>{modo === 'nova_senha' ? 'Nova senha' : 'Senha'}</span>
-                    <input
-                      type="password"
-                      autoComplete={modo === 'nova_senha' ? 'new-password' : modo === 'cadastro' ? 'new-password' : 'current-password'}
-                      required
-                      minLength={6}
-                      value={senha}
-                      onChange={event => setSenha(event.target.value)}
-                      placeholder="••••••••"
-                    />
+                    <div className="login-onirico__field-control">
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v10H5z" /></svg>
+                      <input
+                        type={mostrarSenha ? 'text' : 'password'}
+                        autoComplete={modo === 'nova_senha' ? 'new-password' : modo === 'cadastro' ? 'new-password' : 'current-password'}
+                        required
+                        minLength={6}
+                        value={senha}
+                        onChange={event => setSenha(event.target.value)}
+                        placeholder="••••••••"
+                      />
+                      <button type="button" className="login-onirico__password-toggle" onClick={() => setMostrarSenha(valor => !valor)} aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                      </button>
+                    </div>
                   </label>
 
                   {modo === 'nova_senha' && (
@@ -270,25 +265,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
                 <div className="login-onirico__entry-options">
                   <button type="button" onClick={() => trocarModo('cadastro')} className="login-onirico__entry-card">
-                    <span className="login-onirico__entry-icon">＋</span>
-                    <span><strong>Criar uma conta</strong><small>Organize campanhas, personagens e mesas compartilhadas.</small></span>
-                    <b aria-hidden="true">→</b>
+                    <span className="login-onirico__entry-icon">♙</span>
+                    <span><strong>Ainda não tem uma conta?</strong><small>Crie sua conta para organizar campanhas, gerenciar personagens e jogar com sua mesa.</small></span>
+                    <span className="login-onirico__entry-cta">Criar conta&nbsp; →</span>
                   </button>
 
                   <button type="button" onClick={() => trocarModo('local')} className="login-onirico__entry-card">
-                    <span className="login-onirico__entry-icon">◇</span>
-                    <span><strong>Acessar modo local</strong><small>Explore a plataforma sem sincronização online.</small></span>
-                    <b aria-hidden="true">→</b>
+                    <span className="login-onirico__entry-icon">▣</span>
+                    <span><strong>Modo local</strong><small>Use o modo local para jogo no mesmo dispositivo, sem sincronização online.</small></span>
+                    <span className="login-onirico__entry-cta">Acessar modo local&nbsp; →</span>
                   </button>
                 </div>
               </>
-            )}
-
-            {!remoto && modo !== 'local' && modo !== 'nova_senha' && (
-              <div className="login-onirico__offline-note login-onirico__offline-note--remote">
-                <strong>Acesso online aguardando configuração</strong>
-                <span>Entrar e Criar conta já estão na interface, mas precisam das variáveis do Supabase no Vercel para autenticar de verdade.</span>
-              </div>
             )}
 
             {modo === 'local' && (
@@ -301,11 +289,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             {modo === 'nova_senha' && (
               <button type="button" onClick={() => trocarModo('entrar')} className="login-onirico__local">Voltar para o login</button>
             )}
-
-            <div className="login-onirico__roles-note">
-              <span>ⓘ</span>
-              <p>Papéis como Mestre, Jogador e Observador são definidos em cada campanha.</p>
-            </div>
           </section>
         </section>
       </main>
