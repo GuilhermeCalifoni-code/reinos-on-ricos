@@ -10,6 +10,7 @@ import { LiveDock, LiveTool } from './LiveDock';
 import { PartyPanel } from './PartyPanel';
 import { SceneStage } from './SceneStage';
 import { SessionPanel } from './SessionPanel';
+import { MapStage } from './MapStage';
 import { useSessionEvents } from '../../services/session-events/useSessionEvents';
 import { sessionEventFactories } from '../../services/session-events/sessionEventFactories';
 import { useCampaignRealtime } from '../../features/realtime/useCampaignRealtime';
@@ -99,7 +100,9 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const atualizarToken = (id: string, patch: Partial<TokenMapa>) => { if (compartilhando) void realtime.patchToken(id, patch).catch(() => undefined); else onAtualizarTokenMapa(id, patch); };
   const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(() => undefined); else onRemoverTokenMapa(id); };
   const statusTexto = !registroOnline ? 'Local' : realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
-  const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={conteudo} title={sceneTitle} description={sceneDescription} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
+  const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
+  const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
+  const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
   const closeTool = () => setFerramenta('nenhuma');
   const toggleCinematic = () => {
     setCinematic(value => {
@@ -110,34 +113,100 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     });
   };
 
-  return <section className={`live-table ${partyOpen ? '' : 'is-party-collapsed'} ${sessionOpen ? '' : 'is-session-collapsed'} ${cinematic ? 'is-cinematic' : ''}`}>
-    <header className="live-table__bar">
-      <div className="live-table__bar-left">
-        <button onClick={onVoltar} className="live-table__back">← Campanha</button>
-        <button className="live-table__panel-toggle" onClick={() => { setPartyOpen(v => !v); setCinematic(false); }} aria-pressed={partyOpen}>Grupo</button>
+  return (
+    <section className={`live-table live-table--v4 ${partyOpen ? '' : 'is-party-collapsed'} ${sessionOpen ? '' : 'is-session-collapsed'} ${cinematic ? 'is-cinematic' : ''}`}>
+      <header className="live-table__bar live-table__bar--v4">
+        <div className="live-table__brand">
+          <img src="/ro-mark.svg" alt="" />
+          <div>
+            <strong>REINOS ONÍRICOS</strong>
+            <small>RPG · Mesa Ao Vivo</small>
+          </div>
+        </div>
+
+        <div className="live-table__campaign-title">
+          <p className="ro-eyebrow">{campanha.tipo} · {campanha.jogadoresCount || personagens.length} membros</p>
+          <h1>{campanha.nome}</h1>
+        </div>
+
+        <div className="live-table__session-title">
+          <small>Sessão de hoje</small>
+          <strong>{sessionTitle || `Sessão ${String(campanha.sessaoAtual).padStart(2, '0')}`}</strong>
+          <span className={`live-table__live is-${realtime.status}`}><i /> {statusTexto}</span>
+        </div>
+
+        <div className="live-table__bar-right">
+          <ThemeToggle compact />
+          <div className="live-table__user">
+            <span>{userName?.slice(0, 2).toUpperCase() || 'RO'}</span>
+            <div><strong>{userName || 'Participante'}</strong><small>{role}</small></div>
+          </div>
+          <button className="live-table__back live-table__back--danger" onClick={onVoltar}>Voltar à campanha</button>
+        </div>
+      </header>
+
+      {realtime.error && <p className="live-table__sync-error">Mesa remota indisponível: {realtime.error}</p>}
+
+      <div className="live-table__workspace">
+        {sessionOpen && (
+          <aside className="live-table__record-column">
+            <div className="live-table__column-title">
+              <div><h2>Registro Vivo</h2><p>Tudo o que acontece na mesa, em tempo real.</p></div>
+              <button onClick={() => setSessionOpen(false)} aria-label="Ocultar Registro Vivo">×</button>
+            </div>
+            <SessionPanel contadores={contadoresAtuais} mestre={mestre} role={role} userId={userId} members={members} enabled={registroOnline} events={registro.events} loading={registro.loading} error={registro.error} onSend={registro.registrar} />
+          </aside>
+        )}
+
+        <main className="live-table__scene-column">
+          <div className="live-table__scene-heading">
+            <div><h2>Cena Atual</h2><p>A cena em foco na sua sessão.</p></div>
+            <div className="live-table__scene-modes">
+              <button className={cinematic ? 'is-active' : ''} onClick={toggleCinematic}>{cinematic ? 'Sair do Sonhar' : 'Modo Sonhar'}</button>
+              {!sessionOpen && <button onClick={() => setSessionOpen(true)}>Registro</button>}
+            </div>
+          </div>
+
+          {cena}
+
+          {partyOpen && (
+            <section className="live-table__present">
+              <div className="live-table__present-head">
+                <div><h3>Personagens Presentes</h3><p>{mestre ? 'Selecione para ajustar recursos ou abrir a ficha.' : 'Seu Desvelado nesta cena.'}</p></div>
+                <button onClick={() => setPartyOpen(false)}>Ocultar</button>
+              </div>
+              <PartyPanel personagens={personagensVisiveis} selecionadoId={selecionado?.id || ''} mestre={mestre} onSelecionar={setSelecionadoId} onAjustar={ajustar} onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')} />
+            </section>
+          )}
+          {!partyOpen && <button className="live-table__restore-party" onClick={() => setPartyOpen(true)}>Mostrar personagens</button>}
+        </main>
+
+        <aside className="live-table__map-column">
+          <div className="live-table__column-title">
+            <div><h2>Mapa da Cena</h2><p>Explore, mova tokens e revele o mundo.</p></div>
+          </div>
+          {mapaCena}
+        </aside>
       </div>
-      <div className="min-w-0 text-center">
-        <p className="ro-eyebrow">{campanha.nome}</p>
-        <h1>Sessão {String(campanha.sessaoAtual).padStart(2, '0')}</h1>
-        {registroOnline && <small className="live-table__presence">{realtime.presence.length ? realtime.presence.map(item => `● ${item.name}`).join(' · ') : 'Conectando participantes…'}</small>}
-      </div>
-      <div className="live-table__bar-right">
-        <ThemeToggle compact />
-        <button className="live-table__panel-toggle" onClick={() => { setSessionOpen(v => !v); setCinematic(false); }} aria-pressed={sessionOpen}>Registro</button>
-        <button className={`live-table__focus-toggle ${cinematic ? 'is-active' : ''}`} onClick={toggleCinematic}>{cinematic ? 'Sair do foco' : 'Modo foco'}</button>
-        <span className={`live-table__live is-${realtime.status}`}><i /> {statusTexto}</span>
-      </div>
-    </header>
-    {realtime.error && <p className="live-table__sync-error">Mesa remota indisponível: {realtime.error}</p>}
-    <div className="live-table__grid">{partyOpen && <PartyPanel personagens={personagensVisiveis} selecionadoId={selecionado?.id || ''} mestre={mestre} onSelecionar={setSelecionadoId} onAjustar={ajustar} onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')} />}{cena}{sessionOpen && <SessionPanel contadores={contadoresAtuais} mestre={mestre} role={role} userId={userId} members={members} enabled={registroOnline} events={registro.events} loading={registro.loading} error={registro.error} onSend={registro.registrar} />}</div>
-    <LiveDock ferramenta={ferramenta} onSelecionar={selecionarFerramenta} />
-    {ferramenta !== 'nenhuma' && <div className="live-table__tool-backdrop" onMouseDown={closeTool}><section className="live-table__tool" onMouseDown={event => event.stopPropagation()}><header className="live-table__tool-head"><div><p className="ro-eyebrow">Ferramenta de mesa</p><strong>{ferramenta}</strong></div><button onClick={closeTool} aria-label="Fechar ferramenta">×</button></header>
-      {ferramenta === 'dados' && <DiceRoller personagemAtivo={selecionado} onSalvarPersonagem={atualizarPersonagemMesa} onAbrirModalRuptura={(delta, motivo) => selecionado && onAbrirRuptura(selecionado, delta, motivo)} onRegistrarRolagem={registrarSemFalhar} />}
-      {ferramenta === 'sonhar' && <DreamGuide personagemAtivo={selecionado} onIrParaRoladorOnirico={() => setFerramenta('dados')} />}
-      {ferramenta === 'ficha' && (selecionado ? <div className="live-table__quick-sheet"><p className="ro-eyebrow">Ficha rápida</p><h2>{selecionado.nome}</h2><p>Defesa {selecionado.defesa} · Resistência {selecionado.resistencia}</p><button onClick={() => onAbrirFicha(selecionado)} className="ro-button mt-4">Abrir ficha completa</button></div> : <p className="live-table__empty">Selecione um personagem.</p>)}
-      {ferramenta === 'contadores' && <CounterPanel campanhaId={campanha.id} contadores={contadoresAtuais} mestre={mestre} onAdicionar={adicionarContador} onAtualizar={atualizarContador} onRemover={removerContador} onDuplicar={duplicarContador} onRegistrarEvento={registrarSemFalhar} />}
-      {ferramenta === 'mapa' && conteudo !== 'mapa' && cena}
-      {ferramenta === 'regras' && <RulesReference />}
-    </section></div>}
-  </section>;
+
+      <LiveDock ferramenta={ferramenta} onSelecionar={selecionarFerramenta} />
+
+      {ferramenta !== 'nenhuma' && (
+        <div className="live-table__tool-backdrop" onMouseDown={closeTool}>
+          <section className="live-table__tool" onMouseDown={event => event.stopPropagation()}>
+            <header className="live-table__tool-head">
+              <div><p className="ro-eyebrow">Ferramenta de mesa</p><strong>{ferramenta}</strong></div>
+              <button onClick={closeTool} aria-label="Fechar ferramenta">×</button>
+            </header>
+            {ferramenta === 'dados' && <DiceRoller personagemAtivo={selecionado} onSalvarPersonagem={atualizarPersonagemMesa} onAbrirModalRuptura={(delta, motivo) => selecionado && onAbrirRuptura(selecionado, delta, motivo)} onRegistrarRolagem={registrarSemFalhar} />}
+            {ferramenta === 'sonhar' && <DreamGuide personagemAtivo={selecionado} onIrParaRoladorOnirico={() => setFerramenta('dados')} />}
+            {ferramenta === 'ficha' && (selecionado ? <div className="live-table__quick-sheet"><p className="ro-eyebrow">Ficha rápida</p><h2>{selecionado.nome}</h2><p>Defesa {selecionado.defesa} · Resistência {selecionado.resistencia}</p><button onClick={() => onAbrirFicha(selecionado)} className="ro-button mt-4">Abrir ficha completa</button></div> : <p className="live-table__empty">Selecione um personagem.</p>)}
+            {ferramenta === 'contadores' && <CounterPanel campanhaId={campanha.id} contadores={contadoresAtuais} mestre={mestre} onAdicionar={adicionarContador} onAtualizar={atualizarContador} onRemover={removerContador} onDuplicar={duplicarContador} onRegistrarEvento={registrarSemFalhar} />}
+            {ferramenta === 'mapa' && mapaCena}
+            {ferramenta === 'regras' && <RulesReference />}
+          </section>
+        </div>
+      )}
+    </section>
+  );
 };
