@@ -114,39 +114,64 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   };
 
   const titulo = modo === 'cadastro'
-    ? 'Criar conta'
+    ? 'Criar sua conta'
     : modo === 'nova_senha'
-      ? 'Nova senha'
+      ? 'Definir nova senha'
       : usarRemoto
-        ? 'Entrar'
-        : 'Acesso local';
+        ? 'Entre na Vigília'
+        : 'Modo local';
 
   return (
-    <div className="login-onirico">
+    <div className="login-onirico login-onirico--urban">
       <header className="login-onirico__header">
-        <div>
-          <span className="login-onirico__brand">REINOS ONÍRICOS</span>
-          <small>Companheiro de mesa</small>
-        </div>
+        <a className="login-onirico__identity" href="/" aria-label="Reinos Oníricos RPG">
+          <img src="/ro-mark.svg" alt="" className="login-onirico__mark" />
+          <span>
+            <strong>REINOS ONÍRICOS</strong>
+            <small>RPG · Plataforma de mesa</small>
+          </span>
+        </a>
         <ThemeToggle />
       </header>
 
-      <main className="login-onirico__main">
-        <section className="login-onirico__intro">
-          <p className="ro-eyebrow">Vigília · Sonhar · Ruptura</p>
-          <h1>Carregamos mundos dentro de nós.</h1>
-          <p>Organize campanhas, conduza sessões e atravesse a fronteira entre Realidade e Sonhar sem tirar a mesa do centro da experiência.</p>
+      <main className="login-onirico__main login-onirico__main--urban">
+        <section className="login-onirico__intro login-onirico__intro--urban">
+          <div className="login-onirico__sigil" aria-hidden="true">
+            <img src="/ro-mark.svg" alt="" />
+          </div>
+          <p className="ro-eyebrow">Fantasia urbana · Vigília · Sonhar</p>
+          <h1>Entre na Vigília.<br />Atravesse o Sonhar.</h1>
+          <p className="login-onirico__lead">
+            Reinos Oníricos é um RPG de fantasia urbana sobre o que existe entre o real e o impossível.
+            A plataforma acompanha a sua mesa sem tomar o lugar da narrativa.
+          </p>
+
+          <div className="login-onirico__pillars" aria-label="Pilares da experiência">
+            <article><span>01</span><strong>Prepare</strong><small>Campanhas, cenas, pistas, personagens e arquivos.</small></article>
+            <article><span>02</span><strong>Conduza</strong><small>Mesa Ao Vivo, Registro Vivo, mapas e contadores.</small></article>
+            <article><span>03</span><strong>Desvende</strong><small>Realidade, Sonhar e Ruptura integrados à sessão.</small></article>
+          </div>
+
+          <blockquote>“A realidade é só o começo.”</blockquote>
         </section>
 
-        <section className="login-onirico__panel">
-          <p className="ro-eyebrow">{modo === 'nova_senha' ? 'Recuperação' : 'Arquivo de campanha'}</p>
-          <h2>{titulo}</h2>
-          <p>{usarRemoto ? 'Sua identidade acompanha suas campanhas; o papel é definido em cada mesa.' : 'Modo local de demonstração, sem sincronização entre dispositivos.'}</p>
+        <section className="login-onirico__panel login-onirico__panel--urban">
+          <div className="login-onirico__panel-brand">
+            <img src="/ro-mark.svg" alt="" />
+            <div>
+              <p className="ro-eyebrow">{modo === 'nova_senha' ? 'Recuperação de acesso' : 'Portal da mesa'}</p>
+              <h2>{titulo}</h2>
+            </div>
+          </div>
+          <p>{usarRemoto
+            ? 'Acesse suas campanhas e fichas. O papel de Mestre, Jogador ou Observador é definido dentro de cada campanha.'
+            : 'Use o modo local para demonstração ou jogo no mesmo dispositivo, sem sincronização online.'}</p>
 
           {remoto && modo !== 'nova_senha' && (
-            <div className="login-onirico__switch">
+            <div className="login-onirico__switch" role="tablist" aria-label="Forma de acesso">
               <button type="button" onClick={() => setModo('entrar')} className={modo === 'entrar' ? 'is-active' : ''}>Entrar</button>
               <button type="button" onClick={() => setModo('cadastro')} className={modo === 'cadastro' ? 'is-active' : ''}>Criar conta</button>
+              <button type="button" onClick={() => setModo('local')} className={modo === 'local' ? 'is-active' : ''}>Modo local</button>
             </div>
           )}
 
@@ -154,14 +179,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             {(modo === 'cadastro' || !usarRemoto) && (
               <label>
                 <span>Nome</span>
-                <input value={nome} onChange={event => setNome(event.target.value)} placeholder="Como devemos chamar você?" />
+                <input autoComplete="name" value={nome} onChange={event => setNome(event.target.value)} placeholder="Como devemos chamar você?" />
               </label>
             )}
 
             {usarRemoto && modo !== 'nova_senha' && (
               <label>
                 <span>E-mail</span>
-                <input type="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="voce@exemplo.com" />
+                <input type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="voce@exemplo.com" />
               </label>
             )}
 
@@ -169,32 +194,52 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <>
                 <label>
                   <span>{modo === 'nova_senha' ? 'Nova senha' : 'Senha'}</span>
-                  <input type="password" required minLength={6} value={senha} onChange={event => setSenha(event.target.value)} placeholder="••••••••" />
+                  <input
+                    type="password"
+                    autoComplete={modo === 'nova_senha' ? 'new-password' : modo === 'cadastro' ? 'new-password' : 'current-password'}
+                    required
+                    minLength={6}
+                    value={senha}
+                    onChange={event => setSenha(event.target.value)}
+                    placeholder="••••••••"
+                  />
                 </label>
                 {modo === 'nova_senha' && (
                   <label>
                     <span>Confirmar nova senha</span>
-                    <input type="password" required minLength={6} value={confirmacao} onChange={event => setConfirmacao(event.target.value)} placeholder="••••••••" />
+                    <input type="password" autoComplete="new-password" required minLength={6} value={confirmacao} onChange={event => setConfirmacao(event.target.value)} placeholder="••••••••" />
                   </label>
                 )}
-                {modo === 'entrar' && <button type="button" onClick={() => void recuperar()} className="login-onirico__link">Esqueci minha senha</button>}
+                {modo === 'entrar' && (
+                  <button type="button" onClick={() => void recuperar()} className="login-onirico__link">
+                    Esqueci minha senha
+                  </button>
+                )}
               </>
             ) : (
               <label>
-                <span>Código local</span>
+                <span>Código da mesa local</span>
                 <input value={codigo} onChange={event => setCodigo(event.target.value)} placeholder="ONIRICO-01" />
               </label>
             )}
 
-            {erro && <p className="login-onirico__error">{erro}</p>}
-            {mensagem && <p className="login-onirico__message">{mensagem}</p>}
-            <button className="ro-button w-full" disabled={enviando}>{enviando ? 'Aguarde…' : titulo}</button>
+            {erro && <p className="login-onirico__error" role="alert">{erro}</p>}
+            {mensagem && <p className="login-onirico__message" role="status">{mensagem}</p>}
+            <button className="ro-button login-onirico__submit" disabled={enviando}>
+              {enviando ? 'Aguarde…' : modo === 'entrar' ? 'Entrar' : titulo}
+              {!enviando && <span aria-hidden="true">→</span>}
+            </button>
           </form>
 
-          {remoto && modo !== 'nova_senha' && (
-            <button type="button" onClick={() => setModo(modo === 'local' ? 'entrar' : 'local')} className="login-onirico__local">
-              {modo === 'local' ? 'Voltar para acesso online' : 'Usar modo local de demonstração'}
-            </button>
+          {!remoto && (
+            <div className="login-onirico__offline-note">
+              <strong>Modo local ativo</strong>
+              <span>Configure o Supabase para habilitar contas, campanhas compartilhadas e Realtime.</span>
+            </div>
+          )}
+
+          {remoto && modo === 'nova_senha' && (
+            <button type="button" onClick={() => setModo('entrar')} className="login-onirico__local">Voltar para o login</button>
           )}
         </section>
       </main>
