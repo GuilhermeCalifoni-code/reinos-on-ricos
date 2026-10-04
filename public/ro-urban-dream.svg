@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+<title id="title">Cidade onírica de Reinos Oníricos</title>
+<desc id="desc">Paisagem de fantasia urbana com torres, pontes, lua e geometria onírica em tinta escura e cobre.</desc>
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f8f4ec"/>
+    <stop offset=".62" stop-color="#f0ece4"/>
+    <stop offset="1" stop-color="#e8e1d6"/>
+  </linearGradient>
+  <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#17202a"/>
+    <stop offset="1" stop-color="#0d1217"/>
+  </linearGradient>
+  <radialGradient id="moon">
+    <stop offset="0" stop-color="#d4a35d" stop-opacity=".95"/>
+    <stop offset=".55" stop-color="#b7792f" stop-opacity=".38"/>
+    <stop offset="1" stop-color="#b7792f" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="10"/></filter>
+  <filter id="grain">
+    <feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="2" seed="8" result="n"/>
+    <feColorMatrix in="n" type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="table" tableValues="0 .08"/></feComponentTransfer>
+  </filter>
+</defs>
+<rect width="1200" height="900" fill="url(#sky)"/>
+<circle cx="790" cy="245" r="160" fill="url(#moon)"/>
+<g opacity=".32" stroke="#a46928" fill="none">
+  <circle cx="790" cy="245" r="210"/>
+  <circle cx="790" cy="245" r="265"/>
+  <path d="M525 245h530M790-20v530"/>
+  <path d="M556 122l468 246M556 368l468-246"/>
+</g>
+<g opacity=".18" stroke="#1a2027" fill="none">
+  <circle cx="245" cy="188" r="130"/>
+  <circle cx="245" cy="188" r="180"/>
+  <path d="M65 188h360M245 8v360"/>
+</g>
+<g fill="url(#ink)" opacity=".92">
+  <path d="M420 705V388h44v-92h30v-102h25v-70h20v70h23v102h35v92h48v317z"/>
+  <path d="M540 705V470h30v-80h22v-148h22v-96h18v96h22v148h26v80h34v235z"/>
+  <path d="M690 705V430h38v-105h28v-160h22v-82h16v82h24v160h28v105h42v275z"/>
+  <path d="M840 705V505h35v-92h23v-118h20v-65h15v65h21v118h25v92h38v200z"/>
+  <path d="M205 705V495h33v-86h27v-120h17v-65h17v65h20v120h29v86h32v210z"/>
+  <path d="M80 705V555h25v-63h22v-90h18v-54h14v54h20v90h20v63h27v150z"/>
+</g>
+<g fill="#f5efe6" opacity=".26">
+  <rect x="455" y="355" width="8" height="20"/><rect x="485" y="310" width="8" height="22"/>
+  <rect x="575" y="438" width="8" height="22"/><rect x="603" y="360" width="8" height="20"/>
+  <rect x="728" y="390" width="8" height="22"/><rect x="767" y="325" width="8" height="18"/>
+  <rect x="878" y="470" width="8" height="18"/><rect x="922" y="424" width="8" height="18"/>
+</g>
+<g fill="none" stroke="#0f151c" stroke-width="15" opacity=".9">
+  <path d="M110 712C340 625 632 690 1125 596"/>
+  <path d="M110 733C355 650 675 715 1132 618"/>
+</g>
+<g fill="#0f151c" opacity=".88">
+  <path d="M140 700h850l-20 25H155z"/>
+  <path d="M165 699l48-72h21l-31 72zm110 0l42-85h18l-25 85zm565 0l38-74h18l-22 74zm96 0l34-60h17l-20 60z"/>
+</g>
+<g fill="#1c232b" opacity=".86">
+  <path d="M765 160c-44 34-77 80-90 133-13 53-4 112 25 158 28 45 77 78 130 91-46-4-93 9-130 36-37 26-64 66-75 110 3-69-14-140-47-201-33-61-81-112-140-148 76-1 150-24 214-66 43-28 81-66 113-113z"/>
+</g>
+<path d="M644 260c-22 18-40 44-46 72-8 39 6 83 35 111 30 30 75 43 116 34-42 21-77 55-98 97-21 42-28 91-20 137-35-56-76-109-124-155-48-46-103-84-163-112 67-8 132-30 190-64 43-25 81-58 110-96z" fill="#151c23" opacity=".55"/>
+<g fill="#b7792f">
+  <circle cx="790" cy="245" r="5"/>
+  <path d="M790 207l7 30 30 8-30 7-7 30-7-30-30-7 30-8z"/>
+  <path d="M1018 490l5 22 22 5-22 5-5 22-5-22-22-5 22-5z"/>
+  <path d="M350 570l4 18 18 4-18 4-4 18-4-18-18-4 18-4z"/>
+</g>
+<g stroke="#b7792f" stroke-width="2" fill="none" opacity=".72">
+  <path d="M790 80v330M625 245h330"/>
+  <circle cx="790" cy="245" r="34"/>
+</g>
+<rect width="1200" height="900" filter="url(#grain)" opacity=".55"/>
+</svg>
