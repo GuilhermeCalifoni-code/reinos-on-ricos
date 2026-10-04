@@ -143,13 +143,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       <main className="login-onirico__main login-onirico__main--urban">
         <section className="login-onirico__intro login-onirico__intro--urban">
           <div className="login-onirico__intro-content">
-            <div className="login-onirico__wordmark">
-              <img src="/ro-mark.svg" alt="" />
-              <div>
-                <strong>REINOS<br />ONÍRICOS</strong>
-                <small>RPG</small>
-              </div>
-            </div>
+            <img
+              className="login-onirico__brand-lockup"
+              src="/ro-logo-reference.webp"
+              alt="Reinos Oníricos RPG"
+            />
 
             <p className="ro-eyebrow">Fantasia urbana · Vigília · Sonhar</p>
             <h1>Entre na Vigília.<br />Atravesse o Sonhar.</h1>
@@ -163,7 +161,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         </section>
 
         <div className="login-onirico__art-column" aria-hidden="true">
-          <div className="login-onirico__art-image" />
+          <img className="login-onirico__art-image" src="/login-art-reference.webp" alt="" />
         </div>
 
         <section className="login-onirico__access-column">
@@ -266,13 +264,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
                 <div className="login-onirico__entry-options">
                   <button type="button" onClick={() => trocarModo('cadastro')} className="login-onirico__entry-card">
-                    <span className="login-onirico__entry-icon">♙</span>
+                    <span className="login-onirico__entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c.7-4 3.2-6 7-6s6.3 2 7 6"/><path d="M3 18.5c.4-3 1.7-4.8 4-5.7M21 18.5c-.4-3-1.7-4.8-4-5.7"/></svg></span>
                     <span><strong>Ainda não tem uma conta?</strong><small>Crie sua conta para organizar campanhas, gerenciar personagens e jogar com sua mesa.</small></span>
                     <span className="login-onirico__entry-cta">Criar conta&nbsp; →</span>
                   </button>
 
                   <button type="button" onClick={() => trocarModo('local')} className="login-onirico__entry-card">
-                    <span className="login-onirico__entry-icon">▣</span>
+                    <span className="login-onirico__entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="12" rx="1.2"/><path d="M8 20h8M12 16v4"/></svg></span>
                     <span><strong>Modo local</strong><small>Use o modo local para jogo no mesmo dispositivo, sem sincronização online.</small></span>
                     <span className="login-onirico__entry-cta">Acessar modo local&nbsp; →</span>
                   </button>
