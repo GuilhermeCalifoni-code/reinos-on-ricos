@@ -138,34 +138,40 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         : 'Bem-vindo de volta.';
 
   return (
-    <div className="login-onirico login-onirico--urban login-onirico--reference">
+    <div className="login-onirico login-onirico--reference">
+      <main className="login-onirico__stage">
+        <img className="login-onirico__frame-art" src="/ro-login-frame.webp" alt="" aria-hidden="true" />
 
-      <main className="login-onirico__main login-onirico__main--urban">
-        <section className="login-onirico__intro login-onirico__intro--urban">
-          <div className="login-onirico__intro-content">
-            <img
-              className="login-onirico__brand-lockup"
-              src="/ro-logo-reference.webp"
-              alt="Reinos Oníricos RPG"
-            />
+        <section className="login-onirico__story">
+          <img className="login-onirico__mist-city" src="/ro-login-mist-city.webp" alt="" aria-hidden="true" />
+          <div className="login-onirico__story-copy">
+            <img className="login-onirico__brand-lockup" src="/ro-login-logo.webp" alt="Reinos Oníricos RPG" />
+            <p className="login-onirico__eyebrow">Fantasia urbana · Vigília · Sonhar</p>
 
-            <p className="ro-eyebrow">Fantasia urbana · Vigília · Sonhar</p>
-            <h1>Entre na Vigília.<br />Atravesse o Sonhar.</h1>
+            <h1 className="login-onirico__headline">
+              <span>Entre na</span>
+              <span>Vigília.</span>
+              <span>Atravesse o</span>
+              <span>Sonhar.</span>
+            </h1>
+
             <p className="login-onirico__lead">
-              Reinos Oníricos RPG é uma plataforma de fantasia urbana onde o real e o onírico se encontram.
-              Crie campanhas, reúna seu grupo, desenvolva personagens e conduza histórias que atravessam cidades,
-              sonhos e outras realidades.
+              Reinos Oníricos é um RPG de fantasia urbana sobre o que existe entre o real e o impossível.
+              A plataforma acompanha sua mesa com campanhas, personagens e jogo ao vivo.
             </p>
-            <blockquote>“Entre o concreto e o impossível, existem aqueles que ainda investigam.”</blockquote>
+
+            <blockquote>
+              “Entre o concreto e o impossível, existem aqueles que ainda investigam.”
+            </blockquote>
           </div>
         </section>
 
-        <div className="login-onirico__art-column" aria-hidden="true">
-          <img className="login-onirico__art-image" src="/login-art-reference.webp" alt="" />
-        </div>
+        <section className="login-onirico__portrait-zone" aria-hidden="true">
+          <img className="login-onirico__portrait" src="/ro-login-portrait.webp" alt="" />
+        </section>
 
         <section className="login-onirico__access-column">
-          <section className="login-onirico__panel login-onirico__panel--urban">
+          <div className="login-onirico__panel">
             {modo !== 'nova_senha' && (
               <div className="login-onirico__switch" role="tablist" aria-label="Forma de acesso">
                 <button type="button" onClick={() => trocarModo('entrar')} className={modo === 'entrar' ? 'is-active' : ''}>Entrar</button>
@@ -174,7 +180,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </div>
             )}
 
-            <h2 className="login-onirico__title">{titulo}</h2>
+            <h2>{titulo}</h2>
             <p className="login-onirico__panel-copy">
               {modo === 'entrar' && 'Acesse sua conta para continuar na Vigília.'}
               {modo === 'cadastro' && 'Crie sua conta para organizar campanhas, fichas e sessões compartilhadas.'}
@@ -186,7 +192,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               {(modo === 'cadastro' || modo === 'local') && (
                 <label>
                   <span>Nome</span>
-                  <input autoComplete="name" value={nome} onChange={event => setNome(event.target.value)} placeholder="Como devemos chamar você?" />
+                  <div className="login-onirico__field-control">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c.8-4.2 3.1-6 7-6s6.2 1.8 7 6"/></svg>
+                    <input autoComplete="name" value={nome} onChange={event => setNome(event.target.value)} placeholder="Como devemos chamar você?" />
+                  </div>
                 </label>
               )}
 
@@ -224,7 +233,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   {modo === 'nova_senha' && (
                     <label>
                       <span>Confirmar nova senha</span>
-                      <input type="password" autoComplete="new-password" required minLength={6} value={confirmacao} onChange={event => setConfirmacao(event.target.value)} placeholder="••••••••" />
+                      <div className="login-onirico__field-control">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v10H5z" /></svg>
+                        <input type="password" autoComplete="new-password" required minLength={6} value={confirmacao} onChange={event => setConfirmacao(event.target.value)} placeholder="••••••••" />
+                      </div>
                     </label>
                   )}
 
@@ -237,23 +249,29 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               ) : (
                 <label>
                   <span>Código da mesa local</span>
-                  <input value={codigo} onChange={event => setCodigo(event.target.value)} placeholder="ONIRICO-01" />
+                  <div className="login-onirico__field-control">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 5h14v14H5zM9 9h6v6H9z" /></svg>
+                    <input value={codigo} onChange={event => setCodigo(event.target.value)} placeholder="ONIRICO-01" />
+                  </div>
                 </label>
               )}
 
               {erro && <p className="login-onirico__error" role="alert">{erro}</p>}
               {mensagem && <p className="login-onirico__message" role="status">{mensagem}</p>}
 
-              <button className="ro-button login-onirico__submit" disabled={enviando}>
-                {enviando
-                  ? 'Aguarde…'
-                  : modo === 'entrar'
-                    ? 'Entrar na Vigília'
-                    : modo === 'cadastro'
-                      ? 'Criar conta'
-                      : modo === 'local'
-                        ? 'Acessar modo local'
-                        : 'Salvar nova senha'}
+              <button className="login-onirico__submit" disabled={enviando}>
+                <span className="login-onirico__submit-star" aria-hidden="true">✦</span>
+                <strong>
+                  {enviando
+                    ? 'Aguarde…'
+                    : modo === 'entrar'
+                      ? 'Entrar na Vigília'
+                      : modo === 'cadastro'
+                        ? 'Criar conta'
+                        : modo === 'local'
+                          ? 'Acessar modo local'
+                          : 'Salvar nova senha'}
+                </strong>
                 {!enviando && <span aria-hidden="true">→</span>}
               </button>
             </form>
@@ -264,13 +282,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
                 <div className="login-onirico__entry-options">
                   <button type="button" onClick={() => trocarModo('cadastro')} className="login-onirico__entry-card">
-                    <span className="login-onirico__entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c.7-4 3.2-6 7-6s6.3 2 7 6"/><path d="M3 18.5c.4-3 1.7-4.8 4-5.7M21 18.5c-.4-3-1.7-4.8-4-5.7"/></svg></span>
+                    <span className="login-onirico__entry-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c.7-4 3.2-6 7-6s6.3 2 7 6"/><path d="M3 18.5c.4-3 1.7-4.8 4-5.7M21 18.5c-.4-3-1.7-4.8-4-5.7"/></svg>
+                    </span>
                     <span><strong>Ainda não tem uma conta?</strong><small>Crie sua conta para organizar campanhas, gerenciar personagens e jogar com sua mesa.</small></span>
                     <span className="login-onirico__entry-cta">Criar conta&nbsp; →</span>
                   </button>
 
                   <button type="button" onClick={() => trocarModo('local')} className="login-onirico__entry-card">
-                    <span className="login-onirico__entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="12" rx="1.2"/><path d="M8 20h8M12 16v4"/></svg></span>
+                    <span className="login-onirico__entry-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="12" rx="1.2"/><path d="M8 20h8M12 16v4"/></svg>
+                    </span>
                     <span><strong>Modo local</strong><small>Use o modo local para jogo no mesmo dispositivo, sem sincronização online.</small></span>
                     <span className="login-onirico__entry-cta">Acessar modo local&nbsp; →</span>
                   </button>
@@ -288,7 +310,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             {modo === 'nova_senha' && (
               <button type="button" onClick={() => trocarModo('entrar')} className="login-onirico__local">Voltar para o login</button>
             )}
-          </section>
+          </div>
         </section>
       </main>
     </div>
