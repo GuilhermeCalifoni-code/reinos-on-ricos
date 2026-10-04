@@ -26,12 +26,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   viewAtiva, setViewAtiva, campanhas, campanhaAtivaId, onSelecionarCampanha, onNovaCampanha, onSair
 }) => (
   <aside className="sticky top-0 hidden h-screen w-[244px] shrink-0 flex-col border-r border-[var(--ro-line)] bg-[var(--ro-panel-bg)] backdrop-blur-md lg:flex">
-    <button onClick={() => setViewAtiva('dashboard')} className="group border-b border-[var(--ro-line)] px-6 py-6 text-left">
+    <button onClick={() => setViewAtiva('dashboard')} className="group border-b border-[var(--ro-line)] px-5 py-5 text-left">
       <span className="flex items-center gap-3">
-        <span className="grid h-8 w-8 place-items-center border border-[var(--ro-line-strong)] font-serif text-sm text-[var(--ro-gold)]">RO</span>
+        <img src="/ro-mark.svg" alt="" className="h-11 w-9 object-contain" />
         <span>
-          <span className="block font-serif text-lg tracking-[.08em] text-[var(--ro-paper)] group-hover:text-[var(--ro-gold)]">REINOS</span>
-          <span className="block font-mono text-[8px] tracking-[.22em] text-[var(--ro-paper-muted)]">ONÍRICOS RPG</span>
+          <span className="block font-serif text-[17px] tracking-[.08em] text-[var(--ro-paper)] group-hover:text-[var(--ro-gold)]">REINOS ONÍRICOS</span>
+          <span className="block font-mono text-[8px] tracking-[.18em] text-[var(--ro-paper-muted)]">RPG · ARQUIVO DA VIGÍLIA</span>
         </span>
       </span>
     </button>
@@ -73,7 +73,7 @@ export const MobileNavigation: React.FC<Pick<SidebarProps, 'viewAtiva' | 'setVie
 }) => (
   <nav aria-label="Navegação principal" className="flex h-12 items-stretch border-b border-[var(--ro-line)] bg-[var(--ro-panel-bg)] lg:hidden">
     <button onClick={() => setViewAtiva('dashboard')} className={`ro-mobile-nav ${isSectionActive(viewAtiva, 'dashboard') ? 'ro-mobile-nav--active' : ''}`}>Início</button>
-    <button onClick={() => setViewAtiva('campanhas')} className={`ro-mobile-nav ${isSectionActive(viewAtiva, 'campanhas') ? 'ro-mobile-nav--active' : ''}`}>Campanhas</button>
+    <button onClick={() => setViewAtiva('campanhas')} className={`ro-mobile-nav ${isSectionActive(viewAtiva, 'campanhas') ? 'ro-mobile-nav--active' : ''}`}>Minhas campanhas</button>
     <button onClick={() => setViewAtiva('personagens')} className={`ro-mobile-nav ${isSectionActive(viewAtiva, 'personagens') ? 'ro-mobile-nav--active' : ''}`}>Fichas</button>
     <button onClick={onNovaCampanha} className="ro-mobile-nav ml-auto px-4 text-[var(--ro-gold)]" aria-label="Criar campanha">+</button>
   </nav>
