@@ -164,15 +164,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
         <section className="login-onirico__access-column">
           <section className="login-onirico__panel login-onirico__panel--urban">
-            <p className="login-onirico__panel-kicker">{modo === 'nova_senha' ? 'Recuperação de acesso' : 'Portal da mesa'}</p>
-
-            <p className="login-onirico__panel-copy">
-              {modo === 'entrar' && 'Acesse sua conta para continuar na Vigília e retomar suas campanhas.'}
-              {modo === 'cadastro' && 'Crie sua conta para organizar campanhas, fichas e sessões compartilhadas.'}
-              {modo === 'local' && 'Use o modo local para demonstração ou jogo no mesmo dispositivo, sem sincronização online.'}
-              {modo === 'nova_senha' && 'Escolha uma nova senha para recuperar seu acesso.'}
-            </p>
-
             {modo !== 'nova_senha' && (
               <div className="login-onirico__switch" role="tablist" aria-label="Forma de acesso">
                 <button type="button" onClick={() => trocarModo('entrar')} className={modo === 'entrar' ? 'is-active' : ''}>Entrar</button>
@@ -182,6 +173,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             )}
 
             <h2 className="login-onirico__title">{titulo}</h2>
+            <p className="login-onirico__panel-copy">
+              {modo === 'entrar' && 'Acesse sua conta para continuar na Vigília.'}
+              {modo === 'cadastro' && 'Crie sua conta para organizar campanhas, fichas e sessões compartilhadas.'}
+              {modo === 'local' && 'Use o modo local para jogo no mesmo dispositivo, sem sincronização online.'}
+              {modo === 'nova_senha' && 'Escolha uma nova senha para recuperar seu acesso.'}
+            </p>
 
             <form onSubmit={usarRemoto ? autenticar : entrarLocal} className="login-onirico__form">
               {(modo === 'cadastro' || modo === 'local') && (
