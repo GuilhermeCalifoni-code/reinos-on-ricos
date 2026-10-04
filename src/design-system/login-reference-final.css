@@ -1,228 +1,224 @@
-/* Reinos Oníricos — login final
-   Reconstrução baseada na referência visual aprovada (1672 × 941).
-   Esta folha é carregada depois de urban-v4.css e substitui apenas o login. */
+/* Reinos Oníricos — Login com assets dedicados
+   Esta folha é carregada por último e isola completamente a tela de login
+   do restante do design system. */
 
 .login-onirico--reference {
-  --login-paper: #f8f4ec;
-  --login-ink: #12171c;
-  --login-muted: #70757a;
-  --login-copper: #a66d2b;
-  --login-line: rgba(18, 23, 28, .13);
+  --login-paper: #f7f3eb;
+  --login-card: rgba(255, 253, 249, .965);
+  --login-ink: #15191d;
+  --login-muted: #6f7478;
+  --login-soft: #ede7dc;
+  --login-line: rgba(21, 25, 29, .13);
+  --login-copper: #a76b2b;
+  --login-copper-soft: rgba(167, 107, 43, .10);
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 999 !important;
   min-height: 100svh !important;
-  display: grid !important;
-  place-items: center !important;
-  overflow: hidden !important;
-  background:
-    radial-gradient(52rem circle at 8% 10%, rgba(166,109,43,.035), transparent 58%),
-    radial-gradient(45rem circle at 91% 88%, rgba(18,23,28,.025), transparent 60%),
-    var(--login-paper) !important;
+  overflow: auto !important;
+  background: var(--login-paper) !important;
+  color: var(--login-ink) !important;
+}
+
+.login-onirico--reference *,
+.login-onirico--reference *::before,
+.login-onirico--reference *::after {
+  box-sizing: border-box;
 }
 
 .login-onirico--reference::before,
 .login-onirico--reference::after {
-  content: "" !important;
-  display: block !important;
-  position: fixed !important;
-  pointer-events: none !important;
-  z-index: 0 !important;
-  border: 1px solid rgba(166,109,43,.08) !important;
-  border-radius: 999px !important;
-}
-
-.login-onirico--reference::before {
-  width: 42rem !important;
-  height: 42rem !important;
-  left: -25rem !important;
-  bottom: -29rem !important;
-}
-
-.login-onirico--reference::after {
-  width: 34rem !important;
-  height: 34rem !important;
-  right: -21rem !important;
-  top: -22rem !important;
-}
-
-.login-onirico--reference .login-onirico__main--urban {
-  container-type: size;
-  position: relative !important;
-  z-index: 1 !important;
-  display: block !important;
-  width: min(100vw, calc(100svh * 1.776833)) !important;
-  height: min(100svh, calc(100vw / 1.776833)) !important;
-  min-height: 0 !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  background: transparent !important;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Arte central — usa o recorte limpo extraído da referência                  */
-/* -------------------------------------------------------------------------- */
-
-.login-onirico--reference .login-onirico__art-column {
-  position: absolute !important;
-  z-index: 1 !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  left: 27.15% !important;
-  width: 31.7% !important;
-  min-height: 0 !important;
-  overflow: visible !important;
-  background: transparent !important;
-  pointer-events: none !important;
-}
-
-.login-onirico--reference .login-onirico__art-column::before {
-  content: "" !important;
-  position: absolute !important;
-  z-index: 0 !important;
-  inset: -2.5% -12% !important;
-  display: block !important;
-  opacity: .16 !important;
-  transform: scale(1.06) !important;
-  filter: blur(18px) saturate(.8) !important;
-  background: url("/login-art-reference.webp") center / 100% 100% no-repeat !important;
-}
-
-.login-onirico--reference .login-onirico__art-column::after {
-  content: "" !important;
-  position: absolute !important;
-  z-index: 2 !important;
-  inset: 0 -9% !important;
-  display: block !important;
-  pointer-events: none !important;
-  background:
-    linear-gradient(
-      90deg,
-      var(--login-paper) 0%,
-      rgba(248,244,236,.72) 6%,
-      rgba(248,244,236,.18) 14%,
-      rgba(248,244,236,0) 25%,
-      rgba(248,244,236,0) 78%,
-      rgba(248,244,236,.12) 87%,
-      rgba(248,244,236,.63) 96%,
-      var(--login-paper) 100%
-    ) !important;
-}
-
-.login-onirico--reference .login-onirico__art-image {
-  position: absolute !important;
-  z-index: 1 !important;
-  inset: 0 !important;
-  display: block !important;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: fill !important;
-  object-position: center !important;
-  transform: none !important;
-  filter: saturate(.88) contrast(1.015) !important;
-  background: none !important;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Conteúdo editorial                                                         */
-/* -------------------------------------------------------------------------- */
-
-.login-onirico--reference .login-onirico__intro--urban {
-  position: absolute !important;
-  z-index: 4 !important;
-  inset: 0 auto 0 0 !important;
-  display: block !important;
-  width: 43.5% !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-  overflow: visible !important;
-  background: transparent !important;
-}
-
-.login-onirico--reference .login-onirico__intro--urban::before {
-  content: "" !important;
-  position: absolute !important;
-  z-index: -1 !important;
-  inset: 0 -17% 0 0 !important;
-  display: block !important;
-  background:
-    linear-gradient(
-      90deg,
-      var(--login-paper) 0%,
-      var(--login-paper) 62%,
-      rgba(248,244,236,.97) 73%,
-      rgba(248,244,236,.76) 82%,
-      rgba(248,244,236,.18) 94%,
-      rgba(248,244,236,0) 100%
-    ) !important;
-}
-
-.login-onirico--reference .login-onirico__intro--urban::after {
   display: none !important;
 }
 
-.login-onirico--reference .login-onirico__intro-content {
-  position: absolute !important;
-  z-index: 3 !important;
-  top: 7.8% !important;
-  left: 6.25% !important;
-  width: 28.5% !important;
-  min-width: 0 !important;
-  margin: 0 !important;
+.login-onirico--reference .login-onirico__stage {
+  position: relative;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 13% 9%, rgba(167,107,43,.035), transparent 26rem),
+    radial-gradient(circle at 88% 86%, rgba(21,25,29,.03), transparent 30rem),
+    var(--login-paper);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Camadas decorativas                                                        */
+/* -------------------------------------------------------------------------- */
+
+.login-onirico--reference .login-onirico__frame-art {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .13;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.login-onirico--reference .login-onirico__story {
+  position: absolute;
+  z-index: 3;
+  inset: 0 auto 0 0;
+  width: 52%;
+  min-height: 100%;
+  overflow: visible;
+  background:
+    linear-gradient(
+      90deg,
+      var(--login-paper) 0%,
+      var(--login-paper) 58%,
+      rgba(247,243,235,.96) 68%,
+      rgba(247,243,235,.70) 79%,
+      rgba(247,243,235,.16) 94%,
+      rgba(247,243,235,0) 100%
+    );
+}
+
+.login-onirico--reference .login-onirico__mist-city {
+  position: absolute;
+  z-index: 0;
+  left: -7%;
+  bottom: -5%;
+  width: min(42vw, 760px);
+  height: 105%;
+  object-fit: contain;
+  object-position: left bottom;
+  opacity: .30;
+  filter: saturate(.75) contrast(.95);
+  pointer-events: none;
+}
+
+.login-onirico--reference .login-onirico__story-copy {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: clamp(64px, 5.8vw, 116px);
+  width: clamp(360px, 28vw, 520px);
+  transform: translateY(-50%);
 }
 
 .login-onirico--reference .login-onirico__brand-lockup {
-  display: block !important;
-  width: 22.9cqw !important;
-  max-width: none !important;
-  height: auto !important;
-  margin: 0 0 2.15cqh !important;
-  object-fit: contain !important;
+  display: block;
+  width: clamp(315px, 23vw, 455px);
+  height: auto;
+  margin: 0 0 1.5rem;
+  object-fit: contain;
+  object-position: left center;
 }
 
-.login-onirico--reference .login-onirico__wordmark {
-  display: none !important;
+.login-onirico--reference .login-onirico__eyebrow {
+  margin: 0;
+  color: #5d5144;
+  font: 600 .62rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .39em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.login-onirico--reference .ro-eyebrow {
-  margin: 0 !important;
-  color: #4d5052 !important;
-  font: 600 .49cqw/1.2 ui-monospace, SFMono-Regular, Menlo, monospace !important;
-  letter-spacing: .48em !important;
-  text-transform: uppercase !important;
-  white-space: nowrap !important;
+.login-onirico--reference .login-onirico__headline {
+  display: grid;
+  gap: 0;
+  margin: 1.65rem 0 0;
+  color: var(--login-ink);
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-size: clamp(3.9rem, 4.7vw, 5.65rem);
+  font-weight: 500;
+  line-height: .86;
+  letter-spacing: -.045em;
 }
 
-.login-onirico--reference .login-onirico__intro--urban h1 {
-  max-width: 6.9ch !important;
-  margin: 2.65cqh 0 0 !important;
-  color: var(--login-ink) !important;
-  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif !important;
-  font-size: 4.35cqw !important;
-  font-weight: 500 !important;
-  line-height: .905 !important;
-  letter-spacing: -.043em !important;
+.login-onirico--reference .login-onirico__headline span {
+  display: block;
 }
 
 .login-onirico--reference .login-onirico__lead {
-  max-width: 24.8cqw !important;
-  margin: 3.0cqh 0 0 !important;
-  color: #51565a !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: .92cqw !important;
-  font-weight: 400 !important;
-  line-height: 1.47 !important;
-  letter-spacing: 0 !important;
+  max-width: 31rem;
+  margin: 1.75rem 0 0;
+  color: #555b60;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(.88rem, .86vw, 1rem);
+  line-height: 1.58;
 }
 
-.login-onirico--reference .login-onirico__intro--urban blockquote {
-  max-width: 23.6cqw !important;
-  margin: 4.1cqh 0 0 !important;
-  padding: .35cqh 0 .35cqh 1.05cqw !important;
-  border-left: 2px solid var(--login-copper) !important;
-  color: #64686b !important;
-  font-family: "Cormorant Garamond", Georgia, serif !important;
-  font-size: 1.04cqw !important;
-  font-style: italic !important;
-  line-height: 1.42 !important;
+.login-onirico--reference blockquote {
+  max-width: 28rem;
+  margin: 2rem 0 0;
+  padding: .35rem 0 .35rem 1rem;
+  border-left: 2px solid var(--login-copper);
+  color: #64686c;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(.95rem, .92vw, 1.08rem);
+  font-style: italic;
+  line-height: 1.42;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Retrato / cidade principal                                                 */
+/* -------------------------------------------------------------------------- */
+
+.login-onirico--reference .login-onirico__portrait-zone {
+  position: absolute;
+  z-index: 1;
+  top: -4%;
+  bottom: -4%;
+  left: 23%;
+  width: 48%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.login-onirico--reference .login-onirico__portrait-zone::before {
+  position: absolute;
+  z-index: 0;
+  inset: 6% 6% 6% 0;
+  content: "";
+  background:
+    radial-gradient(circle at 54% 44%, rgba(190,128,54,.11), transparent 34%),
+    radial-gradient(circle at 70% 62%, rgba(21,25,29,.10), transparent 45%);
+  filter: blur(22px);
+}
+
+.login-onirico--reference .login-onirico__portrait {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 56%;
+  height: 112%;
+  width: auto;
+  max-width: none;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  filter: saturate(.88) contrast(1.015);
+}
+
+.login-onirico--reference .login-onirico__portrait-zone::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  content: "";
+  background:
+    linear-gradient(
+      90deg,
+      rgba(247,243,235,.98) 0%,
+      rgba(247,243,235,.72) 8%,
+      rgba(247,243,235,.16) 21%,
+      rgba(247,243,235,0) 36%,
+      rgba(247,243,235,0) 70%,
+      rgba(247,243,235,.16) 82%,
+      rgba(247,243,235,.80) 96%,
+      var(--login-paper) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(247,243,235,.35) 0%,
+      rgba(247,243,235,0) 12%,
+      rgba(247,243,235,0) 88%,
+      rgba(247,243,235,.35) 100%
+    );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -230,481 +226,519 @@
 /* -------------------------------------------------------------------------- */
 
 .login-onirico--reference .login-onirico__access-column {
-  position: absolute !important;
-  z-index: 5 !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: auto !important;
-  display: block !important;
-  width: 43.4% !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-  overflow: visible !important;
+  position: absolute;
+  z-index: 5;
+  inset: 0 0 0 auto;
+  display: flex;
+  width: 43%;
+  align-items: center;
+  justify-content: flex-end;
+  padding: clamp(2rem, 5vh, 4.5rem) clamp(42px, 5vw, 86px) clamp(2rem, 5vh, 4.5rem) clamp(1rem, 2vw, 2.4rem);
   background:
     linear-gradient(
       90deg,
-      rgba(248,244,236,0) 0%,
-      rgba(248,244,236,.47) 13%,
-      rgba(248,244,236,.91) 27%,
-      var(--login-paper) 43%,
+      rgba(247,243,235,0) 0%,
+      rgba(247,243,235,.30) 12%,
+      rgba(247,243,235,.82) 28%,
+      var(--login-paper) 48%,
       var(--login-paper) 100%
-    ) !important;
+    );
 }
 
-.login-onirico--reference .login-onirico__panel--urban {
-  position: absolute !important;
-  top: 9.55% !important;
-  right: 5.25% !important;
-  width: 36.25cqw !important;
-  min-height: 80.4cqh !important;
-  max-height: 80.4cqh !important;
-  margin: 0 !important;
-  padding: 3.75cqh 3.75cqw 3.45cqh !important;
-  overflow-y: auto !important;
-  border: 1px solid rgba(24,29,33,.11) !important;
-  border-radius: .75cqw !important;
-  background: rgba(255,253,249,.965) !important;
-  box-shadow: 0 2.7cqh 8cqh rgba(49,43,35,.105) !important;
-  backdrop-filter: blur(12px) !important;
-}
-
-.login-onirico--reference .login-onirico__panel--urban::before {
-  display: none !important;
+.login-onirico--reference .login-onirico__panel {
+  width: min(100%, 620px);
+  max-height: calc(100svh - 5rem);
+  overflow-y: auto;
+  padding: clamp(2rem, 3.2vw, 3rem);
+  border: 1px solid rgba(21,25,29,.12);
+  border-radius: 14px;
+  background: var(--login-card);
+  box-shadow: 0 28px 80px rgba(49,43,35,.13);
+  backdrop-filter: blur(14px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167,107,43,.36) transparent;
 }
 
 .login-onirico--reference .login-onirico__switch {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  width: 100% !important;
-  min-height: 5.55cqh !important;
-  margin: 0 0 5.15cqh !important;
-  border-bottom: 1px solid var(--login-line) !important;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0 0 2.35rem;
+  border-bottom: 1px solid var(--login-line);
 }
 
 .login-onirico--reference .login-onirico__switch button {
-  position: relative !important;
-  min-height: 5.55cqh !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  color: #676d72 !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: .94cqw !important;
-  font-weight: 400 !important;
-  text-transform: none !important;
+  position: relative;
+  min-height: 3.5rem;
+  border: 0;
+  background: transparent;
+  color: #697076;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .94rem;
+  cursor: pointer;
 }
 
 .login-onirico--reference .login-onirico__switch button.is-active {
-  color: #161b20 !important;
-  font-weight: 600 !important;
+  color: var(--login-ink);
+  font-weight: 650;
 }
 
 .login-onirico--reference .login-onirico__switch button.is-active::after {
-  content: "" !important;
-  position: absolute !important;
-  right: 8% !important;
-  bottom: -1px !important;
-  left: 8% !important;
-  height: 2px !important;
-  background: #14191e !important;
+  position: absolute;
+  right: 8%;
+  bottom: -1px;
+  left: 8%;
+  height: 2px;
+  content: "";
+  background: var(--login-ink);
 }
 
-.login-onirico--reference .login-onirico__title {
-  margin: 0 !important;
-  color: #171b1f !important;
-  font-family: "Cormorant Garamond", Georgia, serif !important;
-  font-size: 2.55cqw !important;
-  font-weight: 500 !important;
-  line-height: 1 !important;
-  letter-spacing: -.025em !important;
+.login-onirico--reference .login-onirico__panel h2 {
+  margin: 0;
+  color: var(--login-ink);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(2.35rem, 2.65vw, 3.2rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.025em;
 }
 
 .login-onirico--reference .login-onirico__panel-copy {
-  min-height: 0 !important;
-  margin: 1.0cqh 0 3.15cqh !important;
-  color: #767c80 !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: .86cqw !important;
-  line-height: 1.45 !important;
+  margin: .55rem 0 1.9rem;
+  color: #777d82;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .88rem;
+  line-height: 1.45;
 }
 
 .login-onirico--reference .login-onirico__form {
-  display: grid !important;
-  gap: 2.15cqh !important;
+  display: grid;
+  gap: 1rem;
 }
 
 .login-onirico--reference .login-onirico__form label {
-  display: grid !important;
-  gap: .68cqh !important;
-  margin: 0 !important;
+  display: grid;
+  gap: .45rem;
 }
 
 .login-onirico--reference .login-onirico__form label > span {
-  color: #6c7175 !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
-  font-size: .52cqw !important;
-  font-weight: 500 !important;
-  letter-spacing: .10em !important;
-  text-transform: uppercase !important;
+  color: #6e7479;
+  font: 500 .63rem/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .10em;
+  text-transform: uppercase;
 }
 
 .login-onirico--reference .login-onirico__field-control {
-  position: relative !important;
-  display: block !important;
+  position: relative;
 }
 
 .login-onirico--reference .login-onirico__field-control > svg {
-  position: absolute !important;
-  z-index: 2 !important;
-  top: 50% !important;
-  left: 1.08cqw !important;
-  width: 1.22cqw !important;
-  height: 1.22cqw !important;
-  transform: translateY(-50%) !important;
-  fill: none !important;
-  stroke: #60676c !important;
-  stroke-width: 1.65 !important;
-}
-
-.login-onirico--reference .login-onirico__field-control input,
-.login-onirico--reference .login-onirico__form > label > input {
-  width: 100% !important;
-  min-height: 5.72cqh !important;
-  margin: 0 !important;
-  border: 1px solid rgba(22,27,31,.17) !important;
-  border-radius: .38cqw !important;
-  background: rgba(255,255,255,.72) !important;
-  color: #181d21 !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: .86cqw !important;
-  box-shadow: none !important;
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: #626a6f;
+  stroke-width: 1.65;
+  pointer-events: none;
 }
 
 .login-onirico--reference .login-onirico__field-control input {
-  padding: 0 3.1cqw !important;
+  width: 100%;
+  min-height: 3.55rem;
+  padding: 0 3rem;
+  border: 1px solid rgba(21,25,29,.16);
+  border-radius: 6px;
+  outline: none;
+  background: rgba(255,255,255,.72);
+  color: var(--login-ink);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .92rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
 }
 
-.login-onirico--reference .login-onirico__form > label > input {
-  padding: 0 1.05cqw !important;
+.login-onirico--reference .login-onirico__field-control input:focus {
+  border-color: rgba(167,107,43,.62);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(167,107,43,.08);
 }
 
 .login-onirico--reference .login-onirico__password-toggle {
-  position: absolute !important;
-  z-index: 3 !important;
-  top: 50% !important;
-  right: .85cqw !important;
-  width: 2cqw !important;
-  height: 2cqw !important;
-  display: grid !important;
-  place-items: center !important;
-  transform: translateY(-50%) !important;
-  border: 0 !important;
-  background: transparent !important;
-  color: #5f666b !important;
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  right: .7rem;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #61686d;
+  cursor: pointer;
 }
 
 .login-onirico--reference .login-onirico__password-toggle svg {
-  width: 1.24cqw !important;
-  height: 1.24cqw !important;
-  fill: none !important;
-  stroke: currentColor !important;
-  stroke-width: 1.65 !important;
+  width: 1.3rem;
+  height: 1.3rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
 }
 
 .login-onirico--reference .login-onirico__link {
-  justify-self: end !important;
-  margin: -1.15cqh 0 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  color: #5c4937 !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: .68cqw !important;
-  text-decoration: underline !important;
+  justify-self: end;
+  margin-top: -.35rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #6f4e2c;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .72rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 .login-onirico--reference .login-onirico__submit {
-  position: relative !important;
-  min-height: 5.88cqh !important;
-  margin-top: .15cqh !important;
-  padding: 0 1.45cqw 0 3.25cqw !important;
-  border: 0 !important;
-  border-radius: .38cqw !important;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .8rem;
+  width: 100%;
+  min-height: 3.75rem;
+  margin-top: .2rem;
+  padding: 0 1.2rem;
+  border: 0;
+  border-radius: 6px;
   background:
-    radial-gradient(circle at 7% 50%, rgba(207,147,70,.23), transparent 2.5cqw),
-    #12171c !important;
-  color: #fffaf1 !important;
-  font-family: "Cormorant Garamond", Georgia, serif !important;
-  font-size: 1.06cqw !important;
-  font-weight: 600 !important;
-  letter-spacing: .015em !important;
-  text-transform: none !important;
-  box-shadow: none !important;
+    radial-gradient(circle at 8% 50%, rgba(207,147,70,.24), transparent 3.1rem),
+    #12171c;
+  color: #fff9ef;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(18,23,28,.08);
 }
 
-.login-onirico--reference .login-onirico__submit::before {
-  content: "✦" !important;
-  position: absolute !important;
-  left: 1.05cqw !important;
-  top: 50% !important;
-  transform: translateY(-51%) !important;
-  color: #c98b3e !important;
-  font-size: 1.45cqw !important;
-  font-weight: 400 !important;
+.login-onirico--reference .login-onirico__submit:disabled {
+  opacity: .62;
+  cursor: wait;
 }
 
-.login-onirico--reference .login-onirico__submit > span {
-  font-family: Inter, sans-serif !important;
-  font-size: 1.15cqw !important;
+.login-onirico--reference .login-onirico__submit-star {
+  color: #cb8e44;
+  font-size: 1.25rem;
+}
+
+.login-onirico--reference .login-onirico__submit strong {
+  justify-self: center;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.12rem;
+  font-weight: 600;
+  letter-spacing: .01em;
 }
 
 .login-onirico--reference .login-onirico__separator {
-  display: grid !important;
-  grid-template-columns: 1fr auto 1fr !important;
-  align-items: center !important;
-  gap: 1cqw !important;
-  margin: 3.3cqh 0 2.7cqh !important;
-  color: #7b7f82 !important;
-  font-size: .62cqw !important;
-  text-transform: uppercase !important;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.65rem 0 1.3rem;
+  color: #85898c;
+  font-family: Inter, sans-serif;
+  font-size: .68rem;
+  text-transform: uppercase;
 }
 
 .login-onirico--reference .login-onirico__separator::before,
 .login-onirico--reference .login-onirico__separator::after {
-  content: "" !important;
-  height: 1px !important;
-  background: rgba(18,23,28,.10) !important;
+  height: 1px;
+  content: "";
+  background: rgba(21,25,29,.10);
 }
 
 .login-onirico--reference .login-onirico__entry-options {
-  display: grid !important;
-  gap: 1.75cqh !important;
+  display: grid;
+  gap: .85rem;
 }
 
 .login-onirico--reference .login-onirico__entry-card {
-  display: grid !important;
-  grid-template-columns: 3.2cqw minmax(0, 1fr) auto !important;
-  align-items: center !important;
-  gap: 1.05cqw !important;
-  width: 100% !important;
-  min-height: 10.5cqh !important;
-  padding: 1.15cqh 1.2cqw !important;
-  border: 1px solid rgba(18,23,28,.08) !important;
-  border-radius: .42cqw !important;
-  background: rgba(248,243,235,.82) !important;
-  color: #181d21 !important;
-  text-align: left !important;
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .9rem;
+  width: 100%;
+  min-height: 5.7rem;
+  padding: .9rem 1rem;
+  border: 1px solid rgba(21,25,29,.09);
+  border-radius: 7px;
+  background: rgba(247,242,234,.82);
+  color: var(--login-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.login-onirico--reference .login-onirico__entry-card:hover {
+  border-color: rgba(167,107,43,.35);
+  background: #fffaf3;
+  transform: translateY(-1px);
 }
 
 .login-onirico--reference .login-onirico__entry-icon {
-  display: grid !important;
-  width: 2.55cqw !important;
-  height: 2.55cqw !important;
-  place-items: center !important;
-  color: var(--login-copper) !important;
-  border: 0 !important;
-  background: transparent !important;
+  display: grid;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  color: var(--login-copper);
 }
 
 .login-onirico--reference .login-onirico__entry-icon svg {
-  width: 2.1cqw !important;
-  height: 2.1cqw !important;
-  fill: none !important;
-  stroke: currentColor !important;
-  stroke-width: 1.45 !important;
-}
-
-.login-onirico--reference .login-onirico__entry-card > span:nth-child(2) {
-  display: block !important;
-  min-width: 0 !important;
+  width: 2rem;
+  height: 2rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
 }
 
 .login-onirico--reference .login-onirico__entry-card strong {
-  display: block !important;
-  margin: 0 0 .45cqh !important;
-  color: #1a1e21 !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: .81cqw !important;
-  font-weight: 650 !important;
+  display: block;
+  color: #1b1f22;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .84rem;
+  font-weight: 700;
 }
 
 .login-onirico--reference .login-onirico__entry-card small {
-  display: block !important;
-  max-width: 16.4cqw !important;
-  color: #71777b !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: .63cqw !important;
-  line-height: 1.42 !important;
+  display: block;
+  max-width: 18rem;
+  margin-top: .25rem;
+  color: #747a7e;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .66rem;
+  line-height: 1.42;
 }
 
 .login-onirico--reference .login-onirico__entry-cta {
-  min-width: 8.55cqw !important;
-  padding: 1.28cqh .95cqw !important;
-  border: 1px solid rgba(18,23,28,.13) !important;
-  border-radius: .36cqw !important;
-  background: rgba(255,253,249,.78) !important;
-  color: #1b2024 !important;
-  font-family: Inter, system-ui, sans-serif !important;
-  font-size: .66cqw !important;
-  font-weight: 650 !important;
-  text-align: center !important;
+  min-width: 8.75rem;
+  padding: .85rem .9rem;
+  border: 1px solid rgba(21,25,29,.13);
+  border-radius: 6px;
+  background: rgba(255,253,249,.80);
+  color: #1c2024;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .68rem;
+  font-weight: 650;
+  text-align: center;
 }
 
 .login-onirico--reference .login-onirico__error,
 .login-onirico--reference .login-onirico__message,
-.login-onirico--reference .login-onirico__offline-note,
+.login-onirico--reference .login-onirico__offline-note {
+  margin: .2rem 0 0;
+  padding: .75rem .85rem;
+  border-left: 2px solid var(--login-copper);
+  background: rgba(167,107,43,.06);
+  color: #676d71;
+  font-family: Inter, sans-serif;
+  font-size: .72rem;
+  line-height: 1.45;
+}
+
+.login-onirico--reference .login-onirico__error {
+  border-left-color: #9b3d39;
+  background: rgba(155,61,57,.06);
+  color: #833532;
+}
+
+.login-onirico--reference .login-onirico__offline-note {
+  display: grid;
+  gap: .2rem;
+  margin-top: 1rem;
+}
+
+.login-onirico--reference .login-onirico__offline-note strong {
+  color: #31363a;
+}
+
 .login-onirico--reference .login-onirico__local {
-  font-size: .72cqw !important;
+  margin-top: 1rem;
+  border: 0;
+  background: transparent;
+  color: #6f4e2c;
+  font-size: .75rem;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /* -------------------------------------------------------------------------- */
-/* Telas fora do formato desktop de referência                                */
+/* Telas mais baixas                                                          */
 /* -------------------------------------------------------------------------- */
 
-@media (max-width: 980px), (max-aspect-ratio: 4 / 5) {
-  .login-onirico--reference {
-    display: block !important;
-    overflow-y: auto !important;
+@media (max-height: 790px) and (min-width: 1101px) {
+  .login-onirico--reference .login-onirico__story-copy {
+    transform: translateY(-48%) scale(.90);
+    transform-origin: left center;
   }
 
-  .login-onirico--reference .login-onirico__main--urban {
-    container-type: normal;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 100svh !important;
-    overflow: visible !important;
-  }
-
-  .login-onirico--reference .login-onirico__art-column {
-    position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
-    left: auto !important;
-    width: 72% !important;
-    height: 43rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__intro--urban {
-    position: relative !important;
-    width: 100% !important;
-    min-height: 43rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__intro-content {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    width: min(78%, 30rem) !important;
-    padding: 3.3rem 1.25rem 2rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__brand-lockup {
-    width: min(22rem, 70vw) !important;
-    margin-bottom: 1.2rem !important;
-  }
-
-  .login-onirico--reference .ro-eyebrow {
-    font-size: .55rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__intro--urban h1 {
-    font-size: clamp(3.25rem, 12vw, 5rem) !important;
-  }
-
-  .login-onirico--reference .login-onirico__lead {
-    max-width: 28rem !important;
-    font-size: .9rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__intro--urban blockquote {
-    max-width: 25rem !important;
-    font-size: 1rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__access-column {
-    position: relative !important;
-    width: 100% !important;
-    padding: 1rem 1rem 3rem !important;
-    background: var(--login-paper) !important;
-  }
-
-  .login-onirico--reference .login-onirico__panel--urban {
-    position: relative !important;
-    top: auto !important;
-    right: auto !important;
-    width: min(100%, 42rem) !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    margin: 0 auto !important;
-    padding: 1.6rem !important;
-    border-radius: .65rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__switch,
-  .login-onirico--reference .login-onirico__switch button {
-    min-height: 3.2rem !important;
+  .login-onirico--reference .login-onirico__panel {
+    max-height: calc(100svh - 2.5rem);
+    padding: 1.7rem 2rem;
   }
 
   .login-onirico--reference .login-onirico__switch {
-    margin-bottom: 2rem !important;
+    margin-bottom: 1.45rem;
   }
 
-  .login-onirico--reference .login-onirico__title {
-    font-size: 2.45rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__panel-copy,
-  .login-onirico--reference .login-onirico__form input,
-  .login-onirico--reference .login-onirico__entry-card strong {
-    font-size: .9rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__form label > span,
-  .login-onirico--reference .login-onirico__entry-card small,
-  .login-onirico--reference .login-onirico__entry-cta,
-  .login-onirico--reference .login-onirico__link {
-    font-size: .7rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__field-control input,
-  .login-onirico--reference .login-onirico__form > label > input,
-  .login-onirico--reference .login-onirico__submit {
-    min-height: 3.55rem !important;
+  .login-onirico--reference .login-onirico__panel-copy {
+    margin-bottom: 1.2rem;
   }
 
   .login-onirico--reference .login-onirico__entry-card {
-    grid-template-columns: 3rem 1fr auto !important;
-    min-height: 5.6rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__entry-icon {
-    width: 2.4rem !important;
-    height: 2.4rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__entry-icon svg {
-    width: 1.9rem !important;
-    height: 1.9rem !important;
-  }
-
-  .login-onirico--reference .login-onirico__entry-cta {
-    min-width: 8rem !important;
+    min-height: 4.9rem;
   }
 }
 
-@media (max-width: 600px) {
-  .login-onirico--reference .login-onirico__intro-content {
-    width: 84% !important;
+/* -------------------------------------------------------------------------- */
+/* Tablet / mobile                                                            */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .login-onirico--reference {
+    position: relative !important;
+    overflow: visible !important;
+  }
+
+  .login-onirico--reference .login-onirico__stage {
+    display: grid;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .login-onirico--reference .login-onirico__frame-art {
+    position: fixed;
+  }
+
+  .login-onirico--reference .login-onirico__story,
+  .login-onirico--reference .login-onirico__portrait-zone,
+  .login-onirico--reference .login-onirico__access-column {
+    position: relative;
+    inset: auto;
+    width: 100%;
+  }
+
+  .login-onirico--reference .login-onirico__story {
+    min-height: 44rem;
+    overflow: hidden;
+    background:
+      linear-gradient(90deg, var(--login-paper) 0%, rgba(247,243,235,.94) 58%, rgba(247,243,235,.30) 100%);
+  }
+
+  .login-onirico--reference .login-onirico__story-copy {
+    top: auto;
+    bottom: 3.2rem;
+    left: 1.5rem;
+    width: min(78%, 31rem);
+    transform: none;
+  }
+
+  .login-onirico--reference .login-onirico__brand-lockup {
+    width: min(22rem, 68vw);
+  }
+
+  .login-onirico--reference .login-onirico__headline {
+    font-size: clamp(3.35rem, 10vw, 5rem);
+  }
+
+  .login-onirico--reference .login-onirico__portrait-zone {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: auto;
+    width: 72%;
+    height: 44rem;
+  }
+
+  .login-onirico--reference .login-onirico__portrait {
+    left: 62%;
+    height: 105%;
+  }
+
+  .login-onirico--reference .login-onirico__mist-city {
+    width: 60vw;
+    opacity: .22;
+  }
+
+  .login-onirico--reference .login-onirico__access-column {
+    padding: 1.25rem 1rem 3rem;
+    background: var(--login-paper);
+  }
+
+  .login-onirico--reference .login-onirico__panel {
+    width: min(100%, 42rem);
+    max-height: none;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-onirico--reference .login-onirico__story {
+    min-height: 39rem;
+  }
+
+  .login-onirico--reference .login-onirico__portrait-zone {
+    width: 80%;
+    height: 39rem;
+  }
+
+  .login-onirico--reference .login-onirico__story-copy {
+    bottom: 2rem;
+    width: 82%;
+  }
+
+  .login-onirico--reference .login-onirico__brand-lockup {
+    width: min(18rem, 72vw);
+    margin-bottom: 1rem;
+  }
+
+  .login-onirico--reference .login-onirico__eyebrow {
+    font-size: .5rem;
+  }
+
+  .login-onirico--reference .login-onirico__headline {
+    margin-top: 1rem;
+    font-size: clamp(3rem, 14vw, 4.1rem);
+  }
+
+  .login-onirico--reference .login-onirico__lead {
+    max-width: 22rem;
+    font-size: .82rem;
+  }
+
+  .login-onirico--reference blockquote {
+    max-width: 21rem;
+    font-size: .9rem;
+  }
+
+  .login-onirico--reference .login-onirico__panel {
+    padding: 1.35rem 1rem;
+    border-radius: 10px;
+  }
+
+  .login-onirico--reference .login-onirico__switch button {
+    font-size: .78rem;
   }
 
   .login-onirico--reference .login-onirico__entry-card {
-    grid-template-columns: 2.7rem 1fr !important;
+    grid-template-columns: 2.65rem 1fr;
   }
 
   .login-onirico--reference .login-onirico__entry-cta {
-    grid-column: 2 !important;
-    justify-self: start !important;
-    margin-top: .25rem !important;
+    grid-column: 2;
+    justify-self: start;
+    min-width: 0;
+    margin-top: .25rem;
   }
 }
