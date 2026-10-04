@@ -21,6 +21,8 @@ export type CampaignTabType =
   | 'anotacoes'
   | 'configuracoes';
 
+const MASTER_ONLY_TABS = new Set<CampaignTabType>(['sessoes', 'anotacoes', 'configuracoes']);
+
 interface CampaignDetailViewProps {
   campanha: Campanha;
   personagens: Personagem[];
@@ -217,11 +219,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
     { id: 'configuracoes', label: 'Configurações' }
   ];
 
-  const masterOnlyTabs = new Set<CampaignTabType>(['sessoes', 'anotacoes', 'configuracoes']);
-  const tabs = canManageMembers ? tabsBase : tabsBase.filter(tab => !masterOnlyTabs.has(tab.id));
+  const tabs = canManageMembers ? tabsBase : tabsBase.filter(tab => !MASTER_ONLY_TABS.has(tab.id));
 
   useEffect(() => {
-    if (!canManageMembers && masterOnlyTabs.has(abaAtiva)) setAbaAtiva('visao_geral');
+    if (!canManageMembers && MASTER_ONLY_TABS.has(abaAtiva)) setAbaAtiva('visao_geral');
   }, [abaAtiva, canManageMembers]);
 
   return (
