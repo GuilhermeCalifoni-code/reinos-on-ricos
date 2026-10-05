@@ -207,7 +207,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
     try {
       if (remoto) {
-        await profileAssetService.removeAvatar().catch(() => undefined);
+        await profileAssetService.removeAvatar();
         await authService.atualizarPerfil({ nome: nome.trim() || session.nome, avatarUrl: undefined });
       }
 
@@ -368,7 +368,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       <nav className="ro-settings__nav" aria-label="Seções de configurações">
         <button type="button" onClick={() => navegar('settings-profile')}><UserRound /> Perfil</button>
         <button type="button" onClick={() => navegar('settings-appearance')}><Monitor /> Aparência</button>
-        <button type="button" onClick={() => navegar('settings-security')}><KeyRound /> Segurança</button>
+        {remoto && <button type="button" onClick={() => navegar('settings-security')}><KeyRound /> Segurança</button>}
         <button type="button" onClick={() => navegar('settings-data')}><DatabaseBackup /> Dados</button>
         <button type="button" onClick={() => navegar('settings-session')}><Laptop /> Sessão</button>
       </nav>
