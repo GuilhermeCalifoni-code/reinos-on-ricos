@@ -18,6 +18,18 @@ import { campaignRepository } from '../campaigns/campaignRepository';
 import { campaignContentRepository } from '../campaigns/campaignContentRepository';
 import { characterRepository } from '../characters/characterRepository';
 import { liveTableRepository } from '../../features/realtime/liveTableRepository';
+import {
+  removeLegacyMockAdversaries,
+  removeLegacyMockCampaignContent,
+  removeLegacyMockCampaigns,
+  removeLegacyMockCharacters,
+  removeLegacyMockClues,
+  removeLegacyMockLocations,
+  removeLegacyMockLore,
+  removeLegacyMockNotes,
+  removeLegacyMockNpcs,
+  removeLegacyMockSessions
+} from '../../data/runtimeDataSanitizer';
 
 export interface LocalWorkspaceSnapshot {
   campanhas: Campanha[];
@@ -81,9 +93,26 @@ export const localCloudMigrationService = {
       tokens: 0
     };
 
+    const cleanSnapshot: LocalWorkspaceSnapshot = {
+      campanhas: removeLegacyMockCampaigns(snapshot.campanhas),
+      sessoes: removeLegacyMockSessions(cleanSnapshot.sessoes),
+      npcs: removeLegacyMockNpcs(cleanSnapshot.npcs),
+      adversarios: removeLegacyMockAdversaries(cleanSnapshot.adversarios),
+      locais: removeLegacyMockLocations(cleanSnapshot.locais),
+      pistas: removeLegacyMockClues(cleanSnapshot.pistas),
+      loreEntries: removeLegacyMockLore(cleanSnapshot.loreEntries),
+      anotacoes: removeLegacyMockNotes(cleanSnapshot.anotacoes),
+      cenas: removeLegacyMockCampaignContent(cleanSnapshot.cenas),
+      handouts: removeLegacyMockCampaignContent(cleanSnapshot.handouts),
+      contadores: removeLegacyMockCampaignContent(cleanSnapshot.contadores),
+      mapas: removeLegacyMockCampaignContent(cleanSnapshot.mapas),
+      tokensMapa: removeLegacyMockCampaignContent(cleanSnapshot.tokensMapa),
+      personagens: removeLegacyMockCharacters(cleanSnapshot.personagens)
+    };
+
     const campaignMap = new Map<string, string>();
 
-    for (const localCampaign of snapshot.campanhas) {
+    for (const localCampaign of cleanSnapshot.campanhas) {
       onProgress?.(`Preparando “${localCampaign.nome}”…`);
 
       const already = await campaignRepository.buscarPorLegacyLocalId(localCampaign.id);
@@ -113,7 +142,7 @@ export const localCloudMigrationService = {
         campaignMap.set(localCampaign.id, created.id);
         report.campanhasCriadas += 1;
 
-        const sessions = inCampaign(snapshot.sessoes, localCampaign.id)
+        const sessions = inCampaign(cleanSnapshot.sessoes, localCampaign.id)
           .slice()
           .sort((a, b) => a.numero - b.numero);
 
@@ -128,48 +157,48 @@ export const localCloudMigrationService = {
           report.sessoes += 1;
         }
 
-        for (const item of inCampaign(snapshot.npcs, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.npcs, localCampaign.id)) {
           const { id: _id, campanhaId: _campaign, ...draft } = item;
           await campaignContentRepository.adicionarNPC({ ...draft, campanhaId: created.id });
           report.npcs += 1;
         }
 
-        for (const item of inCampaign(snapshot.adversarios, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.adversarios, localCampaign.id)) {
           const { id: _id, campanhaId: _campaign, ...draft } = item;
           await campaignContentRepository.adicionarAdversario({ ...draft, campanhaId: created.id });
           report.adversarios += 1;
         }
 
-        for (const item of inCampaign(snapshot.locais, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.locais, localCampaign.id)) {
           const { id: _id, campanhaId: _campaign, ...draft } = item;
           await campaignContentRepository.adicionarLocal({ ...draft, campanhaId: created.id });
           report.locais += 1;
         }
 
-        for (const item of inCampaign(snapshot.pistas, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.pistas, localCampaign.id)) {
           const { id: _id, campanhaId: _campaign, ...draft } = item;
           await campaignContentRepository.adicionarPista({ ...draft, campanhaId: created.id });
           report.pistas += 1;
         }
 
-        for (const item of inCampaign(snapshot.loreEntries, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.loreEntries, localCampaign.id)) {
           const { id: _id, campanhaId: _campaign, ...draft } = item;
           await campaignContentRepository.adicionarLore({ ...draft, campanhaId: created.id });
           report.lore += 1;
         }
 
-        for (const item of inCampaign(snapshot.anotacoes, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.anotacoes, localCampaign.id)) {
           await campaignContentRepository.adicionarAnotacao(created.id, item.titulo, item.conteudo);
           report.anotacoes += 1;
         }
 
-        for (const item of inCampaign(snapshot.cenas, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.cenas, localCampaign.id)) {
           const { id: _id, campanhaId: _campaign, ...draft } = item;
           await campaignContentRepository.adicionarCena({ ...draft, campanhaId: created.id });
           report.cenas += 1;
         }
 
-        for (const item of inCampaign(snapshot.handouts, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.handouts, localCampaign.id)) {
           const { id: _id, campanhaId: _campaign, storagePath: _storage, ...draft } = item;
           await campaignContentRepository.adicionarHandout({
             ...draft,
@@ -179,7 +208,7 @@ export const localCloudMigrationService = {
           report.handouts += 1;
         }
 
-        for (const item of inCampaign(snapshot.contadores, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.contadores, localCampaign.id)) {
           const { id: _id, criadoEm: _created, atualizadoEm: _updated, campanhaId: _campaign, sessaoId: _session, cenaId: _scene, ...draft } = item;
           await liveTableRepository.addCounter({
             ...draft,
@@ -191,7 +220,7 @@ export const localCloudMigrationService = {
         }
 
         const mapIdMap = new Map<string, string>();
-        for (const item of inCampaign(snapshot.mapas, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.mapas, localCampaign.id)) {
           const { id: oldMapId, criadoEm: _created, atualizadoEm: _updated, campanhaId: _campaign, storagePath: _storage, ...draft } = item;
           const migrated = await liveTableRepository.addMap({
             ...draft,
@@ -202,7 +231,7 @@ export const localCloudMigrationService = {
           report.mapas += 1;
         }
 
-        for (const item of inCampaign(snapshot.tokensMapa, localCampaign.id)) {
+        for (const item of inCampaign(cleanSnapshot.tokensMapa, localCampaign.id)) {
           const mappedMapId = mapIdMap.get(item.mapaId);
           if (!mappedMapId) continue;
           const { id: _id, criadoEm: _created, atualizadoEm: _updated, campanhaId: _campaign, mapaId: _map, ...draft } = item;
@@ -221,7 +250,7 @@ export const localCloudMigrationService = {
     }
 
     onProgress?.('Sincronizando fichas…');
-    for (const character of snapshot.personagens) {
+    for (const character of cleanSnapshot.personagens) {
       const mappedCampaignId = character.campaignId
         ? campaignMap.get(character.campaignId)
         : undefined;
