@@ -1,6 +1,6 @@
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabaseClient';
-import { UserProfile } from '../../types/auth';
+import { UIPreferences, UserProfile } from '../../types/auth';
 
 const requireClient = () => {
   if (!supabase) throw new Error('Supabase não está configurado neste ambiente.');
@@ -33,6 +33,10 @@ export const authService = {
   },
   async sair() {
     const { error } = await requireClient().auth.signOut();
+    if (error) throw error;
+  },
+  async sairTodos() {
+    const { error } = await requireClient().auth.signOut({ scope: 'global' });
     if (error) throw error;
   },
   async recuperarSenha(email: string) {
@@ -75,6 +79,7 @@ export const authService = {
         user.user_metadata.avatar_url ||
         user.user_metadata.picture ||
         undefined,
+      preferences: (data?.preferences || {}) as UIPreferences,
       criadoEm: data?.criado_em,
       atualizadoEm: data?.atualizado_em
     };
@@ -112,5 +117,31 @@ export const authService = {
       criadoEm: undefined,
       atualizadoEm: new Date().toISOString()
     } satisfies UserProfile;
+  },
+
+  async atualizarPreferencias(preferences: UIPreferences) {
+    const client = requireClient();
+    const { data: { user }, error: userError } = await client.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error('Sessão autenticada não encontrada.');
+
+    const { error } = await client.from('profiles')
+      .update({
+        preferences,
+        atualizado_em: new Date().toISOString()
+      })
+      .eq('user_id', user.id);
+    if (error) throw error;
+  },
+
+  async detalhesConta() {
+    const { data: { user }, error } = await requireClient().auth.getUser();
+    if (error) throw error;
+    if (!user) throw new Error('Sessão autenticada não encontrada.');
+    return {
+      provider: String(user.app_metadata?.provider || 'email'),
+      createdAt: user.created_at,
+      lastSignInAt: user.last_sign_in_at || undefined
+    };
   }
 };

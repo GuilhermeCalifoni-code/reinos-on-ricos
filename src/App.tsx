@@ -19,6 +19,9 @@ import { useRemoteCharacters } from './services/characters/useRemoteCharacters';
 import { campaignRepository } from './services/campaigns/campaignRepository';
 import { campaignAssetService } from './services/storage/campaignAssetService';
 import { localCloudMigrationService } from './services/migration/localCloudMigrationService';
+import { useTheme } from './design-system/theme';
+import { applyUIPreferences, loadLocalUIPreferences, saveLocalUIPreferences } from './services/preferences/uiPreferences';
+import { accountDataService } from './services/account/accountDataService';
 
 const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
 
@@ -37,6 +40,7 @@ const ViewFallback = () => (
 );
 
 export default function App() {
+  const { setTheme } = useTheme();
   const [session, setSession] = useState<UserSession | null>(() => {
     try {
       const salvo = localStorage.getItem(SESSION_STORAGE_KEY);
@@ -52,7 +56,10 @@ export default function App() {
 
   useEffect(() => {
     sessionRef.current = session;
-  }, [session]);
+    const prefs = session?.uiPreferences || loadLocalUIPreferences();
+    applyUIPreferences(prefs);
+    if (prefs.theme) setTheme(prefs.theme);
+  }, [session, setTheme]);
 
   // Storage de Personagens
   const {
@@ -208,6 +215,7 @@ export default function App() {
         nome: profile.nome,
         email: supabaseSession.user.email,
         avatarUrl: profile.avatarUrl,
+        uiPreferences: profile.preferences,
         mesaCodigo: '',
         modoConexao: 'supabase'
       };
@@ -353,6 +361,56 @@ export default function App() {
     ]);
 
     return report;
+  };
+
+  const handleAtualizarPreferencias = async (preferences: NonNullable<UserSession['uiPreferences']>) => {
+    const next = { ...(session?.uiPreferences || {}), ...preferences };
+    saveLocalUIPreferences(next);
+    applyUIPreferences(next);
+    if (next.theme) setTheme(next.theme);
+
+    if (usandoRemoto) {
+      await authService.atualizarPreferencias(next);
+    }
+
+    handleAtualizarSessao({ uiPreferences: next });
+  };
+
+  const handleExportarDados = async () => {
+    if (usandoRemoto) {
+      const payload = await accountDataService.exportarConta();
+      accountDataService.baixarJson(payload, `reinos-oniricos-backup-${new Date().toISOString().slice(0, 10)}.json`);
+      return;
+    }
+
+    accountDataService.baixarJson({
+      formato: 'reinos-oniricos-local-backup-v1',
+      exportadoEm: new Date().toISOString(),
+      perfil: session,
+      campanhas: campanhasLocais,
+      personagens: personagensLocais,
+      sessoes,
+      npcs,
+      adversarios,
+      locais,
+      pistas,
+      loreEntries,
+      anotacoes,
+      cenas,
+      handouts,
+      contadores,
+      mapas,
+      tokensMapa
+    }, `reinos-oniricos-local-${new Date().toISOString().slice(0, 10)}.json`);
+  };
+
+  const handleSairTodos = async () => {
+    if (!usandoRemoto) {
+      handleTrocarSessao();
+      return;
+    }
+    await authService.sairTodos();
+    handleTrocarSessao();
   };
 
   const handleTrocarSessao = () => {
@@ -692,6 +750,9 @@ export default function App() {
             onTrocarSessao={handleTrocarSessao}
             onRestaurarExemplos={restaurarExemplos}
             onAtualizarSessao={handleAtualizarSessao}
+            onAtualizarPreferencias={handleAtualizarPreferencias}
+            onExportarDados={handleExportarDados}
+            onSairTodos={handleSairTodos}
             localDataSummary={{
               campanhas: campanhasLocais.length,
               personagens: personagensLocais.length,

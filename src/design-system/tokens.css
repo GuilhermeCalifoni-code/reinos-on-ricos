@@ -2281,3 +2281,27 @@
   .ro-dashboard__join { grid-template-columns: 1fr; }
   .ro-dashboard__section-head { align-items: start; }
 }
+
+
+/* Preferências globais do usuário */
+:root[data-text-scale='small'] { font-size: 15px; }
+:root[data-text-scale='normal'] { font-size: 16px; }
+:root[data-text-scale='large'] { font-size: 17.5px; }
+
+:root[data-density='compact'] {
+  --ro-space-2: 0.4rem;
+  --ro-space-3: 0.6rem;
+  --ro-space-4: 0.8rem;
+  --ro-space-5: 1.15rem;
+  --ro-space-6: 1.55rem;
+  --ro-space-7: 2.2rem;
+}
+
+:root[data-reduce-motion='true'] *,
+:root[data-reduce-motion='true'] *::before,
+:root[data-reduce-motion='true'] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
