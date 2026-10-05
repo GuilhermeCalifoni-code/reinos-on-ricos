@@ -116,7 +116,11 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   const [itemDesc, setItemDesc] = useState('');
   const [itemExtra, setItemExtra] = useState('');
 
-  const sessoesCampanha = sessoes.filter(s => s.campanhaId === campanha.id);
+  const sessoesCampanha = sessoes
+    .filter(s => s.campanhaId === campanha.id)
+    .slice()
+    .sort((a, b) => b.numero - a.numero);
+  const ultimaSessao = sessoesCampanha[0];
   const npcsCampanha = npcs.filter(n => n.campanhaId === campanha.id);
   const adversariosCampanha = adversarios.filter(a => a.campanhaId === campanha.id);
   const locaisCampanha = locais.filter(l => l.campanhaId === campanha.id);
@@ -152,11 +156,11 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
       onAdicionarNPC({
         campanhaId: campanha.id,
         nome: itemNome.trim(),
-        papel: itemExtra.trim() || 'Desconhecido',
-        conceito: itemExtra.trim() || 'Habitante da Vigília',
-        descricao: itemDesc.trim() || 'Sem descrição.',
+        papel: itemExtra.trim(),
+        conceito: '',
+        descricao: itemDesc.trim(),
         atitude: 'neutro',
-        localizacao: 'São Paulo'
+        localizacao: ''
       });
     } else if (modalNovoItem === 'adversarios') {
       onAdicionarAdversario({
@@ -168,16 +172,16 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         vidaMaxima: 6,
         defesa: 10,
         resistencia: 7,
-        ataquePrincipal: itemExtra.trim() || 'Golpe de Tensão (1d6)',
-        descricao: itemDesc.trim() || 'Aberração do Sonhar.'
+        ataquePrincipal: itemExtra.trim(),
+        descricao: itemDesc.trim()
       });
     } else if (modalNovoItem === 'locais') {
       onAdicionarLocal({
         campanhaId: campanha.id,
         nome: itemNome.trim(),
         tipo: 'fronteira',
-        descricao: itemDesc.trim() || 'Ponto de encontro urbano.',
-        anomaliaDetectada: itemExtra.trim() || 'Sem anomalia detectada'
+        descricao: itemDesc.trim(),
+        anomaliaDetectada: itemExtra.trim()
       });
     } else if (modalNovoItem === 'pistas') {
       onAdicionarPista({
@@ -185,14 +189,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         titulo: itemNome.trim(),
         tipo: 'documento',
         status: 'descoberta',
-        descricao: itemDesc.trim() || 'Pista em investigação.'
+        descricao: itemDesc.trim()
       });
     } else if (modalNovoItem === 'lore') {
       onAdicionarLore({
         campanhaId: campanha.id,
         titulo: itemNome.trim(),
         categoria: 'mundo',
-        conteudo: itemDesc.trim() || 'Registro nos arquivos oníricos.'
+        conteudo: itemDesc.trim()
       });
     } else if (modalNovoItem === 'anotacoes') {
       onAdicionarAnotacao(campanha.id, itemNome.trim(), itemDesc.trim());
@@ -254,7 +258,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         <div className="ro-campaign-hero__actions">
           <span className="ro-campaign-hero__code">Código · {campanha.codigo}</span>
           <button onClick={() => onIniciarSessao(campanha)} className="ro-button">
-            Continuar última sessão <span aria-hidden="true">→</span>
+            {ultimaSessao ? 'Continuar última sessão' : 'Abrir Mesa Ao Vivo'} <span aria-hidden="true">→</span>
           </button>
         </div>
       </section>
@@ -287,31 +291,50 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-6">
                 <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm">
-                  <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)] mb-4">
+                  <div className="flex items-center justify-between gap-3 pb-4 border-b border-[var(--ro-line)] mb-4">
                     <span className="text-xs font-mono tracking-widest text-[var(--ro-ash)] uppercase">
-                      Última Sessão Registrada
+                      {ultimaSessao ? 'Última Sessão Registrada' : 'Sessões'}
                     </span>
-                    <span className="text-xs font-mono text-[var(--ro-copper)]">
-                      Sessão #{String(campanha.sessaoAtual).padStart(2, '0')}
-                    </span>
+                    {ultimaSessao && (
+                      <span className="text-xs font-mono text-[var(--ro-copper)]">
+                        Sessão #{String(ultimaSessao.numero).padStart(2, '0')}
+                      </span>
+                    )}
                   </div>
-                  <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">
-                    {sessoesCampanha[0]?.titulo || 'O que existe atrás da porta?'}
-                  </h3>
-                  <p className="text-xs text-[var(--ro-paper-muted)]/80 mt-2.5 leading-relaxed font-normal">
-                    {sessoesCampanha[0]?.resumo || 'O grupo adentra o limiar onde a realidade mundana perde consistência. As paredes reverberam com o murmúrio da Vigília enfraquecida.'}
-                  </p>
-                  <div className="pt-5 mt-5 border-t border-[var(--ro-line)] flex items-center justify-between">
-                    <span className="text-[11px] font-mono text-[var(--ro-ash)]">
-                      Data: {sessoesCampanha[0]?.data || campanha.ultimaSessaoData}
-                    </span>
-                    <button
-                      onClick={() => onIniciarSessao(campanha)}
-                      className="text-xs font-mono text-[var(--ro-copper)] hover:underline"
-                    >
-                      Continuar na Mesa →
-                    </button>
-                  </div>
+
+                  {ultimaSessao ? (
+                    <>
+                      <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">
+                        {ultimaSessao.titulo}
+                      </h3>
+                      {(ultimaSessao.resumo || ultimaSessao.descricao) && (
+                        <p className="text-xs text-[var(--ro-paper-muted)]/80 mt-2.5 leading-relaxed font-normal">
+                          {ultimaSessao.resumo || ultimaSessao.descricao}
+                        </p>
+                      )}
+                      <div className="pt-5 mt-5 border-t border-[var(--ro-line)] flex flex-wrap gap-3 items-center justify-between">
+                        <span className="text-[11px] font-mono text-[var(--ro-ash)]">
+                          {ultimaSessao.data ? `Data: ${ultimaSessao.data}` : 'Sem data definida'}
+                        </span>
+                        <button
+                          onClick={() => onIniciarSessao(campanha)}
+                          className="text-xs font-mono text-[var(--ro-copper)] hover:underline"
+                        >
+                          Continuar na Mesa →
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="campaign-v4__empty">
+                      <strong>Nenhuma sessão registrada.</strong>
+                      <p>A campanha ainda não possui uma sessão criada. Nada fictício será exibido aqui.</p>
+                      {canManageMembers && (
+                        <button type="button" className="ro-button--quiet" onClick={() => setModalNovaSessao(true)}>
+                          Criar primeira sessão
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Lista de Pistas Recentes */}
@@ -328,15 +351,17 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {pistasCampanha.slice(0, 2).map(pista => (
+                    {pistasCampanha.length ? pistasCampanha.slice(0, 2).map(pista => (
                       <div key={pista.id} className="p-3 bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm">
-                        <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center justify-between gap-3 text-xs">
                           <span className="text-[var(--ro-paper)] font-medium">{pista.titulo}</span>
                           <span className="text-[10px] font-mono text-[var(--ro-copper)] uppercase">{pista.tipo}</span>
                         </div>
-                        <p className="text-xs text-[var(--ro-ash)] mt-1 line-clamp-1">{pista.descricao}</p>
+                        {pista.descricao && <p className="text-xs text-[var(--ro-ash)] mt-1 line-clamp-2">{pista.descricao}</p>}
                       </div>
-                    ))}
+                    )) : (
+                      <p className="campaign-v4__empty-line">Nenhuma pista registrada nesta campanha.</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -367,21 +392,24 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                     Desvelados Vinculados
                   </span>
                   <div className="space-y-2.5">
-                    {personagens.slice(0, 3).map(pj => (
-                      <div
+                    {personagens.length ? personagens.slice(0, 3).map(pj => (
+                      <button
+                        type="button"
                         key={pj.id}
                         onClick={() => onAbrirFichaPersonagem(pj)}
-                        className="flex items-center justify-between p-2.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] hover:border-[var(--ro-line-strong)] cursor-pointer transition-colors rounded-sm"
+                        className="w-full flex items-center justify-between gap-3 p-2.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] hover:border-[var(--ro-line-strong)] cursor-pointer transition-colors rounded-sm text-left"
                       >
-                        <div>
-                          <div className="text-xs text-[var(--ro-paper)] font-medium">{pj.nome}</div>
-                          <div className="text-[10px] font-mono text-[var(--ro-ash)]">{pj.conceito} · Nível {pj.nivel}</div>
+                        <div className="min-w-0">
+                          <div className="text-xs text-[var(--ro-paper)] font-medium truncate">{pj.nome}</div>
+                          <div className="text-[10px] font-mono text-[var(--ro-ash)] truncate">{pj.conceito || 'Sem conceito'} · Nível {pj.nivel}</div>
                         </div>
-                        <div className="text-right text-[11px] font-mono text-[var(--ro-paper-muted)]">
+                        <div className="shrink-0 text-right text-[11px] font-mono text-[var(--ro-paper-muted)]">
                           <span>{pj.vidaAtual}/{pj.vidaMaxima} V</span>
                         </div>
-                      </div>
-                    ))}
+                      </button>
+                    )) : (
+                      <p className="campaign-v4__empty-line">Nenhum Desvelado vinculado à campanha.</p>
+                    )}
                   </div>
                 </div>
               </div>
