@@ -23,6 +23,11 @@ export const campaignRepository = {
   async entrarComCodigo(codigo: string) { const { data, error } = await client().rpc('join_campaign_by_code', { p_codigo: codigo.trim().toUpperCase() }); if (error) throw error; return data as string; },
   async regenerarCodigo(campaignId: string) { const { data, error } = await client().rpc('regenerate_campaign_invite', { p_campaign_id: campaignId }); if (error) throw error; return data as string; },
   async vincularPersonagem(campaignId: string, characterId: string) { const { error } = await client().rpc('link_own_character_to_membership', { p_campaign_id: campaignId, p_character_id: characterId }); if (error) throw error; },
+  async atualizarImagem(campaignId: string, imagemUrl: string) {
+    const { data, error } = await client().from('campaigns').update({ imagem_url: imagemUrl }).eq('id', campaignId).select('*').single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
   async remover(campaignId: string) { const { error } = await client().from('campaigns').delete().eq('id', campaignId); if (error) throw error; },
   async atualizarMembro(campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) {
     const values: Record<string, unknown> = {};
