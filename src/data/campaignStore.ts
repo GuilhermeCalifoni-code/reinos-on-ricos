@@ -1,16 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, Contador, MapaNarrativo, TokenMapa, Cena, Handout } from '../types/campaign';
-import {
-  CAMPANHAS_INICIAIS,
-  SESSOES_INICIAIS,
-  NPCS_INICIAIS,
-  ADVERSARIOS_INICIAIS,
-  LOCAIS_INICIAIS,
-  PISTAS_INICIAIS,
-  LORE_INICIAIS,
-  ANOTACOES_INICIAIS
-} from './campaignsData';
-
 const STORAGE_KEYS = {
   CAMPANHAS: 'reinos_oniricos_campanhas_v2',
   SESSOES: 'reinos_oniricos_sessoes_v2',
@@ -32,81 +21,81 @@ export function useCampaignStorage() {
   const [campanhas, setCampanhas] = useState<Campanha[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.CAMPANHAS);
-      return salvo ? JSON.parse(salvo) : CAMPANHAS_INICIAIS;
+      return salvo ? JSON.parse(salvo) : [];
     } catch {
-      return CAMPANHAS_INICIAIS;
+      return [];
     }
   });
 
   const [campanhaAtivaId, setCampanhaAtivaId] = useState<string | null>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.ATIVA_ID);
-      return salvo || (CAMPANHAS_INICIAIS[0]?.id ?? null);
+      return salvo || null;
     } catch {
-      return CAMPANHAS_INICIAIS[0]?.id ?? null;
+      return null;
     }
   });
 
   const [sessoes, setSessoes] = useState<Sessao[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.SESSOES);
-      return salvo ? JSON.parse(salvo) : SESSOES_INICIAIS;
+      return salvo ? JSON.parse(salvo) : [];
     } catch {
-      return SESSOES_INICIAIS;
+      return [];
     }
   });
 
   const [npcs, setNpcs] = useState<NPC[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.NPCS);
-      return salvo ? JSON.parse(salvo) : NPCS_INICIAIS;
+      return salvo ? JSON.parse(salvo) : [];
     } catch {
-      return NPCS_INICIAIS;
+      return [];
     }
   });
 
   const [adversarios, setAdversarios] = useState<Adversario[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.ADVERSARIOS);
-      return salvo ? JSON.parse(salvo) : ADVERSARIOS_INICIAIS;
+      return salvo ? JSON.parse(salvo) : [];
     } catch {
-      return ADVERSARIOS_INICIAIS;
+      return [];
     }
   });
 
   const [locais, setLocais] = useState<Local[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.LOCAIS);
-      return salvo ? JSON.parse(salvo) : LOCAIS_INICIAIS;
+      return salvo ? JSON.parse(salvo) : [];
     } catch {
-      return LOCAIS_INICIAIS;
+      return [];
     }
   });
 
   const [pistas, setPistas] = useState<Pista[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.PISTAS);
-      return salvo ? JSON.parse(salvo) : PISTAS_INICIAIS;
+      return salvo ? JSON.parse(salvo) : [];
     } catch {
-      return PISTAS_INICIAIS;
+      return [];
     }
   });
 
   const [loreEntries, setLoreEntries] = useState<LoreEntry[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.LORE);
-      return salvo ? JSON.parse(salvo) : LORE_INICIAIS;
+      return salvo ? JSON.parse(salvo) : [];
     } catch {
-      return LORE_INICIAIS;
+      return [];
     }
   });
 
   const [anotacoes, setAnotacoes] = useState<Anotacao[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.ANOTACOES);
-      return salvo ? JSON.parse(salvo) : ANOTACOES_INICIAIS;
+      return salvo ? JSON.parse(salvo) : [];
     } catch {
-      return ANOTACOES_INICIAIS;
+      return [];
     }
   });
 
@@ -181,16 +170,16 @@ export function useCampaignStorage() {
     const nova: Campanha = {
       id: `camp-${Date.now()}`,
       codigo: `ONIRICO-${Math.floor(10 + Math.random() * 90)}`,
-      nome: dados.nome.trim() || 'Nova História',
-      descricao: dados.descricao.trim() || 'Fronteira silenciosa entre a vigília e o Sonhar.',
-      imagemUrl: dados.imagemUrl || 'https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=1200&q=80',
+      nome: dados.nome.trim() || 'Nova campanha',
+      descricao: dados.descricao.trim(),
+      imagemUrl: dados.imagemUrl,
       tipo: dados.tipo,
       status: 'em_andamento',
       jogadoresCount: 0,
-      sessaoAtual: 1,
+      sessaoAtual: 0,
       rupturaGeral: 0,
       criadaEm: new Date().toISOString(),
-      ultimaSessaoData: new Date().toLocaleDateString('pt-BR'),
+      ultimaSessaoData: '',
       personagensIds: []
     };
 
@@ -222,7 +211,7 @@ export function useCampaignStorage() {
       numero: proxNumero,
       titulo: dados.titulo.trim() || `Sessão ${String(proxNumero).padStart(2, '0')}`,
       data: dados.data || new Date().toLocaleDateString('pt-BR'),
-      jogadoresCount: campanhaAtiva?.jogadoresCount || 4,
+      jogadoresCount: campanhaAtiva?.jogadoresCount || 0,
       concluida: dados.status === 'concluida',
       descricao: dados.descricao?.trim() || undefined,
       status: dados.status || 'planejamento',
