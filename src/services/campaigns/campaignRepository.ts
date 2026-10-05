@@ -28,6 +28,39 @@ export const campaignRepository = {
     if (error) throw error;
     return mapCampaign(data);
   },
+
+  async buscarPorLegacyLocalId(localId: string) {
+    const { data, error } = await client()
+      .from('campaigns')
+      .select('*')
+      .eq('legacy_local_id', localId)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? mapCampaign(data) : null;
+  },
+
+  async marcarLegacyLocalId(campaignId: string, localId: string) {
+    const { data, error } = await client()
+      .from('campaigns')
+      .update({ legacy_local_id: localId })
+      .eq('id', campaignId)
+      .select('*')
+      .single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
+
+  async atualizar(campaignId: string, patch: Partial<Pick<Campanha, 'status' | 'sessaoAtual' | 'rupturaGeral' | 'descricao' | 'nome'>>) {
+    const values: Record<string, unknown> = {};
+    if (patch.status !== undefined) values.status = patch.status;
+    if (patch.sessaoAtual !== undefined) values.sessao_atual = patch.sessaoAtual;
+    if (patch.rupturaGeral !== undefined) values.ruptura_geral = patch.rupturaGeral;
+    if (patch.descricao !== undefined) values.descricao = patch.descricao;
+    if (patch.nome !== undefined) values.nome = patch.nome;
+    const { data, error } = await client().from('campaigns').update(values).eq('id', campaignId).select('*').single();
+    if (error) throw error;
+    return mapCampaign(data);
+  },
   async remover(campaignId: string) { const { error } = await client().from('campaigns').delete().eq('id', campaignId); if (error) throw error; },
   async atualizarMembro(campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) {
     const values: Record<string, unknown> = {};
