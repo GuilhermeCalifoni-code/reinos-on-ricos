@@ -543,6 +543,176 @@ export const COMPENDIUM_ENTRIES: CompendiumEntry[] = [
     art: 'rupture'
   },
   {
+    id: 'criticos',
+    category: 'regras',
+    eyebrow: 'Testes',
+    title: 'Críticos',
+    summary: '20 natural no Mundano; Convergência no Onírico.',
+    answer: 'Críticos seguem regras diferentes em Testes Mundanos e Oníricos e alteram o dano quando ele existir.',
+    keywords: ['crítico', 'critico', '20 natural', 'convergência', 'dano crítico'],
+    art: 'dice'
+  },
+  {
+    id: 'distancias',
+    category: 'regras',
+    eyebrow: 'Posicionamento',
+    title: 'Distâncias',
+    summary: 'Corpo a Corpo, Muito Próximo, Próximo, Longe, Muito Longe e Além.',
+    answer: 'As faixas de distância traduzem posicionamento narrativo em referências objetivas para Movimento, ataques e Sonhar.',
+    keywords: ['distância', 'distancias', 'corpo a corpo', 'muito próximo', 'próximo', 'longe', 'muito longe', 'além'],
+    art: 'dice'
+  },
+  {
+    id: 'visao-cobertura',
+    category: 'regras',
+    eyebrow: 'Percepção',
+    title: 'Visão, audição e cobertura',
+    summary: 'Sentidos indisponíveis e cobertura alteram Testes Mundanos.',
+    answer: 'Escuridão, cegueira, surdez e cobertura podem impor Desvantagem ou tornar uma ação impossível quando um requisito indispensável deixa de existir.',
+    keywords: ['visão', 'audição', 'cobertura', 'escuridão', 'cegueira', 'surdez', 'linha de visão'],
+    art: 'dice'
+  },
+  {
+    id: 'movimento-morte',
+    category: 'regras',
+    eyebrow: 'Sobrevivência',
+    title: 'Movimento de Morte',
+    summary: 'Ao chegar a 0 PV, Realidade e Sonhar decidem o destino.',
+    answer: 'Ao chegar a 0 PV, role 2d20 sem Atributo, um de Realidade e um de Sonhar, cada um contra DT 13.',
+    keywords: ['morte', '0 pv', 'movimento de morte', 'estabiliza', 'inconsciente', 'morrer'],
+    art: 'rupture'
+  },
+  {
+    id: 'principios-sonhar',
+    category: 'sonhar',
+    eyebrow: 'Fundamentos',
+    title: 'Princípios do Sonhar',
+    summary: 'Intenção, Domínio, nível, narrativa e Teste Onírico.',
+    answer: 'O Onírico não possui lista de poderes. O sistema parte da intenção do Jogador e dos limites estabelecidos pelos Domínios e níveis.',
+    keywords: ['sonhar', 'princípios', 'intenção', 'nível conhecido', 'nível efetivo'],
+    art: 'dream'
+  },
+  {
+    id: 'percepcao-onirica',
+    category: 'sonhar',
+    eyebrow: 'Domínios',
+    title: 'Percepção Onírica',
+    summary: 'O nível 1 permite Conhecer e Perceber um aspecto.',
+    answer: 'Perceber ou interpretar algo presente não exige Teste Onírico, mas a percepção não é onisciência.',
+    keywords: ['percepção onírica', 'perceber', 'conhecer', 'nível 1', 'domínio'],
+    art: 'dream'
+  },
+  {
+    id: 'alcance-sonhar',
+    category: 'sonhar',
+    eyebrow: 'Manifestação',
+    title: 'Alcance do Sonhar',
+    summary: 'O nível efetivo define até onde a manifestação chega.',
+    answer: 'O alcance máximo cresce com o nível efetivo e, acima de Muito Próximo, depende do Domínio Espaço no nível correspondente.',
+    keywords: ['alcance', 'sonhar', 'espaço', 'muito próximo', 'longe', 'além'],
+    art: 'dream'
+  },
+  {
+    id: 'duracao-sonhar',
+    category: 'sonhar',
+    eyebrow: 'Manifestação',
+    title: 'Duração do Sonhar',
+    summary: 'Instantâneo, Rodada ou Cena conforme o nível.',
+    answer: 'A duração sustenta a alteração, mas não apaga consequências já produzidas.',
+    keywords: ['duração', 'duracao', 'rodada', 'cena', 'instantâneo', 'sonhar'],
+    art: 'dream'
+  },
+  {
+    id: 'combinacao-dominios',
+    category: 'sonhar',
+    eyebrow: 'Domínios',
+    title: 'Combinação de Domínios',
+    summary: 'O principal deve estar pelo menos 1 nível acima de cada secundário.',
+    answer: 'Combine Domínios apenas quando aspectos diferentes precisarem ser manipulados diretamente.',
+    keywords: ['combinação', 'domínios', 'dominio principal', 'secundário', 'potência'],
+    art: 'dream'
+  },
+  {
+    id: 'tentativas-sucessivas',
+    category: 'sonhar',
+    eyebrow: 'Arbitragem',
+    title: 'Tentativas sucessivas',
+    summary: 'Depois de falhar, algo relevante precisa mudar.',
+    answer: 'Não repita o mesmo teste até obter sucesso. Mude alvo, circunstâncias, uso do Domínio ou outro elemento relevante.',
+    keywords: ['tentativas sucessivas', 'repetir teste', 'falha', 'sonhar'],
+    art: 'dream'
+  },
+  {
+    id: 'objetos-estruturas',
+    category: 'sonhar',
+    eyebrow: 'Potência',
+    title: 'Objetos e Estruturas',
+    summary: 'Resistência estrutural substitui PV.',
+    answer: 'Objetos e estruturas não precisam de PV; compare o dano diretamente à Resistência estrutural.',
+    keywords: ['objetos', 'estruturas', 'resistência estrutural', 'material', 'quebrar'],
+    art: 'vortex'
+  },
+  {
+    id: 'vida-cura-ferimento',
+    category: 'sonhar',
+    eyebrow: 'Vida',
+    title: 'Vida: Cura e Ferimento',
+    summary: 'O nível do Domínio Vida define a profundidade da alteração biológica.',
+    answer: 'Toda cura ou agressão deve explicar a alteração biológica; recuperar PV não substitui a avaliação de nível.',
+    keywords: ['vida', 'cura', 'ferimento', 'recuperar pv', 'tecido', 'ressuscitar'],
+    art: 'dream'
+  },
+  {
+    id: 'efeitos-ativos',
+    category: 'sonhar',
+    eyebrow: 'Conflitos',
+    title: 'Efeitos ativos e DT do Sonhar',
+    summary: 'Como agir contra uma manifestação que já está em efeito.',
+    answer: 'A manifestação acontece primeiro; um teste contra a DT do Sonhar só ocorre quando alguém tenta agir diretamente contra o efeito.',
+    keywords: ['efeitos ativos', 'dt do sonhar', 'manifestação ativa', 'resistir manifestação'],
+    art: 'vortex'
+  },
+  {
+    id: 'conflitos-personagens',
+    category: 'sonhar',
+    eyebrow: 'Conflitos',
+    title: 'Conflitos entre Personagens',
+    summary: 'Como resolver disputas Mundanas e Oníricas.',
+    answer: 'Conflitos Mundanos usam resultados opostos; conflitos Oníricos preservam os resultados individuais e, quando necessário, usam desempate Onírico.',
+    keywords: ['conflito entre personagens', 'pvp', 'desempate', 'teste oposto'],
+    art: 'vortex'
+  },
+  {
+    id: 'acoes-jogador',
+    category: 'combate',
+    eyebrow: 'Cena de Tensão',
+    title: 'Ações do Jogador',
+    summary: 'Ataques, manobras, Sonhar, ajuda, interação e corrida.',
+    answer: 'Em uma Cena de Tensão, o Jogador escolhe sua Ação conforme a ficção e as opções previstas nas regras.',
+    keywords: ['ações do jogador', 'ataque', 'agarrar', 'derrubar', 'imobilizar', 'interagir', 'correr'],
+    art: 'dice'
+  },
+  {
+    id: 'quando-nao-pedir-teste',
+    category: 'mestre',
+    eyebrow: 'Arbitragem',
+    title: 'Quando não pedir teste',
+    summary: 'Sem incerteza relevante ou consequência interessante, não role.',
+    answer: 'Não use testes para impedir ações impossíveis pela ficção nem transforme investigação em uma sequência obrigatória de rolagens.',
+    keywords: ['quando não rolar', 'não pedir teste', 'investigação', 'incerteza', 'consequência'],
+    art: 'dice'
+  },
+  {
+    id: 'delirio-mesa',
+    category: 'mestre',
+    eyebrow: 'Condução',
+    title: 'Delírio em mesa',
+    summary: 'Como avaliar se um Velado realmente testemunhou o impossível.',
+    answer: 'Considere clareza, explicação plausível e intensidade da manifestação antes de aplicar Delírio.',
+    keywords: ['delírio em mesa', 'velado', 'moderado', 'intenso', 'esquecimento'],
+    art: 'rupture'
+  },
+  {
     id: 'referencia-rapida',
     category: 'referencia',
     eyebrow: 'Mesa',

@@ -13,16 +13,17 @@ import {
   Skull,
   Sparkles,
   Swords,
-  Users
+  Users,
+  X
 } from 'lucide-react';
 import {
   COMPENDIUM_CATEGORIES,
   COMPENDIUM_ENTRIES,
   CompendiumCategory,
   CompendiumEntry,
-  DEFAULT_COMPENDIUM_ENTRY_ID,
-  DT_REFERENCE
+  DEFAULT_COMPENDIUM_ENTRY_ID
 } from '../rules/compendiumData';
+import { getFullCompendiumRule } from '../rules/compendiumFullRules';
 
 interface RecentQuery {
   id: string;
@@ -205,7 +206,6 @@ export const CompendiumView: React.FC = () => {
   const [showFull, setShowFull] = useState(false);
   const answerRef = useRef<HTMLDivElement | null>(null);
   const categoriesRef = useRef<HTMLElement | null>(null);
-  const fullRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     try {
@@ -226,6 +226,28 @@ export const CompendiumView: React.FC = () => {
     () => COMPENDIUM_ENTRIES.find(entry => entry.id === selectedId) || COMPENDIUM_ENTRIES[0],
     [selectedId]
   );
+
+  const selectedRule = useMemo(
+    () => getFullCompendiumRule(selected.id),
+    [selected.id]
+  );
+
+  useEffect(() => {
+    if (!showFull) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowFull(false);
+    };
+
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [showFull]);
 
   const topicCards = useMemo<TopicCard[]>(() => {
     if (category === 'regras') return HOME_TOPICS;
@@ -288,10 +310,7 @@ export const CompendiumView: React.FC = () => {
     if (entry) openEntry(entry);
   };
 
-  const showCompleteRule = () => {
-    setShowFull(true);
-    window.requestAnimationFrame(() => fullRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-  };
+  const showCompleteRule = () => setShowFull(true);
 
   const SelectedCategoryIcon = categoryIcon(selected.category);
 
@@ -401,51 +420,7 @@ export const CompendiumView: React.FC = () => {
             </button>
           </section>
 
-          {showFull && (
-            <section ref={fullRef} className="ro-compendium-final__full">
-              <header>
-                <span><SelectedCategoryIcon /></span>
-                <div>
-                  <p className="ro-eyebrow">{selected.eyebrow}</p>
-                  <h2>{selected.title}</h2>
-                  <p>{selected.summary}</p>
-                </div>
-                <button type="button" onClick={() => setShowFull(false)}>Fechar</button>
-              </header>
 
-              <div className="ro-compendium-final__full-body">
-                <article>
-                  <h3>Regra</h3>
-                  <p>{selected.answer}</p>
-                </article>
-
-                {selected.steps?.length ? (
-                  <article>
-                    <h3>Como resolver</h3>
-                    <ol>{selected.steps.map(step => <li key={step}>{step}</li>)}</ol>
-                  </article>
-                ) : null}
-
-                {selected.details?.length ? (
-                  <article>
-                    <h3>Detalhes importantes</h3>
-                    <ul>{selected.details.map(detail => <li key={detail}>{detail}</li>)}</ul>
-                  </article>
-                ) : null}
-
-                {selected.id === 'teste-mundano' && (
-                  <article className="ro-compendium-final__dt-reference">
-                    <h3>Referência de DT</h3>
-                    <div>
-                      {DT_REFERENCE.map(item => (
-                        <span key={item.value}><strong>{item.value}</strong><small>{item.label}</small></span>
-                      ))}
-                    </div>
-                  </article>
-                )}
-              </div>
-            </section>
-          )}
         </main>
 
         <aside className="ro-compendium-final__rail">
@@ -512,6 +487,101 @@ export const CompendiumView: React.FC = () => {
           </section>
         </aside>
       </div>
+
+      {showFull && (
+        <div
+          className="ro-rule-modal"
+          role="presentation"
+          onMouseDown={event => {
+            if (event.target === event.currentTarget) setShowFull(false);
+          }}
+        >
+          <section className="ro-rule-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="ro-rule-modal-title">
+            <header className="ro-rule-modal__header">
+              <span className="ro-rule-modal__icon"><SelectedCategoryIcon /></span>
+              <div className="ro-rule-modal__heading">
+                <p className="ro-eyebrow">{selected.eyebrow} · {categoryLabel(selected.category)}</p>
+                <h2 id="ro-rule-modal-title">{selected.title}</h2>
+                <p>{selected.summary}</p>
+                <span className="ro-rule-modal__source">
+                  {selectedRule ? `${selectedRule.source} · pág. ${selectedRule.pages}` : 'Resumo do Compêndio'}
+                </span>
+              </div>
+              <button type="button" className="ro-rule-modal__close" onClick={() => setShowFull(false)} aria-label="Fechar regra completa">
+                <X />
+              </button>
+            </header>
+
+            <div className="ro-rule-modal__body">
+              {selectedRule ? selectedRule.sections.map((section, sectionIndex) => (
+                <article className="ro-rule-modal__section" key={`${selected.id}-${sectionIndex}`}>
+                  {section.title ? <h3>{section.title}</h3> : null}
+
+                  {section.paragraphs?.map((paragraph, paragraphIndex) => (
+                    <p key={`p-${paragraphIndex}`}>{paragraph}</p>
+                  ))}
+
+                  {section.bullets?.length ? (
+                    <ul>
+                      {section.bullets.map((bullet, bulletIndex) => (
+                        <li key={`b-${bulletIndex}`}>{bullet}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+
+                  {section.table ? (
+                    <div className="ro-rule-modal__table-wrap">
+                      <table>
+                        <thead>
+                          <tr>{section.table.headers.map(header => <th key={header}>{header}</th>)}</tr>
+                        </thead>
+                        <tbody>
+                          {section.table.rows.map((row, rowIndex) => (
+                            <tr key={`row-${rowIndex}`}>
+                              {row.map((cell, cellIndex) => <td key={`cell-${cellIndex}`}>{cell}</td>)}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : null}
+
+                  {section.note ? <aside className="ro-rule-modal__note">{section.note}</aside> : null}
+                </article>
+              )) : (
+                <>
+                  <article className="ro-rule-modal__section">
+                    <h3>Regra</h3>
+                    <p>{selected.answer}</p>
+                  </article>
+                  {selected.steps?.length ? (
+                    <article className="ro-rule-modal__section">
+                      <h3>Como resolver</h3>
+                      <ol>{selected.steps.map(step => <li key={step}>{step}</li>)}</ol>
+                    </article>
+                  ) : null}
+                  {selected.details?.length ? (
+                    <article className="ro-rule-modal__section">
+                      <h3>Detalhes importantes</h3>
+                      <ul>{selected.details.map(detail => <li key={detail}>{detail}</li>)}</ul>
+                    </article>
+                  ) : null}
+                </>
+              )}
+            </div>
+
+            <footer className="ro-rule-modal__footer">
+              <BookOpen />
+              <span>
+                {selectedRule
+                  ? 'Conteúdo transcrito e organizado a partir do Livro Básico para consulta durante a mesa.'
+                  : 'Esta entrada ainda usa a síntese do Compêndio.'}
+              </span>
+              <button type="button" onClick={askAgain}>Nova consulta</button>
+            </footer>
+          </section>
+        </div>
+      )}
     </section>
   );
 };
