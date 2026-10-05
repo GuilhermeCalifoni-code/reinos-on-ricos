@@ -1,0 +1,430 @@
+/* Reinos Oníricos — camada responsiva global
+   Mantém o sistema utilizável em notebooks, monitores com escala do SO e telas móveis. */
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+body {
+  overflow-x: clip;
+}
+
+.ro-app-shell,
+.ro-app-shell > *,
+.ro-app-shell > .flex-1,
+.ro-home,
+.ro-library,
+.ro-settings,
+.ro-create-campaign,
+.campaign-v4,
+.campaign-v4 > main,
+.ro-compendium-shell,
+.live-table--v4 {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+/* O sidebar só ocupa espaço permanente quando há largura real suficiente.
+   Em 1366px/escala 125% a navegação horizontal assume o lugar. */
+@media (min-width: 1440px) {
+  .ro-sidebar {
+    display: flex;
+    width: clamp(228px, 15vw, 272px);
+    flex-basis: clamp(228px, 15vw, 272px);
+  }
+
+  .ro-sidebar__brand {
+    height: 158px;
+    padding: 24px 22px 20px;
+  }
+
+  .ro-sidebar__brand img {
+    width: min(190px, 100%);
+    max-height: 104px;
+  }
+
+  .ro-sidebar__nav > button,
+  .ro-sidebar__footer > button {
+    padding-left: 28px;
+    padding-right: 20px;
+  }
+
+  .ro-mobile-shell {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .ro-sidebar {
+    display: none !important;
+  }
+
+  .ro-mobile-shell {
+    display: flex !important;
+  }
+}
+
+/* Navegação adaptativa completa */
+.ro-mobile-shell {
+  width: 100%;
+  max-width: 100vw;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ro-mobile-shell__scroll {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+
+.ro-mobile-shell__scroll > button {
+  display: inline-flex;
+  min-width: max-content;
+  min-height: 52px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  scroll-snap-align: start;
+  white-space: nowrap;
+}
+
+.ro-mobile-shell__scroll > button svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.ro-mobile-shell__scroll > button strong {
+  color: var(--ro-copper);
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.ro-mobile-shell__scroll > button:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+
+/* Header comum: o nome nunca empurra a aplicação para fora da tela. */
+header[class*="sticky"][class*="h-16"] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+header[class*="sticky"][class*="h-16"] > div {
+  min-width: 0;
+}
+
+header[class*="sticky"][class*="h-16"] > div:last-child {
+  max-width: min(44vw, 340px);
+  flex: 0 1 auto;
+  overflow: hidden;
+}
+
+header[class*="sticky"][class*="h-16"] > div:last-child > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Detalhe da campanha */
+.campaign-v4 {
+  overflow-x: clip;
+}
+
+.campaign-v4 > nav {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.campaign-v4 > nav > div {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+
+.campaign-v4 > nav button {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.campaign-v4__empty {
+  display: grid;
+  gap: 8px;
+  min-height: 128px;
+  align-content: center;
+  padding: 8px 0;
+}
+
+.campaign-v4__empty strong {
+  color: var(--ro-paper);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.campaign-v4__empty p,
+.campaign-v4__empty-line {
+  margin: 0;
+  color: var(--ro-ash);
+  font-size: .72rem;
+  line-height: 1.55;
+}
+
+.campaign-v4__empty .ro-button--quiet {
+  justify-self: start;
+  margin-top: 4px;
+}
+
+@media (max-width: 1439px) {
+  .ro-home {
+    padding-inline: clamp(18px, 3.2vw, 42px);
+  }
+
+  .ro-home__welcome {
+    padding-right: 190px;
+  }
+
+  .ro-library,
+  .ro-settings,
+  .ro-create-campaign {
+    width: 100%;
+  }
+
+  .ro-campaign-hero--v4 {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, .72fr);
+  }
+
+  .ro-campaign-hero__copy {
+    padding: 2.5rem clamp(1.25rem, 3vw, 3rem);
+  }
+
+  .ro-campaign-hero__copy h1 {
+    font-size: clamp(2.7rem, 4.5vw, 4.6rem);
+  }
+
+  .ro-campaign-hero__actions {
+    right: 1.4rem;
+    gap: .5rem;
+  }
+
+  .ro-campaign-hero__code {
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .live-table__bar--v4 {
+    grid-template-columns: minmax(170px, .65fr) minmax(0, 1fr) minmax(160px, .55fr) auto;
+    gap: .8rem;
+  }
+
+  .live-table__workspace {
+    grid-template-columns: minmax(220px, .62fr) minmax(0, 1.25fr) minmax(260px, .78fr);
+  }
+}
+
+@media (max-width: 1180px) {
+  .ro-home__welcome {
+    padding-right: 0;
+  }
+
+  .ro-home__welcome blockquote,
+  .ro-home__side-art {
+    display: none;
+  }
+
+  .ro-home__lower-grid,
+  .ro-home__campaign-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ro-home__sessions-section {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .ro-library__hero-actions {
+    width: 100%;
+  }
+
+  .ro-campaign-hero--v4 {
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, .62fr);
+  }
+}
+
+@media (max-width: 980px) {
+  .ro-campaign-hero--v4 {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .ro-campaign-hero__copy {
+    min-height: 270px;
+    padding: 2.25rem 1.35rem 1.35rem;
+  }
+
+  .ro-campaign-hero__copy h1 {
+    max-width: 14ch;
+    font-size: clamp(2.65rem, 8vw, 4.2rem);
+  }
+
+  .ro-campaign-hero__media {
+    position: absolute;
+    inset: 0;
+    min-height: 100%;
+    opacity: .2;
+  }
+
+  .ro-campaign-hero__media::after {
+    background: linear-gradient(90deg, var(--ro-bg) 0%, color-mix(in srgb, var(--ro-bg) 72%, transparent) 50%, transparent 100%);
+  }
+
+  .ro-campaign-hero__actions {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    grid-column: 1;
+    flex-wrap: wrap;
+    padding: 0 1.35rem 1.4rem;
+  }
+
+  .ro-campaign-hero__actions > * {
+    min-width: 0;
+  }
+
+  .ro-campaign-hero__actions .ro-button {
+    flex: 1 1 190px;
+  }
+
+  .ro-campaign-hero__code {
+    flex: 1 1 230px;
+    max-width: none;
+  }
+
+  .ro-create-campaign__form,
+  .ro-library__grid,
+  .ro-settings__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ro-settings__card--profile,
+  .ro-settings__card--wide,
+  .ro-create-campaign__footer {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .ro-mobile-shell__scroll > button {
+    min-height: 48px;
+    padding-inline: 11px;
+    font-size: 10px;
+  }
+
+  .ro-mobile-shell__scroll > button span {
+    display: inline;
+  }
+
+  .ro-home,
+  .ro-library,
+  .ro-settings,
+  .ro-create-campaign,
+  .ro-compendium-shell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .ro-home__campaign-main {
+    height: clamp(190px, 52vw, 230px);
+  }
+
+  .ro-library__join {
+    grid-template-columns: 1fr;
+  }
+
+  .ro-library__toolbar,
+  .ro-library__hero,
+  .ro-create-campaign__head,
+  .ro-settings__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ro-create-campaign__type > div {
+    grid-template-columns: 1fr;
+  }
+
+  .ro-create-campaign__image-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .ro-settings__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .campaign-v4 > main {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .ro-mobile-shell__scroll > button {
+    min-height: 46px;
+    gap: 5px;
+    padding-inline: 10px;
+  }
+
+  .ro-mobile-shell__scroll > button svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .ro-campaign-hero__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .ro-campaign-hero__code,
+  .ro-campaign-hero__actions .ro-button {
+    width: 100%;
+  }
+
+  .ro-home__section-actions,
+  .ro-home__section-head {
+    width: 100%;
+  }
+
+  .ro-home__section-actions {
+    flex-wrap: wrap;
+  }
+}
