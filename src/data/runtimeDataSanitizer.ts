@@ -7,16 +7,16 @@ const MOCK_CHARACTER_IDS = new Set(['caio-espaco', 'helena-vida', 'tomas-conscie
 export const removeLegacyMockCampaigns = (items: Campanha[]) =>
   items.filter(item => !MOCK_CAMPAIGN_IDS.has(item.id));
 
-const withoutMockCampaign = <T extends { campanhaId?: string }>(items: T[]) =>
+export const removeLegacyMockCampaignContent = <T extends { campanhaId?: string }>(items: T[]) =>
   items.filter(item => !item.campanhaId || !MOCK_CAMPAIGN_IDS.has(item.campanhaId));
 
-export const removeLegacyMockSessions = (items: Sessao[]) => withoutMockCampaign(items);
-export const removeLegacyMockNpcs = (items: NPC[]) => withoutMockCampaign(items);
-export const removeLegacyMockAdversaries = (items: Adversario[]) => withoutMockCampaign(items);
-export const removeLegacyMockLocations = (items: Local[]) => withoutMockCampaign(items);
-export const removeLegacyMockClues = (items: Pista[]) => withoutMockCampaign(items);
-export const removeLegacyMockLore = (items: LoreEntry[]) => withoutMockCampaign(items);
-export const removeLegacyMockNotes = (items: Anotacao[]) => withoutMockCampaign(items);
+export const removeLegacyMockSessions = (items: Sessao[]) => removeLegacyMockCampaignContent(items);
+export const removeLegacyMockNpcs = (items: NPC[]) => removeLegacyMockCampaignContent(items);
+export const removeLegacyMockAdversaries = (items: Adversario[]) => removeLegacyMockCampaignContent(items);
+export const removeLegacyMockLocations = (items: Local[]) => removeLegacyMockCampaignContent(items);
+export const removeLegacyMockClues = (items: Pista[]) => removeLegacyMockCampaignContent(items);
+export const removeLegacyMockLore = (items: LoreEntry[]) => removeLegacyMockCampaignContent(items);
+export const removeLegacyMockNotes = (items: Anotacao[]) => removeLegacyMockCampaignContent(items);
 
 export const removeLegacyMockCharacters = (items: Personagem[]) =>
   items.filter(item => !MOCK_CHARACTER_IDS.has(item.id) && (!item.campaignId || !MOCK_CAMPAIGN_IDS.has(item.campaignId)));
