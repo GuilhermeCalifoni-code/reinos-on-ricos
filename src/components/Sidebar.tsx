@@ -8,7 +8,6 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  Radio,
   Settings,
   Users,
   X
@@ -29,11 +28,9 @@ export type MainViewType =
 interface SidebarProps {
   viewAtiva: MainViewType;
   setViewAtiva: (v: MainViewType) => void;
-  campanhas: Campanha[];
   campanhaAtivaId: string | null;
   onSelecionarCampanha: (id: string) => void;
   onNovaCampanha: () => void;
-  onAbrirMesa?: () => void;
   onSair: () => void;
 }
 
@@ -57,9 +54,7 @@ const navItems: Array<{
 export const Sidebar: React.FC<SidebarProps> = ({
   viewAtiva,
   setViewAtiva,
-  campanhas,
   onNovaCampanha,
-  onAbrirMesa,
   onSair
 }) => {
   const [collapsed, setCollapsed] = useState(() => {
@@ -112,14 +107,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         ))}
 
-        <button
-          onClick={() => onAbrirMesa?.()}
-          disabled={!campanhas.length}
-          className={viewAtiva === 'modo_mesa' ? 'is-active' : ''}
-          title={campanhas.length ? 'Abrir Mesa Ao Vivo' : 'Crie uma campanha para abrir a mesa'}
-        >
-          <Radio /> <span>Mesa Ao Vivo</span>
-        </button>
       </nav>
 
       <div className="ro-sidebar__art" aria-hidden="true">
@@ -148,18 +135,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 interface MobileNavigationProps {
   viewAtiva: MainViewType;
   setViewAtiva: (v: MainViewType) => void;
-  campanhas: Campanha[];
   onNovaCampanha: () => void;
-  onAbrirMesa?: () => void;
   onSair: () => void;
 }
 
 export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   viewAtiva,
   setViewAtiva,
-  campanhas,
   onNovaCampanha,
-  onAbrirMesa,
   onSair
 }) => {
   const [open, setOpen] = useState(false);
@@ -208,14 +191,6 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
                   <Icon /><span>{label}</span>
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => { onAbrirMesa?.(); setOpen(false); }}
-                disabled={!campanhas.length}
-                className={viewAtiva === 'modo_mesa' ? 'is-active' : ''}
-              >
-                <Radio /><span>Mesa Ao Vivo</span>
-              </button>
             </nav>
 
             <div className="ro-mobile-drawer__footer">
