@@ -72,8 +72,7 @@ export default function App() {
     duplicarPersonagem: duplicarPersonagemLocal,
     excluirPersonagem: excluirPersonagemLocal,
     exportarJSON,
-    importarJSON,
-    restaurarExemplos
+    importarJSON
   } = useCharacterStorage(session?.mesaCodigo || 'ONIRICO-01');
 
   // Storage de Campanhas
@@ -755,7 +754,6 @@ export default function App() {
           <SettingsView
             session={session}
             onTrocarSessao={handleTrocarSessao}
-            onRestaurarExemplos={restaurarExemplos}
             onAtualizarSessao={handleAtualizarSessao}
             onAtualizarPreferencias={handleAtualizarPreferencias}
             onExportarDados={handleExportarDados}

@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { calcularDefesa, executarTesteMundano, executarTesteOnirico, processarDano, resolverMovimentoMorte } from '../src/rules/rulesEngine';
 import { DT_SONHAR_POR_NIVEL, TABELA_PROGRESSAO } from '../src/rules/rulesData';
-import { PERSONAGENS_PRE_PRONTOS } from '../src/data/presetCharacters';
 import { passosPotenciaDoNivel, resistenciaEstrutura, resolverDanoEstrutura } from '../src/rules/referenceTables';
 
 const withRandom = <T>(values: number[], run: () => T): T => {
@@ -77,16 +76,6 @@ test('Foco soma +2 aos dois resultados do Teste Onírico', () => {
   assert.equal(result.totalRealidade, 14);
   assert.equal(result.totalSonhar, 14);
   assert.equal(result.resultado, 'convergencia');
-});
-
-test('Personagens pré-prontos usam Defesa = 8 + Corpo', () => {
-  for (const personagem of PERSONAGENS_PRE_PRONTOS) {
-    assert.equal(
-      personagem.defesa,
-      8 + personagem.atributos.corpo,
-      `${personagem.nome} deve usar Corpo na Defesa`
-    );
-  }
 });
 
 

@@ -7,7 +7,6 @@ import {
   CloudUpload,
   DatabaseBackup,
   Download,
-  Gauge,
   KeyRound,
   Laptop,
   LogOut,
@@ -30,7 +29,6 @@ import { normalizeUIPreferences } from '../services/preferences/uiPreferences';
 interface SettingsViewProps {
   session: UserSession | null;
   onTrocarSessao: () => void;
-  onRestaurarExemplos: () => void;
   onAtualizarSessao: (patch: Partial<UserSession>) => void;
   onAtualizarPreferencias: (preferences: UIPreferences) => Promise<void>;
   onExportarDados: () => Promise<void>;
@@ -70,7 +68,6 @@ const providerLabel = (provider?: string) => {
 export const SettingsView: React.FC<SettingsViewProps> = ({
   session,
   onTrocarSessao,
-  onRestaurarExemplos,
   onAtualizarSessao,
   onAtualizarPreferencias,
   onExportarDados,
@@ -628,28 +625,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <LogOut /> {remoto ? 'Sair deste dispositivo' : 'Encerrar modo local'}
           </button>
         </section>
-
-        {!remoto && (
-          <section className="ro-settings__card">
-            <div className="ro-settings__card-head">
-              <span className="ro-settings__icon"><Gauge /></span>
-              <div>
-                <h2>Dados de demonstração</h2>
-                <p>Restaure as fichas canônicas usadas no modo local.</p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="ro-button--quiet"
-              onClick={() => {
-                if (confirm('Deseja restaurar as fichas de exemplo?')) onRestaurarExemplos();
-              }}
-            >
-              <RotateCcw /> Restaurar fichas de exemplo
-            </button>
-          </section>
-        )}
 
         <section className="ro-settings__card">
           <div className="ro-settings__card-head">
