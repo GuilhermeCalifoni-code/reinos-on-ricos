@@ -70,6 +70,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       nome: perfil.nome,
       email: user.email,
       avatarUrl: perfil.avatarUrl,
+      uiPreferences: perfil.preferences,
       mesaCodigo: '',
       modoConexao: 'supabase'
     });
