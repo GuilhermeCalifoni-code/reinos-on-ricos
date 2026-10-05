@@ -806,12 +806,6 @@ export default function App() {
           setPersonagemParaFicha(null);
           setViewAtiva(v);
         }}
-        campanhaAtivaId={campanhaAtivaId}
-        onSelecionarCampanha={(id) => {
-          setCampanhaAtivaId(id);
-          setPersonagemParaFicha(null);
-          setViewAtiva('detalhe_campanha');
-        }}
         onNovaCampanha={handleIniciarCriacaoCampanha}
         onSair={handleTrocarSessao}
       />}
