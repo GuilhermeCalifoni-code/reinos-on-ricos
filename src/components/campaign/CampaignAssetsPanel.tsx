@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Cena, ConteudoDeCena, Handout, VisibilidadeConteudo } from '../../types/campaign';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
+import { AssetImage } from '../system/AssetImage';
 
 interface CampaignAssetsPanelProps {
   campaignId: string;
@@ -45,18 +46,36 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
     setFile(null);
   };
 
+  const fileToDataUrl = (selected: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Não foi possível ler o arquivo.'));
+    reader.onload = () => resolve(String(reader.result));
+    reader.readAsDataURL(selected);
+  });
+
   const submitScene = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!title.trim() || busy) return;
     setBusy(true); setMessage('');
     try {
+      let finalImageUrl = imageUrl.trim() || undefined;
+
+      if (file && (contentType === 'imagem' || contentType === 'handout')) {
+        if (campaignAssetService.isRemoteCampaignId(campaignId)) {
+          const storagePath = await campaignAssetService.uploadSceneImage(campaignId, file);
+          finalImageUrl = campaignAssetService.toStorageRef(storagePath);
+        } else {
+          finalImageUrl = await fileToDataUrl(file);
+        }
+      }
+
       await onAddScene({
         campanhaId: campaignId,
         titulo: title.trim(),
         descricao: description.trim() || undefined,
         visibilidade: visibility,
         tipoDeConteudo: contentType,
-        imagemUrl: imageUrl.trim() || undefined
+        imagemUrl: finalImageUrl
       });
       reset();
     } catch (error: any) {
@@ -99,6 +118,29 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
     } finally { setBusy(false); }
   };
 
+  const openSceneImage = async (scene: Cena) => {
+    if (!scene.imagemUrl) return;
+    setMessage('');
+    try {
+      const url = await campaignAssetService.resolveImageRef(scene.imagemUrl);
+      if (!url) throw new Error('Esta cena não possui imagem.');
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (error: any) {
+      setMessage(error.message || 'Não foi possível abrir a imagem da cena.');
+    }
+  };
+
+  const removeScene = async (scene: Cena) => {
+    try {
+      if (scene.imagemUrl && campaignAssetService.isStorageRef(scene.imagemUrl)) {
+        await campaignAssetService.remove(campaignAssetService.fromStorageRef(scene.imagemUrl));
+      }
+      await onRemoveScene(scene.id);
+    } catch (error: any) {
+      setMessage(error.message || 'Não foi possível excluir a cena.');
+    }
+  };
+
   const openHandout = async (handout: Handout) => {
     setMessage('');
     try {
@@ -117,6 +159,15 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
       ? 'revelado_jogadores'
       : 'mestre_privado';
     void onUpdateScene(scene.id, { visibilidade: next });
+  };
+
+  const removeHandout = async (handout: Handout) => {
+    try {
+      if (handout.storagePath) await campaignAssetService.remove(handout.storagePath);
+      await onRemoveHandout(handout.id);
+    } catch (error: any) {
+      setMessage(error.message || 'Não foi possível excluir o handout.');
+    }
   };
 
   const toggleHandoutVisibility = (handout: Handout) => {
@@ -150,7 +201,19 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
               </select>
             </div>
             {(contentType === 'imagem' || contentType === 'handout') && (
-              <input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="URL visual opcional" />
+              <div className="campaign-assets__visual-inputs">
+                <label className="campaign-assets__file">
+                  <span>{file ? file.name : 'Selecionar imagem da cena'}</span>
+                  <small>PNG, JPG, WEBP ou GIF · até 15 MB</small>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    onChange={e => setFile(e.target.files?.[0] || null)}
+                  />
+                </label>
+                <span className="campaign-assets__or">ou</span>
+                <input value={imageUrl} onChange={e => { setImageUrl(e.target.value); if (e.target.value) setFile(null); }} placeholder="URL visual opcional" />
+              </div>
             )}
             <button className="ro-button" disabled={busy}>{busy ? 'Salvando…' : 'Criar cena'}</button>
           </form>
@@ -163,14 +226,19 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
                 <div><small>{scene.tipoDeConteudo}</small><h3>{scene.titulo}</h3></div>
                 <span>{visibilityLabel[scene.visibilidade]}</span>
               </div>
+              {scene.imagemUrl && (
+                <button type="button" className="campaign-assets__scene-image" onClick={() => void openSceneImage(scene)} aria-label={`Abrir imagem de ${scene.titulo}`}>
+                  <AssetImage src={scene.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="" />
+                </button>
+              )}
               {scene.descricao && <p>{scene.descricao}</p>}
-              {scene.imagemUrl && <a href={scene.imagemUrl} target="_blank" rel="noreferrer">Abrir referência ↗</a>}
+              {scene.imagemUrl && <button type="button" className="campaign-assets__open" onClick={() => void openSceneImage(scene)}>Abrir imagem ↗</button>}
               {canManage && (
                 <div className="campaign-assets__actions">
                   <button type="button" onClick={() => toggleSceneVisibility(scene)}>
                     {scene.visibilidade === 'mestre_privado' ? 'Revelar' : 'Ocultar'}
                   </button>
-                  <button type="button" className="is-danger" onClick={() => void onRemoveScene(scene.id)}>Excluir</button>
+                  <button type="button" className="is-danger" onClick={() => void removeScene(scene)}>Excluir</button>
                 </div>
               )}
             </article>
@@ -218,7 +286,7 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
                 <button type="button" onClick={() => toggleHandoutVisibility(handout)}>
                   {handout.visibilidade === 'mestre_privado' ? 'Revelar' : 'Ocultar'}
                 </button>
-                <button type="button" className="is-danger" onClick={() => void onRemoveHandout(handout.id)}>Excluir</button>
+                <button type="button" className="is-danger" onClick={() => void removeHandout(handout)}>Excluir</button>
               </div>
             )}
           </article>
