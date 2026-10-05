@@ -43,6 +43,11 @@ export const authService = {
     const { error } = await requireClient().auth.updateUser({ password: novaSenha });
     if (error) throw error;
   },
+  async atualizarEmail(novoEmail: string) {
+    const { data, error } = await requireClient().auth.updateUser({ email: novoEmail });
+    if (error) throw error;
+    return data.user;
+  },
   onAuthStateChange(callback: (event: string, session: Session | null) => void) {
     const { data } = requireClient().auth.onAuthStateChange((event, session) => callback(event, session));
     return data.subscription;
@@ -75,9 +80,37 @@ export const authService = {
     };
   },
   async atualizarPerfil(profile: Pick<UserProfile, 'nome' | 'avatarUrl'>) {
-    const { data: { user } } = await requireClient().auth.getUser();
+    const client = requireClient();
+    const { data: { user }, error: userError } = await client.auth.getUser();
+    if (userError) throw userError;
     if (!user) throw new Error('Sessão autenticada não encontrada.');
-    const { error } = await requireClient().from('profiles').upsert({ user_id: user.id, nome: profile.nome, avatar_url: profile.avatarUrl || null }, { onConflict: 'user_id' });
+
+    const { error } = await client.from('profiles').upsert({
+      user_id: user.id,
+      nome: profile.nome,
+      email: user.email,
+      avatar_url: profile.avatarUrl || null,
+      atualizado_em: new Date().toISOString()
+    }, { onConflict: 'user_id' });
     if (error) throw error;
+
+    const { error: metadataError } = await client.auth.updateUser({
+      data: {
+        ...user.user_metadata,
+        nome: profile.nome,
+        full_name: profile.nome,
+        avatar_url: profile.avatarUrl || null,
+        picture: profile.avatarUrl || null
+      }
+    });
+    if (metadataError) throw metadataError;
+
+    return {
+      userId: user.id,
+      nome: profile.nome,
+      avatarUrl: profile.avatarUrl,
+      criadoEm: undefined,
+      atualizadoEm: new Date().toISOString()
+    } satisfies UserProfile;
   }
 };
