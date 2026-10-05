@@ -9,6 +9,13 @@ import {
   calcularProtecaoOniricaMaxima 
 } from '../rules/rulesEngine';
 
+const LEGACY_MOCK_CHARACTER_IDS = new Set([
+  'caio-espaco',
+  'helena-vida',
+  'tomas-consciencia',
+  'livia-substancia'
+]);
+
 const STORAGE_KEY = 'reinos_oniricos_personagens_v1';
 const ACTIVE_CHAR_KEY = 'reinos_oniricos_ativo_id_v1';
 
@@ -19,7 +26,7 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
       if (salvo) {
         const parsed = JSON.parse(salvo);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          return parsed.filter((item: Personagem) => !LEGACY_MOCK_CHARACTER_IDS.has(item.id));
         }
       }
     } catch (e) {
