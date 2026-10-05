@@ -51,7 +51,7 @@ export function useCampaignStorage() {
   const [sessoes, setSessoes] = useState<Sessao[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.SESSOES);
-      return salvo ? JSON.parse(salvo) : [];
+      return salvo ? removeLegacyMockSessions(JSON.parse(salvo)) : [];
     } catch {
       return [];
     }
@@ -60,7 +60,7 @@ export function useCampaignStorage() {
   const [npcs, setNpcs] = useState<NPC[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.NPCS);
-      return salvo ? JSON.parse(salvo) : [];
+      return salvo ? removeLegacyMockNpcs(JSON.parse(salvo)) : [];
     } catch {
       return [];
     }
@@ -69,7 +69,7 @@ export function useCampaignStorage() {
   const [adversarios, setAdversarios] = useState<Adversario[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.ADVERSARIOS);
-      return salvo ? JSON.parse(salvo) : [];
+      return salvo ? removeLegacyMockAdversaries(JSON.parse(salvo)) : [];
     } catch {
       return [];
     }
@@ -78,7 +78,7 @@ export function useCampaignStorage() {
   const [locais, setLocais] = useState<Local[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.LOCAIS);
-      return salvo ? JSON.parse(salvo) : [];
+      return salvo ? removeLegacyMockLocations(JSON.parse(salvo)) : [];
     } catch {
       return [];
     }
@@ -87,7 +87,7 @@ export function useCampaignStorage() {
   const [pistas, setPistas] = useState<Pista[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.PISTAS);
-      return salvo ? JSON.parse(salvo) : [];
+      return salvo ? removeLegacyMockClues(JSON.parse(salvo)) : [];
     } catch {
       return [];
     }
@@ -96,7 +96,7 @@ export function useCampaignStorage() {
   const [loreEntries, setLoreEntries] = useState<LoreEntry[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.LORE);
-      return salvo ? JSON.parse(salvo) : [];
+      return salvo ? removeLegacyMockLore(JSON.parse(salvo)) : [];
     } catch {
       return [];
     }
@@ -105,7 +105,7 @@ export function useCampaignStorage() {
   const [anotacoes, setAnotacoes] = useState<Anotacao[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.ANOTACOES);
-      return salvo ? JSON.parse(salvo) : [];
+      return salvo ? removeLegacyMockNotes(JSON.parse(salvo)) : [];
     } catch {
       return [];
     }
