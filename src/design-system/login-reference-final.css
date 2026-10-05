@@ -103,11 +103,13 @@
 
 .login-onirico--reference .login-onirico__brand-lockup {
   display: block;
-  width: clamp(315px, 23vw, 455px);
+  width: clamp(300px, 21.5vw, 430px);
   height: auto;
   margin: 0 0 1.5rem;
   object-fit: contain;
   object-position: left center;
+  opacity: .94;
+  filter: brightness(.78) contrast(.94) saturate(.78);
 }
 
 .login-onirico--reference .login-onirico__eyebrow {
