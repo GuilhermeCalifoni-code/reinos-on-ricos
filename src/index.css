@@ -6,7 +6,7 @@
 @import "./design-system/ux-core.css";
 @import "./design-system/settings-reference.css";
 @import "./design-system/responsive-system.css";
-@import "./design-system/home-community-v2.css";
+@import "./design-system/home-community-v2.css";\n@import "./design-system/generated-art-minimal.css";
 
 @layer base {
   :root {
