@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowRight,
   BookOpen,
-  Brain,
   ChevronRight,
   Clock3,
   Compass,
@@ -14,7 +13,6 @@ import {
   Skull,
   Sparkles,
   Swords,
-  TriangleAlert,
   Users
 } from 'lucide-react';
 import {
@@ -26,11 +24,17 @@ import {
   DT_REFERENCE
 } from '../rules/compendiumData';
 
-type CategoryFilter = 'all' | CompendiumCategory;
-
 interface RecentQuery {
   id: string;
   at: number;
+}
+
+interface TopicCard {
+  id: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  image: string;
 }
 
 const RECENT_KEY = 'reinos_oniricos_compendium_recent_v2';
@@ -68,7 +72,6 @@ const findBestEntry = (query: string): CompendiumEntry => {
   }
 
   const tokens = normalized.split(' ').filter(token => token.length > 1 && !stopWords.has(token));
-
   let winner = COMPENDIUM_ENTRIES[0];
   let bestScore = -1;
 
@@ -119,7 +122,7 @@ const categoryIcon = (category: CompendiumCategory) => {
 const categoryLabel = (category: CompendiumCategory) =>
   COMPENDIUM_CATEGORIES.find(item => item.id === category)?.label || category;
 
-const quickAccessIds = [
+const QUICK_ACCESS_IDS = [
   'criacao-desvelado',
   'teste-onirico',
   'condicoes',
@@ -128,23 +131,80 @@ const quickAccessIds = [
   'referencia-rapida'
 ];
 
-const bookNavigation = [
-  { id: 'referencia-rapida', label: 'Comece Aqui', description: 'Visão rápida do sistema' },
-  { id: 'criacao-desvelado', label: 'Personagem e Recursos', description: 'Criação, ficha e progressão' },
-  { id: 'cena-tensao', label: 'Regras de Combate', description: 'Conflitos, Ações e Movimento' },
-  { id: 'guia-sonhar', label: 'O Sonhar', description: 'Possibilidades e limites' },
-  { id: 'dominios', label: 'Guia do Sonhar', description: 'Domínios e linguagem dos níveis' },
-  { id: 'arbitragem-mestre', label: 'Conduzindo o Jogo', description: 'Ferramentas para o Mestre' },
-  { id: 'construir-pesadelo', label: 'Adversários', description: 'Bestiário e criação de ameaças' },
-  { id: 'referencia-rapida', label: 'Guia Rápido', description: 'Tabelas e resumos de mesa' }
+const HOME_TOPICS: TopicCard[] = [
+  {
+    id: 'teste-mundano',
+    eyebrow: 'Testes',
+    title: 'Testes Mundanos',
+    description: 'Use 1d20 + Atributo contra uma DT. Entenda dificuldades, sucesso e consequências.',
+    image: '/compendium/compendium-dice.webp'
+  },
+  {
+    id: 'teste-onirico',
+    eyebrow: 'Sonhar',
+    title: 'Teste Onírico',
+    description: 'Realidade e Sonhar contra a mesma DT, com resultados que alteram a Ruptura.',
+    image: '/compendium/compendium-desvelado.webp'
+  },
+  {
+    id: 'ruptura',
+    eyebrow: 'Ruptura',
+    title: 'Ruptura',
+    description: 'Entenda a trilha de 0 a 6, Efeitos de Ruptura e o que acontece quando o limite é alcançado.',
+    image: '/compendium/compendium-portal.webp'
+  },
+  {
+    id: 'teste-mundano',
+    eyebrow: 'Mecânica',
+    title: 'Dificuldades (DTs)',
+    description: 'Valores de referência para testes triviais, comuns, difíceis e extraordinários.',
+    image: '/compendium/compendium-sonhar.webp'
+  },
+  {
+    id: 'condicoes',
+    eyebrow: 'Estados',
+    title: 'Condições',
+    description: 'Estados temporários, seus efeitos e a forma como interferem em ações e manifestações.',
+    image: '/compendium/compendium-rupture.webp'
+  },
+  {
+    id: 'acoes-mestre',
+    eyebrow: 'Mestre',
+    title: 'Ações do Mestre',
+    description: 'Ferramentas para ativar ameaças, ambiente e narrativa durante uma Cena de Tensão.',
+    image: '/compendium/compendium-desvelado.webp'
+  }
 ];
+
+const imageForEntry = (entry: CompendiumEntry) => {
+  if (entry.id === 'teste-mundano' || entry.id === 'intensidade-dano' || entry.category === 'referencia') {
+    return '/compendium/compendium-dice.webp';
+  }
+  if (entry.category === 'sonhar') return '/compendium/compendium-sonhar.webp';
+  if (entry.category === 'desvelados') return '/compendium/compendium-desvelado.webp';
+  if (entry.category === 'adversarios' || entry.id === 'condicoes') return '/compendium/compendium-rupture.webp';
+  if (entry.category === 'mundo') return '/compendium/compendium-hero.webp';
+  if (entry.category === 'mestre') return '/compendium/compendium-desvelado.webp';
+  return '/compendium/compendium-portal.webp';
+};
+
+const formatRecency = (at: number) => {
+  const minutes = Math.max(1, Math.round((Date.now() - at) / 60000));
+  if (minutes < 60) return `há ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `há ${hours} h`;
+  const days = Math.max(1, Math.round(hours / 24));
+  return `há ${days} ${days === 1 ? 'dia' : 'dias'}`;
+};
 
 export const CompendiumView: React.FC = () => {
   const [query, setQuery] = useState('');
-  const [category, setCategory] = useState<CategoryFilter>('all');
+  const [category, setCategory] = useState<CompendiumCategory>('regras');
   const [selectedId, setSelectedId] = useState(DEFAULT_COMPENDIUM_ENTRY_ID);
   const [recent, setRecent] = useState<RecentQuery[]>([]);
+  const [showFull, setShowFull] = useState(false);
   const answerRef = useRef<HTMLDivElement | null>(null);
+  const categoriesRef = useRef<HTMLElement | null>(null);
   const fullRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -152,7 +212,11 @@ export const CompendiumView: React.FC = () => {
       const raw = window.localStorage.getItem(RECENT_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw) as RecentQuery[];
-      setRecent(Array.isArray(parsed) ? parsed.filter(item => COMPENDIUM_ENTRIES.some(entry => entry.id === item.id)).slice(0, 5) : []);
+      setRecent(
+        Array.isArray(parsed)
+          ? parsed.filter(item => COMPENDIUM_ENTRIES.some(entry => entry.id === item.id)).slice(0, 5)
+          : []
+      );
     } catch {
       setRecent([]);
     }
@@ -163,30 +227,35 @@ export const CompendiumView: React.FC = () => {
     [selectedId]
   );
 
-  const visibleTopics = useMemo(() => {
-    const source = category === 'all'
-      ? COMPENDIUM_ENTRIES.filter(entry => entry.featured)
-      : COMPENDIUM_ENTRIES.filter(entry => entry.category === category);
+  const topicCards = useMemo<TopicCard[]>(() => {
+    if (category === 'regras') return HOME_TOPICS;
 
-    return source.slice(0, category === 'all' ? 6 : 9);
+    return COMPENDIUM_ENTRIES
+      .filter(entry => entry.category === category)
+      .slice(0, 6)
+      .map(entry => ({
+        id: entry.id,
+        eyebrow: entry.eyebrow,
+        title: entry.title,
+        description: entry.summary,
+        image: imageForEntry(entry)
+      }));
   }, [category]);
 
   const saveRecent = (entry: CompendiumEntry) => {
-    const next = [
-      { id: entry.id, at: Date.now() },
-      ...recent.filter(item => item.id !== entry.id)
-    ].slice(0, 5);
+    const next = [{ id: entry.id, at: Date.now() }, ...recent.filter(item => item.id !== entry.id)].slice(0, 5);
     setRecent(next);
     try {
       window.localStorage.setItem(RECENT_KEY, JSON.stringify(next));
     } catch {
-      // Histórico local é conveniência; a consulta continua funcional sem ele.
+      // O histórico é apenas uma conveniência local.
     }
   };
 
   const openEntry = (entry: CompendiumEntry, scroll = true) => {
     setSelectedId(entry.id);
     setCategory(entry.category);
+    setShowFull(false);
     saveRecent(entry);
     if (scroll) {
       window.requestAnimationFrame(() => answerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
@@ -201,25 +270,41 @@ export const CompendiumView: React.FC = () => {
 
   const askAgain = () => {
     setQuery('');
+    setShowFull(false);
     window.requestAnimationFrame(() => {
-      const input = document.getElementById('compendium-query') as HTMLInputElement | null;
-      input?.focus();
+      (document.getElementById('compendium-query') as HTMLInputElement | null)?.focus();
     });
   };
 
-  const selectedCategoryIcon = categoryIcon(selected.category);
-  const SelectedCategoryIcon = selectedCategoryIcon;
+  const selectCategory = (nextCategory: CompendiumCategory) => {
+    setCategory(nextCategory);
+    setShowFull(false);
+    const first = COMPENDIUM_ENTRIES.find(entry => entry.category === nextCategory);
+    if (first) setSelectedId(first.id);
+  };
+
+  const openTopic = (topic: TopicCard) => {
+    const entry = COMPENDIUM_ENTRIES.find(candidate => candidate.id === topic.id);
+    if (entry) openEntry(entry);
+  };
+
+  const showCompleteRule = () => {
+    setShowFull(true);
+    window.requestAnimationFrame(() => fullRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
+
+  const SelectedCategoryIcon = categoryIcon(selected.category);
 
   return (
-    <section className="ro-compendium-v2">
-      <header className="ro-compendium-v2__hero">
-        <div className="ro-compendium-v2__hero-art" aria-hidden="true" />
-        <div className="ro-compendium-v2__hero-copy">
+    <section className="ro-compendium-final">
+      <header className="ro-compendium-final__hero">
+        <div className="ro-compendium-final__hero-art" aria-hidden="true" />
+        <div className="ro-compendium-final__hero-copy">
           <p className="ro-eyebrow">Referência de mesa</p>
           <h1>Compêndio dos Reinos Oníricos</h1>
           <p>
-            Referência completa de regras, mecânicas e cenário. Busque por termos,
-            faça perguntas e encontre respostas rápidas sem quebrar o ritmo da sessão.
+            Referência completa de regras, mecânicas e cenário dos Reinos Oníricos.
+            Busque por termos, faça perguntas e encontre respostas rápidas para usar durante suas sessões.
           </p>
         </div>
         <blockquote>
@@ -230,9 +315,9 @@ export const CompendiumView: React.FC = () => {
         </blockquote>
       </header>
 
-      <div className="ro-compendium-v2__layout">
-        <main className="ro-compendium-v2__main">
-          <form className="ro-compendium-v2__search" onSubmit={submitQuery}>
+      <div className="ro-compendium-final__layout">
+        <main className="ro-compendium-final__main">
+          <form className="ro-compendium-final__search" onSubmit={submitQuery}>
             <Search />
             <input
               id="compendium-query"
@@ -241,11 +326,10 @@ export const CompendiumView: React.FC = () => {
               placeholder="Pergunte ao Compêndio ou busque uma regra..."
               autoComplete="off"
             />
-            <span>Ex.: “Posso usar Espaço para atravessar uma parede?”</span>
             <button type="submit" aria-label="Consultar Compêndio"><ArrowRight /></button>
           </form>
 
-          <nav className="ro-compendium-v2__categories" aria-label="Categorias do Compêndio">
+          <nav ref={categoriesRef} className="ro-compendium-final__categories" aria-label="Categorias do Compêndio">
             {COMPENDIUM_CATEGORIES.map(item => {
               const Icon = categoryIcon(item.id);
               return (
@@ -253,7 +337,7 @@ export const CompendiumView: React.FC = () => {
                   key={item.id}
                   type="button"
                   className={category === item.id ? 'is-active' : ''}
-                  onClick={() => setCategory(item.id)}
+                  onClick={() => selectCategory(item.id)}
                   title={item.description}
                 >
                   <Icon />
@@ -263,135 +347,112 @@ export const CompendiumView: React.FC = () => {
             })}
           </nav>
 
-          <section ref={answerRef} className="ro-compendium-answer">
-            <div className={`ro-compendium-answer__art is-${selected.art || 'none'}`} aria-hidden="true" />
-            <div className="ro-compendium-answer__content">
-              <div className="ro-compendium-answer__eyebrow">
+          <section ref={answerRef} className="ro-compendium-final__answer">
+            <div className="ro-compendium-final__answer-copy">
+              <div className="ro-compendium-final__answer-kicker">
                 <Sparkles />
                 <span>Pergunte ao Compêndio</span>
                 <em>{categoryLabel(selected.category)}</em>
               </div>
               <h2>{selected.title}</h2>
-              <p className="ro-compendium-answer__summary">{selected.answer}</p>
-
-              <div className="ro-compendium-answer__columns">
-                <article>
-                  <span className="ro-compendium-answer__number">01</span>
-                  <div>
-                    <strong>Resposta curta</strong>
-                    <p>{selected.summary}</p>
-                  </div>
-                </article>
-
-                <article>
-                  <span className="ro-compendium-answer__number">02</span>
-                  <div>
-                    <strong>Como resolver</strong>
-                    {selected.steps?.length ? (
-                      <ol>
-                        {selected.steps.slice(0, 4).map(step => <li key={step}>{step}</li>)}
-                      </ol>
-                    ) : (
-                      <p>{selected.details?.[0] || selected.answer}</p>
-                    )}
-                  </div>
-                </article>
-
-                <article>
-                  <span className="ro-compendium-answer__number">03</span>
-                  <div>
-                    <strong>Regra-chave</strong>
-                    <p>{selected.details?.[1] || selected.details?.[0] || 'A narrativa define quando a regra entra em jogo e quais consequências fazem sentido.'}</p>
-                  </div>
-                </article>
-              </div>
-
-              <div className="ro-compendium-answer__actions">
-                <button type="button" className="is-primary" onClick={() => fullRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-                  <BookOpen /> Ver regra completa <ArrowRight />
+              <p>{selected.answer}</p>
+              <div className="ro-compendium-final__answer-actions">
+                <button type="button" className="is-primary" onClick={showCompleteRule}>
+                  Ver regra completa <ArrowRight />
                 </button>
-                <button type="button" onClick={askAgain}><RotateCcw /> Fazer outra pergunta</button>
+                <button type="button" onClick={askAgain}>
+                  <RotateCcw /> Fazer outra pergunta
+                </button>
               </div>
             </div>
+            <div className="ro-compendium-final__answer-art" aria-hidden="true" />
           </section>
 
-          <div className="ro-compendium-section-title">
-            <div><Sparkles /><span>{category === 'all' ? 'Principais tópicos' : categoryLabel(category)}</span></div>
-            {category !== 'all' && <button type="button" onClick={() => setCategory('all')}>Ver principais</button>}
+          <div className="ro-compendium-final__section-title">
+            <Sparkles />
+            <span>{category === 'regras' ? 'Principais tópicos' : categoryLabel(category)}</span>
+            <i />
           </div>
 
-          <section className="ro-compendium-topics">
-            {visibleTopics.map(entry => {
-              const Icon = categoryIcon(entry.category);
-              return (
-                <button key={entry.id} type="button" className="ro-compendium-topic" onClick={() => openEntry(entry)}>
-                  <span className={`ro-compendium-topic__art is-${entry.art || 'none'}`} aria-hidden="true" />
-                  <span className="ro-compendium-topic__copy">
-                    <em>{entry.eyebrow}</em>
-                    <strong>{entry.title}</strong>
-                    <small>{entry.summary}</small>
-                  </span>
-                  <span className="ro-compendium-topic__arrow"><ChevronRight /></span>
-                  <span className="ro-compendium-topic__icon"><Icon /></span>
-                </button>
-              );
-            })}
+          <section className="ro-compendium-final__topics">
+            {topicCards.map(topic => (
+              <button key={`${topic.id}-${topic.title}`} type="button" className="ro-compendium-final__topic" onClick={() => openTopic(topic)}>
+                <span className="ro-compendium-final__topic-image">
+                  <img src={topic.image} alt="" loading="lazy" />
+                </span>
+                <span className="ro-compendium-final__topic-copy">
+                  <em>{topic.eyebrow}</em>
+                  <strong>{topic.title}</strong>
+                  <small>{topic.description}</small>
+                </span>
+                <span className="ro-compendium-final__topic-arrow"><ChevronRight /></span>
+              </button>
+            ))}
           </section>
 
-          <section className="ro-compendium-dt">
+          <section className="ro-compendium-final__browse">
+            <BookOpen />
             <div>
-              <p className="ro-eyebrow">Referência de DT</p>
-              <strong>Teste Mundano</strong>
+              <strong>Navegue por todas as categorias</strong>
+              <small>Explore o compêndio completo e encontre regras, Sonhar, Desvelados, cenário e referências de mesa.</small>
             </div>
-            <div className="ro-compendium-dt__grid">
-              {DT_REFERENCE.map(item => (
-                <span key={item.value}><strong>{item.value}</strong><small>{item.label}</small></span>
-              ))}
-            </div>
+            <button type="button" onClick={() => categoriesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+              Ver todas as categorias <ArrowRight />
+            </button>
           </section>
 
-          <section ref={fullRef} className="ro-compendium-full">
-            <header>
-              <div className="ro-compendium-full__icon"><SelectedCategoryIcon /></div>
-              <div>
-                <p className="ro-eyebrow">{selected.eyebrow}</p>
-                <h2>{selected.title}</h2>
-                <p>{selected.summary}</p>
+          {showFull && (
+            <section ref={fullRef} className="ro-compendium-final__full">
+              <header>
+                <span><SelectedCategoryIcon /></span>
+                <div>
+                  <p className="ro-eyebrow">{selected.eyebrow}</p>
+                  <h2>{selected.title}</h2>
+                  <p>{selected.summary}</p>
+                </div>
+                <button type="button" onClick={() => setShowFull(false)}>Fechar</button>
+              </header>
+
+              <div className="ro-compendium-final__full-body">
+                <article>
+                  <h3>Regra</h3>
+                  <p>{selected.answer}</p>
+                </article>
+
+                {selected.steps?.length ? (
+                  <article>
+                    <h3>Como resolver</h3>
+                    <ol>{selected.steps.map(step => <li key={step}>{step}</li>)}</ol>
+                  </article>
+                ) : null}
+
+                {selected.details?.length ? (
+                  <article>
+                    <h3>Detalhes importantes</h3>
+                    <ul>{selected.details.map(detail => <li key={detail}>{detail}</li>)}</ul>
+                  </article>
+                ) : null}
+
+                {selected.id === 'teste-mundano' && (
+                  <article className="ro-compendium-final__dt-reference">
+                    <h3>Referência de DT</h3>
+                    <div>
+                      {DT_REFERENCE.map(item => (
+                        <span key={item.value}><strong>{item.value}</strong><small>{item.label}</small></span>
+                      ))}
+                    </div>
+                  </article>
+                )}
               </div>
-            </header>
-
-            <div className="ro-compendium-full__body">
-              <article>
-                <h3>Regra</h3>
-                <p>{selected.answer}</p>
-              </article>
-
-              {selected.steps?.length ? (
-                <article>
-                  <h3>Procedimento</h3>
-                  <ol>
-                    {selected.steps.map(step => <li key={step}>{step}</li>)}
-                  </ol>
-                </article>
-              ) : null}
-
-              {selected.details?.length ? (
-                <article>
-                  <h3>Detalhes importantes</h3>
-                  <ul>
-                    {selected.details.map(detail => <li key={detail}>{detail}</li>)}
-                  </ul>
-                </article>
-              ) : null}
-            </div>
-          </section>
+            </section>
+          )}
         </main>
 
-        <aside className="ro-compendium-v2__rail">
-          <section className="ro-compendium-rail-card">
-            <div className="ro-compendium-rail-card__title"><Sparkles /> <span>Acesso rápido</span></div>
-            <div className="ro-compendium-quick">
-              {quickAccessIds.map(id => {
+        <aside className="ro-compendium-final__rail">
+          <section className="ro-compendium-final__rail-card">
+            <div className="ro-compendium-final__rail-title"><Sparkles /><span>Acesso rápido</span></div>
+            <div className="ro-compendium-final__quick">
+              {QUICK_ACCESS_IDS.map(id => {
                 const entry = COMPENDIUM_ENTRIES.find(item => item.id === id);
                 if (!entry) return null;
                 const Icon = categoryIcon(entry.category);
@@ -406,27 +467,13 @@ export const CompendiumView: React.FC = () => {
             </div>
           </section>
 
-          <section className="ro-compendium-rail-card">
-            <div className="ro-compendium-rail-card__title"><BookOpen /> <span>Navegação do livro</span></div>
-            <div className="ro-compendium-book-nav">
-              {bookNavigation.map((item, index) => (
-                <button key={`${item.id}-${index}`} type="button" onClick={() => {
-                  const entry = COMPENDIUM_ENTRIES.find(candidate => candidate.id === item.id);
-                  if (entry) openEntry(entry);
-                }}>
-                  <BookOpen />
-                  <span><strong>{item.label}</strong><small>{item.description}</small></span>
-                  <ChevronRight />
-                </button>
-              ))}
+          <section className="ro-compendium-final__reference-card">
+            <div className="ro-compendium-final__reference-image">
+              <img src="/compendium/compendium-dice.webp" alt="" loading="lazy" />
             </div>
-          </section>
-
-          <section className="ro-compendium-rail-card ro-compendium-rail-card--visual">
-            <div className="ro-compendium-rail-card__visual" aria-hidden="true" />
             <div>
               <p className="ro-eyebrow">Referência rápida</p>
-              <h3>As tabelas essenciais sempre à mão.</h3>
+              <h3>As tabelas e regras essenciais para sua mesa, sempre à mão.</h3>
               <button type="button" onClick={() => {
                 const entry = COMPENDIUM_ENTRIES.find(item => item.id === 'referencia-rapida');
                 if (entry) openEntry(entry);
@@ -436,21 +483,20 @@ export const CompendiumView: React.FC = () => {
             </div>
           </section>
 
-          <section className="ro-compendium-rail-card">
-            <div className="ro-compendium-rail-card__title">
+          <section className="ro-compendium-final__rail-card">
+            <div className="ro-compendium-final__rail-title">
               <Clock3 />
               <span>Consultas recentes</span>
               {recent.length > 0 && (
                 <button type="button" onClick={() => {
                   setRecent([]);
                   try { window.localStorage.removeItem(RECENT_KEY); } catch {}
-                }}>Limpar</button>
+                }}>Limpar histórico</button>
               )}
             </div>
-
-            <div className="ro-compendium-recent">
+            <div className="ro-compendium-final__recent">
               {recent.length === 0 ? (
-                <p>As regras que você consultar aparecerão aqui.</p>
+                <p>As regras consultadas aparecerão aqui.</p>
               ) : recent.map(item => {
                 const entry = COMPENDIUM_ENTRIES.find(candidate => candidate.id === item.id);
                 if (!entry) return null;
@@ -458,27 +504,14 @@ export const CompendiumView: React.FC = () => {
                   <button key={item.id} type="button" onClick={() => openEntry(entry)}>
                     <Search />
                     <span>{entry.title}</span>
-                    <small>{new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' }).format(
-                      -Math.max(1, Math.round((Date.now() - item.at) / 60000)),
-                      'minute'
-                    )}</small>
+                    <small>{formatRecency(item.at)}</small>
                   </button>
                 );
               })}
             </div>
           </section>
-
-          <section className="ro-compendium-rail-card ro-compendium-rail-card--principle">
-            <TriangleAlert />
-            <div>
-              <strong>Princípio de arbitragem</strong>
-              <p>O Mestre apresenta o problema. Os Jogadores imaginam soluções. As regras determinam os limites. A narrativa mostra as consequências.</p>
-            </div>
-          </section>
         </aside>
       </div>
-
-      <div className="ro-compendium-v2__watermark" aria-hidden="true"><Brain /></div>
     </section>
   );
 };
