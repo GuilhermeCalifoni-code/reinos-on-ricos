@@ -8,6 +8,7 @@
 @import "./design-system/responsive-system.css";
 @import "./design-system/home-community-v2.css";
 @import "./design-system/generated-art-minimal.css";
+@import "./design-system/characters-v2.css";
 
 @layer base {
   :root {
