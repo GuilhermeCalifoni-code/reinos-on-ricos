@@ -19,6 +19,18 @@ export const authService = {
     if (error) throw error;
     return data.session;
   },
+  async entrarComOAuth(provider: 'google' | 'discord') {
+    const client = requireClient();
+    const { data, error } = await client.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin,
+        skipBrowserRedirect: false
+      }
+    });
+    if (error) throw error;
+    return data;
+  },
   async sair() {
     const { error } = await requireClient().auth.signOut();
     if (error) throw error;

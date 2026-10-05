@@ -744,3 +744,237 @@
     margin-top: .25rem;
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* OAuth + organização de acesso                                              */
+/* -------------------------------------------------------------------------- */
+
+.login-onirico--reference .login-onirico__social-grid {
+  display: grid;
+  gap: .8rem;
+}
+
+.login-onirico--reference .login-onirico__social-grid--login {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.login-onirico--reference .login-onirico__social-grid--cadastro {
+  grid-template-columns: 1fr;
+}
+
+.login-onirico--reference .login-onirico__social-button {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .8rem;
+  width: 100%;
+  min-height: 3.7rem;
+  padding: .8rem .95rem;
+  border: 1px solid rgba(21,25,29,.12);
+  border-radius: 7px;
+  background: rgba(255,253,249,.84);
+  color: var(--login-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+.login-onirico--reference .login-onirico__social-grid--cadastro .login-onirico__social-button {
+  min-height: 5.35rem;
+  padding: 1rem 1.05rem;
+  background: rgba(248,243,235,.76);
+}
+
+.login-onirico--reference .login-onirico__social-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(167,107,43,.35);
+  background: #fffdf8;
+  box-shadow: 0 10px 25px rgba(45,39,32,.06);
+}
+
+.login-onirico--reference .login-onirico__social-button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+.login-onirico--reference .login-onirico__social-button--discord {
+  color: #5865f2;
+}
+
+.login-onirico--reference .login-onirico__social-button--discord .login-onirico__social-copy {
+  color: var(--login-ink);
+}
+
+.login-onirico--reference .login-onirico__social-icon {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255,255,255,.88);
+}
+
+.login-onirico--reference .login-onirico__social-icon svg {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.login-onirico--reference .login-onirico__social-copy {
+  min-width: 0;
+}
+
+.login-onirico--reference .login-onirico__social-copy strong {
+  display: block;
+  color: var(--login-ink);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+.login-onirico--reference .login-onirico__social-copy small {
+  display: block;
+  margin-top: .25rem;
+  color: #747a7e;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .65rem;
+  line-height: 1.42;
+}
+
+.login-onirico--reference .login-onirico__social-arrow {
+  color: #8b6233;
+  font-size: 1rem;
+}
+
+.login-onirico--reference .login-onirico__oauth-create {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.login-onirico--reference .login-onirico__oauth-note {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .75rem;
+  align-items: start;
+  padding: .85rem .95rem;
+  border-left: 2px solid var(--login-copper);
+  background: var(--login-copper-soft);
+}
+
+.login-onirico--reference .login-onirico__oauth-note > span {
+  color: var(--login-copper);
+  line-height: 1.35;
+}
+
+.login-onirico--reference .login-onirico__oauth-note p {
+  margin: 0;
+  color: #656b70;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .69rem;
+  line-height: 1.5;
+}
+
+.login-onirico--reference .login-onirico__secondary-link {
+  justify-self: center;
+  margin-top: .15rem;
+  padding: .2rem;
+  border: 0;
+  background: transparent;
+  color: #6f4e2c;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .72rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.login-onirico--reference .login-onirico__access-footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin-top: 1rem;
+}
+
+.login-onirico--reference .login-onirico__access-footer > button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .7rem;
+  align-items: center;
+  min-height: 4.3rem;
+  padding: .8rem .9rem;
+  border: 1px solid rgba(21,25,29,.08);
+  border-radius: 7px;
+  background: rgba(247,242,234,.70);
+  color: var(--login-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.login-onirico--reference .login-onirico__access-footer > button:hover {
+  border-color: rgba(167,107,43,.32);
+  background: #fffaf3;
+}
+
+.login-onirico--reference .login-onirico__access-footer strong,
+.login-onirico--reference .login-onirico__access-footer small {
+  display: block;
+}
+
+.login-onirico--reference .login-onirico__access-footer strong {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .73rem;
+  font-weight: 700;
+}
+
+.login-onirico--reference .login-onirico__access-footer small {
+  margin-top: .18rem;
+  color: #777c80;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .6rem;
+  line-height: 1.35;
+}
+
+.login-onirico--reference .login-onirico__access-footer b {
+  color: #80562a;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: .62rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+@media (max-height: 850px) and (min-width: 1101px) {
+  .login-onirico--reference .login-onirico__panel {
+    padding: 1.65rem 1.85rem;
+  }
+
+  .login-onirico--reference .login-onirico__switch {
+    margin-bottom: 1.35rem;
+  }
+
+  .login-onirico--reference .login-onirico__panel-copy {
+    margin-bottom: 1.15rem;
+  }
+
+  .login-onirico--reference .login-onirico__social-grid {
+    gap: .65rem;
+  }
+
+  .login-onirico--reference .login-onirico__access-footer {
+    margin-top: .75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .login-onirico--reference .login-onirico__social-grid--login,
+  .login-onirico--reference .login-onirico__access-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .login-onirico--reference .login-onirico__social-button {
+    min-height: 3.55rem;
+  }
+
+  .login-onirico--reference .login-onirico__social-grid--cadastro .login-onirico__social-button {
+    min-height: 4.8rem;
+  }
+}
