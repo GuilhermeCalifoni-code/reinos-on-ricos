@@ -95,19 +95,19 @@ export const localCloudMigrationService = {
 
     const cleanSnapshot: LocalWorkspaceSnapshot = {
       campanhas: removeLegacyMockCampaigns(snapshot.campanhas),
-      sessoes: removeLegacyMockSessions(cleanSnapshot.sessoes),
-      npcs: removeLegacyMockNpcs(cleanSnapshot.npcs),
-      adversarios: removeLegacyMockAdversaries(cleanSnapshot.adversarios),
-      locais: removeLegacyMockLocations(cleanSnapshot.locais),
-      pistas: removeLegacyMockClues(cleanSnapshot.pistas),
-      loreEntries: removeLegacyMockLore(cleanSnapshot.loreEntries),
-      anotacoes: removeLegacyMockNotes(cleanSnapshot.anotacoes),
-      cenas: removeLegacyMockCampaignContent(cleanSnapshot.cenas),
-      handouts: removeLegacyMockCampaignContent(cleanSnapshot.handouts),
-      contadores: removeLegacyMockCampaignContent(cleanSnapshot.contadores),
-      mapas: removeLegacyMockCampaignContent(cleanSnapshot.mapas),
-      tokensMapa: removeLegacyMockCampaignContent(cleanSnapshot.tokensMapa),
-      personagens: removeLegacyMockCharacters(cleanSnapshot.personagens)
+      sessoes: removeLegacyMockSessions(snapshot.sessoes),
+      npcs: removeLegacyMockNpcs(snapshot.npcs),
+      adversarios: removeLegacyMockAdversaries(snapshot.adversarios),
+      locais: removeLegacyMockLocations(snapshot.locais),
+      pistas: removeLegacyMockClues(snapshot.pistas),
+      loreEntries: removeLegacyMockLore(snapshot.loreEntries),
+      anotacoes: removeLegacyMockNotes(snapshot.anotacoes),
+      cenas: removeLegacyMockCampaignContent(snapshot.cenas),
+      handouts: removeLegacyMockCampaignContent(snapshot.handouts),
+      contadores: removeLegacyMockCampaignContent(snapshot.contadores),
+      mapas: removeLegacyMockCampaignContent(snapshot.mapas),
+      tokensMapa: removeLegacyMockCampaignContent(snapshot.tokensMapa),
+      personagens: removeLegacyMockCharacters(snapshot.personagens)
     };
 
     const campaignMap = new Map<string, string>();
