@@ -863,10 +863,16 @@ export default function App() {
         <CreateCharacterModal
           isOpen={modalCriarPersonagem}
           onClose={() => setModalCriarPersonagem(false)}
-          onCriar={(novo) => {
-            salvarPersonagemPersistente(novo);
+          onCriar={async (novo) => {
+            if (usandoRemoto) {
+              await personagensRemotos.save({
+                ...novo,
+                ownerUserId: novo.ownerUserId || session?.authUserId
+              });
+            } else {
+              salvarPersonagemLocal(novo);
+            }
             setPersonagemParaFicha(novo);
-            setModalCriarPersonagem(false);
           }}
         />
       )}
