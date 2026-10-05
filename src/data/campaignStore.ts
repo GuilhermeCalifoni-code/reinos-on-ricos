@@ -1,5 +1,28 @@
 import { useState, useEffect } from 'react';
 import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, Contador, MapaNarrativo, TokenMapa, Cena, Handout } from '../types/campaign';
+const LEGACY_MOCK_IDS = {
+  campanhas: new Set(['camp-01', 'camp-02', 'camp-03']),
+  sessoes: new Set(['sessao-04', 'sessao-05', 'sessao-06']),
+  npcs: new Set(['npc-01', 'npc-02']),
+  adversarios: new Set(['adv-01', 'adv-02']),
+  locais: new Set(['loc-01', 'loc-02']),
+  pistas: new Set(['pis-01', 'pis-02']),
+  lore: new Set(['lore-01', 'lore-02']),
+  anotacoes: new Set(['not-01'])
+};
+
+const readArray = <T extends { id: string }>(key: string, legacyIds?: Set<string>): T[] => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return legacyIds ? parsed.filter((item: T) => !legacyIds.has(item.id)) : parsed;
+  } catch {
+    return [];
+  }
+};
+
 const STORAGE_KEYS = {
   CAMPANHAS: 'reinos_oniricos_campanhas_v2',
   SESSOES: 'reinos_oniricos_sessoes_v2',
@@ -18,14 +41,9 @@ const STORAGE_KEYS = {
 };
 
 export function useCampaignStorage() {
-  const [campanhas, setCampanhas] = useState<Campanha[]>(() => {
-    try {
-      const salvo = localStorage.getItem(STORAGE_KEYS.CAMPANHAS);
-      return salvo ? JSON.parse(salvo) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [campanhas, setCampanhas] = useState<Campanha[]>(() =>
+    readArray<Campanha>(STORAGE_KEYS.CAMPANHAS, LEGACY_MOCK_IDS.campanhas)
+  );
 
   const [campanhaAtivaId, setCampanhaAtivaId] = useState<string | null>(() => {
     try {
@@ -36,68 +54,33 @@ export function useCampaignStorage() {
     }
   });
 
-  const [sessoes, setSessoes] = useState<Sessao[]>(() => {
-    try {
-      const salvo = localStorage.getItem(STORAGE_KEYS.SESSOES);
-      return salvo ? JSON.parse(salvo) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [sessoes, setSessoes] = useState<Sessao[]>(() =>
+    readArray<Sessao>(STORAGE_KEYS.SESSOES, LEGACY_MOCK_IDS.sessoes)
+  );
 
-  const [npcs, setNpcs] = useState<NPC[]>(() => {
-    try {
-      const salvo = localStorage.getItem(STORAGE_KEYS.NPCS);
-      return salvo ? JSON.parse(salvo) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [npcs, setNpcs] = useState<NPC[]>(() =>
+    readArray<NPC>(STORAGE_KEYS.NPCS, LEGACY_MOCK_IDS.npcs)
+  );
 
-  const [adversarios, setAdversarios] = useState<Adversario[]>(() => {
-    try {
-      const salvo = localStorage.getItem(STORAGE_KEYS.ADVERSARIOS);
-      return salvo ? JSON.parse(salvo) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [adversarios, setAdversarios] = useState<Adversario[]>(() =>
+    readArray<Adversario>(STORAGE_KEYS.ADVERSARIOS, LEGACY_MOCK_IDS.adversarios)
+  );
 
-  const [locais, setLocais] = useState<Local[]>(() => {
-    try {
-      const salvo = localStorage.getItem(STORAGE_KEYS.LOCAIS);
-      return salvo ? JSON.parse(salvo) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [locais, setLocais] = useState<Local[]>(() =>
+    readArray<Local>(STORAGE_KEYS.LOCAIS, LEGACY_MOCK_IDS.locais)
+  );
 
-  const [pistas, setPistas] = useState<Pista[]>(() => {
-    try {
-      const salvo = localStorage.getItem(STORAGE_KEYS.PISTAS);
-      return salvo ? JSON.parse(salvo) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [pistas, setPistas] = useState<Pista[]>(() =>
+    readArray<Pista>(STORAGE_KEYS.PISTAS, LEGACY_MOCK_IDS.pistas)
+  );
 
-  const [loreEntries, setLoreEntries] = useState<LoreEntry[]>(() => {
-    try {
-      const salvo = localStorage.getItem(STORAGE_KEYS.LORE);
-      return salvo ? JSON.parse(salvo) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [loreEntries, setLoreEntries] = useState<LoreEntry[]>(() =>
+    readArray<LoreEntry>(STORAGE_KEYS.LORE, LEGACY_MOCK_IDS.lore)
+  );
 
-  const [anotacoes, setAnotacoes] = useState<Anotacao[]>(() => {
-    try {
-      const salvo = localStorage.getItem(STORAGE_KEYS.ANOTACOES);
-      return salvo ? JSON.parse(salvo) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [anotacoes, setAnotacoes] = useState<Anotacao[]>(() =>
+    readArray<Anotacao>(STORAGE_KEYS.ANOTACOES, LEGACY_MOCK_IDS.anotacoes)
+  );
 
   const [contadores, setContadores] = useState<Contador[]>(() => {
     try { const salvo = localStorage.getItem(STORAGE_KEYS.CONTADORES); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
