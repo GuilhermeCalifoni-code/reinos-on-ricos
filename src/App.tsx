@@ -15,9 +15,10 @@ import { isSupabaseConfigured } from './lib/supabaseClient';
 import { authService } from './services/auth/authService';
 import { useRemoteCampaigns } from './services/campaigns/useRemoteCampaigns';
 import { useRemoteCampaignContent } from './services/campaigns/useRemoteCampaignContent';
-import { characterRepository } from './services/characters/characterRepository';
+import { useRemoteCharacters } from './services/characters/useRemoteCharacters';
 import { campaignRepository } from './services/campaigns/campaignRepository';
 import { campaignAssetService } from './services/storage/campaignAssetService';
+import { localCloudMigrationService } from './services/migration/localCloudMigrationService';
 
 const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
 
@@ -55,15 +56,14 @@ export default function App() {
 
   // Storage de Personagens
   const {
-    personagens,
+    personagens: personagensLocais,
     personagemAtivo,
     personagemAtivoId,
     setPersonagemAtivoId,
-    salvarPersonagem,
+    salvarPersonagem: salvarPersonagemLocal,
     criarNovoPersonagem,
-    duplicarPersonagem,
-    excluirPersonagem,
-    mesclarPersonagens,
+    duplicarPersonagem: duplicarPersonagemLocal,
+    excluirPersonagem: excluirPersonagemLocal,
     exportarJSON,
     importarJSON,
     restaurarExemplos
@@ -128,6 +128,12 @@ export default function App() {
   const papelDaCampanha = usandoRemoto ? campanhasRemotas.roleDaCampanha(campanhaAtivaId || undefined) || 'observador' : session?.role || 'observador';
   const membroRemotoAtivo = usandoRemoto ? campanhasRemotas.membros.find(membro => membro.campaignId === campanhaAtivaId && membro.userId === session?.authUserId) : undefined;
   const personagemJogadorId = usandoRemoto ? membroRemotoAtivo?.characterId : session?.personagemVinculadoId;
+  const personagensRemotos = useRemoteCharacters(
+    usandoRemoto ? session?.authUserId : undefined,
+    usandoRemoto ? campanhaAtivaId || undefined : undefined,
+    usandoRemoto
+  );
+  const personagens = usandoRemoto ? personagensRemotos.characters : personagensLocais;
 
   const conteudoRemoto = useRemoteCampaignContent(campanhaAtivaId || undefined, usandoRemoto);
   const sessoesAtuais = usandoRemoto ? conteudoRemoto.sessoes : sessoes;
@@ -146,32 +152,42 @@ export default function App() {
     ? personagens.filter(personagem => personagem.campaignId === campanhaAtivaId)
     : personagens;
 
-  useEffect(() => {
-    if (!usandoRemoto || !campanhaAtivaId) return;
-    let ativo = true;
-    void characterRepository.listar(campanhaAtivaId)
-      .then(remotos => { if (ativo) mesclarPersonagens(remotos); })
-      .catch(error => console.error('Erro ao carregar fichas remotas:', error));
-    return () => { ativo = false; };
-  }, [campanhaAtivaId, mesclarPersonagens, usandoRemoto]);
-
   const salvarPersonagemPersistente = (personagemAtualizado: Personagem) => {
-    const remoto = usandoRemoto && campanhaAtivaId
-      ? {
-          ...personagemAtualizado,
-          campaignId: campanhaAtivaId,
-          ownerUserId: personagemAtualizado.ownerUserId || session?.authUserId
-        }
-      : personagemAtualizado;
-    salvarPersonagem(remoto);
-    if (usandoRemoto && campanhaAtivaId) {
-      void characterRepository.salvar(remoto).catch(error => console.error('Erro ao salvar ficha remota:', error));
+    if (usandoRemoto) {
+      const remoto: Personagem = {
+        ...personagemAtualizado,
+        ownerUserId: personagemAtualizado.ownerUserId || session?.authUserId
+      };
+      void personagensRemotos.save(remoto).catch(error => console.error('Erro ao salvar ficha remota:', error));
+      return;
     }
+    salvarPersonagemLocal(personagemAtualizado);
   };
 
   const excluirPersonagemPersistente = (id: string) => {
-    excluirPersonagem(id);
-    if (usandoRemoto) void characterRepository.excluir(id).catch(error => console.error('Erro ao excluir ficha remota:', error));
+    if (usandoRemoto) {
+      void personagensRemotos.remove(id).catch(error => console.error('Erro ao excluir ficha remota:', error));
+      return;
+    }
+    excluirPersonagemLocal(id);
+  };
+
+  const duplicarPersonagemPersistente = (id: string) => {
+    if (!usandoRemoto) {
+      duplicarPersonagemLocal(id);
+      return;
+    }
+    const original = personagens.find(item => item.id === id);
+    if (!original || !session?.authUserId) return;
+    const copia: Personagem = {
+      ...JSON.parse(JSON.stringify(original)),
+      id: `desvelado-${Date.now()}`,
+      nome: `${original.nome} (Cópia)`,
+      ownerUserId: session.authUserId,
+      criadoEm: new Date().toISOString(),
+      atualizadoEm: new Date().toISOString()
+    };
+    void personagensRemotos.save(copia).catch(error => console.error('Erro ao duplicar ficha remota:', error));
   };
 
   useEffect(() => {
@@ -309,6 +325,36 @@ export default function App() {
     });
   };
 
+  const handleMigrarDadosLocais = async () => {
+    if (!usandoRemoto || !session?.authUserId) {
+      throw new Error('Entre em uma conta online para sincronizar este dispositivo.');
+    }
+
+    const report = await localCloudMigrationService.migrate({
+      campanhas: campanhasLocais,
+      sessoes,
+      npcs,
+      adversarios,
+      locais,
+      pistas,
+      loreEntries,
+      anotacoes,
+      cenas,
+      handouts,
+      contadores,
+      mapas,
+      tokensMapa,
+      personagens: personagensLocais
+    }, session.authUserId);
+
+    await Promise.all([
+      campanhasRemotas.recarregar(),
+      personagensRemotos.refresh()
+    ]);
+
+    return report;
+  };
+
   const handleTrocarSessao = () => {
     if (session?.modoConexao === 'supabase') void authService.sair().catch(() => undefined);
     try {
@@ -340,10 +386,8 @@ export default function App() {
     if (personagemId && session?.authUserId) {
       const personagem = personagens.find(item => item.id === personagemId);
       if (personagem) {
-        const vinculado = { ...personagem, campaignId: id, ownerUserId: session.authUserId };
-        await characterRepository.salvar(vinculado);
-        salvarPersonagem(vinculado);
         await campaignRepository.vincularPersonagem(id, personagem.id);
+        await personagensRemotos.refresh();
       }
     }
     await campanhasRemotas.recarregar();
@@ -471,7 +515,7 @@ export default function App() {
               setPersonagemParaFicha(atualizado);
             }}
             onDuplicar={(p) => {
-              duplicarPersonagem(p);
+              duplicarPersonagemPersistente(p);
               setPersonagemParaFicha(null);
             }}
             onExcluir={(id) => {
@@ -648,6 +692,24 @@ export default function App() {
             onTrocarSessao={handleTrocarSessao}
             onRestaurarExemplos={restaurarExemplos}
             onAtualizarSessao={handleAtualizarSessao}
+            localDataSummary={{
+              campanhas: campanhasLocais.length,
+              personagens: personagensLocais.length,
+              itens:
+                sessoes.length +
+                npcs.length +
+                adversarios.length +
+                locais.length +
+                pistas.length +
+                loreEntries.length +
+                anotacoes.length +
+                cenas.length +
+                handouts.length +
+                contadores.length +
+                mapas.length +
+                tokensMapa.length
+            }}
+            onMigrarDadosLocais={usandoRemoto ? handleMigrarDadosLocais : undefined}
           />
         );
 
