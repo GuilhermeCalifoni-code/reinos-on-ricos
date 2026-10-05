@@ -978,3 +978,71 @@
     min-height: 4.8rem;
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Cadastro compacto por e-mail + social                                      */
+/* -------------------------------------------------------------------------- */
+
+.login-onirico--reference .login-onirico__panel--cadastro {
+  padding-top: 2.1rem;
+  padding-bottom: 2rem;
+}
+
+.login-onirico--reference .login-onirico__panel--cadastro .login-onirico__switch {
+  margin-bottom: 1.65rem;
+}
+
+.login-onirico--reference .login-onirico__panel--cadastro .login-onirico__panel-copy {
+  margin-bottom: 1.2rem;
+}
+
+.login-onirico--reference .login-onirico__social-grid--cadastro {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .7rem;
+}
+
+.login-onirico--reference .login-onirico__social-grid--cadastro .login-onirico__social-button {
+  min-height: 4.65rem;
+  padding: .8rem .85rem;
+}
+
+.login-onirico--reference .login-onirico__social-grid--cadastro .login-onirico__social-copy small {
+  font-size: .60rem;
+}
+
+.login-onirico--reference .login-onirico__separator--compact {
+  margin: 1rem 0 .85rem;
+}
+
+.login-onirico--reference .login-onirico__form--signup {
+  gap: .72rem;
+}
+
+.login-onirico--reference .login-onirico__form--signup .login-onirico__field-control input {
+  min-height: 3.25rem;
+}
+
+.login-onirico--reference .login-onirico__submit--signup {
+  min-height: 3.45rem;
+  margin-top: .1rem;
+}
+
+.login-onirico--reference .login-onirico__panel--cadastro .login-onirico__oauth-note {
+  margin-top: .05rem;
+  padding: .7rem .8rem;
+}
+
+.login-onirico--reference .login-onirico__panel--cadastro .login-onirico__oauth-note p {
+  font-size: .64rem;
+}
+
+@media (max-width: 640px) {
+  .login-onirico--reference .login-onirico__social-grid--cadastro {
+    grid-template-columns: 1fr;
+  }
+
+  .login-onirico--reference .login-onirico__social-grid--cadastro .login-onirico__social-button {
+    min-height: 4.25rem;
+  }
+}
