@@ -602,3 +602,240 @@
     width: 100%;
   }
 }
+
+
+/* Central de configurações */
+.ro-settings__nav {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 8px;
+  overflow-x: auto;
+  border: 1px solid var(--ro-line);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--ro-bg) 90%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.ro-settings__nav button {
+  display: inline-flex;
+  min-height: 36px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ro-paper-muted);
+  font: 600 .64rem/1 Inter, sans-serif;
+  cursor: pointer;
+}
+
+.ro-settings__nav button:hover {
+  border-color: var(--ro-line);
+  background: var(--ro-accent-soft);
+  color: var(--ro-paper);
+}
+
+.ro-settings__nav svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ro-settings__card[id] {
+  scroll-margin-top: 74px;
+}
+
+.ro-settings__card--wide {
+  grid-column: 1 / -1;
+}
+
+.ro-settings__appearance {
+  display: grid;
+  padding-top: 8px;
+}
+
+.ro-settings__preference-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  min-height: 76px;
+  border-bottom: 1px solid var(--ro-line);
+}
+
+.ro-settings__preference-row > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.ro-settings__preference-row strong {
+  color: var(--ro-paper);
+  font: 650 .74rem/1.2 Inter, sans-serif;
+}
+
+.ro-settings__preference-row small {
+  max-width: 560px;
+  color: var(--ro-ash);
+  font: .62rem/1.45 Inter, sans-serif;
+}
+
+.ro-settings__segmented {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--ro-line);
+  border-radius: 5px;
+  background: var(--ro-input);
+}
+
+.ro-settings__segmented button {
+  min-height: 31px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ro-ash);
+  font: 600 .6rem/1 Inter, sans-serif;
+  cursor: pointer;
+}
+
+.ro-settings__segmented button:hover {
+  color: var(--ro-paper);
+}
+
+.ro-settings__segmented button.is-active {
+  border-color: var(--ro-line-strong);
+  background: var(--ro-accent-soft);
+  color: var(--ro-paper);
+}
+
+.ro-settings__switch {
+  position: relative;
+  width: 46px;
+  height: 25px;
+  border: 1px solid var(--ro-line);
+  border-radius: 999px;
+  background: var(--ro-input);
+  cursor: pointer;
+}
+
+.ro-settings__switch span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--ro-ash);
+  transition: transform var(--ro-transition), background var(--ro-transition);
+}
+
+.ro-settings__switch.is-on {
+  border-color: var(--ro-line-strong);
+  background: var(--ro-accent-soft);
+}
+
+.ro-settings__switch.is-on span {
+  transform: translateX(21px);
+  background: var(--ro-copper);
+}
+
+.ro-settings__appearance-actions,
+.ro-settings__security-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+.ro-settings__appearance-actions .ro-button,
+.ro-settings__appearance-actions .ro-button--quiet,
+.ro-settings__security-actions .ro-button--quiet,
+.ro-settings__danger-action,
+.ro-settings__data-actions .ro-button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+}
+
+.ro-settings__appearance-actions svg,
+.ro-settings__security-actions svg,
+.ro-settings__data-actions svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ro-settings__security-actions {
+  margin-top: 15px;
+  border-top: 1px solid var(--ro-line);
+}
+
+.ro-settings__danger-action {
+  border: 1px solid color-mix(in srgb, var(--ro-danger) 40%, var(--ro-line));
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ro-danger);
+  font: 600 .63rem/1 Inter, sans-serif;
+  cursor: pointer;
+}
+
+.ro-settings__danger-action:hover {
+  background: color-mix(in srgb, var(--ro-danger) 9%, transparent);
+}
+
+.ro-settings__data-actions {
+  display: grid;
+  gap: 12px;
+  padding-top: 18px;
+}
+
+.ro-settings__data-actions .ro-button {
+  justify-self: start;
+}
+
+.ro-settings__data-actions p {
+  margin: 0;
+  color: var(--ro-ash);
+  font: .62rem/1.5 Inter, sans-serif;
+}
+
+@media (max-width: 780px) {
+  .ro-settings__card--wide {
+    grid-column: 1;
+  }
+
+  .ro-settings__preference-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .ro-settings__segmented {
+    width: 100%;
+  }
+
+  .ro-settings__segmented button {
+    flex: 1;
+  }
+
+  .ro-settings__appearance-actions,
+  .ro-settings__security-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ro-settings__appearance-actions > *,
+  .ro-settings__security-actions > *,
+  .ro-settings__data-actions .ro-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
