@@ -69,6 +69,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       role: 'observador',
       nome: perfil.nome,
       email: user.email,
+      avatarUrl: perfil.avatarUrl,
       mesaCodigo: '',
       modoConexao: 'supabase'
     });
