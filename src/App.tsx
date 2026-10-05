@@ -749,6 +749,7 @@ export default function App() {
         return (
           <CharactersListView
             personagens={personagens}
+            currentUserId={session.authUserId}
             onSelecionarPersonagem={handleAbrirFichaPersonagem}
             onNovoPersonagem={() => setModalCriarPersonagem(true)}
             onImportarJSON={() => fileInputRef.current?.click()}
