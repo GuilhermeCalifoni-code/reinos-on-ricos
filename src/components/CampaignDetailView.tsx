@@ -5,6 +5,7 @@ import { SessionPlanner } from './campaign/SessionPlanner';
 import { CampaignMembersPanel } from './campaign/CampaignMembersPanel';
 import { CampaignAssetsPanel } from './campaign/CampaignAssetsPanel';
 import { CampaignActorsPanel } from './campaign/CampaignActorsPanel';
+import { AssetImage } from './system/AssetImage';
 
 export type CampaignTabType = 
   | 'visao_geral'
@@ -242,10 +243,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         </div>
 
         <div className="ro-campaign-hero__media" aria-hidden="true">
-          <img
+          <AssetImage
             src={campanha.imagemUrl}
+            fallbackSrc="/ro-login-mist-city.webp"
             alt=""
-            onError={(event) => { event.currentTarget.style.display = 'none'; }}
           />
           <div className="ro-campaign-hero__sigil"><img src="/ro-mark.svg" alt="" /></div>
         </div>
