@@ -15,10 +15,10 @@ import { isSupabaseConfigured } from './lib/supabaseClient';
 import { authService } from './services/auth/authService';
 import { useRemoteCampaigns } from './services/campaigns/useRemoteCampaigns';
 import { useRemoteCampaignContent } from './services/campaigns/useRemoteCampaignContent';
-import { characterRepository } from './services/characters/characterRepository';
 import { useRemoteCharacters } from './services/characters/useRemoteCharacters';
 import { campaignRepository } from './services/campaigns/campaignRepository';
 import { campaignAssetService } from './services/storage/campaignAssetService';
+import { localCloudMigrationService } from './services/migration/localCloudMigrationService';
 
 const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
 
@@ -323,6 +323,36 @@ export default function App() {
       }
       return atualizada;
     });
+  };
+
+  const handleMigrarDadosLocais = async () => {
+    if (!usandoRemoto || !session?.authUserId) {
+      throw new Error('Entre em uma conta online para sincronizar este dispositivo.');
+    }
+
+    const report = await localCloudMigrationService.migrate({
+      campanhas: campanhasLocais,
+      sessoes,
+      npcs,
+      adversarios,
+      locais,
+      pistas,
+      loreEntries,
+      anotacoes,
+      cenas,
+      handouts,
+      contadores,
+      mapas,
+      tokensMapa,
+      personagens: personagensLocais
+    }, session.authUserId);
+
+    await Promise.all([
+      campanhasRemotas.recarregar(),
+      personagensRemotos.refresh()
+    ]);
+
+    return report;
   };
 
   const handleTrocarSessao = () => {
@@ -662,6 +692,24 @@ export default function App() {
             onTrocarSessao={handleTrocarSessao}
             onRestaurarExemplos={restaurarExemplos}
             onAtualizarSessao={handleAtualizarSessao}
+            localDataSummary={{
+              campanhas: campanhasLocais.length,
+              personagens: personagensLocais.length,
+              itens:
+                sessoes.length +
+                npcs.length +
+                adversarios.length +
+                locais.length +
+                pistas.length +
+                loreEntries.length +
+                anotacoes.length +
+                cenas.length +
+                handouts.length +
+                contadores.length +
+                mapas.length +
+                tokensMapa.length
+            }}
+            onMigrarDadosLocais={usandoRemoto ? handleMigrarDadosLocais : undefined}
           />
         );
 
