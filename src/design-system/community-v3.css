@@ -971,3 +971,190 @@
     padding: 22px 18px;
   }
 }
+
+
+/* Comunidade V3.1 — modelo enxuto por capacidade e biblioteca */
+.ro-community-v3__capacity {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.ro-community-v3__capacity > div {
+  display: grid;
+  min-height: 58px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid rgba(166,101,37,.11);
+  border-radius: 5px;
+  background: rgba(166,101,37,.035);
+}
+
+.ro-community-v3__capacity svg {
+  width: 17px;
+  height: 17px;
+  color: #a36729;
+  stroke-width: 1.55;
+}
+
+.ro-community-v3__capacity span {
+  display: grid;
+  gap: 2px;
+}
+
+.ro-community-v3__capacity strong {
+  color: #2e3437;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.12rem;
+  line-height: 1;
+}
+
+.ro-community-v3__capacity small {
+  color: #8d8b86;
+  font-size: 6.8px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: .045em;
+}
+
+.ro-community-v3__library,
+.ro-community-v3__quota-note {
+  width: min(1420px, 100%);
+  margin-inline: auto;
+}
+
+.ro-community-v3__library {
+  padding-top: 54px;
+}
+
+.ro-community-v3__library-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ro-community-v3__library-grid article {
+  min-height: 210px;
+  padding: 22px;
+  border: 1px solid rgba(21,25,29,.09);
+  border-radius: 8px;
+  background:
+    radial-gradient(16rem circle at 100% 0%, rgba(166,101,37,.055), transparent 64%),
+    rgba(255,253,249,.72);
+  box-shadow: 0 12px 34px rgba(45,38,30,.035);
+}
+
+.ro-community-v3__library-grid article > div:first-child {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 18px;
+  place-items: center;
+  border: 1px solid rgba(166,101,37,.18);
+  border-radius: 50%;
+  color: #a26729;
+}
+
+.ro-community-v3__library-grid article > div:first-child svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.5;
+}
+
+.ro-community-v3__library-grid h3 {
+  margin: 5px 0 0;
+  color: #23282b;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.65rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.ro-community-v3__library-grid article > p:not(.ro-eyebrow) {
+  margin: 10px 0 0;
+  color: #73797b;
+  font-size: 8.5px;
+  line-height: 1.55;
+}
+
+.ro-community-v3__quota-note {
+  display: grid;
+  min-height: 150px;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: start;
+  gap: 17px;
+  margin-top: 38px;
+  padding: 23px 25px;
+  border: 1px solid rgba(84,115,89,.13);
+  border-radius: 8px;
+  background: rgba(89,122,93,.045);
+}
+
+.ro-community-v3__quota-note > svg {
+  width: 25px;
+  height: 25px;
+  color: #718873;
+  stroke-width: 1.5;
+}
+
+.ro-community-v3__quota-note h3 {
+  margin: 5px 0 0;
+  color: #303638;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+.ro-community-v3__quota-note div > p:not(.ro-eyebrow) {
+  max-width: 980px;
+  margin: 8px 0 0;
+  color: #707779;
+  font-size: 8.5px;
+  line-height: 1.55;
+}
+
+.ro-community-v3__matrix td > strong {
+  color: #9b6027;
+  font: 700 10px/1 Inter, sans-serif;
+}
+
+:root[data-theme='dark'] .ro-community-v3__capacity > div,
+:root[data-theme='dark'] .ro-community-v3__library-grid article,
+:root[data-theme='dark'] .ro-community-v3__quota-note {
+  border-color: rgba(248,241,232,.08);
+  background: rgba(18,25,35,.72);
+}
+
+:root[data-theme='dark'] .ro-community-v3__capacity strong,
+:root[data-theme='dark'] .ro-community-v3__library-grid h3,
+:root[data-theme='dark'] .ro-community-v3__quota-note h3 {
+  color: #f7efe6;
+}
+
+:root[data-theme='dark'] .ro-community-v3__library-grid article > p:not(.ro-eyebrow),
+:root[data-theme='dark'] .ro-community-v3__quota-note div > p:not(.ro-eyebrow) {
+  color: #aaa198;
+}
+
+@media (max-width: 960px) {
+  .ro-community-v3__library-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .ro-community-v3__capacity {
+    grid-template-columns: 1fr;
+  }
+
+  .ro-community-v3__library {
+    padding-top: 42px;
+  }
+
+  .ro-community-v3__quota-note {
+    grid-template-columns: 36px minmax(0, 1fr);
+    padding: 18px;
+  }
+}
