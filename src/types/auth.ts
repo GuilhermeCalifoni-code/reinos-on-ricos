@@ -1,9 +1,20 @@
 export type UserRole = 'mestre' | 'jogador' | 'observador';
 
+export type UIDensity = 'comfortable' | 'compact';
+export type UITextScale = 'small' | 'normal' | 'large';
+
+export interface UIPreferences {
+  theme?: 'light' | 'dark';
+  density?: UIDensity;
+  textScale?: UITextScale;
+  reduceMotion?: boolean;
+}
+
 export interface UserProfile {
   userId: string;
   nome: string;
   avatarUrl?: string;
+  preferences?: UIPreferences;
   criadoEm?: string;
   atualizadoEm?: string;
 }
@@ -16,6 +27,7 @@ export interface UserSession {
   nome: string;
   email?: string;
   avatarUrl?: string;
+  uiPreferences?: UIPreferences;
   mesaCodigo: string;
   personagemVinculadoId?: string;
   modoConexao: 'supabase' | 'local';
