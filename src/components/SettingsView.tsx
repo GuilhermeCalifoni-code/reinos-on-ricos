@@ -3,6 +3,7 @@ import {
   AlertCircle,
   Camera,
   CheckCircle2,
+  CloudUpload,
   KeyRound,
   LogOut,
   Mail,
@@ -17,12 +18,15 @@ import { ThemeToggle } from '../design-system/ThemeToggle';
 import { useTheme } from '../design-system/theme';
 import { authService } from '../services/auth/authService';
 import { profileAssetService } from '../services/storage/profileAssetService';
+import { LocalMigrationReport } from '../services/migration/localCloudMigrationService';
 
 interface SettingsViewProps {
   session: UserSession | null;
   onTrocarSessao: () => void;
   onRestaurarExemplos: () => void;
   onAtualizarSessao: (patch: Partial<UserSession>) => void;
+  localDataSummary?: { campanhas: number; personagens: number; itens: number };
+  onMigrarDadosLocais?: () => Promise<LocalMigrationReport>;
 }
 
 const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
@@ -36,7 +40,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   session,
   onTrocarSessao,
   onRestaurarExemplos,
-  onAtualizarSessao
+  onAtualizarSessao,
+  localDataSummary,
+  onMigrarDadosLocais
 }) => {
   const { theme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,6 +56,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [confirmacaoSenha, setConfirmacaoSenha] = useState('');
   const [salvandoPerfil, setSalvandoPerfil] = useState(false);
   const [salvandoSenha, setSalvandoSenha] = useState(false);
+  const [migrandoDados, setMigrandoDados] = useState(false);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
 
@@ -161,6 +168,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       setErro(error.message || 'Não foi possível remover a imagem de perfil.');
     } finally {
       setSalvandoPerfil(false);
+    }
+  };
+
+  const migrarDadosLocais = async () => {
+    if (!onMigrarDadosLocais || migrandoDados) return;
+    limparFeedback();
+
+    const confirmed = confirm(
+      'Enviar os dados salvos neste navegador para sua conta online?\n\n' +
+      'Isso é recomendado para que campanhas, fichas e preparação apareçam em outros dispositivos.'
+    );
+    if (!confirmed) return;
+
+    setMigrandoDados(true);
+    try {
+      const result = await onMigrarDadosLocais();
+      setMensagem(
+        `Sincronização concluída: ${result.campanhasCriadas} campanhas enviadas, ` +
+        `${result.campanhasJaMigradas} já estavam na nuvem e ${result.personagens} fichas sincronizadas.`
+      );
+    } catch (error: any) {
+      setErro(error.message || 'Não foi possível enviar os dados deste dispositivo para a nuvem.');
+    } finally {
+      setMigrandoDados(false);
     }
   };
 
@@ -346,6 +377,38 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <p className="ro-settings__hint">
               Mesmo entrando com Google, você pode definir uma senha como alternativa de acesso.
             </p>
+          </section>
+        )}
+
+        {remoto && onMigrarDadosLocais && (
+          <section className="ro-settings__card ro-settings__card--sync">
+            <div className="ro-settings__card-head">
+              <span className="ro-settings__icon"><CloudUpload /></span>
+              <div>
+                <h2>Sincronização</h2>
+                <p>Leve para a nuvem o que foi criado neste navegador antes da conta online.</p>
+              </div>
+            </div>
+
+            <div className="ro-settings__sync">
+              <div className="ro-settings__sync-counts">
+                <span><strong>{localDataSummary?.campanhas ?? 0}</strong><small>campanhas locais</small></span>
+                <span><strong>{localDataSummary?.personagens ?? 0}</strong><small>fichas locais</small></span>
+                <span><strong>{localDataSummary?.itens ?? 0}</strong><small>itens de preparação</small></span>
+              </div>
+              <p>
+                Contas online passam a usar o Supabase como fonte principal. Este botão serve para importar,
+                uma única vez, os dados antigos que ainda existem apenas neste dispositivo.
+              </p>
+              <button
+                type="button"
+                className="ro-button"
+                disabled={migrandoDados}
+                onClick={() => void migrarDadosLocais()}
+              >
+                <CloudUpload /> {migrandoDados ? 'Enviando para a nuvem…' : 'Sincronizar este dispositivo'}
+              </button>
+            </div>
           </section>
         )}
 
