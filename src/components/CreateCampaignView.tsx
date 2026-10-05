@@ -17,7 +17,7 @@ interface CreateCampaignViewProps {
 export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar, onCancelar }) => {
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [imagemUrl, setImagemUrl] = useState(IMAGENS_ATMOSFERICAS_PREDEFINIDAS[0].url);
+  const [imagemUrl, setImagemUrl] = useState('');
   const [imagemArquivo, setImagemArquivo] = useState<File | null>(null);
   const [previewLocal, setPreviewLocal] = useState('');
   const [tipo, setTipo] = useState<CampanhaTipo>('campanha');
@@ -57,8 +57,8 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
     try {
       await onCriar({
         nome: nome.trim(),
-        descricao: descricao.trim() || 'Uma jornada pelas fissuras da vigília urbana.',
-        imagemUrl: imagemUrl || IMAGENS_ATMOSFERICAS_PREDEFINIDAS[0].url,
+        descricao: descricao.trim(),
+        imagemUrl: imagemUrl.trim(),
         imagemArquivo: modoImagem === 'upload' ? imagemArquivo || undefined : undefined,
         tipo
       });
