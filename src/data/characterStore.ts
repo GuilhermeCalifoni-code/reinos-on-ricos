@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Personagem } from '../types/character';
 import { TABELA_PROGRESSAO } from '../rules/rulesData';
+import { isLegacyMockCharacterId, removeLegacyMockCharacters } from './runtimeDataSanitizer';
 import { 
   calcularResistencia, 
   calcularDefesa, 
@@ -18,8 +19,8 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
       const salvo = localStorage.getItem(STORAGE_KEY);
       if (salvo) {
         const parsed = JSON.parse(salvo);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+        if (Array.isArray(parsed)) {
+          return removeLegacyMockCharacters(parsed);
         }
       }
     } catch (e) {
@@ -31,7 +32,7 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
   const [personagemAtivoId, setPersonagemAtivoId] = useState<string>(() => {
     try {
       const salvo = localStorage.getItem(ACTIVE_CHAR_KEY);
-      if (salvo) return salvo;
+      if (salvo && !isLegacyMockCharacterId(salvo)) return salvo;
     } catch (e) {
       console.error('Erro ao ler ID do personagem ativo:', e);
     }
