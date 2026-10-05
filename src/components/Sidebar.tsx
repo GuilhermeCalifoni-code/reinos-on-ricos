@@ -60,9 +60,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         <Radio /> <span>Mesa Ao Vivo</span>
       </button>
-      <button type="button" className="ro-sidebar__soon" disabled title="Comunidade será adicionada em uma próxima etapa">
-        <Users /> <span>Comunidade</span><small>em breve</small>
-      </button>
     </nav>
 
     <div className="ro-sidebar__art" aria-hidden="true">

@@ -1,11 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowRight, Bell, CalendarDays, KeyRound, Plus, Radio, Users } from 'lucide-react';
+import { ArrowRight, Bell, CalendarDays, ChevronDown, KeyRound, LogOut, Plus, Radio, Settings, Users } from 'lucide-react';
 import { Campanha, Sessao } from '../types/campaign';
 import { Personagem } from '../types/character';
+import { ThemeToggle } from '../design-system/ThemeToggle';
+import { AssetImage } from './system/AssetImage';
 
 interface DashboardViewProps {
   campanhas: Campanha[];
   userName?: string;
+  avatarUrl?: string;
   personagens?: Personagem[];
   sessoes?: Sessao[];
   onNovaCampanha: () => void;
@@ -15,6 +18,9 @@ interface DashboardViewProps {
   onDetalhesCampanha: (campanha: Campanha) => void;
   personagensParaVinculo?: Personagem[];
   onEntrarComCodigo?: (codigo: string, personagemId?: string) => Promise<void>;
+  onAbrirCampanhas?: () => void;
+  onAbrirConfiguracoes?: () => void;
+  onSair?: () => void;
 }
 
 const statusLabel: Record<Campanha['status'], string> = {
@@ -23,14 +29,12 @@ const statusLabel: Record<Campanha['status'], string> = {
   concluida: 'Concluída'
 };
 
-const formatarDataSessao = (sessao: Sessao) => {
-  if (!sessao.data) return 'Data a definir';
-  return sessao.data;
-};
+const formatarDataSessao = (sessao: Sessao) => sessao.data || 'Data a definir';
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   campanhas,
   userName,
+  avatarUrl,
   personagens = [],
   sessoes = [],
   onNovaCampanha,
@@ -39,12 +43,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onContinuarCampanha,
   onDetalhesCampanha,
   onEntrarComCodigo,
-  personagensParaVinculo = []
+  personagensParaVinculo = [],
+  onAbrirCampanhas,
+  onAbrirConfiguracoes,
+  onSair
 }) => {
   const [codigo, setCodigo] = useState('');
   const [personagemId, setPersonagemId] = useState('');
   const [erro, setErro] = useState('');
   const [mostrarConvite, setMostrarConvite] = useState(false);
+  const [mostrarPerfil, setMostrarPerfil] = useState(false);
+  const [mostrarNotificacoes, setMostrarNotificacoes] = useState(false);
 
   const primeiroNome = userName?.trim().split(/\s+/)[0] || 'Desvelado';
 
@@ -59,7 +68,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   );
 
   const proximasSessoes = useMemo(
-    () => sessoes.filter(sessao => !sessao.concluida).slice(0, 2),
+    () => sessoes.filter(sessao => !sessao.concluida).slice(0, 3),
     [sessoes]
   );
 
@@ -76,6 +85,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  const abrirPerfil = () => {
+    setMostrarPerfil(value => !value);
+    setMostrarNotificacoes(false);
+  };
+
+  const abrirNotificacoes = () => {
+    setMostrarNotificacoes(value => !value);
+    setMostrarPerfil(false);
+  };
+
   return (
     <section className="ro-home">
       <img className="ro-home__frame" src="/ro-login-frame.webp" alt="" aria-hidden="true" />
@@ -87,18 +106,71 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <b aria-hidden="true">✦</b>
         </div>
 
-        <div className="ro-home__identity">
-          <button type="button" className="ro-home__notification" aria-label="Notificações">
-            <Bell />
-          </button>
-          <span className="ro-home__avatar" aria-hidden="true">
-            {primeiroNome.slice(0, 2).toUpperCase()}
-          </span>
-          <span className="ro-home__identity-copy">
-            <strong>{primeiroNome}</strong>
-            <small>Desvelado</small>
-          </span>
-          <span className="ro-home__chevron" aria-hidden="true">⌄</span>
+        <div className="ro-home__account-area">
+          <div className="ro-home__popover-wrap">
+            <button type="button" className="ro-home__notification" aria-label="Abrir notificações" aria-expanded={mostrarNotificacoes} onClick={abrirNotificacoes}>
+              <Bell />
+              {proximasSessoes.length > 0 && <span className="ro-home__notification-dot">{Math.min(proximasSessoes.length, 9)}</span>}
+            </button>
+
+            {mostrarNotificacoes && (
+              <div className="ro-home__popover ro-home__notifications">
+                <div className="ro-home__popover-head">
+                  <div><strong>Atividade da Vigília</strong><small>O que precisa da sua atenção.</small></div>
+                  <Bell size={16} />
+                </div>
+                {proximasSessoes.length ? (
+                  <div className="ro-home__notification-list">
+                    {proximasSessoes.map(sessao => (
+                      <div key={sessao.id}>
+                        <CalendarDays size={14} />
+                        <span><strong>{sessao.titulo}</strong><small>{formatarDataSessao(sessao)}</small></span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="ro-home__popover-empty">Nenhuma sessão pendente nesta campanha.</p>
+                )}
+                <button type="button" className="ro-home__popover-action" onClick={() => { setMostrarNotificacoes(false); onAbrirCampanhas?.(); }}>
+                  Abrir campanhas <ArrowRight size={14} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="ro-home__popover-wrap">
+            <button type="button" className="ro-home__identity" onClick={abrirPerfil} aria-expanded={mostrarPerfil} aria-label="Abrir menu da conta">
+              <span className="ro-home__avatar" aria-hidden="true">
+                {avatarUrl ? <img src={avatarUrl} alt="" /> : primeiroNome.slice(0, 2).toUpperCase()}
+              </span>
+              <span className="ro-home__identity-copy">
+                <strong>{primeiroNome}</strong>
+                <small>Desvelado</small>
+              </span>
+              <ChevronDown className={mostrarPerfil ? 'is-open' : ''} />
+            </button>
+
+            {mostrarPerfil && (
+              <div className="ro-home__popover ro-home__profile-menu">
+                <div className="ro-home__profile-summary">
+                  <span className="ro-home__avatar">
+                    {avatarUrl ? <img src={avatarUrl} alt="" /> : primeiroNome.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span><strong>{userName || primeiroNome}</strong><small>Conta Reinos Oníricos</small></span>
+                </div>
+                <div className="ro-home__profile-row">
+                  <span>Aparência</span>
+                  <ThemeToggle compact />
+                </div>
+                <button type="button" onClick={() => { setMostrarPerfil(false); onAbrirConfiguracoes?.(); }}>
+                  <Settings size={15} /> Configurações
+                </button>
+                <button type="button" className="is-danger" onClick={() => { setMostrarPerfil(false); onSair?.(); }}>
+                  <LogOut size={15} /> Sair
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -124,6 +196,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span aria-hidden="true" />
           </div>
           <div className="ro-home__section-actions">
+            {onAbrirCampanhas && (
+              <button type="button" className="ro-home__text-action" onClick={onAbrirCampanhas}>
+                Ver todas <ArrowRight />
+              </button>
+            )}
             {onEntrarComCodigo && (
               <button type="button" className="ro-home__text-action" onClick={() => setMostrarConvite(valor => !valor)}>
                 <KeyRound /> Entrar com código
@@ -141,18 +218,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <strong>Entrar em uma campanha</strong>
               <small>Use o código enviado pelo Mestre.</small>
             </div>
-            <input
-              value={codigo}
-              onChange={event => setCodigo(event.target.value.toUpperCase())}
-              placeholder="REINO-XXXXXXXXXXXX"
-              aria-label="Código de convite"
-            />
+            <input value={codigo} onChange={event => setCodigo(event.target.value.toUpperCase())} placeholder="REINO-XXXXXXXXXXXX" aria-label="Código de convite" />
             {personagensParaVinculo.length > 0 && (
               <select value={personagemId} onChange={event => setPersonagemId(event.target.value)} aria-label="Personagem para vincular">
                 <option value="">Vincular ficha depois</option>
-                {personagensParaVinculo.map(personagem => (
-                  <option key={personagem.id} value={personagem.id}>{personagem.nome}</option>
-                ))}
+                {personagensParaVinculo.map(personagem => <option key={personagem.id} value={personagem.id}>{personagem.nome}</option>)}
               </select>
             )}
             <button type="submit">Entrar <ArrowRight /></button>
@@ -172,15 +242,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         ) : (
           <div className="ro-home__campaign-grid">
-            {campanhasOrdenadas.map((campanha, index) => (
+            {campanhasOrdenadas.slice(0, 2).map((campanha, index) => (
               <article key={campanha.id} className={`ro-home__campaign-card ro-home__campaign-card--${index % 2 === 0 ? 'ink' : 'rift'}`}>
-                <button
-                  type="button"
-                  className="ro-home__campaign-main"
-                  onClick={() => onDetalhesCampanha(campanha)}
-                  aria-label={`Abrir ${campanha.nome}`}
-                >
-                  {campanha.imagemUrl && <img src={campanha.imagemUrl} alt="" />}
+                <button type="button" className="ro-home__campaign-main" onClick={() => onDetalhesCampanha(campanha)} aria-label={`Abrir ${campanha.nome}`}>
+                  <AssetImage src={campanha.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="" />
                   <span className="ro-home__campaign-shade" />
                   <span className="ro-home__campaign-copy">
                     <strong>{campanha.nome}</strong>
@@ -206,12 +271,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           <div className="ro-home__characters">
             {personagens.slice(0, 3).map((personagem, index) => (
-              <button
-                type="button"
-                key={personagem.id}
-                onClick={() => onAbrirPersonagem?.(personagem)}
-                className="ro-home__character"
-              >
+              <button type="button" key={personagem.id} onClick={() => onAbrirPersonagem?.(personagem)} className="ro-home__character">
                 <span className={`ro-home__character-avatar ro-home__character-avatar--${index + 1}`}>
                   <span>{personagem.nome.slice(0, 2).toUpperCase()}</span>
                 </span>
@@ -230,10 +290,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span><strong>Novo</strong><small>Personagem</small></span>
               </button>
             )}
-
-            {personagens.length === 0 && !onNovoPersonagem && (
-              <p className="ro-home__muted">Nenhum Desvelado criado ainda.</p>
-            )}
           </div>
         </section>
 
@@ -244,12 +300,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {proximasSessoes.length > 0 ? (
             <div className="ro-home__sessions">
-              {proximasSessoes.map(sessao => {
+              {proximasSessoes.slice(0, 1).map(sessao => {
                 const campanha = campanhas.find(item => item.id === sessao.campanhaId) || campanhasOrdenadas[0];
                 return (
                   <article key={sessao.id} className="ro-home__session">
                     <div className="ro-home__session-art">
-                      {campanha?.imagemUrl && <img src={campanha.imagemUrl} alt="" />}
+                      <AssetImage src={campanha?.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="" />
                     </div>
                     <div className="ro-home__session-copy">
                       <strong>{campanha?.nome || 'Campanha'}</strong>
@@ -257,11 +313,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <span><Radio /> Sessão {sessao.numero}</span>
                       <h3>{sessao.titulo}</h3>
                     </div>
-                    {campanha && (
-                      <button type="button" onClick={() => onContinuarCampanha(campanha)}>
-                        Entrar na Mesa <ArrowRight />
-                      </button>
-                    )}
+                    {campanha && <button type="button" onClick={() => onContinuarCampanha(campanha)}>Entrar na Mesa <ArrowRight /></button>}
                   </article>
                 );
               })}
@@ -273,11 +325,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <strong>Nenhuma sessão agendada</strong>
                 <p>Abra uma campanha para planejar o próximo encontro da mesa.</p>
               </div>
-              {campanhasOrdenadas[0] && (
-                <button type="button" onClick={() => onDetalhesCampanha(campanhasOrdenadas[0])}>
-                  Planejar <ArrowRight />
-                </button>
-              )}
+              {campanhasOrdenadas[0] && <button type="button" onClick={() => onDetalhesCampanha(campanhasOrdenadas[0])}>Planejar <ArrowRight /></button>}
             </div>
           )}
         </section>

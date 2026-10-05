@@ -15,6 +15,7 @@ export interface UserSession {
   role: UserRole;
   nome: string;
   email?: string;
+  avatarUrl?: string;
   mesaCodigo: string;
   personagemVinculadoId?: string;
   modoConexao: 'supabase' | 'local';

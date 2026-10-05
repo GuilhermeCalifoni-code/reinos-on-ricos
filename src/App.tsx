@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sidebar, MobileNavigation, MainViewType } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
+import { CampaignsLibraryView } from './components/CampaignsLibraryView';
 import { CreateCharacterModal } from './components/CreateCharacterModal';
 import { RupturaModal } from './components/RupturaModal';
 import { LoginScreen } from './components/LoginScreen';
@@ -16,6 +17,7 @@ import { useRemoteCampaigns } from './services/campaigns/useRemoteCampaigns';
 import { useRemoteCampaignContent } from './services/campaigns/useRemoteCampaignContent';
 import { characterRepository } from './services/characters/characterRepository';
 import { campaignRepository } from './services/campaigns/campaignRepository';
+import { campaignAssetService } from './services/storage/campaignAssetService';
 
 const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
 
@@ -189,6 +191,7 @@ export default function App() {
         role: 'observador',
         nome: profile.nome,
         email: supabaseSession.user.email,
+        avatarUrl: profile.avatarUrl,
         mesaCodigo: '',
         modoConexao: 'supabase'
       };
@@ -333,17 +336,48 @@ export default function App() {
     setCampanhaRemotaAtivaId(id);
   };
 
-  const handleExecutarCriacaoCampanha = (dados: {
+  const arquivoParaDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Não foi possível ler a imagem selecionada.'));
+    reader.onload = () => resolve(String(reader.result));
+    reader.readAsDataURL(file);
+  });
+
+  const handleExecutarCriacaoCampanha = async (dados: {
     nome: string;
     descricao: string;
     imagemUrl: string;
+    imagemArquivo?: File;
     tipo: 'campanha' | 'oneshot' | 'playtest';
   }) => {
     if (usandoRemoto) {
-      campanhasRemotas.criar(dados).then(nova => { setCampanhaRemotaAtivaId(nova.id); setViewAtiva('detalhe_campanha'); }).catch(error => alert(error.message || 'Não foi possível criar a campanha.'));
+      const nova = await campanhasRemotas.criar({
+        nome: dados.nome,
+        descricao: dados.descricao,
+        imagemUrl: dados.imagemUrl,
+        tipo: dados.tipo
+      });
+
+      if (dados.imagemArquivo) {
+        try {
+          const path = await campaignAssetService.uploadCampaignCover(nova.id, dados.imagemArquivo);
+          await campaignRepository.atualizarImagem(nova.id, campaignAssetService.toStorageRef(path));
+          await campanhasRemotas.recarregar();
+        } catch (error: any) {
+          alert(`A campanha foi criada, mas a capa não pôde ser enviada. ${error.message || ''}`);
+        }
+      }
+
+      setCampanhaRemotaAtivaId(nova.id);
+      setViewAtiva('detalhe_campanha');
       return;
     }
-    criarCampanhaLocal(dados);
+
+    const imagemUrl = dados.imagemArquivo
+      ? await arquivoParaDataUrl(dados.imagemArquivo)
+      : dados.imagemUrl;
+
+    criarCampanhaLocal({ ...dados, imagemUrl });
     setViewAtiva('detalhe_campanha');
   };
 
@@ -450,7 +484,6 @@ export default function App() {
 
     switch (viewAtiva) {
       case 'dashboard':
-      case 'campanhas':
         return (
           <DashboardView
             campanhas={campanhas}
@@ -463,6 +496,22 @@ export default function App() {
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             personagensParaVinculo={usandoRemoto ? personagens : undefined}
+            onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
+            avatarUrl={session.avatarUrl}
+            onAbrirCampanhas={() => setViewAtiva('campanhas')}
+            onAbrirConfiguracoes={() => setViewAtiva('configuracoes')}
+            onSair={handleTrocarSessao}
+          />
+        );
+
+      case 'campanhas':
+        return (
+          <CampaignsLibraryView
+            campanhas={campanhas}
+            personagensParaVinculo={usandoRemoto ? personagens : undefined}
+            onNovaCampanha={handleIniciarCriacaoCampanha}
+            onDetalhesCampanha={handleDetalhesCampanha}
+            onContinuarCampanha={handleContinuarCampanha}
             onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
           />
         );
