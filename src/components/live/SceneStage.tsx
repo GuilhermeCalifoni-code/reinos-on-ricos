@@ -2,6 +2,7 @@ import React from 'react';
 import { Campanha, ConteudoDeCena, MapaNarrativo, TokenMapa } from '../../types/campaign';
 import { MapStage } from './MapStage';
 import { NewSessionEvent } from '../../types/sessionEvent';
+import { AssetImage } from '../system/AssetImage';
 
 interface SceneStageProps {
   campanha: Campanha;
@@ -47,7 +48,7 @@ export const SceneStage: React.FC<SceneStageProps> = (props) => {
   };
   return <main className={`live-table__stage live-table__stage--${conteudo}`}>
     <div className="live-table__geometry" />
-    {conteudo === 'imagem' && <img src={campanha.imagemUrl} alt="Cena atual" />}
+    {conteudo === 'imagem' && <AssetImage src={campanha.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="Cena atual" />}
     <div className="live-table__stage-copy">
       <p className="ro-eyebrow">Cena atual</p>
       {editing ? <div className="live-table__scene-editor">
