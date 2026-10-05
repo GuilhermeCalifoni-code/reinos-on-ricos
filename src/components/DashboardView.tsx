@@ -1,5 +1,18 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowRight, Bell, CalendarDays, ChevronDown, KeyRound, LogOut, Plus, Radio, Settings, Users } from 'lucide-react';
+import {
+  ArrowRight,
+  Bell,
+  BookOpen,
+  CalendarDays,
+  ChevronDown,
+  HeartHandshake,
+  KeyRound,
+  LogOut,
+  Plus,
+  Radio,
+  Settings,
+  Users
+} from 'lucide-react';
 import { Campanha, Sessao } from '../types/campaign';
 import { Personagem } from '../types/character';
 import { ThemeToggle } from '../design-system/ThemeToggle';
@@ -19,6 +32,8 @@ interface DashboardViewProps {
   personagensParaVinculo?: Personagem[];
   onEntrarComCodigo?: (codigo: string, personagemId?: string) => Promise<void>;
   onAbrirCampanhas?: () => void;
+  onAbrirPersonagens?: () => void;
+  onAbrirComunidade?: () => void;
   onAbrirConfiguracoes?: () => void;
   onSair?: () => void;
 }
@@ -45,6 +60,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onEntrarComCodigo,
   personagensParaVinculo = [],
   onAbrirCampanhas,
+  onAbrirPersonagens,
+  onAbrirComunidade,
   onAbrirConfiguracoes,
   onSair
 }) => {
@@ -129,7 +146,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <p className="ro-home__popover-empty">Nenhuma sessão pendente nesta campanha.</p>
+                  <p className="ro-home__popover-empty">Nenhuma sessão pendente no momento.</p>
                 )}
                 <button type="button" className="ro-home__popover-action" onClick={() => { setMostrarNotificacoes(false); onAbrirCampanhas?.(); }}>
                   Abrir campanhas <ArrowRight size={14} />
@@ -176,8 +193,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       <header className="ro-home__welcome">
         <div className="ro-home__welcome-copy">
-          <h1>Bem-vindo de volta, {primeiroNome}.</h1>
+          <h1>Bem-vindo de volta, <em>{primeiroNome}.</em></h1>
           <p>A Vigília continua. Há mundos a investigar, memórias a decifrar e sonhos que não se calam.</p>
+
+          <div className="ro-home__stats" aria-label="Resumo da sua Vigília">
+            <div>
+              <BookOpen />
+              <span><strong>{campanhas.length}</strong><small>Campanhas</small></span>
+            </div>
+            <div>
+              <Users />
+              <span><strong>{personagens.length}</strong><small>Personagens</small></span>
+            </div>
+            <div>
+              <CalendarDays />
+              <span><strong>{proximasSessoes.length}</strong><small>Próximas sessões</small></span>
+            </div>
+            <button type="button" onClick={onAbrirComunidade}>
+              <HeartHandshake />
+              <span><strong>Comunidade</strong><small>Entre no Círculo da Vigília</small></span>
+            </button>
+          </div>
         </div>
 
         <blockquote>
@@ -207,7 +243,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
             )}
             <button type="button" className="ro-home__primary-action" onClick={onNovaCampanha}>
-              Nova Campanha <Plus />
+              <Plus /> Nova Campanha
             </button>
           </div>
         </div>
@@ -232,13 +268,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
         {campanhasOrdenadas.length === 0 ? (
           <div className="ro-home__empty">
-            <img src="/ro-mark.svg" alt="" />
+            <div className="ro-home__empty-mark">
+              <img src="/ro-mark.svg" alt="" />
+            </div>
             <div>
               <span>O arquivo está vazio</span>
               <h3>A primeira fissura começa aqui.</h3>
-              <p>Crie uma campanha para reunir cenas, personagens, pistas e anotações de mesa.</p>
+              <p>Crie uma campanha para reunir cenas, personagens, pistas e anotações de mesa. Toda grande história começa com um primeiro passo.</p>
             </div>
-            <button onClick={onNovaCampanha}>Criar campanha <ArrowRight /></button>
+            <button onClick={onNovaCampanha}><Plus /> Nova Campanha <ArrowRight /></button>
           </div>
         ) : (
           <div className="ro-home__campaign-grid">
@@ -267,35 +305,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <section className="ro-home__characters-section">
           <div className="ro-home__section-head ro-home__section-head--compact">
             <div><h2>Seus Personagens</h2><span aria-hidden="true" /></div>
+            {onAbrirPersonagens && <button type="button" className="ro-home__text-action" onClick={onAbrirPersonagens}>Ver todos <ArrowRight /></button>}
           </div>
 
-          <div className="ro-home__characters">
-            {personagens.slice(0, 3).map((personagem, index) => (
-              <button type="button" key={personagem.id} onClick={() => onAbrirPersonagem?.(personagem)} className="ro-home__character">
-                <span className={`ro-home__character-avatar ro-home__character-avatar--${index + 1}`}>
-                  <span>{personagem.nome.slice(0, 2).toUpperCase()}</span>
-                </span>
-                <span className="ro-home__character-copy">
-                  <strong>{personagem.nome}</strong>
-                  <small>Nível {personagem.nivel}</small>
-                  <em>{personagem.conceito || 'Desvelado'}</em>
-                </span>
-                <span className="ro-home__character-sigil" aria-hidden="true">✧</span>
-              </button>
-            ))}
+          {personagens.length === 0 ? (
+            <button type="button" onClick={onNovoPersonagem} className="ro-home__character-empty">
+              <span className="ro-home__new-plus"><Plus /></span>
+              <strong>Criar Personagem</strong>
+              <small>Dê vida àqueles que caminham entre os mundos.</small>
+            </button>
+          ) : (
+            <div className="ro-home__characters">
+              {personagens.slice(0, 3).map((personagem, index) => (
+                <button type="button" key={personagem.id} onClick={() => onAbrirPersonagem?.(personagem)} className="ro-home__character">
+                  <span className={`ro-home__character-avatar ro-home__character-avatar--${index + 1}`}>
+                    <span>{personagem.nome.slice(0, 2).toUpperCase()}</span>
+                  </span>
+                  <span className="ro-home__character-copy">
+                    <strong>{personagem.nome}</strong>
+                    <small>Nível {personagem.nivel}</small>
+                    <em>{personagem.conceito || 'Desvelado'}</em>
+                  </span>
+                  <span className="ro-home__character-sigil" aria-hidden="true">✧</span>
+                </button>
+              ))}
 
-            {onNovoPersonagem && (
-              <button type="button" onClick={onNovoPersonagem} className="ro-home__character ro-home__character--new">
-                <span className="ro-home__new-plus"><Plus /></span>
-                <span><strong>Novo</strong><small>Personagem</small></span>
-              </button>
-            )}
-          </div>
+              {onNovoPersonagem && (
+                <button type="button" onClick={onNovoPersonagem} className="ro-home__character ro-home__character--new">
+                  <span className="ro-home__new-plus"><Plus /></span>
+                  <span><strong>Novo</strong><small>Personagem</small></span>
+                </button>
+              )}
+            </div>
+          )}
         </section>
 
         <section className="ro-home__sessions-section">
           <div className="ro-home__section-head ro-home__section-head--compact">
             <div><h2>Próximas Sessões</h2><span aria-hidden="true" /></div>
+            {onAbrirCampanhas && <button type="button" className="ro-home__text-action" onClick={onAbrirCampanhas}>Ver todas <ArrowRight /></button>}
           </div>
 
           {proximasSessoes.length > 0 ? (
@@ -333,7 +381,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       <div className="ro-home__side-art" aria-hidden="true">
         <img src="/ro-login-mist-city.webp" alt="" />
-        <Users />
       </div>
     </section>
   );
