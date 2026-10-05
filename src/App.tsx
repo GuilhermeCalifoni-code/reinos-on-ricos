@@ -806,7 +806,6 @@ export default function App() {
           setPersonagemParaFicha(null);
           setViewAtiva(v);
         }}
-        campanhas={campanhas}
         campanhaAtivaId={campanhaAtivaId}
         onSelecionarCampanha={(id) => {
           setCampanhaAtivaId(id);
@@ -814,11 +813,6 @@ export default function App() {
           setViewAtiva('detalhe_campanha');
         }}
         onNovaCampanha={handleIniciarCriacaoCampanha}
-        onAbrirMesa={() => {
-          const alvo = campanhaAtiva || campanhas[0];
-          if (alvo) handleContinuarCampanha(alvo);
-          else handleIniciarCriacaoCampanha();
-        }}
         onSair={handleTrocarSessao}
       />}
 
@@ -830,13 +824,7 @@ export default function App() {
             setPersonagemParaFicha(null);
             setViewAtiva(v);
           }}
-          campanhas={campanhas}
           onNovaCampanha={handleIniciarCriacaoCampanha}
-          onAbrirMesa={() => {
-            const alvo = campanhaAtiva || campanhas[0];
-            if (alvo) handleContinuarCampanha(alvo);
-            else handleIniciarCriacaoCampanha();
-          }}
           onSair={handleTrocarSessao}
         />}
         {/* 10. HEADER (Minimalista, Fundo #0B0B0B, Borda #292929) */}
