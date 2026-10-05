@@ -59,6 +59,8 @@ export const CommunityView: React.FC = () => {
   const [interestPlan, setInterestPlan] = useState<string | null>(null);
   const [interestMessage, setInterestMessage] = useState('');
   const [showMatrix, setShowMatrix] = useState(false);
+  const [downloadingSlug, setDownloadingSlug] = useState<string | null>(null);
+  const [downloadMessage, setDownloadMessage] = useState('');
 
   useEffect(() => {
     let alive = true;
@@ -84,9 +86,33 @@ export const CommunityView: React.FC = () => {
   }, []);
 
   const featuredPlan = plans.find(plan => plan.destaque);
+  const currentPlan = plans.find(plan => plan.slug === activePlanSlug) || plans.find(plan => plan.slug === 'aberto') || null;
+  const canDownloadRulebook = communityService.temPermissao(currentPlan, 'downloads.rulebook_pdf');
+  const canDownloadAdversaries = communityService.temPermissao(currentPlan, 'downloads.adversary_book_pdf');
+  const hasOfficialLibrary = communityService.temPermissao(currentPlan, 'downloads.all_official_pdfs');
 
   const scrollToPlans = () => {
     document.getElementById('community-levels')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const downloadOfficialDocument = async (slug: string) => {
+    setDownloadingSlug(slug);
+    setDownloadMessage('');
+
+    try {
+      const download = await communityService.baixarDocumentoOficial(slug);
+      const link = document.createElement('a');
+      link.href = download.url;
+      link.rel = 'noopener';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setDownloadMessage(`${download.title}: link protegido liberado por ${download.expiresIn} segundos.`);
+    } catch (error: any) {
+      setDownloadMessage(error?.message || 'Não foi possível baixar este documento agora.');
+    } finally {
+      setDownloadingSlug(null);
+    }
   };
 
   const selectPlan = async (plan: CommunityPlan) => {
@@ -269,35 +295,69 @@ export const CommunityView: React.FC = () => {
         <div className="ro-community-v3__section-head">
           <div>
             <p className="ro-eyebrow">Biblioteca digital</p>
-            <h2>Benefícios que não exigem uma fábrica de conteúdo.</h2>
+            <h2>Seus livros, protegidos pelo seu nível.</h2>
           </div>
           <p>
-            O projeto entrega o que já faz parte do próprio RPG. Quando um novo livro oficial existir, ele pode entrar na biblioteca sem criar uma obrigação mensal artificial.
+            Os arquivos não ficam expostos em uma URL pública. Quando seu nível permite o download,
+            o sistema gera um link temporário e individual para o PDF.
           </p>
         </div>
 
         <div className="ro-community-v3__library-grid">
-          <article>
+          <article className={canDownloadRulebook ? 'is-unlocked' : 'is-locked'}>
             <div><BookOpenText /></div>
             <p className="ro-eyebrow">Vigília+</p>
             <h3>Livro Básico em PDF</h3>
-            <p>A versão digital oficial do livro de regras para consultar, estudar e levar para a mesa offline.</p>
+            <p>A versão digital oficial do livro de regras para estudar e levar para a mesa offline.</p>
+            <button
+              type="button"
+              disabled={!canDownloadRulebook || downloadingSlug === 'livro-basico'}
+              onClick={() => void downloadOfficialDocument('livro-basico')}
+            >
+              {canDownloadRulebook
+                ? downloadingSlug === 'livro-basico' ? 'Preparando…' : 'Baixar Livro Básico'
+                : 'Disponível a partir do Vigília'}
+              {canDownloadRulebook ? <FileDown /> : <Shield />}
+            </button>
           </article>
 
-          <article>
+          <article className={canDownloadAdversaries ? 'is-unlocked' : 'is-locked'}>
             <div><Users /></div>
             <p className="ro-eyebrow">Círculo+</p>
             <h3>Livro de Adversários em PDF</h3>
             <p>O bestiário oficial entra na biblioteca a partir do Círculo, junto do Livro Básico.</p>
+            <button
+              type="button"
+              disabled={!canDownloadAdversaries || downloadingSlug === 'livro-adversarios'}
+              onClick={() => void downloadOfficialDocument('livro-adversarios')}
+            >
+              {canDownloadAdversaries
+                ? downloadingSlug === 'livro-adversarios' ? 'Preparando…' : 'Baixar Livro de Adversários'
+                : 'Disponível a partir do Círculo'}
+              {canDownloadAdversaries ? <FileDown /> : <Shield />}
+            </button>
           </article>
 
-          <article>
+          <article className={hasOfficialLibrary ? 'is-unlocked' : 'is-locked'}>
             <div><Library /></div>
             <p className="ro-eyebrow">Guardião</p>
             <h3>Biblioteca oficial</h3>
-            <p>Acesso aos PDFs oficiais liberados para o clube, sem prometer uma frequência fixa de lançamentos.</p>
+            <p>
+              O Guardião recebe os PDFs oficiais que forem liberados para o clube, sem calendário artificial
+              e sem obrigação de produzir material todo mês.
+            </p>
+            <div className="ro-community-v3__library-status">
+              {hasOfficialLibrary ? <Check /> : <Shield />}
+              <span>{hasOfficialLibrary ? 'Biblioteca completa habilitada' : 'Disponível no Guardião'}</span>
+            </div>
           </article>
         </div>
+
+        {downloadMessage ? (
+          <div className="ro-community-v3__download-message">
+            <BadgeCheck /> {downloadMessage}
+          </div>
+        ) : null}
       </section>
 
       {!loading && plans.length > 0 ? (

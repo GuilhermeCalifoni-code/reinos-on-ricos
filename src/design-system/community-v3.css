@@ -1158,3 +1158,108 @@
     padding: 18px;
   }
 }
+
+
+/* Biblioteca protegida */
+.ro-community-v3__library-grid article {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+}
+
+.ro-community-v3__library-grid article.is-locked {
+  opacity: .76;
+}
+
+.ro-community-v3__library-grid article.is-unlocked {
+  border-color: rgba(166,101,37,.30);
+  box-shadow: 0 16px 42px rgba(92,58,25,.07);
+}
+
+.ro-community-v3__library-grid article > button {
+  display: inline-flex;
+  min-height: 38px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 0 12px;
+  border: 1px solid rgba(166,101,37,.25);
+  border-radius: 5px;
+  background: rgba(166,101,37,.055);
+  color: #83501f;
+  font: 700 8px/1 Inter, sans-serif;
+  cursor: pointer;
+}
+
+.ro-community-v3__library-grid article > button:hover:not(:disabled) {
+  background: rgba(166,101,37,.10);
+  border-color: rgba(166,101,37,.38);
+}
+
+.ro-community-v3__library-grid article > button:disabled {
+  cursor: default;
+  opacity: .62;
+}
+
+.ro-community-v3__library-grid article > button svg {
+  width: 13px;
+  height: 13px;
+}
+
+.ro-community-v3__library-status {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 0 12px;
+  border: 1px solid rgba(166,101,37,.12);
+  border-radius: 5px;
+  background: rgba(166,101,37,.035);
+  color: #76604a;
+  font-size: 8px;
+}
+
+.ro-community-v3__library-status svg {
+  width: 13px;
+  height: 13px;
+  color: #a46628;
+}
+
+.ro-community-v3__download-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 13px;
+  border: 1px solid rgba(80,120,86,.15);
+  border-radius: 6px;
+  background: rgba(87,126,92,.055);
+  color: #58665b;
+  font-size: 8.5px;
+  line-height: 1.45;
+}
+
+.ro-community-v3__download-message svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+:root[data-theme='dark'] .ro-community-v3__library-grid article.is-unlocked {
+  border-color: rgba(191,128,57,.30);
+}
+
+:root[data-theme='dark'] .ro-community-v3__library-grid article > button,
+:root[data-theme='dark'] .ro-community-v3__library-status {
+  border-color: rgba(248,241,232,.085);
+  background: rgba(255,255,255,.025);
+  color: #cbbfb3;
+}
+
+:root[data-theme='dark'] .ro-community-v3__download-message {
+  border-color: rgba(125,160,130,.12);
+  background: rgba(93,130,98,.07);
+  color: #b5c4b6;
+}

@@ -30,6 +30,14 @@ export interface CommunityPlan {
   ordem: number;
 }
 
+export interface OfficialDocument {
+  slug: string;
+  titulo: string;
+  descricao: string;
+  requiredPermission: string;
+  ordem: number;
+}
+
 export interface CommunityMembership {
   plan: CommunityPlan;
   status: 'active' | 'trialing' | 'past_due' | 'canceled' | 'expired';
@@ -103,6 +111,43 @@ export const communityService = {
       billingCycle: data.billing_cycle,
       currentPeriodEnd: data.current_period_end || undefined,
       cancelAtPeriodEnd: Boolean(data.cancel_at_period_end)
+    };
+  },
+
+  async listarDocumentosOficiais(): Promise<OfficialDocument[]> {
+    const { data, error } = await requireClient()
+      .from('official_documents')
+      .select('slug,titulo,descricao,required_permission,ordem')
+      .eq('ativo', true)
+      .order('ordem');
+
+    if (error) throw error;
+
+    return (data || []).map((row: any) => ({
+      slug: row.slug,
+      titulo: row.titulo,
+      descricao: row.descricao || '',
+      requiredPermission: row.required_permission,
+      ordem: Number(row.ordem || 0)
+    }));
+  },
+
+  async baixarDocumentoOficial(slug: string) {
+    const { data, error } = await requireClient().functions.invoke('official-library-download', {
+      body: { slug }
+    });
+
+    if (error) throw new Error('Não foi possível preparar o download agora.');
+    if (!data?.url) {
+      if (data?.error === 'upgrade_required') throw new Error('Seu nível atual não possui acesso a este PDF.');
+      if (data?.error === 'document_not_published') throw new Error('Este PDF ainda está sendo publicado na biblioteca privada.');
+      throw new Error('O arquivo não está disponível para download agora.');
+    }
+
+    return {
+      url: String(data.url),
+      title: String(data.title || 'Reinos Oníricos'),
+      expiresIn: Number(data.expiresIn || 90)
     };
   },
 
