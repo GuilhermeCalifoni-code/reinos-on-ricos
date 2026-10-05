@@ -32,11 +32,25 @@ export const accountDataService = {
     if (userError) throw userError;
     if (!user) throw new Error('Sessão autenticada não encontrada.');
 
+    const failures: string[] = [];
     const entries = await Promise.all(TABLES.map(async table => {
-      const { data, error } = await db.from(table).select('*');
-      if (error) return [table, { error: error.message }] as const;
+      let query = db.from(table).select('*');
+      if (table === 'profiles') query = query.eq('user_id', user.id);
+
+      const { data, error } = await query;
+      if (error) {
+        failures.push(`${table}: ${error.message}`);
+        return [table, []] as const;
+      }
       return [table, data || []] as const;
     }));
+
+    if (failures.length) {
+      throw new Error(
+        'O backup não foi concluído porque algumas áreas não puderam ser lidas: ' +
+        failures.join(' | ')
+      );
+    }
 
     return {
       formato: 'reinos-oniricos-account-backup-v1',
