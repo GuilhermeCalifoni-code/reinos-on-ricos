@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { ImagePlus, Link2, Upload } from 'lucide-react';
-import { IMAGENS_ATMOSFERICAS_PREDEFINIDAS } from '../data/campaignsData';
 import { CampanhaTipo } from '../types/campaign';
 
 interface CreateCampaignViewProps {
@@ -17,11 +16,11 @@ interface CreateCampaignViewProps {
 export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar, onCancelar }) => {
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [imagemUrl, setImagemUrl] = useState(IMAGENS_ATMOSFERICAS_PREDEFINIDAS[0].url);
+  const [imagemUrl, setImagemUrl] = useState('');
   const [imagemArquivo, setImagemArquivo] = useState<File | null>(null);
   const [previewLocal, setPreviewLocal] = useState('');
   const [tipo, setTipo] = useState<CampanhaTipo>('campanha');
-  const [modoImagem, setModoImagem] = useState<'upload' | 'colecao' | 'url'>('upload');
+  const [modoImagem, setModoImagem] = useState<'upload' | 'url'>('upload');
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
 
@@ -57,8 +56,8 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
     try {
       await onCriar({
         nome: nome.trim(),
-        descricao: descricao.trim() || 'Uma jornada pelas fissuras da vigília urbana.',
-        imagemUrl: imagemUrl || IMAGENS_ATMOSFERICAS_PREDEFINIDAS[0].url,
+        descricao: descricao.trim(),
+        imagemUrl: imagemUrl.trim(),
         imagemArquivo: modoImagem === 'upload' ? imagemArquivo || undefined : undefined,
         tipo
       });
@@ -118,7 +117,6 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
 
           <div className="ro-create-campaign__image-tabs">
             <button type="button" className={modoImagem === 'upload' ? 'is-active' : ''} onClick={() => setModoImagem('upload')}><Upload /> Arquivo</button>
-            <button type="button" className={modoImagem === 'colecao' ? 'is-active' : ''} onClick={() => setModoImagem('colecao')}>Coleção</button>
             <button type="button" className={modoImagem === 'url' ? 'is-active' : ''} onClick={() => setModoImagem('url')}><Link2 /> URL</button>
           </div>
 
