@@ -295,6 +295,20 @@ export default function App() {
     setViewAtiva('dashboard');
   };
 
+  const handleAtualizarSessao = (patch: Partial<UserSession>) => {
+    setSession(current => {
+      if (!current) return current;
+      const atualizada = { ...current, ...patch };
+      sessionRef.current = atualizada;
+      try {
+        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(atualizada));
+      } catch (error) {
+        console.error('Erro ao persistir alterações da sessão:', error);
+      }
+      return atualizada;
+    });
+  };
+
   const handleTrocarSessao = () => {
     if (session?.modoConexao === 'supabase') void authService.sair().catch(() => undefined);
     try {
@@ -633,6 +647,7 @@ export default function App() {
             session={session}
             onTrocarSessao={handleTrocarSessao}
             onRestaurarExemplos={restaurarExemplos}
+            onAtualizarSessao={handleAtualizarSessao}
           />
         );
 
