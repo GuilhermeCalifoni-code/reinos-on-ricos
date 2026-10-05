@@ -30,6 +30,7 @@ const CampaignDetailView = React.lazy(() => import('./components/CampaignDetailV
 const MesaView = React.lazy(() => import('./components/MesaView').then(module => ({ default: module.MesaView })));
 const CharactersListView = React.lazy(() => import('./components/CharactersListView').then(module => ({ default: module.CharactersListView })));
 const SettingsView = React.lazy(() => import('./components/SettingsView').then(module => ({ default: module.SettingsView })));
+const CommunityView = React.lazy(() => import('./components/CommunityView').then(module => ({ default: module.CommunityView })));
 const CharacterSheet = React.lazy(() => import('./components/CharacterSheet').then(module => ({ default: module.CharacterSheet })));
 const RulesReference = React.lazy(() => import('./components/RulesReference').then(module => ({ default: module.RulesReference })));
 
@@ -621,6 +622,8 @@ export default function App() {
             onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
             avatarUrl={session.avatarUrl}
             onAbrirCampanhas={() => setViewAtiva('campanhas')}
+            onAbrirPersonagens={() => setViewAtiva('personagens')}
+            onAbrirComunidade={() => setViewAtiva('comunidade')}
             onAbrirConfiguracoes={() => setViewAtiva('configuracoes')}
             onSair={handleTrocarSessao}
           />
@@ -739,6 +742,9 @@ export default function App() {
           </div>
         );
 
+      case 'comunidade':
+        return <CommunityView />;
+
       case 'personagens':
         return (
           <CharactersListView
@@ -826,10 +832,17 @@ export default function App() {
             setPersonagemParaFicha(null);
             setViewAtiva(v);
           }}
+          campanhas={campanhas}
           onNovaCampanha={handleIniciarCriacaoCampanha}
+          onAbrirMesa={() => {
+            const alvo = campanhaAtiva || campanhas[0];
+            if (alvo) handleContinuarCampanha(alvo);
+            else handleIniciarCriacaoCampanha();
+          }}
+          onSair={handleTrocarSessao}
         />}
         {/* 10. HEADER (Minimalista, Fundo #0B0B0B, Borda #292929) */}
-        {viewAtiva !== 'modo_mesa' && viewAtiva !== 'dashboard' && viewAtiva !== 'campanhas' && <Header
+        {viewAtiva !== 'modo_mesa' && viewAtiva !== 'dashboard' && viewAtiva !== 'campanhas' && viewAtiva !== 'comunidade' && <Header
           campanhaNome={
             viewAtiva === 'detalhe_campanha'
               ? campanhaAtiva?.nome
