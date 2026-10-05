@@ -56,7 +56,23 @@ export const authService = {
     const client = requireClient();
     const { data, error } = await client.from('profiles').select('*').eq('user_id', user.id).maybeSingle();
     if (error) throw error;
-    return { userId: user.id, nome: data?.nome || user.user_metadata.nome || user.email?.split('@')[0] || 'Desvelado', avatarUrl: data?.avatar_url, criadoEm: data?.criado_em, atualizadoEm: data?.atualizado_em };
+    return {
+      userId: user.id,
+      nome:
+        data?.nome ||
+        user.user_metadata.full_name ||
+        user.user_metadata.name ||
+        user.user_metadata.nome ||
+        user.email?.split('@')[0] ||
+        'Desvelado',
+      avatarUrl:
+        data?.avatar_url ||
+        user.user_metadata.avatar_url ||
+        user.user_metadata.picture ||
+        undefined,
+      criadoEm: data?.criado_em,
+      atualizadoEm: data?.atualizado_em
+    };
   },
   async atualizarPerfil(profile: Pick<UserProfile, 'nome' | 'avatarUrl'>) {
     const { data: { user } } = await requireClient().auth.getUser();
