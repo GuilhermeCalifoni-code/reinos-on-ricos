@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, Contador, MapaNarrativo, TokenMapa, Cena, Handout } from '../types/campaign';
+import {
+  isLegacyMockCampaignId,
+  removeLegacyMockAdversaries,
+  removeLegacyMockCampaignContent,
+  removeLegacyMockCampaigns,
+  removeLegacyMockClues,
+  removeLegacyMockLocations,
+  removeLegacyMockLore,
+  removeLegacyMockNotes,
+  removeLegacyMockNpcs,
+  removeLegacyMockSessions
+} from './runtimeDataSanitizer';
 const STORAGE_KEYS = {
   CAMPANHAS: 'reinos_oniricos_campanhas_v2',
   SESSOES: 'reinos_oniricos_sessoes_v2',
@@ -21,7 +33,7 @@ export function useCampaignStorage() {
   const [campanhas, setCampanhas] = useState<Campanha[]>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.CAMPANHAS);
-      return salvo ? JSON.parse(salvo) : [];
+      return salvo ? removeLegacyMockCampaigns(JSON.parse(salvo)) : [];
     } catch {
       return [];
     }
@@ -30,7 +42,7 @@ export function useCampaignStorage() {
   const [campanhaAtivaId, setCampanhaAtivaId] = useState<string | null>(() => {
     try {
       const salvo = localStorage.getItem(STORAGE_KEYS.ATIVA_ID);
-      return salvo || null;
+      return salvo && !isLegacyMockCampaignId(salvo) ? salvo : null;
     } catch {
       return null;
     }
@@ -100,19 +112,19 @@ export function useCampaignStorage() {
   });
 
   const [contadores, setContadores] = useState<Contador[]>(() => {
-    try { const salvo = localStorage.getItem(STORAGE_KEYS.CONTADORES); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.CONTADORES); return salvo ? removeLegacyMockCampaignContent(JSON.parse(salvo)) : []; } catch { return []; }
   });
   const [mapas, setMapas] = useState<MapaNarrativo[]>(() => {
-    try { const salvo = localStorage.getItem(STORAGE_KEYS.MAPAS); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.MAPAS); return salvo ? removeLegacyMockCampaignContent(JSON.parse(salvo)) : []; } catch { return []; }
   });
   const [tokensMapa, setTokensMapa] = useState<TokenMapa[]>(() => {
-    try { const salvo = localStorage.getItem(STORAGE_KEYS.TOKENS_MAPA); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.TOKENS_MAPA); return salvo ? removeLegacyMockCampaignContent(JSON.parse(salvo)) : []; } catch { return []; }
   });
   const [cenas, setCenas] = useState<Cena[]>(() => {
-    try { const salvo = localStorage.getItem(STORAGE_KEYS.CENAS); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.CENAS); return salvo ? removeLegacyMockCampaignContent(JSON.parse(salvo)) : []; } catch { return []; }
   });
   const [handouts, setHandouts] = useState<Handout[]>(() => {
-    try { const salvo = localStorage.getItem(STORAGE_KEYS.HANDOUTS); return salvo ? JSON.parse(salvo) : []; } catch { return []; }
+    try { const salvo = localStorage.getItem(STORAGE_KEYS.HANDOUTS); return salvo ? removeLegacyMockCampaignContent(JSON.parse(salvo)) : []; } catch { return []; }
   });
 
   // Salvar no localStorage
