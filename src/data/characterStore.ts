@@ -1,7 +1,6 @@
 // Armazenamento e Gerenciamento Local de Personagens
 import { useState, useEffect, useCallback } from 'react';
 import { Personagem } from '../types/character';
-import { PERSONAGENS_PRE_PRONTOS } from './presetCharacters';
 import { TABELA_PROGRESSAO } from '../rules/rulesData';
 import { 
   calcularResistencia, 
@@ -26,7 +25,7 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
     } catch (e) {
       console.error('Erro ao ler personagens do storage:', e);
     }
-    return PERSONAGENS_PRE_PRONTOS;
+    return [];
   });
 
   const [personagemAtivoId, setPersonagemAtivoId] = useState<string>(() => {
@@ -36,7 +35,7 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
     } catch (e) {
       console.error('Erro ao ler ID do personagem ativo:', e);
     }
-    return PERSONAGENS_PRE_PRONTOS[0]?.id || '';
+    return '';
   });
 
 
@@ -161,9 +160,6 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
   const excluirPersonagem = useCallback((id: string) => {
     setPersonagens(prev => {
       const filtrados = prev.filter(p => p.id !== id);
-      if (filtrados.length === 0) {
-        return PERSONAGENS_PRE_PRONTOS;
-      }
       return filtrados;
     });
 
@@ -172,7 +168,7 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
       if (restantes.length > 0) {
         setPersonagemAtivoId(restantes[0].id);
       } else {
-        setPersonagemAtivoId(PERSONAGENS_PRE_PRONTOS[0].id);
+        setPersonagemAtivoId('');
       }
     }
 
@@ -184,11 +180,6 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
       recebidos.forEach(item => porId.set(item.id, item));
       return Array.from(porId.values());
     });
-  }, []);
-
-  const restaurarExemplos = useCallback(() => {
-    setPersonagens(PERSONAGENS_PRE_PRONTOS);
-    setPersonagemAtivoId(PERSONAGENS_PRE_PRONTOS[0].id);
   }, []);
 
   const exportarJSON = useCallback((personagem: Personagem) => {
@@ -234,7 +225,6 @@ export function useCharacterStorage(mesaCodigo: string = 'ONIRICO-01') {
     duplicarPersonagem,
     excluirPersonagem,
     mesclarPersonagens,
-    restaurarExemplos,
     exportarJSON,
     importarJSON
   };
