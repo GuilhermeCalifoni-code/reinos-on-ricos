@@ -41,7 +41,7 @@ const premiumFeatures = [
     text: 'Mapas, handouts, modelos de campanha e materiais prontos para levar à mesa.'
   },
   {
-    icon: WandSparkles,
+    icon: Sparkles,
     title: 'Conteúdo antecipado',
     text: 'Acesso antecipado a recursos, playtests e novidades do Reinos Oníricos.'
   },
