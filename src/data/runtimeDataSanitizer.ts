@@ -22,3 +22,4 @@ export const removeLegacyMockCharacters = (items: Personagem[]) =>
   items.filter(item => !MOCK_CHARACTER_IDS.has(item.id) && (!item.campaignId || !MOCK_CAMPAIGN_IDS.has(item.campaignId)));
 
 export const isLegacyMockCampaignId = (id?: string | null) => Boolean(id && MOCK_CAMPAIGN_IDS.has(id));
+export const isLegacyMockCharacterId = (id?: string | null) => Boolean(id && MOCK_CHARACTER_IDS.has(id));
