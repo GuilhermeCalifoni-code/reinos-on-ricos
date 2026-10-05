@@ -827,6 +827,12 @@ export default function App() {
             setViewAtiva(v);
           }}
           onNovaCampanha={handleIniciarCriacaoCampanha}
+          onAbrirMesa={() => {
+            const alvo = campanhaAtiva || campanhas[0];
+            if (alvo) handleContinuarCampanha(alvo);
+          }}
+          temCampanha={campanhas.length > 0}
+          onSair={handleTrocarSessao}
         />}
         {/* 10. HEADER (Minimalista, Fundo #0B0B0B, Borda #292929) */}
         {viewAtiva !== 'modo_mesa' && viewAtiva !== 'dashboard' && viewAtiva !== 'campanhas' && <Header
