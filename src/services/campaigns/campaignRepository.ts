@@ -19,7 +19,24 @@ export const campaignRepository = {
     }
     return rows.map((row: any) => mapMember(row, nomes.get(row.user_id)));
   },
-  async criar(input: { nome: string; descricao: string; imagemUrl: string; tipo: CampanhaTipo }) { const { data, error } = await client().rpc('create_campaign', { p_nome: input.nome, p_descricao: input.descricao, p_imagem_url: input.imagemUrl, p_tipo: input.tipo }); if (error) throw error; const { data: row, error: readError } = await client().from('campaigns').select('*').eq('id', data).single(); if (readError) throw readError; return mapCampaign(row); },
+  async criar(input: { nome: string; descricao: string; imagemUrl: string; tipo: CampanhaTipo }) {
+    const { data, error } = await client().rpc('create_campaign', {
+      p_nome: input.nome,
+      p_descricao: input.descricao,
+      p_imagem_url: input.imagemUrl,
+      p_tipo: input.tipo
+    });
+    if (error) {
+      const match = /PROJECT_LIMIT_REACHED:(\d+)/.exec(error.message || '');
+      if (match) {
+        throw new Error(`Você atingiu o limite de ${match[1]} projetos de mesa do seu nível. Campanhas, one-shots e playtests compartilham essa cota.`);
+      }
+      throw error;
+    }
+    const { data: row, error: readError } = await client().from('campaigns').select('*').eq('id', data).single();
+    if (readError) throw readError;
+    return mapCampaign(row);
+  },
   async entrarComCodigo(codigo: string) { const { data, error } = await client().rpc('join_campaign_by_code', { p_codigo: codigo.trim().toUpperCase() }); if (error) throw error; return data as string; },
   async regenerarCodigo(campaignId: string) { const { data, error } = await client().rpc('regenerate_campaign_invite', { p_campaign_id: campaignId }); if (error) throw error; return data as string; },
   async vincularPersonagem(campaignId: string, characterId: string) { const { error } = await client().rpc('link_own_character_to_membership', { p_campaign_id: campaignId, p_character_id: characterId }); if (error) throw error; },
