@@ -1,111 +1,245 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import {
+  ArrowRight,
+  FileUp,
+  Grid2X2,
+  Heart,
+  List,
+  Plus,
+  Search,
+  Sparkles,
+  Sun,
+  TriangleAlert,
+  Users
+} from 'lucide-react';
 import { Personagem } from '../types/character';
 
 interface CharactersListViewProps {
   personagens: Personagem[];
+  currentUserId?: string;
   onSelecionarPersonagem: (p: Personagem) => void;
   onNovoPersonagem: () => void;
   onImportarJSON: () => void;
 }
 
+type Filter = 'todos' | 'meus' | 'em_campanha' | 'sem_campanha';
+type LayoutMode = 'grid' | 'list';
+
+const conceitoLabel = (value: string) => value?.trim() || 'Desvelado';
+
 export const CharactersListView: React.FC<CharactersListViewProps> = ({
   personagens,
+  currentUserId,
   onSelecionarPersonagem,
   onNovoPersonagem,
   onImportarJSON
 }) => {
+  const [busca, setBusca] = useState('');
+  const [filtro, setFiltro] = useState<Filter>('todos');
+  const [layout, setLayout] = useState<LayoutMode>('grid');
+
+  const isMine = (personagem: Personagem) => {
+    if (!currentUserId) return true;
+    return !personagem.ownerUserId || personagem.ownerUserId === currentUserId;
+  };
+
+  const contagens = useMemo(() => ({
+    todos: personagens.length,
+    meus: personagens.filter(isMine).length,
+    em_campanha: personagens.filter(personagem => Boolean(personagem.campaignId)).length,
+    sem_campanha: personagens.filter(personagem => !personagem.campaignId).length
+  }), [personagens, currentUserId]);
+
+  const filtrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+
+    return personagens
+      .filter(personagem => {
+        const texto = `${personagem.nome} ${personagem.conceito} ${personagem.jogador || ''}`.toLowerCase();
+        const buscaOk = !termo || texto.includes(termo);
+
+        const filtroOk =
+          filtro === 'todos'
+            ? true
+            : filtro === 'meus'
+              ? isMine(personagem)
+              : filtro === 'em_campanha'
+                ? Boolean(personagem.campaignId)
+                : !personagem.campaignId;
+
+        return buscaOk && filtroOk;
+      })
+      .sort((a, b) => {
+        const mineA = isMine(a) ? 1 : 0;
+        const mineB = isMine(b) ? 1 : 0;
+        if (mineA !== mineB) return mineB - mineA;
+
+        const dateA = Date.parse(a.atualizadoEm || a.criadoEm || '') || 0;
+        const dateB = Date.parse(b.atualizadoEm || b.criadoEm || '') || 0;
+        if (dateA !== dateB) return dateB - dateA;
+
+        return a.nome.localeCompare(b.nome, 'pt-BR');
+      });
+  }, [busca, filtro, personagens, currentUserId]);
+
+  const filterItems: Array<{ id: Filter; label: string }> = [
+    { id: 'todos', label: 'Todos' },
+    { id: 'meus', label: 'Meus Desvelados' },
+    { id: 'em_campanha', label: 'Em campanha' },
+    { id: 'sem_campanha', label: 'Sem campanha' }
+  ];
+
   return (
-    <div className="w-full max-w-7xl mx-auto px-8 py-10">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between pb-8 border-b border-[var(--ro-line)] gap-4">
+    <section className="ro-characters">
+      <img className="ro-characters__frame" src="/ro-login-frame.webp" alt="" aria-hidden="true" />
+
+      <header className="ro-characters__hero">
         <div>
-          <h1 className="font-serif text-3xl sm:text-4xl text-[var(--ro-paper)] font-normal tracking-tight">
-            Personagens Desvelados
-          </h1>
-          <p className="text-sm text-[var(--ro-ash)] mt-2">
-            Agentes conscientes da fronteira entre a Vigília e o Sonhar.
-          </p>
+          <p className="ro-eyebrow">Arquivo pessoal</p>
+          <h1>Personagens Desvelados</h1>
+          <p>Agentes conscientes da fronteira entre a Vigília e o Sonhar.</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onImportarJSON}
-            className="px-4 py-2 bg-[var(--ro-surface)] hover:bg-[var(--ro-surface-raised)] border border-[var(--ro-line)] text-[var(--ro-paper-muted)] text-xs font-mono uppercase tracking-wider rounded-sm transition-colors"
-          >
-            Importar (.json)
+        <div className="ro-characters__hero-actions">
+          <button type="button" className="ro-characters__secondary-action" onClick={onImportarJSON}>
+            <FileUp /> Importar (.json)
           </button>
-          <button
-            onClick={onNovoPersonagem}
-            className="px-4 py-2 bg-[var(--ro-copper)] hover:bg-[var(--ro-copper-bright)] text-[var(--ro-on-accent)] text-xs font-medium uppercase tracking-wider rounded-sm transition-colors"
-          >
-            + Novo Desvelado
+          <button type="button" className="ro-characters__primary-action" onClick={onNovoPersonagem}>
+            <Plus /> Novo Desvelado
+          </button>
+        </div>
+      </header>
+
+      <div className="ro-characters__toolbar">
+        <label className="ro-characters__search">
+          <Search />
+          <input
+            value={busca}
+            onChange={event => setBusca(event.target.value)}
+            placeholder="Buscar personagens..."
+            aria-label="Buscar personagens"
+          />
+        </label>
+
+        <div className="ro-characters__filters" role="group" aria-label="Filtrar personagens">
+          {filterItems.map(item => (
+            <button
+              key={item.id}
+              type="button"
+              className={filtro === item.id ? 'is-active' : ''}
+              onClick={() => setFiltro(item.id)}
+            >
+              {item.label}
+              <span>{contagens[item.id]}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="ro-characters__view-options">
+          <span>{filtrados.length} {filtrados.length === 1 ? 'personagem' : 'personagens'}</span>
+          <button type="button" className={layout === 'grid' ? 'is-active' : ''} onClick={() => setLayout('grid')} aria-label="Visualização em grade">
+            <Grid2X2 />
+          </button>
+          <button type="button" className={layout === 'list' ? 'is-active' : ''} onClick={() => setLayout('list')} aria-label="Visualização em lista">
+            <List />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-8">
-        {personagens.map((pj) => (
-          <div
-            key={pj.id}
-            onClick={() => onSelecionarPersonagem(pj)}
-            className="bg-[var(--ro-surface)] border border-[var(--ro-line)] hover:border-[var(--ro-line-strong)] p-6 rounded-sm cursor-pointer transition-all flex flex-col justify-between group"
-          >
-            <div>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-serif text-2xl text-[var(--ro-paper)] group-hover:text-[var(--ro-copper)] transition-colors font-normal">
-                    {pj.nome}
-                  </h3>
-                  <p className="text-xs font-mono text-[var(--ro-ash)] mt-1 uppercase tracking-wider">
-                    {pj.conceito} · Nível {pj.nivel}
-                  </p>
-                </div>
-                <span className="text-xs font-mono px-2 py-0.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[var(--ro-copper)]">
-                  {pj.jogador || 'Jogador'}
-                </span>
-              </div>
-
-              {/* Atributos Chave */}
-              <div className="grid grid-cols-4 gap-2 pt-6 pb-2 text-center text-xs font-mono">
-                <div className="p-2 bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm">
-                  <div className="text-[10px] text-[var(--ro-ash)] uppercase">Cor</div>
-                  <div className="text-[var(--ro-paper)] font-bold mt-0.5">{pj.atributos.corpo}</div>
-                </div>
-                <div className="p-2 bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm">
-                  <div className="text-[10px] text-[var(--ro-ash)] uppercase">Men</div>
-                  <div className="text-[var(--ro-paper)] font-bold mt-0.5">{pj.atributos.mente}</div>
-                </div>
-                <div className="p-2 bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm">
-                  <div className="text-[10px] text-[var(--ro-ash)] uppercase">Von</div>
-                  <div className="text-[var(--ro-paper)] font-bold mt-0.5">{pj.atributos.vontade}</div>
-                </div>
-                <div className="p-2 bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm">
-                  <div className="text-[10px] text-[var(--ro-ash)] uppercase">Vín</div>
-                  <div className="text-[var(--ro-paper)] font-bold mt-0.5">{pj.atributos.vinculo}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-5 mt-5 border-t border-[var(--ro-line)] flex items-center justify-between text-xs font-mono">
-              <div className="text-[var(--ro-paper-muted)]">
-                <span className="text-[var(--ro-ash)] text-[10px] uppercase block">Vida</span>
-                <span>{pj.vidaAtual}/{pj.vidaMaxima}</span>
-              </div>
-
-              <div className="text-[var(--ro-paper-muted)]">
-                <span className="text-[var(--ro-ash)] text-[10px] uppercase block">Foco</span>
-                <span>{pj.focoAtual}/{pj.focoMaximo}</span>
-              </div>
-
-              <div className="text-[var(--ro-paper-muted)]">
-                <span className="text-[var(--ro-ash)] text-[10px] uppercase block">Ruptura</span>
-                <span className={pj.ruptura >= 4 ? 'text-[var(--ro-paper)]' : 'text-[var(--ro-copper)]'}>
-                  {pj.ruptura}/6
-                </span>
-              </div>
-            </div>
+      {filtrados.length === 0 ? (
+        <div className="ro-characters__empty">
+          <div className="ro-characters__empty-sigil">
+            <img src="/ro-mark.svg" alt="" />
           </div>
-        ))}
+          <p className="ro-eyebrow">Arquivo sem registros</p>
+          <h2>{personagens.length ? 'Nenhum Desvelado corresponde ao filtro.' : 'O primeiro Desvelado ainda não foi registrado.'}</h2>
+          <p>
+            {personagens.length
+              ? 'Tente outro termo de busca ou volte para Todos.'
+              : 'Crie uma ficha para dar forma a quem atravessa a fronteira entre a Vigília e o Sonhar.'}
+          </p>
+          {!personagens.length && (
+            <button type="button" className="ro-characters__primary-action" onClick={onNovoPersonagem}>
+              <Plus /> Criar Desvelado
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className={`ro-characters__collection ${layout === 'list' ? 'is-list' : ''}`}>
+          {filtrados.map((personagem, index) => {
+            const mine = isMine(personagem);
+            const emCampanha = Boolean(personagem.campaignId);
+
+            return (
+              <article
+                key={personagem.id}
+                className={`ro-character-card ${index === 0 && layout === 'grid' ? 'is-featured' : ''}`}
+              >
+                <button
+                  type="button"
+                  className="ro-character-card__visual"
+                  onClick={() => onSelecionarPersonagem(personagem)}
+                  aria-label={`Abrir ficha de ${personagem.nome}`}
+                >
+                  <span className="ro-character-card__orb" aria-hidden="true">
+                    <span>{personagem.nome.slice(0, 1).toUpperCase()}</span>
+                  </span>
+                  <span className="ro-character-card__sigil" aria-hidden="true">✦</span>
+                  <span className="ro-character-card__visual-lines" aria-hidden="true" />
+
+                  <span className="ro-character-card__ownership">
+                    {mine ? <><Users /> Meu Desvelado</> : <><Users /> Compartilhado</>}
+                  </span>
+
+                  <span className={`ro-character-card__campaign ${emCampanha ? 'is-linked' : ''}`}>
+                    {emCampanha ? 'Em campanha' : 'Sem campanha'}
+                  </span>
+                </button>
+
+                <div className="ro-character-card__body">
+                  <div className="ro-character-card__heading">
+                    <div>
+                      <h2>{personagem.nome}</h2>
+                      <p>{conceitoLabel(personagem.conceito)} <span>•</span> Nível {personagem.nivel}</p>
+                    </div>
+                    <span className="ro-character-card__player">{personagem.jogador || 'Jogador'}</span>
+                  </div>
+
+                  <div className="ro-character-card__attributes" aria-label={`Atributos de ${personagem.nome}`}>
+                    <div><small>Cor</small><strong>{personagem.atributos.corpo}</strong></div>
+                    <div><small>Men</small><strong>{personagem.atributos.mente}</strong></div>
+                    <div><small>Von</small><strong>{personagem.atributos.vontade}</strong></div>
+                    <div><small>Vín</small><strong>{personagem.atributos.vinculo}</strong></div>
+                  </div>
+
+                  <div className="ro-character-card__resources">
+                    <div>
+                      <Heart />
+                      <span><small>Vida</small><strong>{personagem.vidaAtual}/{personagem.vidaMaxima}</strong></span>
+                    </div>
+                    <div>
+                      <Sun />
+                      <span><small>Foco</small><strong>{personagem.focoAtual}/{personagem.focoMaximo}</strong></span>
+                    </div>
+                    <div className={personagem.ruptura >= 4 ? 'is-alert' : ''}>
+                      <TriangleAlert />
+                      <span><small>Ruptura</small><strong>{personagem.ruptura}/6</strong></span>
+                    </div>
+                  </div>
+
+                  <button type="button" className="ro-character-card__open" onClick={() => onSelecionarPersonagem(personagem)}>
+                    Abrir ficha <ArrowRight />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="ro-characters__watermark" aria-hidden="true">
+        <Sparkles />
       </div>
-    </div>
+    </section>
   );
 };
