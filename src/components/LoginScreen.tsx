@@ -237,7 +237,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         </section>
 
         <section className="login-onirico__access-column">
-          <div className="login-onirico__panel">
+          <div className={`login-onirico__panel login-onirico__panel--${modo}`}>
             {modo !== 'nova_senha' && (
               <div className="login-onirico__switch" role="tablist" aria-label="Forma de acesso">
                 <button type="button" onClick={() => trocarModo('entrar')} className={modo === 'entrar' ? 'is-active' : ''}>Entrar</button>
