@@ -25,4 +25,4 @@ export const IMAGENS_ATMOSFERICAS_PREDEFINIDAS = [
     url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80',
     descricao: 'Porta entreaberta com lâmpada piscando em ritmo anômalo.'
   }
-] as const;
+];
