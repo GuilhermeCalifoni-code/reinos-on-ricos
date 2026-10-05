@@ -7,7 +7,7 @@ import { calcularResistencia, calcularDefesa, calcularVidaMaxima, validarDistrib
 interface CreateCharacterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCriar: (novo: Personagem) => void;
+  onCriar: (novo: Personagem) => void | Promise<void>;
 }
 
 export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
@@ -37,6 +37,8 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   });
 
   const [ancoragem, setAncoragem] = useState('');
+  const [salvando, setSalvando] = useState(false);
+  const [erroSalvar, setErroSalvar] = useState('');
 
   if (!isOpen) return null;
 
@@ -59,7 +61,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
     setDominios(prev => ({ ...prev, [dom]: val }));
   };
 
-  const handleCriar = () => {
+  const handleCriar = async () => {
     if (!fichaValida) return;
     const resistencia = calcularResistencia(atributos.corpo);
     const defesa = calcularDefesa(atributoPrincipal, atributos, nivel).defesa;
@@ -106,8 +108,16 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
       atualizadoEm: new Date().toISOString()
     };
 
-    onCriar(novoPersonagem);
-    onClose();
+    setSalvando(true);
+    setErroSalvar('');
+    try {
+      await onCriar(novoPersonagem);
+      onClose();
+    } catch (error: any) {
+      setErroSalvar(error?.message || 'Não foi possível criar o personagem.');
+    } finally {
+      setSalvando(false);
+    }
   };
 
   return (
@@ -324,6 +334,12 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
 
         </div>
 
+        {erroSalvar ? (
+          <div className="mx-5 mb-0 rounded border border-amber-700/60 bg-amber-950/30 px-3 py-2 text-[11px] text-amber-100">
+            {erroSalvar}
+          </div>
+        ) : null}
+
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 px-5 py-3 border-t border-slate-800 bg-[#161b26] shrink-0">
           <button
@@ -336,11 +352,11 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
           <button
             type="button"
             onClick={handleCriar}
-            disabled={!fichaValida}
+            disabled={!fichaValida || salvando}
             className={`px-4 py-1.5 text-slate-950 font-bold bg-cyan-400 rounded shadow-[0_0_12px_rgba(6,182,212,0.3)] flex items-center gap-1.5 transition ${fichaValida ? 'hover:bg-cyan-300' : 'opacity-50 cursor-not-allowed'}`}
           >
             <Check className="w-4 h-4" />
-            Criar Desvelado
+            {salvando ? 'Salvando…' : 'Criar Desvelado'}
           </button>
         </div>
 

@@ -84,7 +84,13 @@ export const characterRepository = {
       percepcao_onirica_notas: personagem.percepcaoOniricaNotas || '',
       anotacoes_gerais: personagem.anotacoesGerais || ''
     }, { onConflict: 'id' }).select().single();
-    if (error) throw error;
+    if (error) {
+      const match = /CHARACTER_LIMIT_REACHED:(\d+)/.exec(error.message || '');
+      if (match) {
+        throw new Error(`Você atingiu o limite de ${match[1]} personagens do seu nível. Exclua uma ficha ou aumente seu nível no Clube da Vigília.`);
+      }
+      throw error;
+    }
     return mapCharacter(data);
   },
 

@@ -7,10 +7,9 @@ export interface CommunityBenefit {
   group: string;
 }
 
-export interface CommunityKit {
-  nome: string;
-  descricao: string;
-  itens: string[];
+export interface CommunityPlanLimits {
+  characters: number;
+  projects: number;
 }
 
 export interface CommunityPlan {
@@ -26,7 +25,8 @@ export interface CommunityPlan {
   badge?: string;
   permissions: string[];
   benefits: CommunityBenefit[];
-  kit: CommunityKit;
+  limits: CommunityPlanLimits;
+  digitalEntitlements: string[];
   ordem: number;
 }
 
@@ -56,7 +56,11 @@ const mapPlan = (row: any): CommunityPlan => ({
   badge: row.badge || undefined,
   permissions: Array.isArray(row.permissions) ? row.permissions : [],
   benefits: Array.isArray(row.benefits) ? row.benefits : [],
-  kit: row.kit || { nome: '', descricao: '', itens: [] },
+  limits: {
+    characters: Number(row.limits?.characters || 0),
+    projects: Number(row.limits?.projects || 0)
+  },
+  digitalEntitlements: Array.isArray(row.digital_entitlements) ? row.digital_entitlements : [],
   ordem: Number(row.ordem || 0)
 });
 

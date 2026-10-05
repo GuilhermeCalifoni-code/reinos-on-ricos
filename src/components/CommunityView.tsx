@@ -1,17 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Archive,
   ArrowRight,
   BadgeCheck,
   BookOpenText,
   Check,
   Crown,
+  FileDown,
+  FolderKanban,
   HeartHandshake,
-  LockKeyhole,
-  Package,
+  Library,
   Shield,
   Sparkles,
   Star,
+  UserRound,
   Users
 } from 'lucide-react';
 import {
@@ -28,19 +29,18 @@ const money = (cents: number) =>
     minimumFractionDigits: 2
   }).format(cents / 100);
 
-const MATRIX = [
-  { key: 'community.read_public', label: 'Comunidade pública' },
-  { key: 'community.post', label: 'Publicar e interagir' },
-  { key: 'community.private_lounge', label: 'Salão reservado' },
-  { key: 'community.supporter_badge', label: 'Selo de apoiador' },
-  { key: 'content.early_access', label: 'Conteúdo antecipado' },
-  { key: 'community.vote_roadmap', label: 'Voto no roadmap' },
-  { key: 'content.playtest_priority', label: 'Prioridade em playtests' },
-  { key: 'content.hires_assets', label: 'Assets em alta resolução' },
-  { key: 'creator.publish_pack', label: 'Publicar packs' },
-  { key: 'kits.full_archive', label: 'Arquivo premium completo' },
-  { key: 'creator.featured_profile', label: 'Criador em destaque' },
-  { key: 'community.name_credit', label: 'Crédito de apoiador' }
+const MATRIX: Array<
+  | { type: 'permission'; key: string; label: string }
+  | { type: 'limit'; key: 'characters' | 'projects'; label: string }
+> = [
+  { type: 'limit', key: 'characters', label: 'Personagens salvos' },
+  { type: 'limit', key: 'projects', label: 'Campanhas / one-shots / playtests' },
+  { type: 'permission', key: 'downloads.rulebook_pdf', label: 'Livro Básico em PDF' },
+  { type: 'permission', key: 'downloads.adversary_book_pdf', label: 'Livro de Adversários em PDF' },
+  { type: 'permission', key: 'downloads.all_official_pdfs', label: 'Biblioteca oficial de PDFs' },
+  { type: 'permission', key: 'community.supporter_badge', label: 'Selo de apoiador' },
+  { type: 'permission', key: 'community.guardian_badge', label: 'Insígnia Guardião' },
+  { type: 'permission', key: 'community.name_credit', label: 'Crédito de apoiador' }
 ];
 
 const tierIcon = (plan: CommunityPlan) => {
@@ -55,7 +55,7 @@ export const CommunityView: React.FC = () => {
   const [billing, setBilling] = useState<BillingCycle>('monthly');
   const [loading, setLoading] = useState(true);
   const [catalogError, setCatalogError] = useState('');
-  const [activePlanSlug, setActivePlanSlug] = useState<string | null>(null);
+  const [activePlanSlug, setActivePlanSlug] = useState<string>('aberto');
   const [interestPlan, setInterestPlan] = useState<string | null>(null);
   const [interestMessage, setInterestMessage] = useState('');
   const [showMatrix, setShowMatrix] = useState(false);
@@ -70,7 +70,7 @@ export const CommunityView: React.FC = () => {
       .then(([catalog, membership]) => {
         if (!alive) return;
         setPlans(catalog);
-        setActivePlanSlug(membership?.plan.slug || null);
+        setActivePlanSlug(membership?.plan.slug || 'aberto');
       })
       .catch((error: any) => {
         if (!alive) return;
@@ -82,11 +82,6 @@ export const CommunityView: React.FC = () => {
       alive = false;
     };
   }, []);
-
-  const premiumPlans = useMemo(
-    () => plans.filter(plan => plan.rank > 0),
-    [plans]
-  );
 
   const featuredPlan = plans.find(plan => plan.destaque);
 
@@ -103,7 +98,7 @@ export const CommunityView: React.FC = () => {
     try {
       await communityService.entrarListaInteresse(plan.id, billing);
       setInterestMessage(
-        `${plan.nome} reservado para seu interesse. Quando o checkout abrir, este nível já estará marcado para você.`
+        `${plan.nome} registrado. Quando o checkout for conectado, sua preferência já estará salva.`
       );
     } catch (error: any) {
       setInterestMessage(error?.message || 'Não foi possível registrar seu interesse agora.');
@@ -117,30 +112,30 @@ export const CommunityView: React.FC = () => {
       <header className="ro-community-v3__hero">
         <div className="ro-community-v3__hero-art" aria-hidden="true" />
         <div className="ro-community-v3__hero-copy">
-          <p className="ro-eyebrow">Comunidade Reinos Oníricos</p>
-          <h1>Entre para a Vigília.<br /><em>Ajude o Sonhar a crescer.</em></h1>
+          <p className="ro-eyebrow">Clube da Vigília</p>
+          <h1>Mais espaço para suas mesas.<br /><em>Mais Reinos Oníricos na sua biblioteca.</em></h1>
           <p>
-            Uma comunidade para encontrar mesas, compartilhar criações, acompanhar o desenvolvimento
-            e receber materiais que realmente economizam preparação. O jogo essencial continua aberto;
-            o apoio pago existe para ampliar o universo, não para bloquear a mesa.
+            Os níveis de apoio foram desenhados para uma equipe pequena conseguir sustentar de verdade:
+            você recebe capacidade maior na plataforma, PDFs oficiais e identidade de apoiador. Sem promessa
+            de kit mensal, conteúdo semanal ou benefício que dependa de uma produção impossível de manter.
           </p>
 
           <div className="ro-community-v3__hero-actions">
             <button type="button" className="is-primary" onClick={scrollToPlans}>
-              Ver níveis de apoio <ArrowRight />
+              Ver níveis <ArrowRight />
             </button>
-            <span><Shield /> Regras, fichas, campanhas e mesa ao vivo continuam no acesso base.</span>
+            <span><Shield /> O Compêndio online e o núcleo necessário para conhecer o sistema continuam no acesso base.</span>
           </div>
         </div>
 
         <aside className="ro-community-v3__manifest">
           <HeartHandshake />
-          <p className="ro-eyebrow">O pacto da comunidade</p>
+          <p className="ro-eyebrow">Princípio do clube</p>
           <blockquote>
-            “Apoiar Reinos Oníricos deve entregar mais mundo para a mesa — nunca tirar o que já permite jogar.”
+            “A assinatura aumenta capacidade e biblioteca. Ela não cria uma dívida infinita de conteúdo para o projeto.”
           </blockquote>
           {featuredPlan ? (
-            <small><Sparkles /> Mais escolhido: {featuredPlan.nome}</small>
+            <small><Sparkles /> Recomendado para Mestres: {featuredPlan.nome}</small>
           ) : null}
         </aside>
       </header>
@@ -148,15 +143,15 @@ export const CommunityView: React.FC = () => {
       <section className="ro-community-v3__promise">
         <article>
           <BookOpenText />
-          <div><strong>O livro não vira paywall</strong><span>Compêndio e regras essenciais continuam acessíveis.</span></div>
+          <div><strong>Compêndio para todos</strong><span>As regras continuam consultáveis dentro do sistema.</span></div>
         </article>
         <article>
-          <Users />
-          <div><strong>A comunidade começa aberta</strong><span>Descoberta de mesas, posts e arquivo público para todos.</span></div>
+          <FolderKanban />
+          <div><strong>Limite simples</strong><span>Campanha, one-shot e playtest usam a mesma cota de projetos.</span></div>
         </article>
         <article>
-          <Package />
-          <div><strong>Você paga por expansão</strong><span>Kits, arquivo premium, antecipação e ferramentas de criador.</span></div>
+          <FileDown />
+          <div><strong>PDF como benefício real</strong><span>Assinantes levam os livros oficiais para leitura offline.</span></div>
         </article>
       </section>
 
@@ -164,7 +159,7 @@ export const CommunityView: React.FC = () => {
         <div className="ro-community-v3__section-head">
           <div>
             <p className="ro-eyebrow">Níveis da comunidade</p>
-            <h2>Escolha até onde quer atravessar.</h2>
+            <h2>Escolha o espaço que sua mesa precisa.</h2>
           </div>
 
           <div className="ro-community-v3__billing" role="group" aria-label="Periodicidade">
@@ -217,6 +212,17 @@ export const CommunityView: React.FC = () => {
                     </small>
                   ) : null}
 
+                  <div className="ro-community-v3__capacity">
+                    <div>
+                      <UserRound />
+                      <span><strong>{plan.limits.characters}</strong><small>personagens</small></span>
+                    </div>
+                    <div>
+                      <FolderKanban />
+                      <span><strong>{plan.limits.projects}</strong><small>projetos de mesa</small></span>
+                    </div>
+                  </div>
+
                   <div className="ro-community-v3__benefits">
                     {plan.benefits.map(benefit => (
                       <div key={benefit.key}>
@@ -229,14 +235,6 @@ export const CommunityView: React.FC = () => {
                     ))}
                   </div>
 
-                  <div className="ro-community-v3__kit-mini">
-                    <Package />
-                    <span>
-                      <small>{isFree ? 'Incluído' : 'Kit do nível'}</small>
-                      <strong>{plan.kit.nome}</strong>
-                    </span>
-                  </div>
-
                   <button
                     type="button"
                     className={plan.destaque ? 'is-primary' : ''}
@@ -246,7 +244,7 @@ export const CommunityView: React.FC = () => {
                     {isCurrent
                       ? 'Seu nível atual'
                       : isFree
-                        ? 'Acesso base incluído'
+                        ? 'Acesso base'
                         : interestPlan === plan.slug
                           ? 'Registrando…'
                           : 'Quero este nível'}
@@ -263,46 +261,42 @@ export const CommunityView: React.FC = () => {
         ) : null}
 
         <p className="ro-community-v3__checkout-note">
-          Os preços, níveis e permissões já são dados reais do sistema. O checkout ainda não está conectado;
-          por enquanto o botão registra seu interesse sem realizar cobrança.
+          Os limites já são regras reais da plataforma. O checkout ainda não realiza cobrança; por enquanto o botão apenas registra interesse.
         </p>
       </section>
 
-      <section className="ro-community-v3__kits">
+      <section className="ro-community-v3__library">
         <div className="ro-community-v3__section-head">
           <div>
-            <p className="ro-eyebrow">Drops para a mesa</p>
-            <h2>Kits que justificam a assinatura.</h2>
+            <p className="ro-eyebrow">Biblioteca digital</p>
+            <h2>Benefícios que não exigem uma fábrica de conteúdo.</h2>
           </div>
-          <p>Não são “brindes” genéricos: cada nível foi desenhado para reduzir preparação e aumentar repertório.</p>
+          <p>
+            O projeto entrega o que já faz parte do próprio RPG. Quando um novo livro oficial existir, ele pode entrar na biblioteca sem criar uma obrigação mensal artificial.
+          </p>
         </div>
 
-        <div className="ro-community-v3__kit-grid">
-          {premiumPlans.map(plan => (
-            <article key={plan.id} className={plan.destaque ? 'is-featured' : ''}>
-              <div className="ro-community-v3__kit-art" aria-hidden="true">
-                <img
-                  src={
-                    plan.slug === 'guardiao'
-                      ? '/compendium/compendium-hero.webp'
-                      : plan.slug === 'circulo'
-                        ? '/compendium/compendium-dice.webp'
-                        : '/compendium/compendium-portal.webp'
-                  }
-                  alt=""
-                  loading="lazy"
-                />
-              </div>
-              <div className="ro-community-v3__kit-copy">
-                <p className="ro-eyebrow">{plan.nome}</p>
-                <h3>{plan.kit.nome}</h3>
-                <p>{plan.kit.descricao}</p>
-                <ul>
-                  {plan.kit.itens.map(item => <li key={item}><Check /> {item}</li>)}
-                </ul>
-              </div>
-            </article>
-          ))}
+        <div className="ro-community-v3__library-grid">
+          <article>
+            <div><BookOpenText /></div>
+            <p className="ro-eyebrow">Vigília+</p>
+            <h3>Livro Básico em PDF</h3>
+            <p>A versão digital oficial do livro de regras para consultar, estudar e levar para a mesa offline.</p>
+          </article>
+
+          <article>
+            <div><Users /></div>
+            <p className="ro-eyebrow">Círculo+</p>
+            <h3>Livro de Adversários em PDF</h3>
+            <p>O bestiário oficial entra na biblioteca a partir do Círculo, junto do Livro Básico.</p>
+          </article>
+
+          <article>
+            <div><Library /></div>
+            <p className="ro-eyebrow">Guardião</p>
+            <h3>Biblioteca oficial</h3>
+            <p>Acesso aos PDFs oficiais liberados para o clube, sem prometer uma frequência fixa de lançamentos.</p>
+          </article>
         </div>
       </section>
 
@@ -310,7 +304,7 @@ export const CommunityView: React.FC = () => {
         <section className="ro-community-v3__compare">
           <div className="ro-community-v3__section-head">
             <div>
-              <p className="ro-eyebrow">Permissões por nível</p>
+              <p className="ro-eyebrow">Comparação completa</p>
               <h2>Sem letras pequenas.</h2>
             </div>
             <button type="button" onClick={() => setShowMatrix(value => !value)}>
@@ -323,7 +317,7 @@ export const CommunityView: React.FC = () => {
               <table className="ro-community-v3__matrix">
                 <thead>
                   <tr>
-                    <th>Permissão</th>
+                    <th>Benefício / limite</th>
                     {plans.map(plan => <th key={plan.id}>{plan.nome}</th>)}
                   </tr>
                 </thead>
@@ -333,9 +327,11 @@ export const CommunityView: React.FC = () => {
                       <td>{item.label}</td>
                       {plans.map(plan => (
                         <td key={plan.id}>
-                          {communityService.temPermissao(plan, item.key)
-                            ? <Check aria-label="Incluído" />
-                            : <span aria-label="Não incluído">—</span>}
+                          {item.type === 'limit'
+                            ? <strong>{plan.limits[item.key]}</strong>
+                            : communityService.temPermissao(plan, item.key)
+                              ? <Check aria-label="Incluído" />
+                              : <span aria-label="Não incluído">—</span>}
                         </td>
                       ))}
                     </tr>
@@ -347,19 +343,32 @@ export const CommunityView: React.FC = () => {
         </section>
       ) : null}
 
+      <section className="ro-community-v3__quota-note">
+        <Shield />
+        <div>
+          <p className="ro-eyebrow">Como as cotas funcionam</p>
+          <h3>Nada é apagado automaticamente se você mudar de nível.</h3>
+          <p>
+            Personagens e projetos existentes continuam preservados. Se a conta ficar acima da cota do novo nível,
+            o sistema apenas bloqueia novas criações até você excluir algo ou voltar para um nível com mais espaço.
+            Campanhas, one-shots e playtests contam juntos como “projetos de mesa”.
+          </p>
+        </div>
+      </section>
+
       <section className="ro-community-v3__closing">
         <div>
           <p className="ro-eyebrow">Clube da Vigília</p>
-          <h2>Uma assinatura para financiar mais Reinos Oníricos — e devolver isso em conteúdo.</h2>
+          <h2>Um modelo que o projeto consegue cumprir daqui a um ano — não só no mês do lançamento.</h2>
           <p>
-            O objetivo é simples: manter o núcleo jogável para todos e transformar apoio em arte,
-            kits, ferramentas, testes e um arquivo cada vez maior.
+            A assinatura financia a plataforma e oferece algo objetivo em troca: espaço, livros digitais e reconhecimento.
+            O time não precisa fabricar um novo pacote toda semana para justificar a existência do plano.
           </p>
         </div>
         <div className="ro-community-v3__closing-seal">
           <Crown />
-          <strong>Sem paywall de regra</strong>
-          <small>O apoio compra expansão, não acesso ao básico.</small>
+          <strong>Sustentável por design</strong>
+          <small>Mais valor para o usuário sem criar uma operação impossível para a equipe.</small>
         </div>
       </section>
     </section>
