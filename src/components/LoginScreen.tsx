@@ -115,6 +115,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         return;
       }
 
+      if (modo === 'cadastro') {
+        const data = await authService.cadastrar(email, senha, nome || email.split('@')[0]);
+        if (data.session && data.user) await concluirAuth(data.user);
+        else setMensagem('Conta criada. Confirme seu e-mail para concluir o cadastro.');
+        return;
+      }
+
       const session = await authService.entrar(email, senha);
       if (session?.user) await concluirAuth(session.user);
     } catch (err: any) {
@@ -251,16 +258,73 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <div className="login-onirico__oauth-create">
                 {renderSocialButtons('cadastro')}
 
-                {erro && <p className="login-onirico__error" role="alert">{erro}</p>}
+                <div className="login-onirico__separator login-onirico__separator--compact">
+                  <span>ou crie com e-mail</span>
+                </div>
+
+                <form onSubmit={autenticar} className="login-onirico__form login-onirico__form--signup">
+                  <label>
+                    <span>Nome</span>
+                    <div className="login-onirico__field-control">
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c.8-4.2 3.1-6 7-6s6.2 1.8 7 6"/></svg>
+                      <input
+                        autoComplete="name"
+                        required
+                        value={nome}
+                        onChange={event => setNome(event.target.value)}
+                        placeholder="Como devemos chamar você?"
+                      />
+                    </div>
+                  </label>
+
+                  <label>
+                    <span>E-mail</span>
+                    <div className="login-onirico__field-control">
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6.5h18v11H3zM4 7l8 6 8-6" /></svg>
+                      <input
+                        type="email"
+                        autoComplete="email"
+                        required
+                        value={email}
+                        onChange={event => setEmail(event.target.value)}
+                        placeholder="voce@exemplo.com"
+                      />
+                    </div>
+                  </label>
+
+                  <label>
+                    <span>Senha</span>
+                    <div className="login-onirico__field-control">
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v10H5z" /></svg>
+                      <input
+                        type={mostrarSenha ? 'text' : 'password'}
+                        autoComplete="new-password"
+                        required
+                        minLength={6}
+                        value={senha}
+                        onChange={event => setSenha(event.target.value)}
+                        placeholder="Mínimo de 6 caracteres"
+                      />
+                      <button type="button" className="login-onirico__password-toggle" onClick={() => setMostrarSenha(valor => !valor)} aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}>
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                      </button>
+                    </div>
+                  </label>
+
+                  {erro && <p className="login-onirico__error" role="alert">{erro}</p>}
+                  {mensagem && <p className="login-onirico__message" role="status">{mensagem}</p>}
+
+                  <button className="login-onirico__submit login-onirico__submit--signup" disabled={enviando}>
+                    <span className="login-onirico__submit-star" aria-hidden="true">✦</span>
+                    <strong>{enviando ? 'Criando conta…' : 'Criar conta com e-mail'}</strong>
+                    {!enviando && <span aria-hidden="true">→</span>}
+                  </button>
+                </form>
 
                 <div className="login-onirico__oauth-note">
                   <span aria-hidden="true">✦</span>
-                  <p>O mesmo botão serve para criar sua conta ou entrar novamente depois. Seus papéis de Mestre, Jogador e Observador continuam definidos dentro de cada campanha.</p>
+                  <p>Você pode criar sua conta pelo Google, Discord ou e-mail. Os papéis de Mestre, Jogador e Observador continuam definidos dentro de cada campanha.</p>
                 </div>
-
-                <button type="button" className="login-onirico__secondary-link" onClick={() => trocarModo('entrar')}>
-                  Já possui acesso? Entrar com e-mail
-                </button>
               </div>
             )}
 
@@ -327,16 +391,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     <div className="login-onirico__separator"><span>ou continue com</span></div>
                     {renderSocialButtons('login')}
 
-                    <div className="login-onirico__access-footer">
-                      <button type="button" onClick={() => trocarModo('cadastro')}>
-                        <span><strong>Novo na Vigília?</strong><small>Crie sua conta com Google ou Discord.</small></span>
-                        <b> Criar conta →</b>
-                      </button>
-                      <button type="button" onClick={() => trocarModo('local')}>
-                        <span><strong>Sem conexão?</strong><small>Use a mesa neste dispositivo.</small></span>
-                        <b> Modo local →</b>
-                      </button>
-                    </div>
+
                   </>
                 )}
 
