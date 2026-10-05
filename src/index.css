@@ -530,3 +530,5 @@
 [class~="border-rose-500/50"] { border-color: color-mix(in srgb, var(--ro-danger) 45%, var(--ro-line)) !important; }
 [class~="bg-rose-950/40"],
 [class~="bg-rose-950/60"] { background-color: var(--ro-rupture-soft) !important; }
+
+@import "./design-system/community-v3.css";
