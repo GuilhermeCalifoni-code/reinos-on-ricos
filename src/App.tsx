@@ -33,6 +33,7 @@ const SettingsView = React.lazy(() => import('./components/SettingsView').then(m
 const CommunityView = React.lazy(() => import('./components/CommunityView').then(module => ({ default: module.CommunityView })));
 const CharacterSheet = React.lazy(() => import('./components/CharacterSheet').then(module => ({ default: module.CharacterSheet })));
 const RulesReference = React.lazy(() => import('./components/RulesReference').then(module => ({ default: module.RulesReference })));
+const CompendiumView = React.lazy(() => import('./components/CompendiumView').then(module => ({ default: module.CompendiumView })));
 
 const ViewFallback = () => (
   <div className="ro-empty-state m-6">
@@ -736,11 +737,7 @@ export default function App() {
         ) : null;
 
       case 'compendio':
-        return (
-          <div className="ro-compendium-shell">
-            <RulesReference />
-          </div>
-        );
+        return <CompendiumView />;
 
       case 'comunidade':
         return <CommunityView />;
