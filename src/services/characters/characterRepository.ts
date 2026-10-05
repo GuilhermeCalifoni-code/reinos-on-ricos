@@ -41,8 +41,21 @@ export const characterRepository = {
     return (data || []).map(mapCharacter);
   },
 
+  async listarDoUsuario() {
+    const { data: { user }, error: userError } = await client().auth.getUser();
+    if (userError) throw userError;
+    if (!user) return [];
+    const { data, error } = await client()
+      .from('personagens')
+      .select('*')
+      .eq('owner_user_id', user.id)
+      .order('atualizado_em', { ascending: false });
+    if (error) throw error;
+    return (data || []).map(mapCharacter);
+  },
+
   async salvar(personagem: Personagem) {
-    if (!personagem.campaignId) throw new Error('Uma ficha remota precisa estar vinculada a uma campanha.');
+    if (!personagem.ownerUserId) throw new Error('Uma ficha remota precisa ter um proprietário.');
     const { data, error } = await client().from('personagens').upsert({
       id: personagem.id,
       campaign_id: personagem.campaignId,
