@@ -80,15 +80,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
   </aside>
 );
 
-export const MobileNavigation: React.FC<Pick<SidebarProps, 'viewAtiva' | 'setViewAtiva' | 'onNovaCampanha'>> = ({
+export const MobileNavigation: React.FC<
+  Pick<SidebarProps, 'viewAtiva' | 'setViewAtiva' | 'onNovaCampanha' | 'onAbrirMesa' | 'onSair'> & {
+    temCampanha?: boolean;
+  }
+> = ({
   viewAtiva,
   setViewAtiva,
-  onNovaCampanha
+  onNovaCampanha,
+  onAbrirMesa,
+  onSair,
+  temCampanha = false
 }) => (
   <nav aria-label="Navegação principal" className="ro-mobile-shell">
-    <button onClick={() => setViewAtiva('dashboard')} className={isSectionActive(viewAtiva, 'dashboard') ? 'is-active' : ''}>Início</button>
-    <button onClick={() => setViewAtiva('campanhas')} className={isSectionActive(viewAtiva, 'campanhas') ? 'is-active' : ''}>Campanhas</button>
-    <button onClick={() => setViewAtiva('personagens')} className={isSectionActive(viewAtiva, 'personagens') ? 'is-active' : ''}>Personagens</button>
-    <button onClick={onNovaCampanha} aria-label="Criar campanha">+</button>
+    <div className="ro-mobile-shell__scroll">
+      <button onClick={() => setViewAtiva('dashboard')} className={isSectionActive(viewAtiva, 'dashboard') ? 'is-active' : ''}><Home /><span>Início</span></button>
+      <button onClick={() => setViewAtiva('campanhas')} className={isSectionActive(viewAtiva, 'campanhas') ? 'is-active' : ''}><Map /><span>Campanhas</span></button>
+      <button onClick={() => setViewAtiva('personagens')} className={isSectionActive(viewAtiva, 'personagens') ? 'is-active' : ''}><Users /><span>Personagens</span></button>
+      <button onClick={() => setViewAtiva('compendio')} className={isSectionActive(viewAtiva, 'compendio') ? 'is-active' : ''}><BookOpen /><span>Compêndio</span></button>
+      <button onClick={() => onAbrirMesa?.()} disabled={!temCampanha} className={viewAtiva === 'modo_mesa' ? 'is-active' : ''}><Radio /><span>Mesa Ao Vivo</span></button>
+      <button onClick={() => setViewAtiva('configuracoes')} className={isSectionActive(viewAtiva, 'configuracoes') ? 'is-active' : ''}><Settings /><span>Configurações</span></button>
+      <button onClick={onNovaCampanha}><span>Nova campanha</span><strong>+</strong></button>
+      <button onClick={onSair} className="ro-mobile-shell__logout"><LogOut /><span>Sair</span></button>
+    </div>
   </nav>
 );
