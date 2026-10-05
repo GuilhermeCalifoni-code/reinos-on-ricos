@@ -12,8 +12,6 @@ import {
   Users,
   X
 } from 'lucide-react';
-import { Campanha } from '../types/campaign';
-
 export type MainViewType =
   | 'dashboard'
   | 'campanhas'
@@ -28,8 +26,6 @@ export type MainViewType =
 interface SidebarProps {
   viewAtiva: MainViewType;
   setViewAtiva: (v: MainViewType) => void;
-  campanhaAtivaId: string | null;
-  onSelecionarCampanha: (id: string) => void;
   onNovaCampanha: () => void;
   onSair: () => void;
 }
