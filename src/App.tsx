@@ -409,8 +409,15 @@ export default function App() {
       handleTrocarSessao();
       return;
     }
+
     await authService.sairTodos();
-    handleTrocarSessao();
+    try {
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+    } catch (error) {
+      console.error('Erro ao limpar sessão local após logout global:', error);
+    }
+    sessionRef.current = null;
+    setSession(null);
   };
 
   const handleTrocarSessao = () => {
