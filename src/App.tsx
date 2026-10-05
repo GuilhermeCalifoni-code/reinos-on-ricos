@@ -25,6 +25,7 @@ const MesaView = React.lazy(() => import('./components/MesaView').then(module =>
 const CharactersListView = React.lazy(() => import('./components/CharactersListView').then(module => ({ default: module.CharactersListView })));
 const SettingsView = React.lazy(() => import('./components/SettingsView').then(module => ({ default: module.SettingsView })));
 const CharacterSheet = React.lazy(() => import('./components/CharacterSheet').then(module => ({ default: module.CharacterSheet })));
+const RulesReference = React.lazy(() => import('./components/RulesReference').then(module => ({ default: module.RulesReference })));
 
 const ViewFallback = () => (
   <div className="ro-empty-state m-6">
@@ -455,6 +456,7 @@ export default function App() {
             campanhas={campanhas}
             userName={session.nome}
             personagens={personagens}
+            sessoes={sessoesAtuais}
             onNovaCampanha={handleIniciarCriacaoCampanha}
             onNovoPersonagem={() => setModalCriarPersonagem(true)}
             onAbrirPersonagem={handleAbrirFichaPersonagem}
@@ -516,6 +518,7 @@ export default function App() {
         ) : (
           <DashboardView
             campanhas={campanhas}
+            sessoes={sessoesAtuais}
             onNovaCampanha={handleIniciarCriacaoCampanha}
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
@@ -557,6 +560,13 @@ export default function App() {
             onRemoverTokenMapa={removerTokenMapa}
           />
         ) : null;
+
+      case 'compendio':
+        return (
+          <div className="ro-compendium-shell">
+            <RulesReference />
+          </div>
+        );
 
       case 'personagens':
         return (
@@ -608,6 +618,11 @@ export default function App() {
           setViewAtiva('detalhe_campanha');
         }}
         onNovaCampanha={handleIniciarCriacaoCampanha}
+        onAbrirMesa={() => {
+          const alvo = campanhaAtiva || campanhas[0];
+          if (alvo) handleContinuarCampanha(alvo);
+          else handleIniciarCriacaoCampanha();
+        }}
         onSair={handleTrocarSessao}
       />}
 
@@ -622,7 +637,7 @@ export default function App() {
           onNovaCampanha={handleIniciarCriacaoCampanha}
         />}
         {/* 10. HEADER (Minimalista, Fundo #0B0B0B, Borda #292929) */}
-        {viewAtiva !== 'modo_mesa' && <Header
+        {viewAtiva !== 'modo_mesa' && viewAtiva !== 'dashboard' && viewAtiva !== 'campanhas' && <Header
           campanhaNome={
             viewAtiva === 'detalhe_campanha'
               ? campanhaAtiva?.nome
