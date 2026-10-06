@@ -3,11 +3,11 @@
 
 .campaign-v5__hero,
 .campaign-v5__overview {
-  --campaign-art-desk: url("__ASSET_DESK__");
-  --campaign-art-compass: url("__ASSET_COMPASS__");
-  --campaign-art-city: url("__ASSET_CITY__");
-  --campaign-art-portrait: url("__ASSET_PORTRAIT__");
-  --campaign-art-invite: url("__ASSET_INVITE__");
+  --campaign-art-desk: url("/campaign/campaign-desk.webp");
+  --campaign-art-compass: url("/campaign/campaign-compass.webp");
+  --campaign-art-city: url("/campaign/campaign-city.webp");
+  --campaign-art-portrait: url("/campaign/campaign-portrait.webp");
+  --campaign-art-invite: url("/campaign/campaign-invite.webp");
 }
 
 .campaign-v5__hero {
