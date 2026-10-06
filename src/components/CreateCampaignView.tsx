@@ -135,16 +135,6 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
               <input type="url" value={imagemUrl} onChange={e => { setImagemUrl(e.target.value); setImagemArquivo(null); }} placeholder="https://…" />
             </label>
           )}
-
-          {modoImagem === 'colecao' && (
-            <div className="ro-create-campaign__collection">
-              {IMAGENS_ATMOSFERICAS_PREDEFINIDAS.map(img => (
-                <button key={img.id} type="button" className={imagemUrl === img.url ? 'is-active' : ''} onClick={() => { setImagemUrl(img.url); setImagemArquivo(null); }}>
-                  <img src={img.url} alt="" /><span>{img.nome}</span>
-                </button>
-              ))}
-            </div>
-          )}
         </aside>
 
         {erro && <p className="ro-create-campaign__error">{erro}</p>}

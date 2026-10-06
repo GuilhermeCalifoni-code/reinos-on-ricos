@@ -6,6 +6,7 @@ import { CampaignMembersPanel } from './campaign/CampaignMembersPanel';
 import { CampaignAssetsPanel } from './campaign/CampaignAssetsPanel';
 import { CampaignActorsPanel } from './campaign/CampaignActorsPanel';
 import { AssetImage } from './system/AssetImage';
+import { BookOpen, CalendarPlus, Check, Compass, Copy, MapPinned, Play, Search, ScrollText, Sparkles, Users } from 'lucide-react';
 
 export type CampaignTabType = 
   | 'visao_geral'
@@ -115,6 +116,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   const [itemNome, setItemNome] = useState('');
   const [itemDesc, setItemDesc] = useState('');
   const [itemExtra, setItemExtra] = useState('');
+  const [codigoCopiado, setCodigoCopiado] = useState(false);
 
   const sessoesCampanha = sessoes
     .filter(s => s.campanhaId === campanha.id)
@@ -129,6 +131,25 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   const anotacoesCampanha = anotacoes.filter(a => a.campanhaId === campanha.id);
   const cenasCampanha = cenas.filter(item => item.campanhaId === campanha.id);
   const handoutsCampanha = handouts.filter(item => item.campanhaId === campanha.id);
+  const membrosAtivos = membros.filter(membro => membro.status === 'ativo');
+  const totalMembros = membrosAtivos.length || campanha.jogadoresCount || personagens.length || 0;
+  const sessaoEmAberto = sessoesCampanha.find(sessao => sessao.status && sessao.status !== 'concluida') || null;
+  const totalArquivo = pistasCampanha.length + locaisCampanha.length + npcsCampanha.length + adversariosCampanha.length + cenasCampanha.length + handoutsCampanha.length;
+  const statusCampanha = campanha.status === 'concluida'
+    ? 'Concluída'
+    : campanha.status === 'planejamento'
+      ? 'Planejamento'
+      : 'Em andamento';
+
+  const handleCopiarCodigo = async () => {
+    try {
+      await navigator.clipboard.writeText(campanha.codigo);
+      setCodigoCopiado(true);
+      window.setTimeout(() => setCodigoCopiado(false), 1800);
+    } catch {
+      setCodigoCopiado(false);
+    }
+  };
 
   const handleCriarSessaoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,34 +253,45 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
   return (
     <div className="campaign-v4 w-full flex flex-col pb-20">
-      {/* Hero editorial da campanha */}
-      <section className="ro-campaign-hero ro-campaign-hero--v4">
-        <div className="ro-campaign-hero__copy">
-          <p className="ro-eyebrow">Campanha · {campanha.tipo}</p>
+      {/* Centro de comando da campanha */}
+      <section className="campaign-v5__hero">
+        <div className="campaign-v5__hero-copy">
+          <div className="campaign-v5__hero-kicker">
+            <span>{campanha.tipo === 'oneshot' ? 'One-shot' : campanha.tipo === 'playtest' ? 'Playtest' : 'Campanha'}</span>
+            <i />
+            <span>{canManageMembers ? 'Visão do Mestre' : 'Crônica ativa'}</span>
+          </div>
+
           <h1>{campanha.nome}</h1>
-          <p className="ro-campaign-hero__description">{campanha.descricao}</p>
-          <div className="ro-campaign-hero__meta">
-            <span>{campanha.jogadoresCount || personagens.length || 0} membros</span>
-            <span>{sessoesCampanha.length} sessões</span>
-            <span>Ruptura {campanha.rupturaGeral}/6</span>
-            <span className="is-live">Em andamento</span>
+          <p>{campanha.descricao || 'Uma nova crônica aguarda os primeiros registros do Mestre.'}</p>
+
+          <div className="campaign-v5__hero-meta">
+            <span><Users /> {totalMembros} {totalMembros === 1 ? 'membro' : 'membros'}</span>
+            <span><BookOpen /> {sessoesCampanha.length} {sessoesCampanha.length === 1 ? 'sessão' : 'sessões'}</span>
+            <span><Sparkles /> Ruptura {campanha.rupturaGeral}/6</span>
+            <span className="is-status">{statusCampanha}</span>
+          </div>
+
+          <div className="campaign-v5__hero-actions">
+            <button type="button" className="campaign-v5__primary" onClick={() => onIniciarSessao(campanha)}>
+              <Play />
+              {ultimaSessao ? 'Continuar mesa' : 'Abrir Mesa Ao Vivo'}
+            </button>
+            {canManageMembers && (
+              <button type="button" className="campaign-v5__secondary" onClick={() => setModalNovaSessao(true)}>
+                <CalendarPlus />
+                Nova sessão
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="ro-campaign-hero__media" aria-hidden="true">
-          <AssetImage
-            src={campanha.imagemUrl}
-            fallbackSrc="/ro-login-mist-city.webp"
-            alt=""
-          />
-          <div className="ro-campaign-hero__sigil"><img src="/ro-mark.svg" alt="" /></div>
-        </div>
-
-        <div className="ro-campaign-hero__actions">
-          <span className="ro-campaign-hero__code">Código · {campanha.codigo}</span>
-          <button onClick={() => onIniciarSessao(campanha)} className="ro-button">
-            {ultimaSessao ? 'Continuar última sessão' : 'Abrir Mesa Ao Vivo'} <span aria-hidden="true">→</span>
-          </button>
+        <div className="campaign-v5__hero-art" aria-hidden="true">
+          <div className="campaign-v5__hero-backdrop">
+            <AssetImage src={campanha.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="" />
+          </div>
+          <div className="campaign-v5__art campaign-v5__art--city" />
+          <div className="campaign-v5__hero-sigil"><img src="/ro-mark.svg" alt="" /></div>
         </div>
       </section>
 
@@ -286,138 +318,169 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-9 w-full">
         {/* ABA: VISÃO GERAL */}
         {abaAtiva === 'visao_geral' && (
-          <div className="space-y-10">
-            {/* Grid Superior: Próxima Ação & Resumo */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm">
-                  <div className="flex items-center justify-between gap-3 pb-4 border-b border-[var(--ro-line)] mb-4">
-                    <span className="text-xs font-mono tracking-widest text-[var(--ro-ash)] uppercase">
-                      {ultimaSessao ? 'Última Sessão Registrada' : 'Sessões'}
-                    </span>
-                    {ultimaSessao && (
-                      <span className="text-xs font-mono text-[var(--ro-copper)]">
-                        Sessão #{String(ultimaSessao.numero).padStart(2, '0')}
-                      </span>
+          <div className="campaign-v5__overview">
+            <section className="campaign-v5__overview-grid">
+              <article className="campaign-v5__next-session">
+                <div className="campaign-v5__card-copy">
+                  <p className="ro-eyebrow">{ultimaSessao ? 'Último registro da crônica' : 'Comece por aqui'}</p>
+                  <h2>{ultimaSessao ? ultimaSessao.titulo : 'Prepare a primeira sessão'}</h2>
+                  <p>
+                    {ultimaSessao
+                      ? ultimaSessao.resumo || ultimaSessao.descricao || 'A sessão já possui um registro. Continue a mesa ou organize o próximo capítulo.'
+                      : 'Crie a primeira sessão para reunir cenas, anotações e o fluxo que será usado quando a mesa começar.'}
+                  </p>
+
+                  <div className="campaign-v5__next-meta">
+                    {ultimaSessao ? (
+                      <>
+                        <span>Sessão #{String(ultimaSessao.numero).padStart(2, '0')}</span>
+                        <span>{ultimaSessao.data || 'Sem data definida'}</span>
+                        <span>{ultimaSessao.status || (ultimaSessao.concluida ? 'concluída' : 'em andamento')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>0 sessões</span>
+                        <span>Planejamento inicial</span>
+                      </>
                     )}
                   </div>
-                  {ultimaSessao ? (
-                    <>
-                      <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">
-                        {ultimaSessao.titulo}
-                      </h3>
-                      {(ultimaSessao.resumo || ultimaSessao.descricao) && (
-                        <p className="text-xs text-[var(--ro-paper-muted)]/80 mt-2.5 leading-relaxed font-normal">
-                          {ultimaSessao.resumo || ultimaSessao.descricao}
-                        </p>
-                      )}
-                      <div className="pt-5 mt-5 border-t border-[var(--ro-line)] flex flex-wrap items-center justify-between gap-3">
-                        <span className="text-[11px] font-mono text-[var(--ro-ash)]">
-                          {ultimaSessao.data ? `Data: ${ultimaSessao.data}` : 'Sem data definida'}
+
+                  <div className="campaign-v5__card-actions">
+                    <button type="button" className="campaign-v5__primary" onClick={() => ultimaSessao ? onIniciarSessao(campanha) : setModalNovaSessao(true)}>
+                      {ultimaSessao ? <Play /> : <CalendarPlus />}
+                      {ultimaSessao ? 'Continuar na mesa' : 'Criar primeira sessão'}
+                    </button>
+                    {ultimaSessao && canManageMembers && (
+                      <button type="button" className="campaign-v5__text-action" onClick={() => setAbaAtiva('sessoes')}>
+                        Ver sessões →
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="campaign-v5__art campaign-v5__art--desk" aria-hidden="true" />
+              </article>
+
+              <article className="campaign-v5__chronicle">
+                <div className="campaign-v5__chronicle-head">
+                  <div>
+                    <p className="ro-eyebrow">Pulso da crônica</p>
+                    <h3>{statusCampanha}</h3>
+                  </div>
+                  <Compass />
+                </div>
+
+                <div className="campaign-v5__chronicle-stats">
+                  <div><strong>{campanha.rupturaGeral}</strong><span>Ruptura / 6</span></div>
+                  <div><strong>{totalMembros}</strong><span>Membros</span></div>
+                  <div><strong>{totalArquivo}</strong><span>Registros</span></div>
+                  <div><strong>{sessaoEmAberto ? '01' : '00'}</strong><span>Sessão aberta</span></div>
+                </div>
+
+                <div className="campaign-v5__rupture-track" aria-label={`Ruptura ${campanha.rupturaGeral} de 6`}>
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <i key={index} className={index < campanha.rupturaGeral ? 'is-filled' : ''} />
+                  ))}
+                </div>
+                <div className="campaign-v5__art campaign-v5__art--compass" aria-hidden="true" />
+              </article>
+            </section>
+
+            <section className="campaign-v5__command-grid">
+              <article className="campaign-v5__invite">
+                <div className="campaign-v5__invite-copy">
+                  <p className="ro-eyebrow">Convide sua mesa</p>
+                  <h3>Código da campanha</h3>
+                  <p>Envie este código para os jogadores entrarem diretamente nesta crônica.</p>
+
+                  <button type="button" className="campaign-v5__code" onClick={handleCopiarCodigo}>
+                    <span>{campanha.codigo}</span>
+                    {codigoCopiado ? <Check /> : <Copy />}
+                  </button>
+                  <small>{codigoCopiado ? 'Código copiado.' : 'Clique no código para copiar.'}</small>
+                </div>
+                <div className="campaign-v5__art campaign-v5__art--invite" aria-hidden="true" />
+              </article>
+
+              <article className="campaign-v5__party">
+                <div className="campaign-v5__section-title">
+                  <div>
+                    <p className="ro-eyebrow">Desvelados vinculados</p>
+                    <h3>{personagens.length ? `${personagens.length} na crônica` : 'A mesa ainda está vazia'}</h3>
+                  </div>
+                  <button type="button" onClick={() => setAbaAtiva('personagens')}>Ver todos →</button>
+                </div>
+
+                {personagens.length ? (
+                  <div className="campaign-v5__party-list">
+                    {personagens.slice(0, 3).map(pj => (
+                      <button key={pj.id} type="button" onClick={() => onAbrirFichaPersonagem(pj)}>
+                        <span className="campaign-v5__avatar">{pj.nome.slice(0, 2).toUpperCase()}</span>
+                        <span>
+                          <strong>{pj.nome}</strong>
+                          <small>{pj.conceito} · Nível {pj.nivel}</small>
                         </span>
-                        <button
-                          onClick={() => onIniciarSessao(campanha)}
-                          className="text-xs font-mono text-[var(--ro-copper)] hover:underline"
-                        >
-                          Continuar na Mesa →
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="ro-campaign-empty">
-                      <strong>Nenhuma sessão registrada.</strong>
-                      <p>Crie a primeira sessão para começar a organizar a campanha.</p>
-                      {canManageMembers && (
-                        <button type="button" className="ro-button--quiet" onClick={() => setModalNovaSessao(true)}>
-                          Criar primeira sessão
-                        </button>
-                      )}
-                    </div>
+                        <em>{pj.vidaAtual}/{pj.vidaMaxima} V</em>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="campaign-v5__empty-copy">
+                    <p>Quando os jogadores entrarem com o código e vincularem seus personagens, eles aparecerão aqui.</p>
+                  </div>
+                )}
+                <div className="campaign-v5__art campaign-v5__art--portrait" aria-hidden="true" />
+              </article>
+
+              <article className="campaign-v5__quick">
+                <div className="campaign-v5__section-title">
+                  <div>
+                    <p className="ro-eyebrow">Atalhos do Mestre</p>
+                    <h3>Prepare sem perder o fluxo.</h3>
+                  </div>
+                </div>
+
+                <div className="campaign-v5__quick-actions">
+                  {canManageMembers && (
+                    <button type="button" onClick={() => setModalNovaSessao(true)}>
+                      <CalendarPlus /><span><strong>Nova sessão</strong><small>Planeje o próximo capítulo.</small></span>
+                    </button>
+                  )}
+                  <button type="button" onClick={() => setAbaAtiva('pistas')}>
+                    <Search /><span><strong>Pistas</strong><small>{pistasCampanha.length} registradas.</small></span>
+                  </button>
+                  <button type="button" onClick={() => setAbaAtiva('cenas')}>
+                    <ScrollText /><span><strong>Cenas</strong><small>{cenasCampanha.length} preparadas.</small></span>
+                  </button>
+                  <button type="button" onClick={() => setAbaAtiva('mapas')}>
+                    <MapPinned /><span><strong>Mapas</strong><small>Abra o espaço de mapas.</small></span>
+                  </button>
+                  {canManageMembers && (
+                    <button type="button" onClick={() => setAbaAtiva('configuracoes')}>
+                      <Users /><span><strong>Membros</strong><small>Convites, funções e personagens.</small></span>
+                    </button>
                   )}
                 </div>
+              </article>
+            </section>
 
-                {/* Lista de Pistas Recentes */}
-                <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm">
-                  <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)] mb-4">
-                    <span className="text-xs font-mono tracking-widest text-[var(--ro-ash)] uppercase">
-                      Pistas Investigativas Ativas
-                    </span>
-                    <button
-                      onClick={() => setAbaAtiva('pistas')}
-                      className="text-xs font-mono text-[var(--ro-ash)] hover:text-[var(--ro-paper-muted)]"
-                    >
-                      Ver todas ({pistasCampanha.length})
-                    </button>
-                  </div>
-                  <div className="space-y-3">
-                    {pistasCampanha.length > 0 ? pistasCampanha.slice(0, 2).map(pista => (
-                      <div key={pista.id} className="p-3 bg-[var(--ro-bg)] border border-[var(--ro-line)] rounded-sm">
-                        <div className="flex items-center justify-between gap-3 text-xs">
-                          <span className="text-[var(--ro-paper)] font-medium">{pista.titulo}</span>
-                          <span className="text-[10px] font-mono text-[var(--ro-copper)] uppercase">{pista.tipo}</span>
-                        </div>
-                        {pista.descricao && <p className="text-xs text-[var(--ro-ash)] mt-1 line-clamp-1">{pista.descricao}</p>}
-                      </div>
-                    )) : (
-                      <div className="ro-campaign-empty ro-campaign-empty--compact">
-                        <strong>Nenhuma pista registrada.</strong>
-                        <p>As pistas criadas para esta campanha aparecerão aqui.</p>
-                      </div>
-                    )}
-                  </div>
+            <section className="campaign-v5__records">
+              <div className="campaign-v5__records-head">
+                <div>
+                  <p className="ro-eyebrow">Arquivo ativo</p>
+                  <h2>O que já existe nesta crônica</h2>
                 </div>
+                <div className="campaign-v5__art campaign-v5__art--city-small" aria-hidden="true" />
               </div>
 
-              {/* Coluna Direita: Status da Campanha & Ruptura */}
-              <div className="space-y-6">
-                <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm">
-                  <span className="text-xs font-mono tracking-widest text-[var(--ro-ash)] uppercase block mb-3">
-                    Índice de Ruptura da Crônica
-                  </span>
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-serif text-4xl text-[var(--ro-paper)] font-normal">
-                      {campanha.rupturaGeral}
-                    </span>
-                    <span className="text-xs font-mono text-[var(--ro-ash)]">/ 6</span>
-                  </div>
-                  <p className="text-xs text-[var(--ro-ash)] mt-2 leading-relaxed">
-                    {campanha.rupturaGeral >= 4
-                      ? 'O véu do Sonhar está gravemente instável. Anomalias espontâneas ocorrem na vigília.'
-                      : campanha.rupturaGeral >= 2
-                      ? 'Ligeiras distorções perceptíveis por animais e indivíduos sensíveis.'
-                      : 'A vigília consensual permanece estável na maior parte da cidade.'}
-                  </p>
-                </div>
-
-                <div className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm">
-                  <span className="text-xs font-mono tracking-widest text-[var(--ro-ash)] uppercase block mb-4">
-                    Desvelados Vinculados
-                  </span>
-                  <div className="space-y-2.5">
-                    {personagens.length > 0 ? personagens.slice(0, 3).map(pj => (
-                      <div
-                        key={pj.id}
-                        onClick={() => onAbrirFichaPersonagem(pj)}
-                        className="flex items-center justify-between p-2.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] hover:border-[var(--ro-line-strong)] cursor-pointer transition-colors rounded-sm"
-                      >
-                        <div>
-                          <div className="text-xs text-[var(--ro-paper)] font-medium">{pj.nome}</div>
-                          <div className="text-[10px] font-mono text-[var(--ro-ash)]">{pj.conceito} · Nível {pj.nivel}</div>
-                        </div>
-                        <div className="text-right text-[11px] font-mono text-[var(--ro-paper-muted)]">
-                          <span>{pj.vidaAtual}/{pj.vidaMaxima} V</span>
-                        </div>
-                      </div>
-                    )) : (
-                      <div className="ro-campaign-empty ro-campaign-empty--compact">
-                        <strong>Nenhum Desvelado vinculado.</strong>
-                        <p>Personagens vinculados pelos membros da campanha aparecerão aqui.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              <div className="campaign-v5__record-grid">
+                <button type="button" onClick={() => setAbaAtiva('pistas')}><strong>{pistasCampanha.length}</strong><span>Pistas</span></button>
+                <button type="button" onClick={() => setAbaAtiva('locais')}><strong>{locaisCampanha.length}</strong><span>Locais</span></button>
+                <button type="button" onClick={() => setAbaAtiva('npcs')}><strong>{npcsCampanha.length}</strong><span>NPCs</span></button>
+                <button type="button" onClick={() => setAbaAtiva('adversarios')}><strong>{adversariosCampanha.length}</strong><span>Adversários</span></button>
+                <button type="button" onClick={() => setAbaAtiva('cenas')}><strong>{cenasCampanha.length}</strong><span>Cenas</span></button>
+                <button type="button" onClick={() => setAbaAtiva('handouts')}><strong>{handoutsCampanha.length}</strong><span>Arquivos</span></button>
               </div>
-            </div>
+            </section>
           </div>
         )}
 
