@@ -164,6 +164,7 @@ export interface NPC {
   deslocamento?: string;
   habilidades?: HabilidadeAtor[];
   visibilidade?: VisibilidadeConteudo;
+  imagemUrl?: string;
 }
 
 export interface Adversario {
@@ -182,6 +183,7 @@ export interface Adversario {
   ataquePrincipal: string;
   descricao: string;
   visibilidade?: VisibilidadeConteudo;
+  imagemUrl?: string;
 }
 
 export interface Local {
