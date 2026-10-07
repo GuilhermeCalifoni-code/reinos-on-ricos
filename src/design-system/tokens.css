@@ -2468,3 +2468,67 @@
     min-height: 12rem;
   }
 }
+
+
+/* ---------- NPC comum x NPC Desvelado ---------- */
+.actor-editor__npc-kind {
+  display: grid !important;
+  grid-template-columns: minmax(0, .8fr) minmax(280px, 1.2fr);
+  align-items: center;
+  gap: 1rem;
+  padding: .85rem;
+  border: 1px solid var(--ro-line);
+  background: var(--ro-surface);
+}
+.actor-editor__npc-kind > div:first-child strong,
+.actor-editor__npc-kind > div:first-child span {
+  display: block;
+}
+.actor-editor__npc-kind > div:first-child strong {
+  margin-top: .28rem;
+  color: var(--ro-paper);
+  font: 500 1rem "Cormorant Garamond", Georgia, serif;
+}
+.actor-editor__npc-kind > div:first-child span {
+  margin-top: .25rem;
+  color: var(--ro-ash);
+  font-size: .55rem;
+}
+.actor-editor__npc-kind-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .45rem;
+}
+.actor-editor__npc-kind-options button {
+  display: grid;
+  min-height: 4rem;
+  align-content: center;
+  gap: .25rem;
+  padding: .55rem;
+  border: 1px solid var(--ro-line);
+  background: var(--ro-input);
+  color: var(--ro-paper-muted);
+  text-align: left;
+}
+.actor-editor__npc-kind-options button:hover,
+.actor-editor__npc-kind-options button.is-active {
+  border-color: var(--ro-line-strong);
+  background: var(--ro-accent-soft);
+}
+.actor-editor__npc-kind-options button.is-active {
+  box-shadow: inset 2px 0 0 var(--ro-copper);
+}
+.actor-editor__npc-kind-options b {
+  color: var(--ro-paper);
+  font: 600 .68rem Inter, sans-serif;
+}
+.actor-editor__npc-kind-options small {
+  color: var(--ro-ash);
+  font-size: .5rem;
+}
+@media (max-width: 700px) {
+  .actor-editor__npc-kind,
+  .actor-editor__npc-kind-options {
+    grid-template-columns: 1fr;
+  }
+}
