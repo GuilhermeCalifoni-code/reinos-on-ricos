@@ -57,7 +57,7 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
       await onCriar({
         nome: nome.trim(),
         descricao: descricao.trim(),
-        imagemUrl: imagemUrl.trim(),
+        imagemUrl: modoImagem === 'url' ? imagemUrl.trim() : '',
         imagemArquivo: modoImagem === 'upload' ? imagemArquivo || undefined : undefined,
         tipo
       });
@@ -68,7 +68,7 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
     }
   };
 
-  const preview = modoImagem === 'upload' && previewLocal ? previewLocal : imagemUrl;
+  const preview = modoImagem === 'upload' ? previewLocal : imagemUrl;
 
   return (
     <section className="ro-create-campaign">
@@ -85,12 +85,12 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
         <div className="ro-create-campaign__main">
           <label>
             <span>Nome da campanha</span>
-            <input type="text" required value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex.: O Homem que Atrasa" />
+            <input type="text" required maxLength={120} value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex.: O Homem que Atrasa" />
           </label>
 
           <label>
             <span>Descrição</span>
-            <textarea rows={4} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="O que os Desvelados encontrarão nesta história?" />
+            <textarea rows={4} maxLength={2000} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="O que os Desvelados encontrarão nesta história?" />
           </label>
 
           <div className="ro-create-campaign__type">
@@ -135,22 +135,12 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
               <input type="url" value={imagemUrl} onChange={e => { setImagemUrl(e.target.value); setImagemArquivo(null); }} placeholder="https://…" />
             </label>
           )}
-
-          {modoImagem === 'colecao' && (
-            <div className="ro-create-campaign__collection">
-              {IMAGENS_ATMOSFERICAS_PREDEFINIDAS.map(img => (
-                <button key={img.id} type="button" className={imagemUrl === img.url ? 'is-active' : ''} onClick={() => { setImagemUrl(img.url); setImagemArquivo(null); }}>
-                  <img src={img.url} alt="" /><span>{img.nome}</span>
-                </button>
-              ))}
-            </div>
-          )}
         </aside>
 
-        {erro && <p className="ro-create-campaign__error">{erro}</p>}
+        {erro && <p className="ro-create-campaign__error" role="alert" aria-live="assertive">{erro}</p>}
 
         <footer className="ro-create-campaign__footer">
-          <p>A capa pode ser alterada depois. Imagens enviadas em campanhas online ficam no Storage privado da campanha.</p>
+          <p>Durante o playtest, campanhas são ilimitadas. A capa pode ser alterada depois e uploads online ficam no Storage privado da campanha.</p>
           <button type="submit" className="ro-button" disabled={salvando || !nome.trim()}>
             {salvando ? 'Criando…' : 'Criar campanha'} <span aria-hidden="true">→</span>
           </button>
