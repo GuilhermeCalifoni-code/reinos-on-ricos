@@ -20,6 +20,48 @@
   --vtt-accent-bright: #e0b978;
   --vtt-danger: #b85e68;
   --vtt-safe: #73a28b;
+  --vtt-topbar: rgba(9, 12, 16, .93);
+  --vtt-stage-bg:
+    radial-gradient(circle at 50% 38%, rgba(255,255,255,.018), transparent 28rem),
+    #090c10;
+  --vtt-stage-scene:
+    radial-gradient(circle at 50% 42%, rgba(98,81,123,.13), transparent 28rem),
+    linear-gradient(145deg, #12171d, #080b0e 72%);
+  --vtt-stage-overlay:
+    linear-gradient(90deg, rgba(7,10,13,.56), transparent 26%, transparent 74%, rgba(7,10,13,.42)),
+    linear-gradient(180deg, rgba(7,10,13,.2), transparent 28%, rgba(7,10,13,.7));
+  --vtt-scene-copy: linear-gradient(90deg, rgba(8,11,14,.82), rgba(8,11,14,.3), transparent);
+  --vtt-input: #0c1015;
+  --vtt-map-bg:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 45%, #272624, #090c10 73%);
+  --vtt-control-bg: rgba(10,14,18,.88);
+  --vtt-tool-bg: #11161c;
+
+  /* Componentes reutilizados pela Mesa (botões, inputs, painéis, DiceRoller etc.)
+     precisam herdar a mesma paleta, em vez dos tokens globais da aplicação. */
+  --ro-ink: #090c10;
+  --ro-charcoal: #11161d;
+  --ro-charcoal-raised: #171d24;
+  --ro-paper: #f2eee7;
+  --ro-paper-muted: #c7c0b5;
+  --ro-ash: #958f87;
+  --ro-copper: #c29455;
+  --ro-copper-bright: #e0b978;
+  --ro-rift: #713b35;
+  --ro-line: rgba(226, 211, 187, .12);
+  --ro-line-strong: rgba(203, 158, 92, .38);
+  --ro-bg: #090c10;
+  --ro-bg-soft: #0d1116;
+  --ro-surface: #11161d;
+  --ro-surface-raised: #171d24;
+  --ro-input: #0c1015;
+  --ro-header-bg: rgba(9,12,16,.93);
+  --ro-panel-bg: rgba(15,19,24,.94);
+  --ro-accent-soft: rgba(194,148,85,.10);
+  --ro-on-accent: #120d07;
+  color-scheme: dark;
   position: relative;
   display: flex;
   width: 100%;
@@ -53,7 +95,7 @@
   flex: 0 0 auto;
   padding: .55rem .8rem;
   border-bottom: 1px solid var(--vtt-line);
-  background: rgba(9, 12, 16, .93);
+  background: var(--vtt-topbar);
   box-shadow: 0 8px 30px rgba(0,0,0,.22);
   backdrop-filter: blur(18px);
 }
@@ -283,9 +325,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 38%, rgba(255,255,255,.018), transparent 28rem),
-    #090c10;
+  background: var(--vtt-stage-bg);
 }
 
 .live-vtt__stage-shell::before {
@@ -363,9 +403,7 @@
   overflow: hidden;
   border: 0;
   border-radius: 0;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(98,81,123,.13), transparent 28rem),
-    linear-gradient(145deg, #12171d, #080b0e 72%);
+  background: var(--vtt-stage-scene);
   box-shadow: none;
 }
 
@@ -385,9 +423,7 @@
   inset: 0;
   content: "";
   pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(7,10,13,.56), transparent 26%, transparent 74%, rgba(7,10,13,.42)),
-    linear-gradient(180deg, rgba(7,10,13,.2), transparent 28%, rgba(7,10,13,.7));
+  background: var(--vtt-stage-overlay);
 }
 
 .live-table--v5 .live-table__geometry {
@@ -412,7 +448,7 @@
   padding: 1.4rem 1.6rem 1.4rem 1.7rem;
   border: 0;
   border-left: 2px solid var(--vtt-accent);
-  background: linear-gradient(90deg, rgba(8,11,14,.82), rgba(8,11,14,.3), transparent);
+  background: var(--vtt-scene-copy);
   backdrop-filter: blur(10px);
 }
 
@@ -654,7 +690,7 @@
 .live-table--v5 .session-feed__composer input {
   border: 1px solid var(--vtt-line);
   border-radius: 5px;
-  background: #0c1015;
+  background: var(--vtt-input);
   color: var(--vtt-text);
 }
 
@@ -1046,7 +1082,7 @@
   overflow: hidden;
   border: 1px solid var(--vtt-line-strong);
   border-radius: 9px;
-  background: #11161c;
+  background: var(--vtt-tool-bg);
   box-shadow: 0 30px 90px rgba(0,0,0,.55);
 }
 
@@ -1125,7 +1161,7 @@
   height: 100%;
   min-height: 0;
   padding: 0;
-  background: #090c10;
+  background: var(--vtt-bg);
 }
 
 .live-table--v5 .map-stage--v4 .map-stage__head {
@@ -1144,7 +1180,7 @@
   border: 1px solid var(--vtt-line);
   border-radius: 6px;
   padding: .35rem;
-  background: rgba(10,14,18,.88);
+  background: var(--vtt-control-bg);
   box-shadow: 0 12px 34px rgba(0,0,0,.3);
   backdrop-filter: blur(14px);
 }
@@ -1173,10 +1209,7 @@
   min-height: 0;
   border: 0;
   border-radius: 0;
-  background:
-    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
-    radial-gradient(ellipse at 50% 45%, #272624, #090c10 73%);
+  background: var(--vtt-map-bg);
   background-size: 5% 5%, 5% 5%, auto;
   box-shadow: none;
 }
@@ -1266,7 +1299,7 @@
 .live-table--v5 .map-stage__setup select,
 .live-table--v5 .map-stage__setup button {
   border-color: var(--vtt-line);
-  background: #0d1218;
+  background: var(--vtt-input);
   color: var(--vtt-soft);
 }
 
@@ -1482,4 +1515,135 @@
     transition: none !important;
     animation: none !important;
   }
+}
+
+
+/* --------------------------------------------------------------------------
+   Coerência de tema
+   A Mesa respeita o tema global inteiro. Não existe mais chrome escuro usando
+   componentes claros (ou o inverso) quando o usuário alterna o tema.
+   -------------------------------------------------------------------------- */
+:root[data-theme='light'] .live-table--v5 {
+  --vtt-bg: #f1ede5;
+  --vtt-panel: rgba(255, 253, 248, .96);
+  --vtt-panel-strong: #fffdf8;
+  --vtt-surface: #eee8de;
+  --vtt-surface-2: #e7e0d5;
+  --vtt-line: rgba(28, 42, 55, .13);
+  --vtt-line-strong: rgba(152, 88, 24, .35);
+  --vtt-text: #121820;
+  --vtt-muted: #74716c;
+  --vtt-soft: #464b51;
+  --vtt-accent: #985818;
+  --vtt-accent-bright: #b86f22;
+  --vtt-danger: #94484e;
+  --vtt-safe: #5f724f;
+  --vtt-topbar: rgba(249, 246, 239, .94);
+  --vtt-stage-bg:
+    radial-gradient(circle at 50% 38%, rgba(16,48,88,.035), transparent 28rem),
+    #ece8e0;
+  --vtt-stage-scene:
+    radial-gradient(circle at 50% 42%, rgba(72,127,183,.08), transparent 28rem),
+    linear-gradient(145deg, #eeeae3, #ddd7ce 72%);
+  --vtt-stage-overlay:
+    linear-gradient(90deg, rgba(248,245,238,.40), transparent 24%, transparent 76%, rgba(248,245,238,.28)),
+    linear-gradient(180deg, rgba(248,245,238,.10), transparent 35%, rgba(233,227,217,.42));
+  --vtt-scene-copy: linear-gradient(90deg, rgba(255,253,248,.91), rgba(255,253,248,.70), transparent);
+  --vtt-input: #fffdf9;
+  --vtt-map-bg:
+    linear-gradient(rgba(16,48,88,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16,48,88,.055) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 45%, #f6f2ea, #e5dfd5 73%);
+  --vtt-control-bg: rgba(255,253,248,.90);
+  --vtt-tool-bg: #fffdf8;
+
+  --ro-ink: #f8f5ee;
+  --ro-charcoal: #eee9df;
+  --ro-charcoal-raised: #fffdf8;
+  --ro-paper: #101822;
+  --ro-paper-muted: #4f5660;
+  --ro-ash: #73777b;
+  --ro-copper: #985818;
+  --ro-copper-bright: #b86f22;
+  --ro-rift: #783f37;
+  --ro-line: rgba(16,48,88,.15);
+  --ro-line-strong: rgba(152,88,24,.45);
+  --ro-bg: #f8f5ee;
+  --ro-bg-soft: #f1ede4;
+  --ro-surface: #eee9df;
+  --ro-surface-raised: #fffdf8;
+  --ro-input: #fffdf9;
+  --ro-header-bg: rgba(248,245,238,.92);
+  --ro-panel-bg: rgba(255,253,248,.96);
+  --ro-accent-soft: rgba(152,88,24,.09);
+  --ro-on-accent: #fffaf1;
+  color-scheme: light;
+}
+
+:root[data-theme='light'] .live-table--v5 {
+  background:
+    radial-gradient(circle at 72% 15%, rgba(72,127,183,.07), transparent 32rem),
+    radial-gradient(circle at 20% 100%, rgba(152,88,24,.06), transparent 28rem),
+    var(--vtt-bg);
+}
+
+:root[data-theme='light'] .live-vtt__topbar,
+:root[data-theme='light'] .live-vtt__drawer,
+:root[data-theme='light'] .live-vtt__dock,
+:root[data-theme='light'] .live-vtt__tool {
+  box-shadow: 0 16px 42px rgba(32,38,45,.13);
+}
+
+:root[data-theme='light'] .live-vtt__stage-shell::before {
+  background:
+    linear-gradient(90deg, rgba(38,42,47,.04), transparent 10%, transparent 90%, rgba(38,42,47,.04)),
+    linear-gradient(180deg, rgba(255,255,255,.07), transparent 12%, transparent 82%, rgba(38,42,47,.08));
+}
+
+:root[data-theme='light'] .live-table--v5 .live-table__stage > img {
+  opacity: .46;
+  filter: saturate(.78) contrast(.9) brightness(1.06);
+}
+
+:root[data-theme='light'] .live-table--v5 .live-table__stage-copy h2 {
+  color: #15202b;
+  text-shadow: 0 4px 20px rgba(255,255,255,.48);
+}
+
+:root[data-theme='light'] .live-table--v5 .live-table__stage-copy > p:not(.ro-eyebrow) {
+  color: rgba(34,42,49,.72);
+}
+
+:root[data-theme='light'] .live-vtt__brand strong,
+:root[data-theme='light'] .live-vtt__campaign strong,
+:root[data-theme='light'] .live-vtt__drawer-head strong,
+:root[data-theme='light'] .live-vtt__actor-main strong,
+:root[data-theme='light'] .live-vtt__player-copy strong,
+:root[data-theme='light'] .live-vtt__quick-sheet-head h2 {
+  color: var(--vtt-text);
+}
+
+:root[data-theme='light'] .live-vtt__user > span,
+:root[data-theme='light'] .live-vtt__actor-portrait,
+:root[data-theme='light'] .live-vtt__player-avatar {
+  background: #e7e0d5;
+  color: #6d3f13;
+}
+
+:root[data-theme='light'] .live-table--v5 .session-feed__composer {
+  background: linear-gradient(180deg, rgba(255,253,248,.48), var(--vtt-panel) 24%);
+}
+
+:root[data-theme='light'] .live-table--v5 .map-stage__token {
+  border-color: rgba(255,253,248,.92);
+  color: #111820;
+  box-shadow: 0 0 0 1px var(--token-color), 0 7px 18px rgba(32,38,45,.18);
+}
+
+:root[data-theme='light'] .live-vtt__tool-backdrop {
+  background: rgba(37,42,48,.38);
+}
+
+:root[data-theme='light'] .live-table--v5.is-cinematic .live-vtt__topbar {
+  background: rgba(255,253,248,.72);
 }
