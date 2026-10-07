@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabaseClient';
-import { Adversario, Anotacao, Cena, Handout, Local, LoreEntry, NPC, NovaSessaoInput, Pista, Sessao, VisibilidadeConteudo } from '../../types/campaign';
+import { Adversario, Anotacao, Cena, Handout, Local, LoreEntry, MapaNarrativo, NPC, NovaSessaoInput, Pista, Sessao, VisibilidadeConteudo } from '../../types/campaign';
 
 const client = () => {
   if (!supabase) throw new Error('Supabase não está configurado.');
@@ -18,6 +18,7 @@ const mapSession = (row: any): Sessao => ({
   resumo: row.resumo || undefined,
   concluida: Boolean(row.concluida),
   descricao: row.descricao || undefined,
+  imagemUrl: row.imagem_url || undefined,
   status: row.status,
   anotacoesMestre: row.anotacoes_mestre || undefined,
   cenaIds: row.cena_ids || [],
@@ -25,6 +26,8 @@ const mapSession = (row: any): Sessao => ({
   localIds: row.local_ids || [],
   pistaIds: row.pista_ids || [],
   adversarioIds: row.adversario_ids || [],
+  mapaIds: row.mapa_ids || [],
+  handoutIds: row.handout_ids || [],
   visibilidade: row.visibilidade,
   conteudoDeCena: row.conteudo_de_cena,
   criadoPor: row.criado_por
@@ -60,12 +63,13 @@ const mapAdversary = (row: any): Adversario => ({
 const mapLocation = (row: any): Local => ({
   id: row.id, campanhaId: row.campaign_id, nome: row.nome, tipo: row.tipo,
   descricao: row.descricao, anomaliaDetectada: row.anomalia_detectada || undefined,
+  imagemUrl: row.imagem_url || undefined,
   visibilidade: row.visibilidade
 });
 
 const mapClue = (row: any): Pista => ({
   id: row.id, campanhaId: row.campaign_id, titulo: row.titulo, tipo: row.tipo,
-  status: row.status, descricao: row.descricao, visibilidade: row.visibilidade
+  status: row.status, descricao: row.descricao, imagemUrl: row.imagem_url || undefined, visibilidade: row.visibilidade
 });
 
 const mapLore = (row: any): LoreEntry => ({
@@ -100,10 +104,23 @@ const mapHandout = (row: any): Handout => ({
   visibilidade: row.visibilidade
 });
 
+const mapMap = (row: any): MapaNarrativo => ({
+  id: row.id,
+  campanhaId: row.campaign_id,
+  titulo: row.titulo,
+  imagemUrl: row.imagem_url || undefined,
+  storagePath: row.storage_path || undefined,
+  visibilidade: row.visibilidade,
+  gradeVisivel: Boolean(row.grade_visivel),
+  criadoEm: row.criado_em,
+  atualizadoEm: row.atualizado_em,
+  criadoPor: row.criado_por || undefined
+});
+
 export const campaignContentRepository = {
   async carregar(campaignId: string) {
     const api = client();
-    const [sessions, npcs, adversaries, locations, clues, lore, notes, scenes, handouts] = await Promise.all([
+    const [sessions, npcs, adversaries, locations, clues, lore, notes, scenes, handouts, maps] = await Promise.all([
       api.from('campaign_sessions').select('*').eq('campaign_id', campaignId).order('numero', { ascending: false }),
       api.from('campaign_npcs').select('*').eq('campaign_id', campaignId).order('criado_em'),
       api.from('campaign_adversaries').select('*').eq('campaign_id', campaignId).order('criado_em'),
@@ -112,9 +129,10 @@ export const campaignContentRepository = {
       api.from('campaign_lore').select('*').eq('campaign_id', campaignId).order('criado_em'),
       api.from('campaign_notes').select('*').eq('campaign_id', campaignId).order('atualizado_em', { ascending: false }),
       api.from('campaign_scenes').select('*').eq('campaign_id', campaignId).order('criado_em'),
-      api.from('campaign_handouts').select('*').eq('campaign_id', campaignId).order('criado_em')
+      api.from('campaign_handouts').select('*').eq('campaign_id', campaignId).order('criado_em'),
+      api.from('narrative_maps').select('*').eq('campaign_id', campaignId).order('criado_em')
     ]);
-    for (const result of [sessions, npcs, adversaries, locations, clues, lore, notes, scenes, handouts]) if (result.error) throw result.error;
+    for (const result of [sessions, npcs, adversaries, locations, clues, lore, notes, scenes, handouts, maps]) if (result.error) throw result.error;
     return {
       sessoes: (sessions.data || []).map(mapSession),
       npcs: (npcs.data || []).map(mapNpc),
@@ -124,7 +142,8 @@ export const campaignContentRepository = {
       loreEntries: (lore.data || []).map(mapLore),
       anotacoes: (notes.data || []).map(mapNote),
       cenas: (scenes.data || []).map(mapScene),
-      handouts: (handouts.data || []).map(mapHandout)
+      handouts: (handouts.data || []).map(mapHandout),
+      mapas: (maps.data || []).map(mapMap)
     };
   },
 
@@ -141,11 +160,53 @@ export const campaignContentRepository = {
       status: dados.status || 'planejamento',
       concluida: dados.status === 'concluida',
       anotacoes_mestre: dados.anotacoesMestre?.trim() || null,
+      imagem_url: dados.imagemUrl || null,
+      cena_ids: dados.cenaIds || [],
+      npc_ids: dados.npcIds || [],
+      local_ids: dados.localIds || [],
+      pista_ids: dados.pistaIds || [],
+      adversario_ids: dados.adversarioIds || [],
+      mapa_ids: dados.mapaIds || [],
+      handout_ids: dados.handoutIds || [],
       visibilidade: visibility,
       conteudo_de_cena: 'ambientacao'
     }).select().single();
     if (error) throw error;
     await client().from('campaigns').update({ sessao_atual: numero }).eq('id', campaignId);
+    return mapSession(data);
+  },
+
+  async atualizarSessao(id: string, patch: Partial<Sessao>) {
+    const values: Record<string, unknown> = {};
+    if (patch.titulo !== undefined) values.titulo = patch.titulo;
+    if (patch.data !== undefined) values.data_text = patch.data;
+    if (patch.jogadoresCount !== undefined) values.jogadores_count = patch.jogadoresCount;
+    if (patch.resumo !== undefined) values.resumo = patch.resumo || null;
+    if (patch.concluida !== undefined) values.concluida = patch.concluida;
+    if (patch.descricao !== undefined) values.descricao = patch.descricao || null;
+    if (patch.imagemUrl !== undefined) values.imagem_url = patch.imagemUrl || null;
+    if (patch.status !== undefined) {
+      values.status = patch.status;
+      values.concluida = patch.status === 'concluida';
+    }
+    if (patch.anotacoesMestre !== undefined) values.anotacoes_mestre = patch.anotacoesMestre || null;
+    if (patch.cenaIds !== undefined) values.cena_ids = patch.cenaIds;
+    if (patch.npcIds !== undefined) values.npc_ids = patch.npcIds;
+    if (patch.localIds !== undefined) values.local_ids = patch.localIds;
+    if (patch.pistaIds !== undefined) values.pista_ids = patch.pistaIds;
+    if (patch.adversarioIds !== undefined) values.adversario_ids = patch.adversarioIds;
+    if (patch.mapaIds !== undefined) values.mapa_ids = patch.mapaIds;
+    if (patch.handoutIds !== undefined) values.handout_ids = patch.handoutIds;
+    if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
+    if (patch.conteudoDeCena !== undefined) values.conteudo_de_cena = patch.conteudoDeCena;
+    if (!Object.keys(values).length) {
+      const { data, error } = await client().from('campaign_sessions').select('*').eq('id', id).single();
+      if (error) throw error;
+      return mapSession(data);
+    }
+    values.atualizado_em = new Date().toISOString();
+    const { data, error } = await client().from('campaign_sessions').update(values).eq('id', id).select().single();
+    if (error) throw error;
     return mapSession(data);
   },
 
@@ -232,7 +293,8 @@ export const campaignContentRepository = {
   async adicionarLocal(novo: Omit<Local, 'id'>) {
     const { data, error } = await client().from('campaign_locations').insert({
       campaign_id: novo.campanhaId, nome: novo.nome, tipo: novo.tipo, descricao: novo.descricao,
-      anomalia_detectada: novo.anomaliaDetectada || null, visibilidade: novo.visibilidade || visibility
+      anomalia_detectada: novo.anomaliaDetectada || null, imagem_url: novo.imagemUrl || null,
+      visibilidade: novo.visibilidade || visibility
     }).select().single();
     if (error) throw error;
     return mapLocation(data);
@@ -241,10 +303,29 @@ export const campaignContentRepository = {
   async adicionarPista(novo: Omit<Pista, 'id'>) {
     const { data, error } = await client().from('campaign_clues').insert({
       campaign_id: novo.campanhaId, titulo: novo.titulo, tipo: novo.tipo,
-      status: novo.status, descricao: novo.descricao, visibilidade: novo.visibilidade || visibility
+      status: novo.status, descricao: novo.descricao, imagem_url: novo.imagemUrl || null,
+      visibilidade: novo.visibilidade || visibility
     }).select().single();
     if (error) throw error;
     return mapClue(data);
+  },
+
+  async atualizarPista(id: string, patch: Partial<Pista>) {
+    const values: Record<string, unknown> = {};
+    if (patch.titulo !== undefined) values.titulo = patch.titulo;
+    if (patch.tipo !== undefined) values.tipo = patch.tipo;
+    if (patch.status !== undefined) values.status = patch.status;
+    if (patch.descricao !== undefined) values.descricao = patch.descricao;
+    if (patch.imagemUrl !== undefined) values.imagem_url = patch.imagemUrl || null;
+    if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
+    const { data, error } = await client().from('campaign_clues').update(values).eq('id', id).select().single();
+    if (error) throw error;
+    return mapClue(data);
+  },
+
+  async removerPista(id: string) {
+    const { error } = await client().from('campaign_clues').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async adicionarLore(novo: Omit<LoreEntry, 'id'>) {
@@ -321,6 +402,37 @@ export const campaignContentRepository = {
 
   async removerHandout(id: string) {
     const { error } = await client().from('campaign_handouts').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  async adicionarMapa(novo: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) {
+    const { data, error } = await client().from('narrative_maps').insert({
+      campaign_id: novo.campanhaId,
+      titulo: novo.titulo,
+      imagem_url: novo.imagemUrl || null,
+      storage_path: novo.storagePath || null,
+      visibilidade: novo.visibilidade,
+      grade_visivel: Boolean(novo.gradeVisivel)
+    }).select().single();
+    if (error) throw error;
+    return mapMap(data);
+  },
+
+  async atualizarMapa(id: string, patch: Partial<MapaNarrativo>) {
+    const values: Record<string, unknown> = {};
+    if (patch.titulo !== undefined) values.titulo = patch.titulo;
+    if (patch.imagemUrl !== undefined) values.imagem_url = patch.imagemUrl || null;
+    if (patch.storagePath !== undefined) values.storage_path = patch.storagePath || null;
+    if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
+    if (patch.gradeVisivel !== undefined) values.grade_visivel = patch.gradeVisivel;
+    values.atualizado_em = new Date().toISOString();
+    const { data, error } = await client().from('narrative_maps').update(values).eq('id', id).select().single();
+    if (error) throw error;
+    return mapMap(data);
+  },
+
+  async removerMapa(id: string) {
+    const { error } = await client().from('narrative_maps').delete().eq('id', id);
     if (error) throw error;
   }
 
