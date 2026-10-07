@@ -50,6 +50,12 @@ export const SceneStage: React.FC<SceneStageProps> = (props) => {
   return <main className={`live-table__stage live-table__stage--${conteudo}`}>
     <div className="live-table__geometry" />
     {conteudo === 'imagem' && <AssetImage src={imageUrl || campanha.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="Cena atual" />}
+    {conteudo === 'handout' && imageUrl && (
+      <div className="live-table__handout-preview">
+        <iframe src={imageUrl} title={sceneTitle} />
+        <a href={imageUrl} target="_blank" rel="noreferrer">Abrir handout em nova aba</a>
+      </div>
+    )}
     <div className="live-table__stage-copy">
       <p className="ro-eyebrow">Cena atual</p>
       {editing ? <div className="live-table__scene-editor">
