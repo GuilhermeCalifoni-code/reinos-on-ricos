@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, SessaoStatus, MembroCampanha, Cena, Handout } from '../types/campaign';
+import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, NovaSessaoInput, SessaoStatus, MembroCampanha, Cena, Handout, MapaNarrativo } from '../types/campaign';
 import { Personagem } from '../types/character';
 import { SessionPlanner } from './campaign/SessionPlanner';
 import { CampaignMembersPanel } from './campaign/CampaignMembersPanel';
 import { CampaignAssetsPanel } from './campaign/CampaignAssetsPanel';
 import { CampaignActorsPanel } from './campaign/CampaignActorsPanel';
+import { CampaignMapsPanel } from './campaign/CampaignMapsPanel';
 import { AssetImage } from './system/AssetImage';
 
 export type CampaignTabType = 
@@ -37,17 +38,20 @@ interface CampaignDetailViewProps {
   anotacoes: Anotacao[];
   cenas: Cena[];
   handouts: Handout[];
+  mapas: MapaNarrativo[];
   onIniciarSessao: (campanha: Campanha) => void;
+  onAbrirSessao: (sessao: Sessao) => void | Promise<void>;
   onAbrirFichaPersonagem: (personagem: Personagem) => void;
   onNovaSessao: (campanhaId: string, dados: NovaSessaoInput) => void;
+  onAtualizarSessao: (id: string, patch: Partial<Sessao>) => Promise<unknown> | unknown;
   onAdicionarNPC: (npc: Omit<NPC, 'id'>) => Promise<unknown> | unknown;
   onAtualizarNPC: (id: string, patch: Partial<NPC>) => Promise<unknown> | unknown;
   onRemoverNPC: (id: string) => Promise<unknown> | unknown;
   onAdicionarAdversario: (adv: Omit<Adversario, 'id'>) => Promise<unknown> | unknown;
   onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown> | unknown;
   onRemoverAdversario: (id: string) => Promise<unknown> | unknown;
-  onAdicionarLocal: (loc: Omit<Local, 'id'>) => void;
-  onAdicionarPista: (pista: Omit<Pista, 'id'>) => void;
+  onAdicionarLocal: (loc: Omit<Local, 'id'>) => Promise<unknown> | unknown;
+  onAdicionarPista: (pista: Omit<Pista, 'id'>) => Promise<unknown> | unknown;
   onAdicionarLore: (lore: Omit<LoreEntry, 'id'>) => void;
   onAdicionarAnotacao: (campanhaId: string, titulo: string, conteudo: string) => void;
   onAdicionarCena: (cena: Omit<Cena, 'id'>) => Promise<unknown> | unknown;
@@ -56,6 +60,9 @@ interface CampaignDetailViewProps {
   onAdicionarHandout: (handout: Omit<Handout, 'id'>) => Promise<unknown> | unknown;
   onAtualizarHandout: (id: string, patch: Partial<Handout>) => Promise<unknown> | unknown;
   onRemoverHandout: (id: string) => Promise<unknown> | unknown;
+  onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => Promise<unknown> | unknown;
+  onAtualizarMapa: (id: string, patch: Partial<MapaNarrativo>) => Promise<unknown> | unknown;
+  onRemoverMapa: (id: string) => Promise<unknown> | unknown;
   membros?: MembroCampanha[];
   currentUserId?: string;
   canManageMembers?: boolean;
@@ -78,9 +85,12 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   anotacoes,
   cenas,
   handouts,
+  mapas,
   onIniciarSessao,
+  onAbrirSessao,
   onAbrirFichaPersonagem,
   onNovaSessao,
+  onAtualizarSessao,
   onAdicionarNPC,
   onAtualizarNPC,
   onRemoverNPC,
@@ -97,6 +107,9 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   onAdicionarHandout,
   onAtualizarHandout,
   onRemoverHandout,
+  onAdicionarMapa,
+  onAtualizarMapa,
+  onRemoverMapa,
   membros = [],
   currentUserId,
   canManageMembers = false,
@@ -428,9 +441,23 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         {/* 21. ABA: SESSÕES */}
         {abaAtiva === 'sessoes' && (
           <SessionPlanner
+            campaignId={campanha.id}
             sessoes={sessoesCampanha}
+            cenas={cenasCampanha}
+            mapas={mapas.filter(item => item.campanhaId === campanha.id)}
+            pistas={pistasCampanha}
+            handouts={handoutsCampanha}
+            npcs={npcsCampanha}
+            adversarios={adversariosCampanha}
+            locais={locaisCampanha}
+            canManage={canManageMembers}
             onCreate={() => setModalNovaSessao(true)}
-            onOpen={() => onIniciarSessao(campanha)}
+            onOpen={onAbrirSessao}
+            onUpdate={onAtualizarSessao}
+            onAddScene={onAdicionarCena}
+            onAddMap={onAdicionarMapa}
+            onAddClue={onAdicionarPista}
+            onAddHandout={onAdicionarHandout}
           />
         )}
 
@@ -467,15 +494,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
         )}
 
         {abaAtiva === 'mapas' && (
-          <section className="campaign-assets">
-            <header className="campaign-assets__head">
-              <div><p className="ro-eyebrow">Cartografia narrativa</p><h2>Mapas da campanha</h2></div>
-            </header>
-            <div className="campaign-assets__card">
-              <p>Mapas são administrados diretamente na Mesa Ao Vivo, onde zoom, pan, grade, visibilidade e tokens permanecem sincronizados em Realtime.</p>
-              <button type="button" className="ro-button mt-4" onClick={() => onIniciarSessao(campanha)}>Abrir Mesa Ao Vivo →</button>
-            </div>
-          </section>
+          <CampaignMapsPanel
+            campaignId={campanha.id}
+            maps={mapas.filter(item => item.campanhaId === campanha.id)}
+            canManage={canManageMembers}
+            onAdd={onAdicionarMapa}
+            onUpdate={onAtualizarMapa}
+            onRemove={onRemoverMapa}
+          />
         )}
 
         {/* 22. ABA: PERSONAGENS */}
