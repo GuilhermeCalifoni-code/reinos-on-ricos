@@ -12,6 +12,7 @@ interface MapStageProps {
   personagens?: Personagem[];
   npcs?: NPC[];
   adversarios?: Adversario[];
+  onActorUsed?: (kind: 'personagem' | 'npc' | 'adversario', id: string) => void;
   mapaAtualId?: string;
   onSelecionarMapa: (id: string) => void;
   onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
@@ -25,7 +26,7 @@ interface MapStageProps {
 const cores: Record<TipoTokenMapa, string> = { personagem: '#c8a568', npc: '#8ea1bb', adversario: '#bd6570', marcador: '#a99c83' };
 
 export const MapStage: React.FC<MapStageProps> = ({
-  campanhaId, mapas, tokens, mestre, personagens = [], npcs = [], adversarios = [], mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken
+  campanhaId, mapas, tokens, mestre, personagens = [], npcs = [], adversarios = [], onActorUsed, mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken
 }) => {
   const mapaAtual = mapas.find(mapa => mapa.id === mapaAtualId) || mapas[0];
   const mapaVisivel = Boolean(mapaAtual && (mestre || mapaAtual.visibilidade !== 'mestre_privado'));
@@ -89,6 +90,7 @@ export const MapStage: React.FC<MapStageProps> = ({
         y: 50,
         oculto: false
       });
+      onActorUsed?.(kind as 'personagem' | 'npc' | 'adversario', id);
       setTokenSource('manual');
       return;
     }
@@ -141,6 +143,7 @@ export const MapStage: React.FC<MapStageProps> = ({
         y,
         oculto: false
       });
+      onActorUsed?.(payload.kind, payload.id);
     } catch {
       // Payload externo ou inválido: simplesmente ignore.
     }
