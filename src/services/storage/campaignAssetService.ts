@@ -68,6 +68,27 @@ export const campaignAssetService = {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(campaignId);
   },
 
+  async uploadCharacterPortrait(characterId: string, file: File) {
+    validateImage(file);
+    const { data: { user }, error: userError } = await client().auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error('Sua sessão expirou. Entre novamente para enviar a imagem.');
+    const extName = sanitize(file.name || 'retrato');
+    const path = `characters/${user.id}/${characterId}/portrait/${Date.now()}-${extName}`;
+    const { error } = await client().storage.from(BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+    if (error) throw error;
+    return path;
+  },
+
+  async uploadActorPortrait(campaignId: string, kind: 'npcs' | 'adversaries', file: File) {
+    validateImage(file);
+    const extName = sanitize(file.name || 'retrato');
+    const path = `campaigns/${campaignId}/actors/${kind}/${Date.now()}-${extName}`;
+    const { error } = await client().storage.from(BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+    if (error) throw error;
+    return path;
+  },
+
   async uploadCampaignCover(campaignId: string, file: File) {
     validateImage(file);
     const extName = sanitize(file.name || 'capa');
