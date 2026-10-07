@@ -11,6 +11,7 @@
 @import "./design-system/characters-v2.css";
 @import "./design-system/compendium-v2.css";
 @import "./design-system/live-table-v5.css";
+@import "./design-system/session-studio.css";
 
 @layer base {
   :root {
