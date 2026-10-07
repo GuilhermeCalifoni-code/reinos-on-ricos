@@ -56,6 +56,9 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const sceneDescription = compartilhando && typeof realtime.state?.metadata?.sceneDescription === 'string'
     ? realtime.state.metadata.sceneDescription
     : sceneCopyLocal.description;
+  const sceneImageUrl = compartilhando && typeof realtime.state?.metadata?.sceneImageUrl === 'string'
+    ? realtime.state.metadata.sceneImageUrl
+    : '';
   const effectiveSessionId = sessionId || realtime.state?.sessionId;
   const selecionado = personagens.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
   const registro = useSessionEvents({ campaignId: campanha.id, sessionId: effectiveSessionId, userId, enabled: registroOnline, characterId: personagemJogadorId });
@@ -102,7 +105,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(() => undefined); else onRemoverTokenMapa(id); };
   const statusTexto = !registroOnline ? 'Local' : realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
-  const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
+  const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} imageUrl={sceneImageUrl} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
   const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagens={personagens} npcs={npcs} adversarios={adversarios} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
   const closeTool = () => setFerramenta('nenhuma');
   const toggleCinematic = () => {
