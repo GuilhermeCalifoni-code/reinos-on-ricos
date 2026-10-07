@@ -27,6 +27,7 @@ const MASTER_ONLY_TABS = new Set<CampaignTabType>(['sessoes', 'anotacoes', 'conf
 interface CampaignDetailViewProps {
   campanha: Campanha;
   personagens: Personagem[];
+  personagensPessoais?: Personagem[];
   sessoes: Sessao[];
   npcs: NPC[];
   adversarios: Adversario[];
@@ -60,13 +61,15 @@ interface CampaignDetailViewProps {
   canManageMembers?: boolean;
   onRegenerarCodigo?: (campaignId: string) => Promise<string>;
   onAtualizarMembro?: (campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) => Promise<void>;
+  onVincularMinhaFicha?: (campaignId: string, characterId: string | null) => Promise<void>;
   onExcluirCampanha?: (id: string) => void;
 }
 
 export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   campanha,
   personagens,
-  sessoes,
+  personagensPessoais = [],
+  sessoes:
   npcs,
   adversarios,
   locais,
@@ -99,6 +102,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   canManageMembers = false,
   onRegenerarCodigo,
   onAtualizarMembro,
+  onVincularMinhaFicha,
   onExcluirCampanha
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<CampaignTabType>('visao_geral');
@@ -484,6 +488,19 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
               </div>
             </div>
 
+            {!canManageMembers && membros.length > 0 && (
+              <CampaignMembersPanel
+                campaignId={campanha.id}
+                members={membros}
+                inviteCode={campanha.codigo}
+                currentUserId={currentUserId}
+                characters={personagens}
+                personalCharacters={personagensPessoais}
+                canManage={false}
+                onLinkOwnCharacter={onVincularMinhaFicha}
+              />
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {personagens.map(pj => (
                 <div
@@ -493,8 +510,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 >
                   <div>
                     {/* Retrato sutil */}
-                    <div className="h-32 bg-[var(--ro-bg)] border border-[var(--ro-line)] mb-4 flex items-center justify-center text-2xl font-serif text-[var(--ro-copper)]">
-                      {pj.nome.slice(0, 1)}
+                    <div className="h-32 bg-[var(--ro-bg)] border border-[var(--ro-line)] mb-4 flex items-center justify-center text-2xl font-serif text-[var(--ro-copper)] overflow-hidden">
+                      {pj.imagemUrl
+                        ? <AssetImage src={pj.imagemUrl} alt={`Retrato de ${pj.nome}`} className="w-full h-full object-cover" />
+                        : pj.nome.slice(0, 1)}
                     </div>
 
                     <h3 className="font-serif text-xl text-[var(--ro-paper)] font-normal leading-snug">
@@ -708,9 +727,11 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                   inviteCode={campanha.codigo}
                   currentUserId={currentUserId}
                   characters={personagens}
+                  personalCharacters={personagensPessoais}
                   canManage={canManageMembers}
                   onRegenerateInvite={onRegenerarCodigo}
                   onUpdateMember={onAtualizarMembro}
+                  onLinkOwnCharacter={onVincularMinhaFicha}
                 />
               )}
               <div>
