@@ -9,7 +9,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { useCharacterStorage } from './data/characterStore';
 import { useCampaignStorage } from './data/campaignStore';
 import { Personagem, AtributoNome, DominioNome } from './types/character';
-import { Campanha } from './types/campaign';
+import { Campanha, Sessao } from './types/campaign';
 import { UserSession } from './types/auth';
 import { isSupabaseConfigured } from './lib/supabaseClient';
 import { authService } from './services/auth/authService';
@@ -22,6 +22,7 @@ import { localCloudMigrationService } from './services/migration/localCloudMigra
 import { useTheme } from './design-system/theme';
 import { applyUIPreferences, loadLocalUIPreferences, saveLocalUIPreferences } from './services/preferences/uiPreferences';
 import { accountDataService } from './services/account/accountDataService';
+import { liveTableRepository } from './features/realtime/liveTableRepository';
 
 const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
 
@@ -88,6 +89,7 @@ export default function App() {
     removerCampanha,
     sessoes,
     criarSessao,
+    atualizarSessao,
     npcs,
     adicionarNPC,
     atualizarNPC,
@@ -153,6 +155,7 @@ export default function App() {
   const anotacoesAtuais = usandoRemoto ? conteudoRemoto.anotacoes : anotacoes;
   const cenasAtuais = usandoRemoto ? conteudoRemoto.cenas : cenas;
   const handoutsAtuais = usandoRemoto ? conteudoRemoto.handouts : handouts;
+  const mapasAtuais = usandoRemoto ? conteudoRemoto.mapas : mapas;
   const sessaoAtiva = sessoesAtuais.find(sessao => sessao.numero === campanhaAtiva?.sessaoAtual);
   const sessaoAtivaId = sessaoAtiva?.id;
   const membrosCampanha = usandoRemoto && campanhaAtivaId ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtivaId) : [];
@@ -444,6 +447,53 @@ export default function App() {
     setViewAtiva('modo_mesa');
   };
 
+  const handleAbrirSessaoPreparada = async (sessao: Sessao) => {
+    const camp = campanhas.find(item => item.id === sessao.campanhaId) || campanhaAtiva;
+    if (!camp) return;
+
+    setCampanhaAtivaId(camp.id);
+
+    if (usandoRemoto) {
+      await campaignRepository.atualizar(camp.id, { sessaoAtual: sessao.numero });
+
+      const primeiraCena = sessao.cenaIds?.length
+        ? cenasAtuais.find(item => item.id === sessao.cenaIds?.[0])
+        : undefined;
+      const primeiroMapa = sessao.mapaIds?.[0];
+      const contentType = primeiraCena?.tipoDeConteudo === 'mapa' || (!primeiraCena && primeiroMapa)
+        ? 'mapa'
+        : (primeiraCena?.tipoDeConteudo || sessao.conteudoDeCena || 'ambientacao');
+
+      if (session?.authUserId) {
+        try {
+          const live = await liveTableRepository.load(camp.id);
+          await liveTableRepository.saveState(camp.id, session.authUserId, {
+            ...live.state,
+            sessionId: sessao.id,
+            activeSceneId: primeiraCena?.id,
+            activeMapId: primeiroMapa,
+            contentType,
+            ruptureGeneral: live.state?.ruptureGeneral ?? camp.rupturaGeral,
+            metadata: {
+              ...(live.state?.metadata || {}),
+              sceneTitle: primeiraCena?.titulo || sessao.titulo,
+              sceneDescription: primeiraCena?.descricao || sessao.descricao || '',
+              sceneImageUrl: primeiraCena?.imagemUrl || sessao.imagemUrl || ''
+            }
+          });
+        } catch (error) {
+          console.error('Não foi possível aplicar a abertura preparada da sessão:', error);
+        }
+      }
+
+      await campanhasRemotas.recarregar();
+    } else {
+      atualizarCampanha(camp.id, { sessaoAtual: sessao.numero });
+    }
+
+    setViewAtiva('modo_mesa');
+  };
+
   const handleDetalhesCampanha = (camp: Campanha) => {
     setCampanhaAtivaId(camp.id);
     setViewAtiva('detalhe_campanha');
@@ -685,9 +735,12 @@ export default function App() {
             anotacoes={anotacoesAtuais}
             cenas={cenasAtuais}
             handouts={handoutsAtuais}
+            mapas={mapasAtuais}
             onIniciarSessao={handleContinuarCampanha}
+            onAbrirSessao={handleAbrirSessaoPreparada}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
             onNovaSessao={(campaignId, dados) => usandoRemoto ? void conteudoRemoto.criarSessao(campaignId, dados) : void criarSessao(campaignId, dados)}
+            onAtualizarSessao={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarSessao(id, patch) : atualizarSessao(id, patch)}
             onAdicionarNPC={(item) => usandoRemoto ? conteudoRemoto.adicionarNPC(item) : adicionarNPC(item)}
             onAtualizarNPC={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarNPC(id, patch) : atualizarNPC(id, patch)}
             onRemoverNPC={(id) => usandoRemoto ? conteudoRemoto.removerNPC(id) : removerNPC(id)}
@@ -704,6 +757,9 @@ export default function App() {
             onAdicionarHandout={(item) => usandoRemoto ? conteudoRemoto.adicionarHandout(item) : adicionarHandout(item)}
             onAtualizarHandout={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarHandout(id, patch) : atualizarHandout(id, patch)}
             onRemoverHandout={(id) => usandoRemoto ? conteudoRemoto.removerHandout(id) : removerHandout(id)}
+            onAdicionarMapa={(item) => usandoRemoto ? conteudoRemoto.adicionarMapa(item) : adicionarMapa(item)}
+            onAtualizarMapa={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarMapa(id, patch) : atualizarMapa(id, patch)}
+            onRemoverMapa={(id) => usandoRemoto ? conteudoRemoto.removerMapa(id) : removerMapa(id)}
             membros={usandoRemoto ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id) : []}
             currentUserId={session.authUserId}
             canManageMembers={papelDaCampanha === 'mestre'}
@@ -749,10 +805,10 @@ export default function App() {
             onAtualizarContador={atualizarContador}
             onRemoverContador={removerContador}
             onDuplicarContador={duplicarContador}
-            mapas={mapas}
-            onAdicionarMapa={adicionarMapa}
-            onAtualizarMapa={atualizarMapa}
-            onRemoverMapa={removerMapa}
+            mapas={mapasAtuais}
+            onAdicionarMapa={usandoRemoto ? ((item) => { void conteudoRemoto.adicionarMapa(item); }) : adicionarMapa}
+            onAtualizarMapa={usandoRemoto ? ((id, patch) => { void conteudoRemoto.atualizarMapa(id, patch); }) : atualizarMapa}
+            onRemoverMapa={usandoRemoto ? ((id) => { void conteudoRemoto.removerMapa(id); }) : removerMapa}
             tokensMapa={tokensMapa}
             onAdicionarTokenMapa={adicionarTokenMapa}
             onAtualizarTokenMapa={atualizarTokenMapa}
