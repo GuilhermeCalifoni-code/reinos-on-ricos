@@ -41,6 +41,15 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
 }) => {
   const [tab, setTab] = useState<ActorsTab>('personagens');
 
+  const startDrag = (
+    event: React.DragEvent,
+    payload: { kind: 'personagem' | 'npc' | 'adversario'; id: string; name: string; imageUrl?: string }
+  ) => {
+    if (!mestre) return;
+    event.dataTransfer.effectAllowed = 'copy';
+    event.dataTransfer.setData('application/x-ro-actor', JSON.stringify(payload));
+  };
+
   return (
     <section className="live-vtt__actors">
       <header className="live-vtt__drawer-head">
@@ -70,7 +79,12 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
           <>
             {personagens.length === 0 && <p className="live-vtt__drawer-empty">Nenhum Desvelado vinculado a esta campanha.</p>}
             {personagens.map(personagem => (
-              <article key={personagem.id} className={`live-vtt__actor-card ${selecionadoId === personagem.id ? 'is-selected' : ''}`}>
+              <article
+                key={personagem.id}
+                className={`live-vtt__actor-card ${selecionadoId === personagem.id ? 'is-selected' : ''}`}
+                draggable={mestre}
+                onDragStart={event => startDrag(event, { kind: 'personagem', id: personagem.id, name: personagem.nome, imageUrl: personagem.imagemUrl })}
+              >
                 <button type="button" className="live-vtt__actor-main" onClick={() => onSelecionar(personagem.id)}>
                   <Portrait image={personagem.imagemUrl} name={personagem.nome} />
                   <span>
@@ -102,17 +116,24 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
           <>
             {npcs.length === 0 && <p className="live-vtt__drawer-empty">Nenhum NPC preparado para esta campanha.</p>}
             {npcs.map(npc => (
-              <article key={npc.id} className="live-vtt__actor-card">
+              <article
+                key={npc.id}
+                className="live-vtt__actor-card"
+                draggable
+                onDragStart={event => startDrag(event, { kind: 'npc', id: npc.id, name: npc.nome, imageUrl: npc.imagemUrl })}
+              >
                 <div className="live-vtt__actor-main is-static">
                   <Portrait image={npc.imagemUrl} name={npc.nome} />
                   <span>
                     <strong>{npc.nome}</strong>
-                    <small>{npc.papel || npc.conceito || 'NPC'} · {npc.atitude}</small>
+                    <small>{npc.isDesvelado ? 'Desvelado' : (npc.papel || npc.conceito || 'NPC')} · {npc.atitude}</small>
                   </span>
                 </div>
                 <div className="live-vtt__actor-resources">
-                  <span><Heart size={12} /> Vida <b>{npc.vida ?? '—'}</b></span>
-                  <span><Shield size={12} /> DT <b>{npc.dificuldade ?? '—'}</b></span>
+                  <span><Heart size={12} /> <b>{npc.vida ?? '—'}</b>{npc.isDesvelado ? `/${npc.vidaMaxima ?? npc.vida ?? '—'}` : ''}</span>
+                  {npc.isDesvelado && <span><Sparkles size={12} /> <b>{npc.foco ?? 0}</b>/{npc.focoMaximo ?? 0}</span>}
+                  {npc.isDesvelado && <span className={(npc.ruptura ?? 0) >= 4 ? 'is-danger' : ''}><Shield size={12} /> <b>{npc.ruptura ?? 0}</b>/6</span>}
+                  <span><Shield size={12} /> {npc.isDesvelado ? 'Def' : 'DT'} <b>{npc.isDesvelado ? (npc.defesa ?? npc.dificuldade ?? '—') : (npc.dificuldade ?? '—')}</b></span>
                 </div>
               </article>
             ))}
@@ -123,7 +144,12 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
           <>
             {adversarios.length === 0 && <p className="live-vtt__drawer-empty">Nenhuma ameaça preparada para esta campanha.</p>}
             {adversarios.map(adversario => (
-              <article key={adversario.id} className="live-vtt__actor-card is-threat">
+              <article
+                key={adversario.id}
+                className="live-vtt__actor-card is-threat"
+                draggable
+                onDragStart={event => startDrag(event, { kind: 'adversario', id: adversario.id, name: adversario.nome, imageUrl: adversario.imagemUrl })}
+              >
                 <div className="live-vtt__actor-main is-static">
                   <Portrait image={adversario.imagemUrl} name={adversario.nome} />
                   <span>

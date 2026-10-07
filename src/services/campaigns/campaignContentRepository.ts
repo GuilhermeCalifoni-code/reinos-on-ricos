@@ -44,6 +44,12 @@ const mapNpc = (row: any): NPC => ({
   deslocamento: row.deslocamento || 'Próximo',
   habilidades: Array.isArray(row.habilidades) ? row.habilidades : [],
   imagemUrl: row.imagem_url || undefined,
+  isDesvelado: Boolean(row.is_desvelado),
+  vidaMaxima: row.vida_maxima ?? row.vida ?? 1,
+  foco: row.foco ?? 0,
+  focoMaximo: row.foco_maximo ?? 0,
+  ruptura: row.ruptura ?? 0,
+  defesa: row.defesa ?? row.dificuldade ?? 10,
   visibilidade: row.visibilidade
 });
 
@@ -218,6 +224,12 @@ export const campaignContentRepository = {
       dificuldade: novo.dificuldade ?? 10, deslocamento: novo.deslocamento || 'Próximo',
       habilidades: novo.habilidades || [],
       imagem_url: novo.imagemUrl || null,
+      is_desvelado: Boolean(novo.isDesvelado),
+      vida_maxima: novo.vidaMaxima ?? novo.vida ?? 1,
+      foco: novo.foco ?? 0,
+      foco_maximo: novo.focoMaximo ?? 0,
+      ruptura: novo.ruptura ?? 0,
+      defesa: novo.defesa ?? novo.dificuldade ?? 10,
       visibilidade: novo.visibilidade || visibility
     }).select().single();
     if (error) throw error;
@@ -253,6 +265,12 @@ export const campaignContentRepository = {
     if (patch.deslocamento !== undefined) values.deslocamento = patch.deslocamento;
     if (patch.habilidades !== undefined) values.habilidades = patch.habilidades;
     if (patch.imagemUrl !== undefined) values.imagem_url = patch.imagemUrl || null;
+    if (patch.isDesvelado !== undefined) values.is_desvelado = patch.isDesvelado;
+    if (patch.vidaMaxima !== undefined) values.vida_maxima = patch.vidaMaxima;
+    if (patch.foco !== undefined) values.foco = patch.foco;
+    if (patch.focoMaximo !== undefined) values.foco_maximo = patch.focoMaximo;
+    if (patch.ruptura !== undefined) values.ruptura = patch.ruptura;
+    if (patch.defesa !== undefined) values.defesa = patch.defesa;
     if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
     const { data, error } = await client().from('campaign_npcs').update(values).eq('id', id).select().single();
     if (error) throw error;

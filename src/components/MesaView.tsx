@@ -1,5 +1,5 @@
 import React from 'react';
-import { Adversario, Campanha, Contador, MapaNarrativo, MembroCampanha, NPC, TokenMapa } from '../types/campaign';
+import { Adversario, Campanha, Cena, Contador, Handout, MapaNarrativo, MembroCampanha, NPC, Pista, Sessao, TokenMapa } from '../types/campaign';
 import { UserRole } from '../types/auth';
 import { Personagem } from '../types/character';
 import { LiveTable } from './live/LiveTable';
@@ -16,6 +16,10 @@ interface MesaViewProps {
   sessionId?: string;
   sessionTitle?: string;
   sessionDescription?: string;
+  sessao?: Sessao;
+  cenas: Cena[];
+  pistas: Pista[];
+  handouts: Handout[];
   members?: MembroCampanha[];
   registroOnline: boolean;
   onVoltarParaCampanha: () => void;
@@ -31,6 +35,7 @@ interface MesaViewProps {
   onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
   onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void;
   onRemoverMapa: (id: string) => void;
+  onAtualizarSessao?: (id: string, patch: Partial<Sessao>) => Promise<unknown> | unknown;
   tokensMapa: TokenMapa[];
   onAdicionarTokenMapa: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
   onAtualizarTokenMapa: (id: string, parcial: Partial<TokenMapa>) => void;
@@ -38,10 +43,10 @@ interface MesaViewProps {
 }
 
 export const MesaView: React.FC<MesaViewProps> = ({
-  campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, members = [], registroOnline, onVoltarParaCampanha,
+  campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltarParaCampanha,
   onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
   contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
-  mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
+  mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
 }) => (
   <LiveTable
     campanha={campanha}
@@ -55,6 +60,10 @@ export const MesaView: React.FC<MesaViewProps> = ({
     sessionId={sessionId}
     sessionTitle={sessionTitle}
     sessionDescription={sessionDescription}
+    sessao={sessao}
+    cenas={cenas}
+    pistas={pistas}
+    handouts={handouts}
     members={members}
     registroOnline={registroOnline}
     onVoltar={onVoltarParaCampanha}
@@ -70,6 +79,7 @@ export const MesaView: React.FC<MesaViewProps> = ({
     onAdicionarMapa={onAdicionarMapa}
     onAtualizarMapa={onAtualizarMapa}
     onRemoverMapa={onRemoverMapa}
+    onAtualizarSessao={onAtualizarSessao}
     tokensMapa={tokensMapa}
     onAdicionarTokenMapa={onAdicionarTokenMapa}
     onAtualizarTokenMapa={onAtualizarTokenMapa}

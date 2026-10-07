@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Personagem } from '../../types/character';
-import { Adversario, Campanha, Contador, ConteudoDeCena, MapaNarrativo, MembroCampanha, NPC, TokenMapa } from '../../types/campaign';
+import { Adversario, Campanha, Cena, Contador, ConteudoDeCena, Handout, MapaNarrativo, MembroCampanha, NPC, Pista, Sessao, TokenMapa } from '../../types/campaign';
 import { UserRole } from '../../types/auth';
 import { DiceRoller } from '../DiceRoller';
 import { DreamGuide } from '../DreamGuide';
@@ -15,18 +15,20 @@ import { sessionEventFactories } from '../../services/session-events/sessionEven
 import { useCampaignRealtime } from '../../features/realtime/useCampaignRealtime';
 import { AssetImage } from '../system/AssetImage';
 import { LiveActorsPanel } from './LiveActorsPanel';
-import { ArrowLeft, FileText, Image as ImageIcon, Map as MapIcon, MessageSquareText, Moon, Radio, Users } from 'lucide-react';
+import { LiveDirectorPanel } from './LiveDirectorPanel';
+import { campaignAssetService } from '../../services/storage/campaignAssetService';
+import { ArrowLeft, FileText, Image as ImageIcon, Layers3, Map as MapIcon, MessageSquareText, Moon, Radio, Users } from 'lucide-react';
 
 interface LiveTableProps {
-  campanha: Campanha; personagens: Personagem[]; npcs: NPC[]; adversarios: Adversario[]; role: UserRole; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
+  campanha: Campanha; personagens: Personagem[]; npcs: NPC[]; adversarios: Adversario[]; role: UserRole; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
   onAtualizarPersonagem: (personagem: Personagem) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem) => void;
   contadores: Contador[]; onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarContador: (id: string, parcial: Partial<Contador>) => void; onRemoverContador: (id: string) => void; onDuplicarContador: (id: string) => void;
-  mapas: MapaNarrativo[]; onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void; onRemoverMapa: (id: string) => void;
+  mapas: MapaNarrativo[]; onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void; onRemoverMapa: (id: string) => void; onAtualizarSessao?: (id: string, patch: Partial<Sessao>) => Promise<unknown> | unknown;
   tokensMapa: TokenMapa[]; onAdicionarTokenMapa: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarTokenMapa: (id: string, parcial: Partial<TokenMapa>) => void; onRemoverTokenMapa: (id: string) => void;
 }
 
 export const LiveTable: React.FC<LiveTableProps> = (props) => {
-  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
+  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
   const mestre = role === 'mestre';
   const personagensVisiveis = useMemo(() => mestre ? personagens : personagens.filter(p => p.id === personagemJogadorId), [mestre, personagemJogadorId, personagens]);
   const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || personagens[0]?.id || '');
@@ -37,8 +39,10 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     title: sessionTitle || 'A cidade contém a respiração',
     description: sessionDescription || 'Ambientação da cena. O Mestre pode preparar imagem, mapa ou handout para esta área.'
   });
-  const [partyOpen, setPartyOpen] = useState(true);
-  const [sessionOpen, setSessionOpen] = useState(true);
+  const [partyOpen, setPartyOpen] = useState(false);
+  const [sessionOpen, setSessionOpen] = useState(false);
+  const [directorOpen, setDirectorOpen] = useState(mestre);
+  const [activeSceneLocalId, setActiveSceneLocalId] = useState<string | undefined>();
   const [cinematic, setCinematic] = useState(false);
   const contadoresDaCampanha = useMemo(() => contadores.filter(item => item.campanhaId === campanha.id), [campanha.id, contadores]);
   const mapasDaCampanha = useMemo(() => mapas.filter(item => item.campanhaId === campanha.id), [campanha.id, mapas]);
@@ -46,10 +50,16 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const realtime = useCampaignRealtime({ campaignId: campanha.id, userId, userName, role, enabled: registroOnline, fallback: { counters: contadoresDaCampanha, maps: mapasDaCampanha, tokens: tokensDaCampanha }, onCharacterUpdate: update => { const personagem = personagens.find(item => item.id === update.id); if (personagem) onAtualizarPersonagem({ ...personagem, vidaAtual: update.vidaAtual, focoAtual: update.focoAtual, ruptura: update.ruptura, protecaoOniricaAtual: update.protecaoOniricaAtual, atualizadoEm: update.updatedAt }); } });
   const compartilhando = registroOnline && realtime.ready;
   const contadoresAtuais = compartilhando ? realtime.counters : contadoresDaCampanha;
-  const mapasAtuais = compartilhando ? realtime.maps : mapasDaCampanha;
+  const mapasAtuais = useMemo(() => {
+    if (!compartilhando) return mapasDaCampanha;
+    const merged = new Map<string, MapaNarrativo>();
+    [...mapasDaCampanha, ...realtime.maps].forEach(item => merged.set(item.id, item));
+    return Array.from(merged.values());
+  }, [compartilhando, mapasDaCampanha, realtime.maps]);
   const tokensAtuais = compartilhando ? realtime.tokens : tokensDaCampanha;
   const conteudo = compartilhando && realtime.state ? realtime.state.contentType : conteudoLocal;
   const mapaAtualId = compartilhando && realtime.state?.activeMapId ? realtime.state.activeMapId : mapaLocalId;
+  const activeSceneId = compartilhando && realtime.state?.activeSceneId ? realtime.state.activeSceneId : activeSceneLocalId;
   const sceneTitle = compartilhando && typeof realtime.state?.metadata?.sceneTitle === 'string'
     ? realtime.state.metadata.sceneTitle
     : sceneCopyLocal.title;
@@ -83,9 +93,87 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     });
   }, [compartilhando, effectiveSessionId, realtime.state?.sessionId, sessionDescription, sessionTitle]);
   const selecionarFerramenta = (proxima: LiveTool) => setFerramenta(atual => atual === proxima ? 'nenhuma' : proxima);
-  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
+  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeSceneId?: string; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
   const mudarConteudo = (proximo: ConteudoDeCena) => { setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
   const selecionarMapa = (id: string) => { setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
+
+  const ensureSessionLink = async (field: 'cenaIds' | 'mapaIds' | 'pistaIds' | 'handoutIds' | 'npcIds' | 'adversarioIds', id: string) => {
+    if (!mestre || !sessao || !onAtualizarSessao) return;
+    const current = Array.isArray(sessao[field]) ? (sessao[field] as string[]) : [];
+    if (current.includes(id)) return;
+    await onAtualizarSessao(sessao.id, { [field]: [...current, id] } as Partial<Sessao>);
+  };
+
+  const ativarCena = async (scene: Cena) => {
+    setActiveSceneLocalId(scene.id);
+    const contentType: ConteudoDeCena = scene.tipoDeConteudo === 'mapa' ? 'ambientacao' : scene.tipoDeConteudo;
+    setConteudoLocal(contentType);
+    setSceneCopyLocal({
+      title: scene.titulo,
+      description: scene.descricao || 'Cena preparada pelo Mestre.'
+    });
+    salvarEstado({
+      activeSceneId: scene.id,
+      contentType,
+      metadata: {
+        ...(realtime.state?.metadata || {}),
+        sceneTitle: scene.titulo,
+        sceneDescription: scene.descricao || '',
+        sceneImageUrl: scene.imagemUrl || ''
+      }
+    });
+    await ensureSessionLink('cenaIds', scene.id);
+    registrarSemFalhar({ type: 'scene_change', content: `Cena ativada: ${scene.titulo}.`, metadata: { sceneId: scene.id } });
+  };
+
+  const ativarMapa = async (mapa: MapaNarrativo) => {
+    selecionarMapa(mapa.id);
+    await ensureSessionLink('mapaIds', mapa.id);
+    registrarSemFalhar(sessionEventFactories.map(`Mapa ativado: ${mapa.titulo}.`));
+  };
+
+  const apresentarPista = async (pista: Pista) => {
+    const contentType: ConteudoDeCena = pista.imagemUrl ? 'imagem' : 'handout';
+    setConteudoLocal(contentType);
+    setSceneCopyLocal({ title: pista.titulo, description: pista.descricao });
+    salvarEstado({
+      contentType,
+      metadata: {
+        ...(realtime.state?.metadata || {}),
+        sceneTitle: pista.titulo,
+        sceneDescription: pista.descricao,
+        sceneImageUrl: pista.imagemUrl || '',
+        presentedKind: 'pista',
+        presentedId: pista.id
+      }
+    });
+    await ensureSessionLink('pistaIds', pista.id);
+    registrarSemFalhar({ type: 'clue_reveal', content: `Pista revelada: ${pista.titulo}.`, metadata: { pistaId: pista.id } });
+  };
+
+  const apresentarHandout = async (handout: Handout) => {
+    let url = handout.arquivoUrl || '';
+    if (!url && handout.storagePath) {
+      try { url = await campaignAssetService.signedUrl(handout.storagePath); } catch { url = ''; }
+    }
+    setConteudoLocal('handout');
+    setSceneCopyLocal({ title: handout.titulo, description: handout.descricao || 'Handout apresentado pelo Mestre.' });
+    salvarEstado({
+      contentType: 'handout',
+      metadata: {
+        ...(realtime.state?.metadata || {}),
+        sceneTitle: handout.titulo,
+        sceneDescription: handout.descricao || '',
+        sceneImageUrl: url,
+        presentedKind: 'handout',
+        presentedId: handout.id,
+        handoutUrl: url
+      }
+    });
+    await ensureSessionLink('handoutIds', handout.id);
+    registrarSemFalhar({ type: 'system', content: `Handout apresentado: ${handout.titulo}.`, metadata: { handoutId: handout.id, kind: 'handout_reveal' } });
+  };
+
   const atualizarTextoCena = (title: string, description: string) => {
     setSceneCopyLocal({ title, description });
     salvarEstado({ metadata: { ...(realtime.state?.metadata || {}), sceneTitle: title, sceneDescription: description } });
@@ -106,19 +194,19 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const statusTexto = !registroOnline ? 'Local' : realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
   const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} imageUrl={sceneImageUrl} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
-  const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagens={personagens} npcs={npcs} adversarios={adversarios} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
+  const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagens={personagens} npcs={npcs} adversarios={adversarios} onActorUsed={(kind, id) => { if (kind === 'npc') void ensureSessionLink('npcIds', id); if (kind === 'adversario') void ensureSessionLink('adversarioIds', id); }} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
   const closeTool = () => setFerramenta('nenhuma');
   const toggleCinematic = () => {
     setCinematic(value => {
       const next = !value;
-      if (next) { setPartyOpen(false); setSessionOpen(false); closeTool(); }
-      else { setPartyOpen(true); setSessionOpen(true); }
+      if (next) { setPartyOpen(false); setSessionOpen(false); setDirectorOpen(false); closeTool(); }
+      else if (mestre) { setDirectorOpen(true); }
       return next;
     });
   };
 
   return (
-    <section className={`live-table live-table--v5 ${sessionOpen ? 'has-left-drawer' : ''} ${partyOpen ? 'has-right-drawer' : ''} ${cinematic ? 'is-cinematic' : ''}`}>
+    <section className={`live-table live-table--v5 ${sessionOpen || directorOpen ? 'has-left-drawer' : ''} ${partyOpen ? 'has-right-drawer' : ''} ${cinematic ? 'is-cinematic' : ''}`}>
       <header className="live-vtt__topbar">
         <div className="live-vtt__brand">
           <img src="/ro-mark.svg" alt="" />
@@ -183,10 +271,22 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
       <div className="live-vtt__shell">
         {!cinematic && (
           <nav className="live-vtt__rail" aria-label="Painéis da mesa">
+            {mestre && (
+              <button
+                type="button"
+                className={directorOpen ? 'is-active' : ''}
+                onClick={() => { setDirectorOpen(value => !value); setSessionOpen(false); }}
+                aria-label="Direção da sessão"
+                title="Direção da sessão"
+              >
+                <Layers3 size={19} />
+                <span>Sessão</span>
+              </button>
+            )}
             <button
               type="button"
               className={sessionOpen ? 'is-active' : ''}
-              onClick={() => setSessionOpen(value => !value)}
+              onClick={() => { setSessionOpen(value => !value); setDirectorOpen(false); }}
               aria-label="Registro Vivo"
               title="Registro Vivo"
             >
@@ -236,7 +336,18 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
                     key={personagem.id}
                     className={`live-vtt__player ${selecionado?.id === personagem.id ? 'is-selected' : ''}`}
                     onClick={() => setSelecionadoId(personagem.id)}
-                    title={personagem.nome}
+                    draggable={mestre}
+                    onDragStart={(event) => {
+                      if (!mestre) return;
+                      event.dataTransfer.effectAllowed = 'copy';
+                      event.dataTransfer.setData('application/x-ro-actor', JSON.stringify({
+                        kind: 'personagem',
+                        id: personagem.id,
+                        name: personagem.nome,
+                        imageUrl: personagem.imagemUrl || ''
+                      }));
+                    }}
+                    title={mestre ? `${personagem.nome} · arraste para o mapa` : personagem.nome}
                   >
                     <span className={`live-vtt__player-avatar ${personagem.imagemUrl ? 'has-image' : ''}`}>
                       {personagem.imagemUrl
@@ -253,6 +364,25 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
             </div>
           )}
         </main>
+
+        {!cinematic && mestre && directorOpen && (
+          <aside className="live-vtt__drawer live-vtt__drawer--left live-vtt__drawer--director">
+            <LiveDirectorPanel
+              sessao={sessao}
+              cenas={cenas}
+              mapas={mapasAtuais}
+              pistas={pistas}
+              handouts={handouts}
+              activeSceneId={activeSceneId}
+              activeMapId={mapaAtualId}
+              onActivateScene={ativarCena}
+              onActivateMap={ativarMapa}
+              onPresentClue={apresentarPista}
+              onPresentHandout={apresentarHandout}
+              onClose={() => setDirectorOpen(false)}
+            />
+          </aside>
+        )}
 
         {!cinematic && sessionOpen && (
           <aside className="live-vtt__drawer live-vtt__drawer--left">

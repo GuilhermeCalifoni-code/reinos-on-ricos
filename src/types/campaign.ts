@@ -107,6 +107,9 @@ export interface TokenMapa {
   tipo: TipoTokenMapa;
   nome: string;
   imagemUrl?: string;
+  characterId?: string;
+  npcId?: string;
+  adversaryId?: string;
   cor: string;
   x: number;
   y: number;
@@ -176,6 +179,12 @@ export interface NPC {
   habilidades?: HabilidadeAtor[];
   visibilidade?: VisibilidadeConteudo;
   imagemUrl?: string;
+  isDesvelado?: boolean;
+  vidaMaxima?: number;
+  foco?: number;
+  focoMaximo?: number;
+  ruptura?: number;
+  defesa?: number;
 }
 
 export interface Adversario {

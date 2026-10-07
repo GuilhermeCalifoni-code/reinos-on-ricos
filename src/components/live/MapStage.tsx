@@ -12,6 +12,7 @@ interface MapStageProps {
   personagens?: Personagem[];
   npcs?: NPC[];
   adversarios?: Adversario[];
+  onActorUsed?: (kind: 'personagem' | 'npc' | 'adversario', id: string) => void;
   mapaAtualId?: string;
   onSelecionarMapa: (id: string) => void;
   onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
@@ -25,7 +26,7 @@ interface MapStageProps {
 const cores: Record<TipoTokenMapa, string> = { personagem: '#c8a568', npc: '#8ea1bb', adversario: '#bd6570', marcador: '#a99c83' };
 
 export const MapStage: React.FC<MapStageProps> = ({
-  campanhaId, mapas, tokens, mestre, personagens = [], npcs = [], adversarios = [], mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken
+  campanhaId, mapas, tokens, mestre, personagens = [], npcs = [], adversarios = [], onActorUsed, mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken
 }) => {
   const mapaAtual = mapas.find(mapa => mapa.id === mapaAtualId) || mapas[0];
   const mapaVisivel = Boolean(mapaAtual && (mestre || mapaAtual.visibilidade !== 'mestre_privado'));
@@ -81,11 +82,15 @@ export const MapStage: React.FC<MapStageProps> = ({
         tipo,
         nome: actor.nome,
         imagemUrl: actor.imagemUrl,
+        characterId: kind === 'personagem' ? id : undefined,
+        npcId: kind === 'npc' ? id : undefined,
+        adversaryId: kind === 'adversario' ? id : undefined,
         cor: cores[tipo],
         x: 50,
         y: 50,
         oculto: false
       });
+      onActorUsed?.(kind as 'personagem' | 'npc' | 'adversario', id);
       setTokenSource('manual');
       return;
     }
@@ -103,6 +108,55 @@ export const MapStage: React.FC<MapStageProps> = ({
     });
     setNovoToken('');
   };
+  const dropActor = (event: React.DragEvent<HTMLDivElement>) => {
+    if (!mestre || !mapaAtual || !viewport.current) return;
+    event.preventDefault();
+    const raw = event.dataTransfer.getData('application/x-ro-actor');
+    if (!raw) return;
+
+    try {
+      const payload = JSON.parse(raw) as {
+        kind: 'personagem' | 'npc' | 'adversario';
+        id: string;
+        name: string;
+        imageUrl?: string;
+      };
+      if (!['personagem', 'npc', 'adversario'].includes(payload.kind)) return;
+
+      const box = viewport.current.getBoundingClientRect();
+      const canvasX = (event.clientX - box.left - pan.x) / zoom;
+      const canvasY = (event.clientY - box.top - pan.y) / zoom;
+      const x = Math.max(2, Math.min(98, (canvasX / box.width) * 100));
+      const y = Math.max(2, Math.min(98, (canvasY / box.height) * 100));
+
+      onAdicionarToken({
+        campanhaId,
+        mapaId: mapaAtual.id,
+        tipo: payload.kind,
+        nome: payload.name,
+        imagemUrl: payload.imageUrl || undefined,
+        characterId: payload.kind === 'personagem' ? payload.id : undefined,
+        npcId: payload.kind === 'npc' ? payload.id : undefined,
+        adversaryId: payload.kind === 'adversario' ? payload.id : undefined,
+        cor: cores[payload.kind],
+        x,
+        y,
+        oculto: false
+      });
+      onActorUsed?.(payload.kind, payload.id);
+    } catch {
+      // Payload externo ou inválido: simplesmente ignore.
+    }
+  };
+
+  const startActorDrag = (
+    event: React.DragEvent,
+    payload: { kind: 'personagem' | 'npc' | 'adversario'; id: string; name: string; imageUrl?: string }
+  ) => {
+    event.dataTransfer.effectAllowed = 'copy';
+    event.dataTransfer.setData('application/x-ro-actor', JSON.stringify(payload));
+  };
+
   const mover = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!viewport.current) return;
     if (arrastando) {
@@ -192,6 +246,8 @@ export const MapStage: React.FC<MapStageProps> = ({
       <div
         ref={viewport}
         className={`map-stage__viewport ${mapaAtual?.gradeVisivel ? 'has-grid' : ''}`}
+        onDragOver={(event) => { if (mestre && mapaAtual) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; } }}
+        onDrop={dropActor}
         onPointerMove={mover}
         onPointerUp={finalizarArrasto}
         onPointerLeave={finalizarArrasto}
@@ -228,6 +284,53 @@ export const MapStage: React.FC<MapStageProps> = ({
           <p className="map-stage__empty">{mestre ? 'Crie ou selecione um mapa para a cena.' : 'O mapa desta cena ainda não foi revelado.'}</p>
         )}
       </div>
+
+      {mestre && mapaAtual && (
+        <div className="map-stage__actor-shelf">
+          <div className="map-stage__actor-shelf-label">
+            <strong>Tokens</strong>
+            <small>Arraste uma ficha para o mapa</small>
+          </div>
+          <div className="map-stage__actor-shelf-list">
+            {personagens.map(personagem => (
+              <button
+                type="button"
+                key={`pc-${personagem.id}`}
+                draggable
+                onDragStart={event => startActorDrag(event, { kind: 'personagem', id: personagem.id, name: personagem.nome, imageUrl: personagem.imagemUrl })}
+                title={`Arrastar ${personagem.nome}`}
+              >
+                <span>{personagem.imagemUrl ? <AssetImage src={personagem.imagemUrl} alt="" /> : personagem.nome.slice(0,2).toUpperCase()}</span>
+                <em>{personagem.nome}</em>
+              </button>
+            ))}
+            {npcs.map(npc => (
+              <button
+                type="button"
+                key={`npc-${npc.id}`}
+                draggable
+                onDragStart={event => startActorDrag(event, { kind: 'npc', id: npc.id, name: npc.nome, imageUrl: npc.imagemUrl })}
+                title={`Arrastar ${npc.nome}`}
+              >
+                <span>{npc.imagemUrl ? <AssetImage src={npc.imagemUrl} alt="" /> : npc.nome.slice(0,2).toUpperCase()}</span>
+                <em>{npc.nome}</em>
+              </button>
+            ))}
+            {adversarios.map(adversario => (
+              <button
+                type="button"
+                key={`adv-${adversario.id}`}
+                draggable
+                onDragStart={event => startActorDrag(event, { kind: 'adversario', id: adversario.id, name: adversario.nome, imageUrl: adversario.imagemUrl })}
+                title={`Arrastar ${adversario.nome}`}
+              >
+                <span>{adversario.imagemUrl ? <AssetImage src={adversario.imagemUrl} alt="" /> : adversario.nome.slice(0,2).toUpperCase()}</span>
+                <em>{adversario.nome}</em>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {mapaAtual && (
         <footer className="map-stage__caption">

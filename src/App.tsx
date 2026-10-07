@@ -795,6 +795,10 @@ export default function App() {
             sessionId={sessaoAtivaId}
             sessionTitle={sessaoAtiva?.titulo}
             sessionDescription={sessaoAtiva?.descricao}
+            sessao={sessaoAtiva}
+            cenas={cenasAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
+            pistas={pistasAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
+            handouts={handoutsAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             members={membrosCampanha}
             registroOnline={usandoRemoto}
             onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
@@ -810,6 +814,7 @@ export default function App() {
             onAdicionarMapa={usandoRemoto ? ((item) => { void conteudoRemoto.adicionarMapa(item); }) : adicionarMapa}
             onAtualizarMapa={usandoRemoto ? ((id, patch) => { void conteudoRemoto.atualizarMapa(id, patch); }) : atualizarMapa}
             onRemoverMapa={usandoRemoto ? ((id) => { void conteudoRemoto.removerMapa(id); }) : removerMapa}
+            onAtualizarSessao={usandoRemoto ? conteudoRemoto.atualizarSessao : ((id, patch) => atualizarSessao(id, patch))}
             tokensMapa={tokensMapa}
             onAdicionarTokenMapa={adicionarTokenMapa}
             onAtualizarTokenMapa={atualizarTokenMapa}

@@ -43,7 +43,13 @@ const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
 const normalizeNpc = (npc: NPC): NPC => ({
   ...npc,
   nivelAmeaca: npc.nivelAmeaca ?? 0,
+  isDesvelado: Boolean(npc.isDesvelado),
   vida: npc.vida ?? 1,
+  vidaMaxima: npc.vidaMaxima ?? npc.vida ?? 1,
+  foco: npc.foco ?? 0,
+  focoMaximo: npc.focoMaximo ?? 0,
+  ruptura: npc.ruptura ?? 0,
+  defesa: npc.defesa ?? npc.dificuldade ?? 10,
   resistencia: npc.resistencia ?? 0,
   dificuldade: npc.dificuldade ?? 10,
   deslocamento: npc.deslocamento || 'Próximo',
@@ -132,7 +138,8 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
 
   const npcDraft = useMemo<NPC>(() => normalizeNpc(editingNpc || {
     id: '', campanhaId, nome: '', papel: 'NPC', conceito: 'Pessoa da Vigília', descricao: '', atitude: 'neutro', localizacao: '',
-    nivelAmeaca: 0, vida: 1, resistencia: 0, dificuldade: 10, deslocamento: 'Próximo', habilidades: []
+    isDesvelado: false, nivelAmeaca: 0, vida: 1, vidaMaxima: 1, foco: 0, focoMaximo: 0, ruptura: 0, defesa: 10,
+    resistencia: 0, dificuldade: 10, deslocamento: 'Próximo', habilidades: []
   }), [campanhaId, editingNpc]);
   const advDraft = useMemo<Adversario>(() => normalizeAdversary(editingAdv || {
     id: '', campanhaId, nome: '', tipo: 'pesadelo', nivel: 1, vida: 3, vidaMaxima: 3, defesa: 10, resistencia: 8,
@@ -257,7 +264,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
         <div>
           <p className="ro-eyebrow">{mode === 'npc' ? 'Vigília' : 'Ameaças'}</p>
           <h2>{mode === 'npc' ? 'Personagens Não-Jogadores' : 'Adversários'}</h2>
-          <p>{mode === 'npc' ? 'Fichas simples para aliados, contatos, suspeitos e pessoas comuns.' : 'NA, dificuldade, vida, resistência e habilidades no formato do Livro de Adversários.'}</p>
+          <p>{mode === 'npc' ? 'NPCs comuns usam ficha rápida. NPCs Desvelados recebem uma ficha expandida com Vida, Foco, Ruptura, Defesa e recursos próprios.' : 'NA, dificuldade, vida, resistência e habilidades no formato do Livro de Adversários.'}</p>
         </div>
         {canManage && <button className="ro-button" onClick={openCreate}><Plus size={14} /> {mode === 'npc' ? 'Novo NPC' : 'Novo adversário'}</button>}
       </header>
@@ -277,7 +284,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
                     ? <AssetImage src={raw.imagemUrl} alt={`Retrato de ${name}`} />
                     : <span>{name.slice(0, 2).toUpperCase()}</span>}
                 </div>
-                <div><p className="ro-eyebrow">{mode === 'npc' ? npc!.papel : adv!.tipo}</p><h3>{name}</h3><small className="actor-card__visibility">{raw.visibilidade === 'revelado_jogadores' ? 'Revelado' : raw.visibilidade === 'compartilhado' ? 'Compartilhado' : 'Mestre privado'}</small></div>
+                <div><p className="ro-eyebrow">{mode === 'npc' ? (npc!.isDesvelado ? 'NPC · Desvelado' : npc!.papel) : adv!.tipo}</p><h3>{name}</h3><small className="actor-card__visibility">{raw.visibilidade === 'revelado_jogadores' ? 'Revelado' : raw.visibilidade === 'compartilhado' ? 'Compartilhado' : 'Mestre privado'}</small></div>
                 {canManage && <div className="actor-card__tools">
                   <button onClick={() => mode === 'npc' ? openEditNpc(npc!) : openEditAdv(adv!)} title="Editar"><Pencil size={14} /></button>
                   <button onClick={() => void remove(raw.id, name)} title="Excluir" className="is-danger"><Trash2 size={14} /></button>
@@ -285,11 +292,19 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
               </div>
 
               <dl className="actor-card__stats">
-                <div><dt>NA</dt><dd>{npc?.nivelAmeaca ?? adv!.nivel}</dd></div>
-                <div><dt>PV</dt><dd>{npc?.vida ?? adv!.vida}{adv ? `/${adv.vidaMaxima}` : ''}</dd></div>
-                <div><dt>R</dt><dd>{npc?.resistencia ?? adv!.resistencia}</dd></div>
-                <div><dt>Dif</dt><dd>{difficulty}</dd></div>
-                <div><dt>Desl</dt><dd>{npc?.deslocamento || adv?.deslocamento || 'Próximo'}</dd></div>
+                {npc?.isDesvelado ? <>
+                  <div><dt>PV</dt><dd>{npc.vida ?? 1}/{npc.vidaMaxima ?? npc.vida ?? 1}</dd></div>
+                  <div><dt>Foco</dt><dd>{npc.foco ?? 0}/{npc.focoMaximo ?? 0}</dd></div>
+                  <div><dt>Ruptura</dt><dd>{npc.ruptura ?? 0}/6</dd></div>
+                  <div><dt>Def</dt><dd>{npc.defesa ?? difficulty}</dd></div>
+                  <div><dt>R</dt><dd>{npc.resistencia ?? 0}</dd></div>
+                </> : <>
+                  <div><dt>NA</dt><dd>{npc?.nivelAmeaca ?? adv!.nivel}</dd></div>
+                  <div><dt>PV</dt><dd>{npc?.vida ?? adv!.vida}{adv ? `/${adv.vidaMaxima}` : ''}</dd></div>
+                  <div><dt>R</dt><dd>{npc?.resistencia ?? adv!.resistencia}</dd></div>
+                  <div><dt>Dif</dt><dd>{difficulty}</dd></div>
+                  <div><dt>Desl</dt><dd>{npc?.deslocamento || adv?.deslocamento || 'Próximo'}</dd></div>
+                </>}
               </dl>
 
               {(npc?.descricao || adv?.descricao) && <p className="actor-card__description">{npc?.descricao || adv?.descricao}</p>}
@@ -351,13 +366,57 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
               </div>
             </div>
             <label className="actor-editor__wide">Nome<input value={form.nome} onChange={event => setForm({ ...form, nome: event.target.value })} required /></label>
+            {mode === 'npc' && (
+              <div className="actor-editor__wide actor-editor__npc-kind">
+                <div>
+                  <p className="ro-eyebrow">Natureza do NPC</p>
+                  <strong>Este NPC é um Desvelado?</strong>
+                  <span>Isso muda a ficha usada na campanha e na Mesa Ao Vivo.</span>
+                </div>
+                <div className="actor-editor__npc-kind-options">
+                  <button
+                    type="button"
+                    className={!(form as NPC).isDesvelado ? 'is-active' : ''}
+                    onClick={() => setForm({ ...form, isDesvelado: false } as NPC)}
+                  >
+                    <b>Não</b><small>NPC comum · ficha rápida</small>
+                  </button>
+                  <button
+                    type="button"
+                    className={(form as NPC).isDesvelado ? 'is-active' : ''}
+                    onClick={() => setForm({
+                      ...form,
+                      isDesvelado: true,
+                      vidaMaxima: Math.max((form as NPC).vidaMaxima ?? 1, (form as NPC).vida ?? 1),
+                      foco: (form as NPC).foco ?? 0,
+                      focoMaximo: (form as NPC).focoMaximo ?? 0,
+                      ruptura: (form as NPC).ruptura ?? 0,
+                      defesa: (form as NPC).defesa ?? (form as NPC).dificuldade ?? 10
+                    } as NPC)}
+                  >
+                    <b>Sim</b><small>NPC Desvelado · ficha expandida</small>
+                  </button>
+                </div>
+              </div>
+            )}
             {mode === 'npc' ? <>
               <label>Papel<input value={(form as NPC).papel} onChange={event => setForm({ ...form, papel: event.target.value } as NPC)} /></label>
               <label>Localização<input value={(form as NPC).localizacao} onChange={event => setForm({ ...form, localizacao: event.target.value } as NPC)} /></label>
-              <label>NA<input type="number" min={0} value={(form as NPC).nivelAmeaca ?? 0} onChange={event => setForm({ ...form, nivelAmeaca: Number(event.target.value) } as NPC)} /></label>
-              <label>PV<input type="number" min={0} value={(form as NPC).vida ?? 1} onChange={event => setForm({ ...form, vida: Number(event.target.value) } as NPC)} /></label>
-              <label>R<input type="number" min={0} value={(form as NPC).resistencia ?? 0} onChange={event => setForm({ ...form, resistencia: Number(event.target.value) } as NPC)} /></label>
-              <label>Dif<input type="number" min={1} value={(form as NPC).dificuldade ?? 10} onChange={event => setForm({ ...form, dificuldade: Number(event.target.value) } as NPC)} /></label>
+              {(form as NPC).isDesvelado ? <>
+                <label>PV atual<input type="number" min={0} value={(form as NPC).vida ?? 1} onChange={event => setForm({ ...form, vida: Number(event.target.value) } as NPC)} /></label>
+                <label>PV máximo<input type="number" min={1} value={(form as NPC).vidaMaxima ?? 1} onChange={event => setForm({ ...form, vidaMaxima: Math.max(1, Number(event.target.value)) } as NPC)} /></label>
+                <label>Foco atual<input type="number" min={0} value={(form as NPC).foco ?? 0} onChange={event => setForm({ ...form, foco: Number(event.target.value) } as NPC)} /></label>
+                <label>Foco máximo<input type="number" min={0} value={(form as NPC).focoMaximo ?? 0} onChange={event => setForm({ ...form, focoMaximo: Number(event.target.value) } as NPC)} /></label>
+                <label>Ruptura<input type="number" min={0} max={6} value={(form as NPC).ruptura ?? 0} onChange={event => setForm({ ...form, ruptura: Math.max(0, Math.min(6, Number(event.target.value))) } as NPC)} /></label>
+                <label>Defesa<input type="number" min={0} value={(form as NPC).defesa ?? 10} onChange={event => setForm({ ...form, defesa: Number(event.target.value) } as NPC)} /></label>
+                <label>Resistência<input type="number" min={0} value={(form as NPC).resistencia ?? 0} onChange={event => setForm({ ...form, resistencia: Number(event.target.value) } as NPC)} /></label>
+                <label>DT base<input type="number" min={1} value={(form as NPC).dificuldade ?? 10} onChange={event => setForm({ ...form, dificuldade: Number(event.target.value) } as NPC)} /></label>
+              </> : <>
+                <label>NA<input type="number" min={0} value={(form as NPC).nivelAmeaca ?? 0} onChange={event => setForm({ ...form, nivelAmeaca: Number(event.target.value) } as NPC)} /></label>
+                <label>PV<input type="number" min={0} value={(form as NPC).vida ?? 1} onChange={event => setForm({ ...form, vida: Number(event.target.value) } as NPC)} /></label>
+                <label>R<input type="number" min={0} value={(form as NPC).resistencia ?? 0} onChange={event => setForm({ ...form, resistencia: Number(event.target.value) } as NPC)} /></label>
+                <label>Dif<input type="number" min={1} value={(form as NPC).dificuldade ?? 10} onChange={event => setForm({ ...form, dificuldade: Number(event.target.value) } as NPC)} /></label>
+              </>}
               <label>Deslocamento<input value={(form as NPC).deslocamento || 'Próximo'} onChange={event => setForm({ ...form, deslocamento: event.target.value } as NPC)} /></label>
               <label>Atitude<select value={(form as NPC).atitude} onChange={event => setForm({ ...form, atitude: event.target.value as NPC['atitude'] } as NPC)}><option value="aliado">Aliado</option><option value="neutro">Neutro</option><option value="hostil">Hostil</option><option value="desconhecido">Desconhecido</option></select></label>
             </> : <>
