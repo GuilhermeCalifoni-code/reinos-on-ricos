@@ -45,14 +45,28 @@ export const LiveDirectorPanel: React.FC<LiveDirectorPanelProps> = ({
   const linkedClues = useMemo(() => new Set(sessao?.pistaIds || []), [sessao?.pistaIds]);
   const linkedHandouts = useMemo(() => new Set(sessao?.handoutIds || []), [sessao?.handoutIds]);
 
-  const orderedScenes = useMemo(
-    () => [...cenas].sort((a, b) => Number(linkedScenes.has(b.id)) - Number(linkedScenes.has(a.id))),
-    [cenas, linkedScenes]
-  );
-  const orderedMaps = useMemo(
-    () => [...mapas].sort((a, b) => Number(linkedMaps.has(b.id)) - Number(linkedMaps.has(a.id))),
-    [mapas, linkedMaps]
-  );
+  const orderedScenes = useMemo(() => {
+    const order = sessao?.cenaIds || [];
+    return [...cenas].sort((a, b) => {
+      const ai = order.indexOf(a.id);
+      const bi = order.indexOf(b.id);
+      if (ai >= 0 && bi >= 0) return ai - bi;
+      if (ai >= 0) return -1;
+      if (bi >= 0) return 1;
+      return a.titulo.localeCompare(b.titulo, 'pt-BR');
+    });
+  }, [cenas, sessao?.cenaIds]);
+  const orderedMaps = useMemo(() => {
+    const order = sessao?.mapaIds || [];
+    return [...mapas].sort((a, b) => {
+      const ai = order.indexOf(a.id);
+      const bi = order.indexOf(b.id);
+      if (ai >= 0 && bi >= 0) return ai - bi;
+      if (ai >= 0) return -1;
+      if (bi >= 0) return 1;
+      return a.titulo.localeCompare(b.titulo, 'pt-BR');
+    });
+  }, [mapas, sessao?.mapaIds]);
 
   return (
     <section className="live-vtt__director">
@@ -79,7 +93,7 @@ export const LiveDirectorPanel: React.FC<LiveDirectorPanelProps> = ({
       <div className="live-vtt__director-body">
         {tab === 'cenas' && (
           <div className="live-vtt__director-list">
-            {orderedScenes.map((scene, index) => {
+            {orderedScenes.map((scene) => {
               const linked = linkedScenes.has(scene.id);
               const active = activeSceneId === scene.id;
               return (
@@ -88,7 +102,7 @@ export const LiveDirectorPanel: React.FC<LiveDirectorPanelProps> = ({
                     {scene.imagemUrl ? <AssetImage src={scene.imagemUrl} alt="" /> : <Layers3 size={20} />}
                   </div>
                   <div className="live-vtt__director-copy">
-                    <small>{linked ? `Sessão · cena ${index + 1}` : 'Arquivo da campanha'}</small>
+                    <small>{linked ? `Sessão · cena ${(sessao?.cenaIds || []).indexOf(scene.id) + 1}` : 'Arquivo da campanha'}</small>
                     <strong>{scene.titulo}</strong>
                     <p>{scene.descricao || 'Sem descrição preparada.'}</p>
                     <div>
@@ -108,7 +122,7 @@ export const LiveDirectorPanel: React.FC<LiveDirectorPanelProps> = ({
 
         {tab === 'mapas' && (
           <div className="live-vtt__director-list">
-            {orderedMaps.map((mapa, index) => {
+            {orderedMaps.map((mapa) => {
               const linked = linkedMaps.has(mapa.id);
               const active = activeMapId === mapa.id;
               return (
@@ -117,7 +131,7 @@ export const LiveDirectorPanel: React.FC<LiveDirectorPanelProps> = ({
                     {mapVisual(mapa) ? <AssetImage src={mapVisual(mapa)} alt="" /> : <MapIcon size={20} />}
                   </div>
                   <div className="live-vtt__director-copy">
-                    <small>{linked ? `Sessão · mapa ${index + 1}` : 'Biblioteca da campanha'}</small>
+                    <small>{linked ? `Sessão · mapa ${(sessao?.mapaIds || []).indexOf(mapa.id) + 1}` : 'Biblioteca da campanha'}</small>
                     <strong>{mapa.titulo}</strong>
                     <p>{mapa.gradeVisivel ? 'Grade ativa' : 'Mapa narrativo'} · {mapa.visibilidade === 'mestre_privado' ? 'privado' : 'revelável'}</p>
                     {linked && <div><span className="is-linked"><Check size={11} /> vinculado</span></div>}
