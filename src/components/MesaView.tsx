@@ -1,5 +1,5 @@
 import React from 'react';
-import { Campanha, Contador, MapaNarrativo, MembroCampanha, TokenMapa } from '../types/campaign';
+import { Adversario, Campanha, Contador, MapaNarrativo, MembroCampanha, NPC, TokenMapa } from '../types/campaign';
 import { UserRole } from '../types/auth';
 import { Personagem } from '../types/character';
 import { LiveTable } from './live/LiveTable';
@@ -7,6 +7,8 @@ import { LiveTable } from './live/LiveTable';
 interface MesaViewProps {
   campanha: Campanha;
   personagens: Personagem[];
+  npcs: NPC[];
+  adversarios: Adversario[];
   role: UserRole;
   personagemJogadorId?: string;
   userId?: string;
@@ -36,7 +38,7 @@ interface MesaViewProps {
 }
 
 export const MesaView: React.FC<MesaViewProps> = ({
-  campanha, personagens, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, members = [], registroOnline, onVoltarParaCampanha,
+  campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, members = [], registroOnline, onVoltarParaCampanha,
   onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
   contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
   mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
@@ -44,6 +46,8 @@ export const MesaView: React.FC<MesaViewProps> = ({
   <LiveTable
     campanha={campanha}
     personagens={personagens}
+    npcs={npcs}
+    adversarios={adversarios}
     role={role}
     personagemJogadorId={personagemJogadorId}
     userId={userId}
