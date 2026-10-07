@@ -26,6 +26,7 @@ import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from
 import { RupturaModal } from './RupturaModal';
 import { DamageModal } from './DamageModal';
 import { RestModal } from './RestModal';
+import { AssetImage } from './system/AssetImage';
 
 interface CharacterSheetProps {
   personagem: Personagem;
@@ -136,6 +137,11 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       {/* Barra Superior da Ficha: Identidade & Ações */}
       <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-4 sm:p-5 shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="w-24 h-28 shrink-0 overflow-hidden rounded border border-slate-700 bg-slate-950 flex items-center justify-center text-2xl font-serif text-cyan-300">
+            {personagem.imagemUrl
+              ? <AssetImage src={personagem.imagemUrl} alt={`Retrato de ${personagem.nome}`} className="w-full h-full object-cover" />
+              : personagem.nome.slice(0, 2).toUpperCase()}
+          </div>
           
           <div className="flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-3">
