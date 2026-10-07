@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Campanha, CampanhaTipo, MembroCampanha } from '../../types/campaign';
 import { campaignRepository } from './campaignRepository';
+import { campaignAssetService } from '../storage/campaignAssetService';
 
 export function useRemoteCampaigns(userId?: string) {
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
@@ -79,6 +80,7 @@ export function useRemoteCampaigns(userId?: string) {
   }, [recarregar]);
 
   const remover = useCallback(async (campaignId: string) => {
+    await campaignAssetService.removeCampaignAssets(campaignId);
     await campaignRepository.remover(campaignId);
     await recarregar();
   }, [recarregar]);
