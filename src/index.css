@@ -10,6 +10,7 @@
 @import "./design-system/generated-art-minimal.css";
 @import "./design-system/characters-v2.css";
 @import "./design-system/compendium-v2.css";
+@import "./design-system/live-table-v5.css";
 
 @layer base {
   :root {

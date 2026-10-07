@@ -7,14 +7,15 @@ import { DreamGuide } from '../DreamGuide';
 import { RulesReference } from '../RulesReference';
 import { CounterPanel } from './CounterPanel';
 import { LiveDock, LiveTool } from './LiveDock';
-import { PartyPanel } from './PartyPanel';
 import { SceneStage } from './SceneStage';
 import { SessionPanel } from './SessionPanel';
 import { MapStage } from './MapStage';
 import { useSessionEvents } from '../../services/session-events/useSessionEvents';
 import { sessionEventFactories } from '../../services/session-events/sessionEventFactories';
 import { useCampaignRealtime } from '../../features/realtime/useCampaignRealtime';
-import { ThemeToggle } from '../../design-system/ThemeToggle';
+import { AssetImage } from '../system/AssetImage';
+import { LiveActorsPanel } from './LiveActorsPanel';
+import { ArrowLeft, FileText, Image as ImageIcon, Map as MapIcon, MessageSquareText, Moon, Radio, Users } from 'lucide-react';
 
 interface LiveTableProps {
   campanha: Campanha; personagens: Personagem[]; npcs: NPC[]; adversarios: Adversario[]; role: UserRole; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
@@ -114,96 +115,211 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   };
 
   return (
-    <section className={`live-table live-table--v4 ${partyOpen ? '' : 'is-party-collapsed'} ${sessionOpen ? '' : 'is-session-collapsed'} ${cinematic ? 'is-cinematic' : ''}`}>
-      <header className="live-table__bar live-table__bar--v4">
-        <div className="live-table__brand">
+    <section className={`live-table live-table--v5 ${sessionOpen ? 'has-left-drawer' : ''} ${partyOpen ? 'has-right-drawer' : ''} ${cinematic ? 'is-cinematic' : ''}`}>
+      <header className="live-vtt__topbar">
+        <div className="live-vtt__brand">
           <img src="/ro-mark.svg" alt="" />
           <div>
             <strong>REINOS ONÍRICOS</strong>
-            <small>RPG · Mesa Ao Vivo</small>
+            <small>Mesa Ao Vivo</small>
           </div>
         </div>
 
-        <div className="live-table__campaign-title">
-          <p className="ro-eyebrow">{campanha.tipo} · {campanha.jogadoresCount || personagens.length} membros</p>
-          <h1>{campanha.nome}</h1>
+        <div className="live-vtt__campaign">
+          <span>{campanha.tipo}</span>
+          <strong>{campanha.nome}</strong>
+          <small>{sessionTitle || `Sessão ${String(campanha.sessaoAtual).padStart(2, '0')}`}</small>
         </div>
 
-        <div className="live-table__session-title">
-          <small>Sessão de hoje</small>
-          <strong>{sessionTitle || `Sessão ${String(campanha.sessaoAtual).padStart(2, '0')}`}</strong>
-          <span className={`live-table__live is-${realtime.status}`}><i /> {statusTexto}</span>
+        <div className="live-vtt__status">
+          <span className={`live-vtt__status-pill is-${realtime.status}`}>
+            <i />
+            <Radio size={12} />
+            {statusTexto}
+          </span>
+          <span>{campanha.jogadoresCount || personagens.length} na crônica</span>
         </div>
 
-        <div className="live-table__bar-right">
-          <ThemeToggle compact />
-          <div className="live-table__user">
+        <div className="live-vtt__top-actions">
+          {mestre && (
+            <div className="live-vtt__mode-switch" aria-label="Conteúdo apresentado à mesa">
+              <button type="button" className={conteudo === 'ambientacao' ? 'is-active' : ''} onClick={() => mudarConteudo('ambientacao')} title="Cena">
+                <Moon size={15} /><span>Cena</span>
+              </button>
+              <button type="button" className={conteudo === 'imagem' ? 'is-active' : ''} onClick={() => mudarConteudo('imagem')} title="Imagem">
+                <ImageIcon size={15} /><span>Imagem</span>
+              </button>
+              <button type="button" className={conteudo === 'mapa' ? 'is-active' : ''} onClick={() => mudarConteudo('mapa')} title="Mapa">
+                <MapIcon size={15} /><span>Mapa</span>
+              </button>
+              <button type="button" className={conteudo === 'handout' ? 'is-active' : ''} onClick={() => mudarConteudo('handout')} title="Handout">
+                <FileText size={15} /><span>Handout</span>
+              </button>
+            </div>
+          )}
+
+          <button type="button" className={`live-vtt__presentation ${cinematic ? 'is-active' : ''}`} onClick={toggleCinematic}>
+            <Moon size={15} />
+            <span>{cinematic ? 'Voltar à mesa' : 'Apresentar'}</span>
+          </button>
+
+          <div className="live-vtt__user">
             <span>{userName?.slice(0, 2).toUpperCase() || 'RO'}</span>
             <div><strong>{userName || 'Participante'}</strong><small>{role}</small></div>
           </div>
-          <button className="live-table__back live-table__back--danger" onClick={onVoltar}>Voltar à campanha</button>
+
+          <button type="button" className="live-vtt__leave" onClick={onVoltar}>
+            <ArrowLeft size={15} />
+            <span>Campanha</span>
+          </button>
         </div>
       </header>
 
-      {realtime.error && <p className="live-table__sync-error">Mesa remota indisponível: {realtime.error}</p>}
+      {realtime.error && <p className="live-vtt__sync-error">Sincronização indisponível: {realtime.error}</p>}
 
-      <div className="live-table__workspace">
-        {sessionOpen && (
-          <aside className="live-table__record-column">
-            <div className="live-table__column-title">
-              <div><h2>Registro Vivo</h2><p>Tudo o que acontece na mesa, em tempo real.</p></div>
-              <button onClick={() => setSessionOpen(false)} aria-label="Ocultar Registro Vivo">×</button>
+      <div className="live-vtt__shell">
+        {!cinematic && (
+          <nav className="live-vtt__rail" aria-label="Painéis da mesa">
+            <button
+              type="button"
+              className={sessionOpen ? 'is-active' : ''}
+              onClick={() => setSessionOpen(value => !value)}
+              aria-label="Registro Vivo"
+              title="Registro Vivo"
+            >
+              <MessageSquareText size={19} />
+              <span>Registro</span>
+            </button>
+            <button
+              type="button"
+              className={partyOpen ? 'is-active' : ''}
+              onClick={() => setPartyOpen(value => !value)}
+              aria-label="Elenco"
+              title="Elenco"
+            >
+              <Users size={19} />
+              <span>Elenco</span>
+            </button>
+          </nav>
+        )}
+
+        <main className="live-vtt__stage-shell">
+          <div className="live-vtt__stage-meta">
+            <div>
+              <span>{conteudo === 'mapa' ? 'Mapa tático' : 'Cena atual'}</span>
+              <strong>{conteudo === 'mapa' ? (mapasAtuais.find(item => item.id === mapaAtualId)?.titulo || 'Mapa da cena') : sceneTitle}</strong>
             </div>
-            <SessionPanel contadores={contadoresAtuais} mestre={mestre} role={role} userId={userId} members={members} enabled={registroOnline} events={registro.events} loading={registro.loading} error={registro.error} onSend={registro.registrar} />
+            <small>{conteudo === 'mapa' ? 'Movimente tokens, controle a grade e revele apenas o necessário.' : sceneDescription}</small>
+          </div>
+
+          <div className={`live-vtt__stage ${conteudo === 'mapa' ? 'is-map' : 'is-scene'}`}>
+            {conteudo === 'mapa' ? mapaCena : cena}
+          </div>
+
+          {!cinematic && (
+            <div className="live-vtt__player-bar" aria-label="Personagens presentes">
+              <div className="live-vtt__player-bar-label">
+                <span>Presentes</span>
+                <small>{personagensVisiveis.length}</small>
+              </div>
+
+              <div className="live-vtt__player-strip">
+                {personagensVisiveis.length === 0 && (
+                  <span className="live-vtt__player-empty">Nenhuma ficha vinculada à mesa.</span>
+                )}
+                {personagensVisiveis.map(personagem => (
+                  <button
+                    type="button"
+                    key={personagem.id}
+                    className={`live-vtt__player ${selecionado?.id === personagem.id ? 'is-selected' : ''}`}
+                    onClick={() => setSelecionadoId(personagem.id)}
+                    title={personagem.nome}
+                  >
+                    <span className={`live-vtt__player-avatar ${personagem.imagemUrl ? 'has-image' : ''}`}>
+                      {personagem.imagemUrl
+                        ? <AssetImage src={personagem.imagemUrl} alt="" />
+                        : personagem.nome.slice(0, 2).toUpperCase()}
+                    </span>
+                    <span className="live-vtt__player-copy">
+                      <strong>{personagem.nome}</strong>
+                      <small>PV {personagem.vidaAtual}/{personagem.vidaMaxima} · FO {personagem.focoAtual}/{personagem.focoMaximo} · R {personagem.ruptura}/6</small>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+
+        {!cinematic && sessionOpen && (
+          <aside className="live-vtt__drawer live-vtt__drawer--left">
+            <header className="live-vtt__drawer-head">
+              <div>
+                <span>Registro Vivo</span>
+                <strong>Sessão em tempo real</strong>
+              </div>
+              <button type="button" onClick={() => setSessionOpen(false)} aria-label="Fechar Registro Vivo">×</button>
+            </header>
+            <SessionPanel
+              contadores={contadoresAtuais}
+              mestre={mestre}
+              role={role}
+              userId={userId}
+              members={members}
+              enabled={registroOnline}
+              events={registro.events}
+              loading={registro.loading}
+              error={registro.error}
+              onSend={registro.registrar}
+            />
           </aside>
         )}
 
-        <main className="live-table__scene-column">
-          <div className="live-table__scene-heading">
-            <div><h2>Cena Atual</h2><p>A cena em foco na sua sessão.</p></div>
-            <div className="live-table__scene-modes">
-              <button className={cinematic ? 'is-active' : ''} onClick={toggleCinematic}>{cinematic ? 'Sair do Sonhar' : 'Modo Sonhar'}</button>
-              {!sessionOpen && <button onClick={() => setSessionOpen(true)}>Registro</button>}
-            </div>
-          </div>
-
-          {cena}
-
-          {partyOpen && (
-            <section className="live-table__present">
-              <div className="live-table__present-head">
-                <div><h3>Personagens Presentes</h3><p>{mestre ? 'Selecione para ajustar recursos ou abrir a ficha.' : 'Seu Desvelado nesta cena.'}</p></div>
-                <button onClick={() => setPartyOpen(false)}>Ocultar</button>
-              </div>
-              <PartyPanel personagens={personagensVisiveis} selecionadoId={selecionado?.id || ''} mestre={mestre} onSelecionar={setSelecionadoId} onAjustar={ajustar} onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')} />
-            </section>
-          )}
-          {!partyOpen && <button className="live-table__restore-party" onClick={() => setPartyOpen(true)}>Mostrar personagens</button>}
-        </main>
-
-        <aside className="live-table__map-column">
-          <div className="live-table__column-title">
-            <div><h2>Mapa da Cena</h2><p>Explore, mova tokens e revele o mundo.</p></div>
-          </div>
-          {mapaCena}
-        </aside>
+        {!cinematic && partyOpen && (
+          <aside className="live-vtt__drawer live-vtt__drawer--right">
+            <LiveActorsPanel
+              personagens={personagensVisiveis}
+              npcs={npcs}
+              adversarios={adversarios}
+              selecionadoId={selecionado?.id || ''}
+              mestre={mestre}
+              onSelecionar={setSelecionadoId}
+              onAbrirFicha={onAbrirFicha}
+              onAjustar={ajustar}
+              onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')}
+              onClose={() => setPartyOpen(false)}
+            />
+          </aside>
+        )}
       </div>
 
-      <LiveDock ferramenta={ferramenta} onSelecionar={selecionarFerramenta} />
+      {!cinematic && <LiveDock ferramenta={ferramenta} onSelecionar={selecionarFerramenta} />}
 
-      {ferramenta !== 'nenhuma' && (
-        <div className="live-table__tool-backdrop" onMouseDown={closeTool}>
-          <section className="live-table__tool" onMouseDown={event => event.stopPropagation()}>
-            <header className="live-table__tool-head">
-              <div><p className="ro-eyebrow">Ferramenta de mesa</p><strong>{ferramenta}</strong></div>
-              <button onClick={closeTool} aria-label="Fechar ferramenta">×</button>
+      {ferramenta !== 'nenhuma' && !cinematic && (
+        <div className="live-vtt__tool-backdrop" onMouseDown={closeTool}>
+          <section className="live-vtt__tool" onMouseDown={event => event.stopPropagation()}>
+            <header className="live-vtt__tool-head">
+              <div><span>Ferramenta de mesa</span><strong>{ferramenta}</strong></div>
+              <button type="button" onClick={closeTool} aria-label="Fechar ferramenta">×</button>
             </header>
-            {ferramenta === 'dados' && <DiceRoller personagemAtivo={selecionado} onSalvarPersonagem={atualizarPersonagemMesa} onAbrirModalRuptura={(delta, motivo) => selecionado && onAbrirRuptura(selecionado, delta, motivo)} onRegistrarRolagem={registrarSemFalhar} />}
-            {ferramenta === 'sonhar' && <DreamGuide personagemAtivo={selecionado} onIrParaRoladorOnirico={() => setFerramenta('dados')} />}
-            {ferramenta === 'ficha' && (selecionado ? <div className="live-table__quick-sheet"><p className="ro-eyebrow">Ficha rápida</p><h2>{selecionado.nome}</h2><p>Defesa {selecionado.defesa} · Resistência {selecionado.resistencia}</p><button onClick={() => onAbrirFicha(selecionado)} className="ro-button mt-4">Abrir ficha completa</button></div> : <p className="live-table__empty">Selecione um personagem.</p>)}
-            {ferramenta === 'contadores' && <CounterPanel campanhaId={campanha.id} contadores={contadoresAtuais} mestre={mestre} onAdicionar={adicionarContador} onAtualizar={atualizarContador} onRemover={removerContador} onDuplicar={duplicarContador} onRegistrarEvento={registrarSemFalhar} />}
-            {ferramenta === 'mapa' && mapaCena}
-            {ferramenta === 'regras' && <RulesReference />}
+            <div className="live-vtt__tool-body">
+              {ferramenta === 'dados' && <DiceRoller personagemAtivo={selecionado} onSalvarPersonagem={atualizarPersonagemMesa} onAbrirModalRuptura={(delta, motivo) => selecionado && onAbrirRuptura(selecionado, delta, motivo)} onRegistrarRolagem={registrarSemFalhar} />}
+              {ferramenta === 'sonhar' && <DreamGuide personagemAtivo={selecionado} onIrParaRoladorOnirico={() => setFerramenta('dados')} />}
+              {ferramenta === 'ficha' && (selecionado
+                ? <div className="live-vtt__quick-sheet">
+                    <div className="live-vtt__quick-sheet-head">
+                      <span className={`live-vtt__player-avatar ${selecionado.imagemUrl ? 'has-image' : ''}`}>
+                        {selecionado.imagemUrl ? <AssetImage src={selecionado.imagemUrl} alt="" /> : selecionado.nome.slice(0, 2).toUpperCase()}
+                      </span>
+                      <div><span>Ficha rápida</span><h2>{selecionado.nome}</h2></div>
+                    </div>
+                    <p>Defesa {selecionado.defesa} · Resistência {selecionado.resistencia}</p>
+                    <button type="button" onClick={() => onAbrirFicha(selecionado)} className="ro-button mt-4">Abrir ficha completa</button>
+                  </div>
+                : <p className="live-table__empty">Selecione um personagem.</p>)}
+              {ferramenta === 'contadores' && <CounterPanel campanhaId={campanha.id} contadores={contadoresAtuais} mestre={mestre} onAdicionar={adicionarContador} onAtualizar={atualizarContador} onRemover={removerContador} onDuplicar={duplicarContador} onRegistrarEvento={registrarSemFalhar} />}
+              {ferramenta === 'regras' && <RulesReference />}
+            </div>
           </section>
         </div>
       )}
