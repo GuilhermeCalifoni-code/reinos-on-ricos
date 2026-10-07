@@ -44,6 +44,7 @@ export interface Sessao {
   resumo?: string;
   concluida: boolean;
   descricao?: string;
+  imagemUrl?: string;
   status?: SessaoStatus;
   anotacoesMestre?: string;
   cenaIds?: string[];
@@ -51,6 +52,8 @@ export interface Sessao {
   localIds?: string[];
   pistaIds?: string[];
   adversarioIds?: string[];
+  mapaIds?: string[];
+  handoutIds?: string[];
   visibilidade?: VisibilidadeConteudo;
   conteudoDeCena?: ConteudoDeCena;
   criadoPor?: string;
@@ -62,6 +65,14 @@ export interface NovaSessaoInput {
   descricao?: string;
   status?: SessaoStatus;
   anotacoesMestre?: string;
+  imagemUrl?: string;
+  cenaIds?: string[];
+  npcIds?: string[];
+  localIds?: string[];
+  pistaIds?: string[];
+  adversarioIds?: string[];
+  mapaIds?: string[];
+  handoutIds?: string[];
 }
 
 export interface Cena {
@@ -190,6 +201,7 @@ export interface Local {
   id: string;
   campanhaId: string;
   nome: string;
+  imagemUrl?: string;
   tipo: 'urbano' | 'fronteira' | 'onirico';
   descricao: string;
   anomaliaDetectada?: string;
@@ -200,6 +212,7 @@ export interface Pista {
   id: string;
   campanhaId: string;
   titulo: string;
+  imagemUrl?: string;
   tipo: 'documento' | 'objeto' | 'testemunho' | 'anomalia';
   status: 'descoberta' | 'sob_analise' | 'resolvida';
   descricao: string;

@@ -89,6 +89,15 @@ export const campaignAssetService = {
     return path;
   },
 
+  async uploadPreparationImage(campaignId: string, scope: 'sessions' | 'clues' | 'locations', file: File) {
+    validateImage(file);
+    const extName = sanitize(file.name || 'imagem');
+    const path = `campaigns/${campaignId}/prep/${scope}/${Date.now()}-${extName}`;
+    const { error } = await client().storage.from(BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });
+    if (error) throw error;
+    return path;
+  },
+
   async uploadCampaignCover(campaignId: string, file: File) {
     validateImage(file);
     const extName = sanitize(file.name || 'capa');
@@ -108,6 +117,7 @@ export const campaignAssetService = {
   },
 
   async uploadMap(campaignId: string, file: File) {
+    validateImage(file);
     const extName = sanitize(file.name || 'mapa');
     const path = `campaigns/${campaignId}/maps/${Date.now()}-${extName}`;
     const { error } = await client().storage.from(BUCKET).upload(path, file, { upsert: false, contentType: file.type || undefined });

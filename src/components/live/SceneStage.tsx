@@ -10,6 +10,7 @@ interface SceneStageProps {
   conteudo: ConteudoDeCena;
   title?: string;
   description?: string;
+  imageUrl?: string;
   onAtualizarTexto?: (title: string, description: string) => void;
   onMudarConteudo: (conteudo: ConteudoDeCena) => void;
   mapas: MapaNarrativo[];
@@ -32,7 +33,7 @@ const copy: Record<Exclude<ConteudoDeCena, 'mapa'>, { title: string; hint: strin
 };
 
 export const SceneStage: React.FC<SceneStageProps> = (props) => {
-  const { campanha, mestre, conteudo, title, description, onAtualizarTexto, onMudarConteudo, mapas, tokensMapa, mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken, onRegistrarEvento } = props;
+  const { campanha, mestre, conteudo, title, description, imageUrl, onAtualizarTexto, onMudarConteudo, mapas, tokensMapa, mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken, onRegistrarEvento } = props;
   const [editing, setEditing] = React.useState(false);
   const [draftTitle, setDraftTitle] = React.useState(title || '');
   const [draftDescription, setDraftDescription] = React.useState(description || '');
@@ -48,7 +49,7 @@ export const SceneStage: React.FC<SceneStageProps> = (props) => {
   };
   return <main className={`live-table__stage live-table__stage--${conteudo}`}>
     <div className="live-table__geometry" />
-    {conteudo === 'imagem' && <AssetImage src={campanha.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="Cena atual" />}
+    {conteudo === 'imagem' && <AssetImage src={imageUrl || campanha.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="Cena atual" />}
     <div className="live-table__stage-copy">
       <p className="ro-eyebrow">Cena atual</p>
       {editing ? <div className="live-table__scene-editor">

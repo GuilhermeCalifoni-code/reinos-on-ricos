@@ -199,11 +199,14 @@ export function useCampaignStorage() {
       descricao: dados.descricao?.trim() || undefined,
       status: dados.status || 'planejamento',
       anotacoesMestre: dados.anotacoesMestre?.trim() || undefined,
-      cenaIds: [],
-      npcIds: [],
-      localIds: [],
-      pistaIds: [],
-      adversarioIds: [],
+      imagemUrl: dados.imagemUrl,
+      cenaIds: dados.cenaIds || [],
+      npcIds: dados.npcIds || [],
+      localIds: dados.localIds || [],
+      pistaIds: dados.pistaIds || [],
+      adversarioIds: dados.adversarioIds || [],
+      mapaIds: dados.mapaIds || [],
+      handoutIds: dados.handoutIds || [],
       visibilidade: 'mestre_privado',
       conteudoDeCena: 'ambientacao'
     };
@@ -240,7 +243,14 @@ export function useCampaignStorage() {
   const adicionarPista = (novo: Omit<Pista, 'id'>) => {
     const item: Pista = { ...novo, id: `pis-${Date.now()}` };
     setPistas(prev => [...prev, item]);
+    return item;
   };
+
+  const atualizarPista = (id: string, parcial: Partial<Pista>) =>
+    setPistas(prev => prev.map(item => item.id === id ? { ...item, ...parcial } : item));
+
+  const removerPista = (id: string) =>
+    setPistas(prev => prev.filter(item => item.id !== id));
 
   const adicionarLore = (novo: Omit<LoreEntry, 'id'>) => {
     const item: LoreEntry = { ...novo, id: `lore-${Date.now()}` };
@@ -328,6 +338,8 @@ export function useCampaignStorage() {
     adicionarLocal,
     pistas,
     adicionarPista,
+    atualizarPista,
+    removerPista,
     loreEntries,
     adicionarLore,
     anotacoes,
