@@ -47,8 +47,8 @@ interface SessionPlannerProps {
   locais: Local[];
   canManage: boolean;
   onCreate: () => void;
-  onOpen: (sessao: Sessao) => void | Promise<void>;
-  onUpdate: (id: string, patch: Partial<Sessao>) => void | Promise<unknown>;
+  onOpen: (sessao: Sessao) => unknown;
+  onUpdate: (id: string, patch: Partial<Sessao>) => unknown;
   onAddScene: (scene: Omit<Cena, 'id'>) => Promise<unknown> | unknown;
   onAddMap: (map: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => Promise<unknown> | unknown;
   onAddClue: (clue: Omit<Pista, 'id'>) => Promise<unknown> | unknown;
