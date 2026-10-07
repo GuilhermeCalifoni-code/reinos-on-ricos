@@ -472,6 +472,14 @@ export default function App() {
     setViewAtiva('detalhe_campanha');
   };
 
+  const handleVincularMinhaFicha = async (campaignId: string, characterId: string | null) => {
+    await campaignRepository.vincularPersonagem(campaignId, characterId);
+    await Promise.all([
+      personagensRemotos.refresh(),
+      campanhasRemotas.recarregar()
+    ]);
+  };
+
   const arquivoParaDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error('Não foi possível ler a imagem selecionada.'));
@@ -631,7 +639,7 @@ export default function App() {
             onAbrirPersonagem={handleAbrirFichaPersonagem}
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
-            personagensParaVinculo={usandoRemoto ? personagens.filter(personagem => !personagem.campaignId) : undefined}
+            personagensParaVinculo={usandoRemoto ? personagensRemotos.personal.filter(personagem => !personagem.campaignId) : undefined}
             onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
             avatarUrl={session.avatarUrl}
             onAbrirCampanhas={() => setViewAtiva('campanhas')}
@@ -646,7 +654,7 @@ export default function App() {
         return (
           <CampaignsLibraryView
             campanhas={campanhas}
-            personagensParaVinculo={usandoRemoto ? personagens : undefined}
+            personagensParaVinculo={usandoRemoto ? personagensRemotos.personal.filter(personagem => !personagem.campaignId) : undefined}
             onNovaCampanha={handleIniciarCriacaoCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             onContinuarCampanha={handleContinuarCampanha}
@@ -667,6 +675,7 @@ export default function App() {
           <CampaignDetailView
             campanha={campanhaAtiva}
             personagens={personagensCampanha}
+            personagensPessoais={usandoRemoto ? personagensRemotos.personal : personagens}
             sessoes={sessoesAtuais}
             npcs={npcsAtuais}
             adversarios={adversariosAtuais}
@@ -700,6 +709,7 @@ export default function App() {
             canManageMembers={papelDaCampanha === 'mestre'}
             onRegenerarCodigo={usandoRemoto ? campanhasRemotas.regenerarCodigo : undefined}
             onAtualizarMembro={usandoRemoto ? campanhasRemotas.atualizarMembro : undefined}
+            onVincularMinhaFicha={usandoRemoto ? handleVincularMinhaFicha : undefined}
             onExcluirCampanha={usandoRemoto ? (id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); } : removerCampanha}
           />
         ) : (
@@ -719,6 +729,8 @@ export default function App() {
           <MesaView
             campanha={campanhaAtiva}
             personagens={personagensCampanha}
+            npcs={npcsAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
+            adversarios={adversariosAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             role={papelDaCampanha}
             personagemJogadorId={personagemJogadorId}
             userId={session.authUserId}
@@ -857,16 +869,36 @@ export default function App() {
         <CreateCharacterModal
           isOpen={modalCriarPersonagem}
           onClose={() => setModalCriarPersonagem(false)}
-          onCriar={async (novo) => {
+          onCriar={async (novo, imagemArquivo) => {
             if (usandoRemoto) {
-              await personagensRemotos.save({
+              let salvo = await personagensRemotos.save({
                 ...novo,
                 ownerUserId: novo.ownerUserId || session?.authUserId
               });
-            } else {
-              salvarPersonagemLocal(novo);
+
+              if (imagemArquivo) {
+                try {
+                  const path = await campaignAssetService.uploadCharacterPortrait(salvo.id, imagemArquivo);
+                  salvo = await personagensRemotos.save({
+                    ...salvo,
+                    imagemUrl: campaignAssetService.toStorageRef(path),
+                    atualizadoEm: new Date().toISOString()
+                  });
+                } catch (error: any) {
+                  alert(`A ficha foi criada, mas o retrato não pôde ser enviado. ${error.message || ''}`);
+                }
+              }
+
+              setPersonagemParaFicha(salvo);
+              return;
             }
-            setPersonagemParaFicha(novo);
+
+            const imagemUrl = imagemArquivo
+              ? await arquivoParaDataUrl(imagemArquivo)
+              : novo.imagemUrl;
+            const local = { ...novo, imagemUrl };
+            salvarPersonagemLocal(local);
+            setPersonagemParaFicha(local);
           }}
         />
       )}
