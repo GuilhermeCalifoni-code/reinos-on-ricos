@@ -209,6 +209,10 @@ export default function App() {
       const profile = await authService.perfil(supabaseSession.user);
       if (!ativo) return;
 
+      if (sessionRef.current?.authUserId && sessionRef.current.authUserId !== supabaseSession.user.id) {
+        setCampanhaRemotaAtivaId(null);
+      }
+
       const restaurada: UserSession = {
         id: supabaseSession.user.id,
         authUserId: supabaseSession.user.id,
@@ -304,6 +308,7 @@ export default function App() {
 
   // Manipuladores de Sessão
   const handleLogin = (novaSession: UserSession) => {
+    setCampanhaRemotaAtivaId(null);
     sessionRef.current = novaSession;
     setSession(novaSession);
     try {
@@ -428,6 +433,7 @@ export default function App() {
     } catch (e) {
       console.error('Erro ao limpar sessão:', e);
     }
+    setCampanhaRemotaAtivaId(null);
     sessionRef.current = null;
     setSession(null);
   };
@@ -449,15 +455,21 @@ export default function App() {
 
   const handleEntrarComCodigoRemoto = async (codigo: string, personagemId?: string) => {
     const id = await campanhasRemotas.entrarComCodigo(codigo);
+
     if (personagemId && session?.authUserId) {
-      const personagem = personagens.find(item => item.id === personagemId);
+      const personagem = personagens.find(
+        item => item.id === personagemId && item.ownerUserId === session.authUserId && !item.campaignId
+      );
+
       if (personagem) {
         await campaignRepository.vincularPersonagem(id, personagem.id);
         await personagensRemotos.refresh();
       }
     }
+
     await campanhasRemotas.recarregar();
     setCampanhaRemotaAtivaId(id);
+    setViewAtiva('detalhe_campanha');
   };
 
   const arquivoParaDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
@@ -619,7 +631,7 @@ export default function App() {
             onAbrirPersonagem={handleAbrirFichaPersonagem}
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
-            personagensParaVinculo={usandoRemoto ? personagens : undefined}
+            personagensParaVinculo={usandoRemoto ? personagens.filter(personagem => !personagem.campaignId) : undefined}
             onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
             avatarUrl={session.avatarUrl}
             onAbrirCampanhas={() => setViewAtiva('campanhas')}
@@ -646,7 +658,7 @@ export default function App() {
         return (
           <CreateCampaignView
             onCriar={handleExecutarCriacaoCampanha}
-            onCancelar={() => setViewAtiva('dashboard')}
+            onCancelar={() => setViewAtiva('campanhas')}
           />
         );
 
