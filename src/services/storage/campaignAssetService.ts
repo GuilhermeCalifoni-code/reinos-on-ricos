@@ -13,6 +13,38 @@ const validateImage = (file: File) => {
   if (file.size > 15 * 1024 * 1024) throw new Error('A imagem excede o limite de 15 MB.');
 };
 
+const listFilesRecursively = async (prefix: string): Promise<string[]> => {
+  const bucket = client().storage.from(BUCKET);
+  const paths: string[] = [];
+  let offset = 0;
+  const limit = 100;
+
+  while (true) {
+    const { data, error } = await bucket.list(prefix, {
+      limit,
+      offset,
+      sortBy: { column: 'name', order: 'asc' }
+    });
+
+    if (error) throw error;
+    if (!data?.length) break;
+
+    for (const item of data) {
+      const path = `${prefix}/${item.name}`;
+      if (item.id) {
+        paths.push(path);
+      } else {
+        paths.push(...await listFilesRecursively(path));
+      }
+    }
+
+    if (data.length < limit) break;
+    offset += limit;
+  }
+
+  return paths;
+};
+
 export const campaignAssetService = {
   isStorageRef(value?: string) {
     return Boolean(value?.startsWith(STORAGE_PREFIX));
@@ -82,5 +114,17 @@ export const campaignAssetService = {
   async remove(path: string) {
     const { error } = await client().storage.from(BUCKET).remove([path]);
     if (error) throw error;
+  },
+
+  async removeCampaignAssets(campaignId: string) {
+    const prefix = `campaigns/${campaignId}`;
+    const paths = await listFilesRecursively(prefix);
+    if (!paths.length) return;
+
+    const bucket = client().storage.from(BUCKET);
+    for (let index = 0; index < paths.length; index += 100) {
+      const { error } = await bucket.remove(paths.slice(index, index + 100));
+      if (error) throw error;
+    }
   }
 };
