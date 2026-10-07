@@ -91,7 +91,14 @@ export const campaignRepository = {
     return data as string;
   },
   async regenerarCodigo(campaignId: string) { const { data, error } = await client().rpc('regenerate_campaign_invite', { p_campaign_id: campaignId }); if (error) throw error; return data as string; },
-  async vincularPersonagem(campaignId: string, characterId: string) { const { error } = await client().rpc('link_own_character_to_membership', { p_campaign_id: campaignId, p_character_id: characterId }); if (error) throw error; },
+  async vincularPersonagem(campaignId: string, characterId: string | null) {
+    await requireAuthenticatedUser();
+    const { error } = await client().rpc('link_own_character_to_membership', {
+      p_campaign_id: campaignId,
+      p_character_id: characterId
+    });
+    if (error) throw friendlyCampaignError(error);
+  },
   async atualizarImagem(campaignId: string, imagemUrl: string) {
     const { data, error } = await client().from('campaigns').update({ imagem_url: imagemUrl }).eq('id', campaignId).select('*').single();
     if (error) throw error;
