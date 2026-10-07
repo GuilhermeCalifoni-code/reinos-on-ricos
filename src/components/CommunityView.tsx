@@ -22,6 +22,8 @@ import {
 
 type BillingCycle = 'monthly' | 'annual';
 
+const CAMPAIGNS_UNLIMITED_DURING_PLAYTEST = true;
+
 const money = (cents: number) =>
   new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -147,7 +149,7 @@ export const CommunityView: React.FC = () => {
         </article>
         <article>
           <FolderKanban />
-          <div><strong>Limite simples</strong><span>Campanha, one-shot e playtest usam a mesma cota de projetos.</span></div>
+          <div><strong>Campanhas liberadas no playtest</strong><span>Campanhas, one-shots e playtests podem ser criados sem limite nesta fase.</span></div>
         </article>
         <article>
           <FileDown />
@@ -219,20 +221,23 @@ export const CommunityView: React.FC = () => {
                     </div>
                     <div>
                       <FolderKanban />
-                      <span><strong>{plan.limits.projects}</strong><small>projetos de mesa</small></span>
+                      <span><strong>{CAMPAIGNS_UNLIMITED_DURING_PLAYTEST ? '∞' : plan.limits.projects}</strong><small>{CAMPAIGNS_UNLIMITED_DURING_PLAYTEST ? 'campanhas no playtest' : 'projetos de mesa'}</small></span>
                     </div>
                   </div>
 
                   <div className="ro-community-v3__benefits">
-                    {plan.benefits.map(benefit => (
-                      <div key={benefit.key}>
-                        <Check />
-                        <span>
-                          <strong>{benefit.label}</strong>
-                          <small>{benefit.description}</small>
-                        </span>
-                      </div>
-                    ))}
+                    {plan.benefits.map(benefit => {
+                      const isProjectBenefit = benefit.key === 'projects' && CAMPAIGNS_UNLIMITED_DURING_PLAYTEST;
+                      return (
+                        <div key={benefit.key}>
+                          <Check />
+                          <span>
+                            <strong>{isProjectBenefit ? 'Campanhas ilimitadas no playtest' : benefit.label}</strong>
+                            <small>{isProjectBenefit ? 'Campanhas, one-shots e playtests estão sem cota durante a fase de testes.' : benefit.description}</small>
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <button
@@ -328,7 +333,7 @@ export const CommunityView: React.FC = () => {
                       {plans.map(plan => (
                         <td key={plan.id}>
                           {item.type === 'limit'
-                            ? <strong>{plan.limits[item.key]}</strong>
+                            ? <strong>{item.key === 'projects' && CAMPAIGNS_UNLIMITED_DURING_PLAYTEST ? '∞' : plan.limits[item.key]}</strong>
                             : communityService.temPermissao(plan, item.key)
                               ? <Check aria-label="Incluído" />
                               : <span aria-label="Não incluído">—</span>}
@@ -347,11 +352,10 @@ export const CommunityView: React.FC = () => {
         <Shield />
         <div>
           <p className="ro-eyebrow">Como as cotas funcionam</p>
-          <h3>Nada é apagado automaticamente se você mudar de nível.</h3>
+          <h3>Campanhas estão sem limite durante o playtest.</h3>
           <p>
-            Personagens e projetos existentes continuam preservados. Se a conta ficar acima da cota do novo nível,
-            o sistema apenas bloqueia novas criações até você excluir algo ou voltar para um nível com mais espaço.
-            Campanhas, one-shots e playtests contam juntos como “projetos de mesa”.
+            Nesta fase, qualquer conta autenticada pode criar quantas campanhas, one-shots e playtests precisar.
+            Os limites de personagens continuam ativos e nenhum dado existente é apagado automaticamente quando o nível muda.
           </p>
         </div>
       </section>

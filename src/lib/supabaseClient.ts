@@ -14,8 +14,38 @@ export const isSupabaseConfigured = (): boolean => {
   );
 };
 
+const clearExpiredAuthCallbackFromUrl = () => {
+  if (typeof window === 'undefined' || !window.location.hash) return;
+
+  const rawHash = window.location.hash.startsWith('#')
+    ? window.location.hash.slice(1)
+    : window.location.hash;
+  const params = new URLSearchParams(rawHash);
+  const hasAuthTokens = params.has('access_token') || params.has('refresh_token');
+  const expiresAt = Number(params.get('expires_at') || 0);
+
+  if (!hasAuthTokens || !expiresAt) return;
+
+  const expired = expiresAt * 1000 < Date.now() - 30_000;
+  if (!expired) return;
+
+  window.history.replaceState(
+    window.history.state,
+    '',
+    `${window.location.pathname}${window.location.search}`
+  );
+};
+
+clearExpiredAuthCallbackFromUrl();
+
 export const supabase: SupabaseClient | null = isSupabaseConfigured()
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    })
   : null;
 
 // Testar conexão

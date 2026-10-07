@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, X, Check, Sparkles, UserPlus } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Plus, X, Check, Sparkles, UserPlus, ImagePlus, Upload, Link2 } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome } from '../types/character';
 import { TABELA_PROGRESSAO } from '../rules/rulesData';
 import { calcularResistencia, calcularDefesa, calcularVidaMaxima, validarDistribuicaoDominios } from '../rules/rulesEngine';
@@ -7,7 +7,7 @@ import { calcularResistencia, calcularDefesa, calcularVidaMaxima, validarDistrib
 interface CreateCharacterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCriar: (novo: Personagem) => void | Promise<void>;
+  onCriar: (novo: Personagem, imagemArquivo?: File) => void | Promise<void>;
 }
 
 export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
@@ -37,11 +37,26 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   });
 
   const [ancoragem, setAncoragem] = useState('');
+  const [modoImagem, setModoImagem] = useState<'upload' | 'url'>('upload');
+  const [imagemUrl, setImagemUrl] = useState('');
+  const [imagemArquivo, setImagemArquivo] = useState<File | null>(null);
+  const [previewImagem, setPreviewImagem] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState('');
 
+  useEffect(() => {
+    if (!imagemArquivo) {
+      setPreviewImagem('');
+      return;
+    }
+    const url = URL.createObjectURL(imagemArquivo);
+    setPreviewImagem(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imagemArquivo]);
+
   if (!isOpen) return null;
 
+  const previewRetrato = modoImagem === 'upload' ? previewImagem : imagemUrl.trim();
   const prog = TABELA_PROGRESSAO[nivel] || TABELA_PROGRESSAO[1];
   const validacao = validarDistribuicaoDominios(dominios, nivel);
   const pontosAtributoEsperados = 2 + prog.pontosAtributoAdicionais;
@@ -69,6 +84,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
 
     const novoPersonagem: Personagem = {
       id: 'desvelado-' + Date.now(),
+      imagemUrl: modoImagem === 'url' ? (imagemUrl.trim() || undefined) : undefined,
       nome: nome.trim() || 'Novo Desvelado',
       jogador: jogador.trim() || 'Jogador',
       conceito,
@@ -111,7 +127,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
     setSalvando(true);
     setErroSalvar('');
     try {
-      await onCriar(novoPersonagem);
+      await onCriar(novoPersonagem, modoImagem === 'upload' ? imagemArquivo || undefined : undefined);
       onClose();
     } catch (error: any) {
       setErroSalvar(error?.message || 'Não foi possível criar o personagem.');
@@ -150,6 +166,61 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
         {/* Formulário com Scroll */}
         <div className="p-5 space-y-4 overflow-y-auto flex-1">
           
+          {/* Retrato */}
+          <section className="rounded border border-slate-800 bg-slate-950/55 p-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="w-full sm:w-28 h-28 shrink-0 overflow-hidden rounded border border-slate-700 bg-[#0d1118] flex items-center justify-center">
+                {previewRetrato ? (
+                  <img src={previewRetrato} alt="Prévia do retrato" className="w-full h-full object-cover" />
+                ) : (
+                  <ImagePlus className="w-8 h-8 text-slate-600" />
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <div>
+                  <span className="text-slate-300 block mb-1 font-semibold">Retrato do Desvelado</span>
+                  <small className="text-[10px] text-slate-500">A imagem acompanha a ficha e aparece na Mesa Ao Vivo.</small>
+                </div>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setModoImagem('upload')} className={`px-2.5 py-1.5 rounded border flex items-center gap-1.5 ${modoImagem === 'upload' ? 'border-cyan-500 text-cyan-300 bg-cyan-950/40' : 'border-slate-700 text-slate-400'}`}>
+                    <Upload className="w-3.5 h-3.5" /> Arquivo
+                  </button>
+                  <button type="button" onClick={() => setModoImagem('url')} className={`px-2.5 py-1.5 rounded border flex items-center gap-1.5 ${modoImagem === 'url' ? 'border-cyan-500 text-cyan-300 bg-cyan-950/40' : 'border-slate-700 text-slate-400'}`}>
+                    <Link2 className="w-3.5 h-3.5" /> URL
+                  </button>
+                </div>
+                {modoImagem === 'upload' ? (
+                  <label className="block cursor-pointer rounded border border-dashed border-slate-700 px-3 py-2 text-slate-400 hover:border-cyan-700">
+                    <span>{imagemArquivo ? imagemArquivo.name : 'Escolher PNG, JPG, WEBP ou GIF · até 15 MB'}</span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      className="hidden"
+                      onChange={event => {
+                        const file = event.target.files?.[0] || null;
+                        if (file && file.size <= 15 * 1024 * 1024 && file.type.startsWith('image/')) {
+                          setImagemArquivo(file);
+                          setErroSalvar('');
+                        } else if (file) {
+                          setErroSalvar('Use uma imagem PNG, JPG, WEBP ou GIF de até 15 MB.');
+                          event.target.value = '';
+                        }
+                      }}
+                    />
+                  </label>
+                ) : (
+                  <input
+                    type="url"
+                    value={imagemUrl}
+                    onChange={event => setImagemUrl(event.target.value)}
+                    placeholder="https://..."
+                    className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
+                  />
+                )}
+              </div>
+            </div>
+          </section>
+
           {/* Identidade */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>

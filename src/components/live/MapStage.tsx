@@ -1,12 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { MapaNarrativo, TipoTokenMapa, TokenMapa } from '../../types/campaign';
+import { Adversario, MapaNarrativo, NPC, TipoTokenMapa, TokenMapa } from '../../types/campaign';
+import { Personagem } from '../../types/character';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
+import { AssetImage } from '../system/AssetImage';
 
 interface MapStageProps {
   campanhaId: string;
   mapas: MapaNarrativo[];
   tokens: TokenMapa[];
   mestre: boolean;
+  personagens?: Personagem[];
+  npcs?: NPC[];
+  adversarios?: Adversario[];
   mapaAtualId?: string;
   onSelecionarMapa: (id: string) => void;
   onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
@@ -20,7 +25,7 @@ interface MapStageProps {
 const cores: Record<TipoTokenMapa, string> = { personagem: '#c8a568', npc: '#8ea1bb', adversario: '#bd6570', marcador: '#a99c83' };
 
 export const MapStage: React.FC<MapStageProps> = ({
-  campanhaId, mapas, tokens, mestre, mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken
+  campanhaId, mapas, tokens, mestre, personagens = [], npcs = [], adversarios = [], mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken
 }) => {
   const mapaAtual = mapas.find(mapa => mapa.id === mapaAtualId) || mapas[0];
   const mapaVisivel = Boolean(mapaAtual && (mestre || mapaAtual.visibilidade !== 'mestre_privado'));
@@ -40,6 +45,7 @@ export const MapStage: React.FC<MapStageProps> = ({
   const [arquivoNome, setArquivoNome] = useState('');
   const [novoToken, setNovoToken] = useState('');
   const [tipoToken, setTipoToken] = useState<TipoTokenMapa>('marcador');
+  const [tokenSource, setTokenSource] = useState('manual');
   const criarMapa = (event: React.FormEvent) => {
     event.preventDefault();
     if (!novoMapa.trim() || uploading) return;
@@ -57,7 +63,46 @@ export const MapStage: React.FC<MapStageProps> = ({
     setArquivoNome('');
     setAssetError('');
   };
-  const criarToken = (event: React.FormEvent) => { event.preventDefault(); if (!mapaAtual || !novoToken.trim()) return; onAdicionarToken({ campanhaId, mapaId: mapaAtual.id, tipo: tipoToken, nome: novoToken.trim(), cor: cores[tipoToken], x: 50, y: 50, oculto: false }); setNovoToken(''); };
+  const criarToken = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!mapaAtual) return;
+
+    if (tokenSource !== 'manual') {
+      const [kind, id] = tokenSource.split(':', 2);
+      const personagem = kind === 'personagem' ? personagens.find(item => item.id === id) : undefined;
+      const npc = kind === 'npc' ? npcs.find(item => item.id === id) : undefined;
+      const adversario = kind === 'adversario' ? adversarios.find(item => item.id === id) : undefined;
+      const actor = personagem || npc || adversario;
+      if (!actor) return;
+      const tipo = kind as TipoTokenMapa;
+      onAdicionarToken({
+        campanhaId,
+        mapaId: mapaAtual.id,
+        tipo,
+        nome: actor.nome,
+        imagemUrl: actor.imagemUrl,
+        cor: cores[tipo],
+        x: 50,
+        y: 50,
+        oculto: false
+      });
+      setTokenSource('manual');
+      return;
+    }
+
+    if (!novoToken.trim()) return;
+    onAdicionarToken({
+      campanhaId,
+      mapaId: mapaAtual.id,
+      tipo: tipoToken,
+      nome: novoToken.trim(),
+      cor: cores[tipoToken],
+      x: 50,
+      y: 50,
+      oculto: false
+    });
+    setNovoToken('');
+  };
   const mover = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!viewport.current) return;
     if (arrastando) {
@@ -172,7 +217,9 @@ export const MapStage: React.FC<MapStageProps> = ({
                   onDoubleClick={() => mestre && onAtualizarToken(token.id, { nome: window.prompt('Nome do token', token.nome) || token.nome })}
                   title={mestre ? `${token.nome} · arraste para mover · duplo clique para renomear` : token.nome}
                 >
-                  {token.nome.slice(0, 2).toUpperCase()}
+                  {token.imagemUrl
+                    ? <AssetImage src={token.imagemUrl} alt="" />
+                    : token.nome.slice(0, 2).toUpperCase()}
                 </button>
               );
             })}
@@ -208,14 +255,38 @@ export const MapStage: React.FC<MapStageProps> = ({
             {mapaAtual && (
               <>
                 <form onSubmit={criarToken} className="map-stage__create map-stage__create--token">
-                  <input value={novoToken} onChange={(e) => setNovoToken(e.target.value)} placeholder="Nome do token" />
-                  <select value={tipoToken} onChange={(e) => setTipoToken(e.target.value as TipoTokenMapa)}>
-                    <option value="personagem">Personagem</option>
-                    <option value="npc">NPC</option>
-                    <option value="adversario">Adversário</option>
-                    <option value="marcador">Marcador</option>
+                  <select value={tokenSource} onChange={(e) => setTokenSource(e.target.value)} aria-label="Origem do token">
+                    <option value="manual">Marcador manual</option>
+                    {personagens.length > 0 && (
+                      <optgroup label="Desvelados dos jogadores">
+                        {personagens.map(personagem => <option key={personagem.id} value={`personagem:${personagem.id}`}>{personagem.nome} · {personagem.jogador || 'Jogador'}</option>)}
+                      </optgroup>
+                    )}
+                    {npcs.length > 0 && (
+                      <optgroup label="NPCs">
+                        {npcs.map(npc => <option key={npc.id} value={`npc:${npc.id}`}>{npc.nome}</option>)}
+                      </optgroup>
+                    )}
+                    {adversarios.length > 0 && (
+                      <optgroup label="Adversários / monstros">
+                        {adversarios.map(adversario => <option key={adversario.id} value={`adversario:${adversario.id}`}>{adversario.nome}</option>)}
+                      </optgroup>
+                    )}
                   </select>
-                  <button className="ro-button">Adicionar token</button>
+                  {tokenSource === 'manual' && (
+                    <>
+                      <input value={novoToken} onChange={(e) => setNovoToken(e.target.value)} placeholder="Nome do marcador" />
+                      <select value={tipoToken} onChange={(e) => setTipoToken(e.target.value as TipoTokenMapa)}>
+                        <option value="marcador">Marcador</option>
+                        <option value="personagem">Personagem manual</option>
+                        <option value="npc">NPC manual</option>
+                        <option value="adversario">Adversário manual</option>
+                      </select>
+                    </>
+                  )}
+                  <button className="ro-button" disabled={tokenSource === 'manual' && !novoToken.trim()}>
+                    {tokenSource === 'manual' ? 'Adicionar marcador' : 'Colocar ficha no mapa'}
+                  </button>
                 </form>
                 <div className="map-stage__tokens">
                   {tokens.filter(token => token.mapaId === mapaAtual.id).map(token => (

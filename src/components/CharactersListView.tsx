@@ -13,6 +13,7 @@ import {
   Users
 } from 'lucide-react';
 import { Personagem } from '../types/character';
+import { AssetImage } from './system/AssetImage';
 
 interface CharactersListViewProps {
   personagens: Personagem[];
@@ -181,8 +182,10 @@ export const CharactersListView: React.FC<CharactersListViewProps> = ({
                   onClick={() => onSelecionarPersonagem(personagem)}
                   aria-label={`Abrir ficha de ${personagem.nome}`}
                 >
-                  <span className="ro-character-card__orb" aria-hidden="true">
-                    <span>{personagem.nome.slice(0, 1).toUpperCase()}</span>
+                  <span className={`ro-character-card__orb ${personagem.imagemUrl ? 'has-image' : ''}`} aria-hidden="true">
+                    {personagem.imagemUrl
+                      ? <AssetImage src={personagem.imagemUrl} alt="" />
+                      : <span>{personagem.nome.slice(0, 1).toUpperCase()}</span>}
                   </span>
                   <span className="ro-character-card__sigil" aria-hidden="true">✦</span>
                   <span className="ro-character-card__visual-lines" aria-hidden="true" />

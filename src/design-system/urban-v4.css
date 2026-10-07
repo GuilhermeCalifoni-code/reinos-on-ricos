@@ -2634,3 +2634,155 @@
     width: 42.8%;
   }
 }
+
+
+/* ---------- Mesa Ao Vivo: estabilidade de interação ---------- */
+.ro-app-shell--live,
+.ro-app-shell--live > div,
+.ro-app-shell--live main {
+  min-height: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+.live-table--v4 {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.live-table__bar--v4 {
+  flex: 0 0 auto;
+}
+.live-table__workspace {
+  min-height: 0;
+  overflow: hidden;
+}
+.live-table__record-column,
+.live-table__scene-column,
+.live-table__map-column {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.live-table__scene-column {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+.live-table--v4 .live-table__stage {
+  position: relative;
+  min-height: 320px;
+  height: clamp(320px, 48vh, 500px);
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+.live-table__geometry,
+.live-table--v4 .live-table__stage::after {
+  pointer-events: none;
+}
+.live-table--v4 .live-table__stage-copy,
+.live-table--v4 .live-table__scene-controls,
+.live-table--v4 .live-table__scene-editor {
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+}
+.live-table--v4 .live-table__scene-controls {
+  position: absolute;
+}
+.live-table__map-column .map-stage--v4 {
+  min-height: 0;
+}
+.map-stage--v4 .map-stage__viewport {
+  min-height: 300px;
+  height: clamp(300px, 49vh, 520px);
+  flex: 1 1 auto;
+  touch-action: none;
+}
+.map-stage__canvas {
+  user-select: none;
+}
+.map-stage__token {
+  overflow: hidden;
+}
+.map-stage__token img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.live-table__present .live-table__avatar.has-image {
+  overflow: hidden;
+  padding: 0;
+}
+.live-table__present .live-table__avatar.has-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.live-table--v4 .live-table__dock {
+  position: relative;
+  z-index: 35;
+  bottom: auto;
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 100%;
+  margin: 0;
+  border-width: 1px 0 0;
+  border-radius: 0;
+}
+.live-table--v4 .live-table__dock button {
+  min-height: 2.9rem;
+}
+.live-table__tool-backdrop {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(7,10,13,.68);
+  backdrop-filter: blur(5px);
+}
+.live-table--v4 .live-table__tool {
+  position: relative;
+  z-index: 91;
+  width: min(920px, calc(100vw - 2rem));
+  max-height: min(84dvh, 760px);
+  overflow: auto;
+}
+.live-table__record-column .session-feed__composer {
+  position: sticky;
+  z-index: 4;
+  bottom: 0;
+  background: #faf7f1;
+}
+.live-table__record-column .session-feed__composer button,
+.live-table__record-column .session-feed__composer textarea,
+.live-table__record-column .session-feed__composer select,
+.map-stage--v4 button,
+.map-stage--v4 select,
+.map-stage--v4 input {
+  pointer-events: auto;
+}
+@media (max-width: 1180px) {
+  .live-table--v4 {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .ro-app-shell--live,
+  .ro-app-shell--live > div,
+  .ro-app-shell--live main {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .live-table__workspace {
+    overflow: visible;
+  }
+  .live-table__record-column,
+  .live-table__scene-column,
+  .live-table__map-column {
+    overflow: visible;
+  }
+}
