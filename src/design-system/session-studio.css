@@ -1159,3 +1159,218 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ---------- Biblioteca de Mapas ---------- */
+.campaign-maps {
+  display: grid;
+  gap: 1rem;
+}
+.campaign-maps__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--ro-line);
+}
+.campaign-maps__head h2 {
+  margin: .45rem 0 .3rem;
+  color: var(--ro-paper);
+  font: 500 2.2rem/1 "Cormorant Garamond", Georgia, serif;
+}
+.campaign-maps__head p:last-child {
+  max-width: 48rem;
+  margin: 0;
+  color: var(--ro-paper-muted);
+  font-size: .72rem;
+  line-height: 1.55;
+}
+.campaign-maps__head > span {
+  color: var(--ro-copper);
+  font: .55rem ui-monospace, monospace;
+  text-transform: uppercase;
+}
+.campaign-maps__create {
+  display: grid;
+  grid-template-columns: minmax(180px, .8fr) minmax(160px, 1fr) minmax(180px, 1.2fr) auto auto;
+  align-items: center;
+  gap: .55rem;
+  padding: .8rem;
+  border: 1px solid var(--ro-line);
+  background: var(--ro-surface);
+}
+.campaign-maps__create-copy {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  color: var(--ro-copper);
+}
+.campaign-maps__create-copy strong,
+.campaign-maps__create-copy span {
+  display: block;
+}
+.campaign-maps__create-copy strong {
+  color: var(--ro-paper);
+  font: 500 .95rem "Cormorant Garamond", Georgia, serif;
+}
+.campaign-maps__create-copy span {
+  margin-top: .2rem;
+  color: var(--ro-ash);
+  font-size: .5rem;
+}
+.campaign-maps__create > input,
+.campaign-maps__upload {
+  min-height: 2.5rem;
+  border: 1px solid var(--ro-line);
+  background: var(--ro-input);
+  color: var(--ro-paper-muted);
+}
+.campaign-maps__create > input {
+  min-width: 0;
+  padding: 0 .65rem;
+  outline: none;
+  font-size: .62rem;
+}
+.campaign-maps__create > input:focus {
+  border-color: var(--ro-line-strong);
+}
+.campaign-maps__upload {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: 0 .65rem;
+  cursor: pointer;
+  font-size: .55rem;
+  white-space: nowrap;
+}
+.campaign-maps__upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.campaign-maps__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+}
+.campaign-maps__card {
+  overflow: hidden;
+  border: 1px solid var(--ro-line);
+  background: var(--ro-surface);
+  transition: border-color var(--ro-transition), transform var(--ro-transition);
+}
+.campaign-maps__card:hover {
+  border-color: var(--ro-line-strong);
+  transform: translateY(-1px);
+}
+.campaign-maps__media {
+  position: relative;
+  height: 170px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px),
+    var(--ro-bg);
+  background-size: 24px 24px;
+}
+.campaign-maps__media > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.campaign-maps__media > div {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  align-content: center;
+  gap: .4rem;
+  color: var(--ro-ash);
+}
+.campaign-maps__media > div span {
+  font: .5rem ui-monospace, monospace;
+  text-transform: uppercase;
+}
+.campaign-maps__media > span {
+  position: absolute;
+  top: .55rem;
+  right: .55rem;
+  padding: .3rem .4rem;
+  border: 1px solid color-mix(in srgb, var(--ro-copper) 38%, transparent);
+  background: color-mix(in srgb, var(--ro-bg) 78%, transparent);
+  color: var(--ro-copper-bright);
+  font: .45rem ui-monospace, monospace;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+.campaign-maps__body {
+  padding: .8rem;
+}
+.campaign-maps__body h3 {
+  margin: 0;
+  color: var(--ro-paper);
+  font: 500 1.15rem "Cormorant Garamond", Georgia, serif;
+}
+.campaign-maps__body p {
+  margin: .3rem 0 .7rem;
+  color: var(--ro-ash);
+  font-size: .56rem;
+}
+.campaign-maps__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+.campaign-maps__actions button {
+  display: inline-flex;
+  min-height: 1.9rem;
+  align-items: center;
+  gap: .3rem;
+  padding: 0 .45rem;
+  border: 1px solid var(--ro-line);
+  color: var(--ro-paper-muted);
+  font-size: .5rem;
+}
+.campaign-maps__actions button:hover {
+  border-color: var(--ro-line-strong);
+  color: var(--ro-copper);
+  background: var(--ro-accent-soft);
+}
+.campaign-maps__actions button.is-danger {
+  color: var(--ro-danger);
+}
+.campaign-maps__empty,
+.campaign-maps__message {
+  padding: 1rem;
+  border: 1px dashed var(--ro-line);
+  color: var(--ro-ash);
+  font-size: .62rem;
+}
+.campaign-maps__message {
+  border-style: solid;
+  color: var(--ro-danger);
+}
+@media (max-width: 1080px) {
+  .campaign-maps__create {
+    grid-template-columns: 1fr 1fr;
+  }
+  .campaign-maps__create-copy {
+    grid-column: 1 / -1;
+  }
+  .campaign-maps__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 680px) {
+  .campaign-maps__head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .campaign-maps__create,
+  .campaign-maps__grid {
+    grid-template-columns: 1fr;
+  }
+}
