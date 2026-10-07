@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { Dice5, Pencil, Plus, Trash2, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Dice5, ImagePlus, Link2, Pencil, Plus, Trash2, Upload, X } from 'lucide-react';
 import { Adversario, CategoriaHabilidadeAtor, HabilidadeAtor, NPC, TipoTesteAtor } from '../../types/campaign';
+import { AssetImage } from '../system/AssetImage';
+import { campaignAssetService } from '../../services/storage/campaignAssetService';
 
 type Mode = 'npc' | 'adversario';
 
@@ -30,6 +32,13 @@ interface RollResult {
 }
 
 const uid = () => `hab-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+const fileToDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onerror = () => reject(new Error('Não foi possível ler a imagem selecionada.'));
+  reader.onload = () => resolve(String(reader.result));
+  reader.readAsDataURL(file);
+});
 
 const normalizeNpc = (npc: NPC): NPC => ({
   ...npc,
@@ -116,6 +125,9 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
   const [creating, setCreating] = useState(false);
   const [roll, setRoll] = useState<RollResult | null>(null);
   const [busy, setBusy] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [imageError, setImageError] = useState('');
   const actors = mode === 'npc' ? npcs : adversarios;
 
   const npcDraft = useMemo<NPC>(() => normalizeNpc(editingNpc || {
@@ -128,24 +140,88 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
   }), [campanhaId, editingAdv]);
 
   const [form, setForm] = useState<NPC | Adversario | null>(null);
-  const openCreate = () => { setForm(mode === 'npc' ? npcDraft : advDraft); setCreating(true); };
-  const openEditNpc = (npc: NPC) => { setEditingNpc(normalizeNpc(npc)); setForm(normalizeNpc(npc)); setCreating(false); };
-  const openEditAdv = (adv: Adversario) => { setEditingAdv(normalizeAdversary(adv)); setForm(normalizeAdversary(adv)); setCreating(false); };
-  const closeEditor = () => { setForm(null); setEditingNpc(null); setEditingAdv(null); setCreating(false); };
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview('');
+      return;
+    }
+    const url = URL.createObjectURL(imageFile);
+    setImagePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
+
+  const resetImageDraft = () => {
+    setImageFile(null);
+    setImageError('');
+  };
+
+  const openCreate = () => {
+    resetImageDraft();
+    setForm(mode === 'npc' ? npcDraft : advDraft);
+    setCreating(true);
+  };
+  const openEditNpc = (npc: NPC) => {
+    resetImageDraft();
+    setEditingNpc(normalizeNpc(npc));
+    setForm(normalizeNpc(npc));
+    setCreating(false);
+  };
+  const openEditAdv = (adv: Adversario) => {
+    resetImageDraft();
+    setEditingAdv(normalizeAdversary(adv));
+    setForm(normalizeAdversary(adv));
+    setCreating(false);
+  };
+  const closeEditor = () => {
+    resetImageDraft();
+    setForm(null);
+    setEditingNpc(null);
+    setEditingAdv(null);
+    setCreating(false);
+  };
+
+  const selectImage = (file?: File) => {
+    setImageError('');
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setImageError('Selecione uma imagem PNG, JPG, WEBP ou GIF.');
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      setImageError('A imagem excede o limite de 15 MB.');
+      return;
+    }
+    setImageFile(file);
+  };
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!form?.nome.trim() || busy) return;
     setBusy(true);
     try {
+      let imageValue = form.imagemUrl;
+      if (imageFile) {
+        if (campaignAssetService.isRemoteCampaignId(campanhaId)) {
+          const path = await campaignAssetService.uploadActorPortrait(
+            campanhaId,
+            mode === 'npc' ? 'npcs' : 'adversaries',
+            imageFile
+          );
+          imageValue = campaignAssetService.toStorageRef(path);
+        } else {
+          imageValue = await fileToDataUrl(imageFile);
+        }
+      }
+
       if (mode === 'npc') {
-        const item = normalizeNpc(form as NPC);
+        const item = normalizeNpc({ ...(form as NPC), imagemUrl: imageValue });
         if (creating) {
           const { id: _, ...draft } = item;
           await onAddNpc(draft);
         } else await onUpdateNpc(item.id, item);
       } else {
-        const item = normalizeAdversary(form as Adversario);
+        const item = normalizeAdversary({ ...(form as Adversario), imagemUrl: imageValue });
         item.ataquePrincipal = item.habilidades?.find(h => h.categoria === 'acao')?.descricao || item.ataquePrincipal || '';
         if (creating) {
           const { id: _, ...draft } = item;
@@ -196,6 +272,11 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
           return (
             <article key={raw.id} className="actor-card">
               <div className="actor-card__top">
+                <div className={`actor-card__portrait ${raw.imagemUrl ? 'has-image' : ''}`}>
+                  {raw.imagemUrl
+                    ? <AssetImage src={raw.imagemUrl} alt={`Retrato de ${name}`} />
+                    : <span>{name.slice(0, 2).toUpperCase()}</span>}
+                </div>
                 <div><p className="ro-eyebrow">{mode === 'npc' ? npc!.papel : adv!.tipo}</p><h3>{name}</h3><small className="actor-card__visibility">{raw.visibilidade === 'revelado_jogadores' ? 'Revelado' : raw.visibilidade === 'compartilhado' ? 'Compartilhado' : 'Mestre privado'}</small></div>
                 {canManage && <div className="actor-card__tools">
                   <button onClick={() => mode === 'npc' ? openEditNpc(npc!) : openEditAdv(adv!)} title="Editar"><Pencil size={14} /></button>
@@ -232,6 +313,43 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
         <form className="actor-editor" onSubmit={save} onMouseDown={event => event.stopPropagation()}>
           <header><div><p className="ro-eyebrow">{creating ? 'Novo registro' : 'Editar ficha'}</p><h2>{mode === 'npc' ? 'NPC' : 'Adversário'}</h2></div><button type="button" onClick={closeEditor}><X size={18} /></button></header>
           <div className="actor-editor__body">
+            <div className="actor-editor__image actor-editor__wide">
+              <div className="actor-editor__image-preview">
+                {imagePreview || form.imagemUrl
+                  ? <AssetImage src={imagePreview || form.imagemUrl} alt="Prévia do retrato" />
+                  : <ImagePlus size={28} />}
+              </div>
+              <div className="actor-editor__image-fields">
+                <div>
+                  <p className="ro-eyebrow">Retrato da ficha</p>
+                  <span>A imagem aparece no arquivo da campanha e pode virar token na Mesa Ao Vivo.</span>
+                </div>
+                <label className="actor-editor__image-upload">
+                  <Upload size={14} />
+                  <span>{imageFile ? imageFile.name : 'Enviar imagem'}</span>
+                  <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={event => selectImage(event.target.files?.[0])} />
+                </label>
+                <label className="actor-editor__image-url">
+                  <Link2 size={13} />
+                  <input
+                    type="url"
+                    value={imageFile ? '' : (form.imagemUrl || '')}
+                    disabled={Boolean(imageFile)}
+                    onChange={event => setForm({ ...form, imagemUrl: event.target.value || undefined } as NPC | Adversario)}
+                    placeholder="ou cole a URL da imagem"
+                  />
+                </label>
+                {(imageFile || form.imagemUrl) && (
+                  <button type="button" className="ro-button--quiet" onClick={() => {
+                    setImageFile(null);
+                    setForm({ ...form, imagemUrl: undefined } as NPC | Adversario);
+                  }}>
+                    Remover imagem
+                  </button>
+                )}
+                {imageError && <small className="actor-editor__image-error">{imageError}</small>}
+              </div>
+            </div>
             <label className="actor-editor__wide">Nome<input value={form.nome} onChange={event => setForm({ ...form, nome: event.target.value })} required /></label>
             {mode === 'npc' ? <>
               <label>Papel<input value={(form as NPC).papel} onChange={event => setForm({ ...form, papel: event.target.value } as NPC)} /></label>
