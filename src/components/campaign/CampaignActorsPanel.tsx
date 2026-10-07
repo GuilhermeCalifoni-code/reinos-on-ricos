@@ -387,7 +387,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
                     onClick={() => setForm({
                       ...form,
                       isDesvelado: true,
-                      vidaMaxima: (form as NPC).vidaMaxima ?? (form as NPC).vida ?? 1,
+                      vidaMaxima: Math.max((form as NPC).vidaMaxima ?? 1, (form as NPC).vida ?? 1),
                       foco: (form as NPC).foco ?? 0,
                       focoMaximo: (form as NPC).focoMaximo ?? 0,
                       ruptura: (form as NPC).ruptura ?? 0,
