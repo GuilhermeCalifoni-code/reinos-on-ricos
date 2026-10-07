@@ -40,6 +40,7 @@ const mapNpc = (row: any): NPC => ({
   dificuldade: row.dificuldade ?? 10,
   deslocamento: row.deslocamento || 'Próximo',
   habilidades: Array.isArray(row.habilidades) ? row.habilidades : [],
+  imagemUrl: row.imagem_url || undefined,
   visibilidade: row.visibilidade
 });
 
@@ -53,7 +54,7 @@ const mapAdversary = (row: any): Adversario => ({
     ? row.habilidades
     : (row.ataque_principal ? [{ id: 'legacy-action', categoria: 'acao', nome: 'Ação', descricao: row.ataque_principal, teste: 'mundano', dt: row.dificuldade ?? row.defesa ?? 10 }] : []),
   ataquePrincipal: row.ataque_principal,
-  descricao: row.descricao, visibilidade: row.visibilidade
+  descricao: row.descricao, imagemUrl: row.imagem_url || undefined, visibilidade: row.visibilidade
 });
 
 const mapLocation = (row: any): Local => ({
@@ -155,6 +156,7 @@ export const campaignContentRepository = {
       nivel_ameaca: novo.nivelAmeaca ?? 0, vida: novo.vida ?? 1, resistencia: novo.resistencia ?? 0,
       dificuldade: novo.dificuldade ?? 10, deslocamento: novo.deslocamento || 'Próximo',
       habilidades: novo.habilidades || [],
+      imagem_url: novo.imagemUrl || null,
       visibilidade: novo.visibilidade || visibility
     }).select().single();
     if (error) throw error;
@@ -167,6 +169,7 @@ export const campaignContentRepository = {
       vida: novo.vida, vida_maxima: novo.vidaMaxima, defesa: novo.defesa,
       resistencia: novo.resistencia, dificuldade: novo.dificuldade ?? novo.defesa ?? 10,
       deslocamento: novo.deslocamento || 'Próximo', habilidades: novo.habilidades || [],
+      imagem_url: novo.imagemUrl || null,
       ataque_principal: novo.ataquePrincipal,
       descricao: novo.descricao, visibilidade: novo.visibilidade || visibility
     }).select().single();
@@ -188,6 +191,7 @@ export const campaignContentRepository = {
     if (patch.dificuldade !== undefined) values.dificuldade = patch.dificuldade;
     if (patch.deslocamento !== undefined) values.deslocamento = patch.deslocamento;
     if (patch.habilidades !== undefined) values.habilidades = patch.habilidades;
+    if (patch.imagemUrl !== undefined) values.imagem_url = patch.imagemUrl || null;
     if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
     const { data, error } = await client().from('campaign_npcs').update(values).eq('id', id).select().single();
     if (error) throw error;
@@ -213,6 +217,7 @@ export const campaignContentRepository = {
     if (patch.habilidades !== undefined) values.habilidades = patch.habilidades;
     if (patch.ataquePrincipal !== undefined) values.ataque_principal = patch.ataquePrincipal;
     if (patch.descricao !== undefined) values.descricao = patch.descricao;
+    if (patch.imagemUrl !== undefined) values.imagem_url = patch.imagemUrl || null;
     if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
     const { data, error } = await client().from('campaign_adversaries').update(values).eq('id', id).select().single();
     if (error) throw error;
