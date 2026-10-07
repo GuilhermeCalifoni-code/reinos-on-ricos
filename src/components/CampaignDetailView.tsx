@@ -69,7 +69,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   campanha,
   personagens,
   personagensPessoais = [],
-  sessoes:
+  sessoes,
   npcs,
   adversarios,
   locais,
