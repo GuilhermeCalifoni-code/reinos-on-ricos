@@ -456,10 +456,11 @@ export default function App() {
     if (usandoRemoto) {
       await campaignRepository.atualizar(camp.id, { sessaoAtual: sessao.numero });
 
-      const primeiraCena = sessao.cenaIds?.length
-        ? cenasAtuais.find(item => item.id === sessao.cenaIds?.[0])
-        : undefined;
-      const primeiroMapa = sessao.mapaIds?.[0];
+      const primeiraCena = (sessao.cenaIds || [])
+        .map(id => cenasAtuais.find(item => item.id === id))
+        .find(Boolean);
+      const primeiroMapa = (sessao.mapaIds || [])
+        .find(id => mapasAtuais.some(item => item.id === id));
       const contentType = primeiraCena?.tipoDeConteudo === 'mapa' || (!primeiraCena && primeiroMapa)
         ? 'mapa'
         : (primeiraCena?.tipoDeConteudo || sessao.conteudoDeCena || 'ambientacao');
