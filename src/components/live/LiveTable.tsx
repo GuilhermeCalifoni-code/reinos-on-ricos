@@ -97,7 +97,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const mudarConteudo = (proximo: ConteudoDeCena) => { setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
   const selecionarMapa = (id: string) => { setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
 
-  const ensureSessionLink = async (field: 'cenaIds' | 'mapaIds' | 'pistaIds' | 'handoutIds', id: string) => {
+  const ensureSessionLink = async (field: 'cenaIds' | 'mapaIds' | 'pistaIds' | 'handoutIds' | 'npcIds' | 'adversarioIds', id: string) => {
     if (!mestre || !sessao || !onAtualizarSessao) return;
     const current = Array.isArray(sessao[field]) ? (sessao[field] as string[]) : [];
     if (current.includes(id)) return;
