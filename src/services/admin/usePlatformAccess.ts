@@ -20,5 +20,7 @@ export function usePlatformAccess(userId?: string) {
   const superAdmin = access.role === 'super_admin';
   const canViewUsers = superAdmin || access.permissions.includes('users.view');
   const canManageCampaignRoles = superAdmin || access.permissions.includes('campaign_roles.manage');
-  return { ...access, superAdmin, canViewUsers, canManageCampaignRoles, loading };
+  const canManageCommunity = superAdmin || access.permissions.includes('community.members.manage');
+  const canModerateCommunity = superAdmin || access.permissions.includes('community.posts.moderate');
+  return { ...access, superAdmin, canViewUsers, canManageCampaignRoles, canManageCommunity, canModerateCommunity, loading };
 }
