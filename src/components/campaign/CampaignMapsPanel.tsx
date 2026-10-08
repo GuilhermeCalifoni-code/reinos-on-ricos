@@ -115,7 +115,7 @@ export const CampaignMapsPanel: React.FC<CampaignMapsPanelProps> = ({
             <div><strong>{editingId ? 'Editar mapa' : 'Novo mapa'}</strong><span>Batalha, investigação, planta, cidade, região ou referência visual.</span></div>
           </div>
           <input value={title} onChange={event => setTitle(event.target.value)} placeholder="Nome do mapa" required />
-          <input value={imageUrl} onChange={event => { setImageUrl(event.target.value); if (event.target.value) setFile(null); }} placeholder="URL da imagem (opcional)" />
+          <input value={imageUrl} onChange={event => { setImageUrl(event.target.value); setRemoveImage(false); if (event.target.value) setFile(null); }} placeholder="URL da imagem (opcional)" />
           <label className="campaign-maps__upload">
             <Upload size={15} />
             <span>{file ? file.name : 'Enviar imagem'}</span>
@@ -123,7 +123,7 @@ export const CampaignMapsPanel: React.FC<CampaignMapsPanelProps> = ({
           </label>
           {editingId && <button type="button" onClick={() => setRemoveImage(true)}>Remover imagem atual</button>}
           <button type="submit" className="ro-button" disabled={busy}>{busy ? 'Salvando…' : editingId ? 'Salvar mapa' : 'Criar mapa'}</button>
-          {editingId && <button type="button" className="ro-button--quiet" onClick={reset}>Cancelar edição</button>
+          {editingId && <button type="button" className="ro-button--quiet" onClick={reset}>Cancelar edição</button>}
         </form>
       )}
 
