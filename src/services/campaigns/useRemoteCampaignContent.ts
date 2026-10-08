@@ -32,8 +32,9 @@ export function useRemoteCampaignContent(campaignId?: string, enabled = false) {
   useEffect(() => { void recarregar(); }, [recarregar]);
 
   useEffect(() => {
-    if (!supabase || !enabled || !campaignId) return;
-    const channel = supabase.channel(`campaign-actors:${campaignId}`)
+    const api = supabase;
+    if (!api || !enabled || !campaignId) return;
+    const channel = api.channel(`campaign-actors:${campaignId}`)
       .on('postgres_changes',
         {event:'*',schema:'public',table:'campaign_npcs',filter:`campaign_id=eq.${campaignId}`},
         () => { void recarregar(); })
@@ -41,7 +42,7 @@ export function useRemoteCampaignContent(campaignId?: string, enabled = false) {
         {event:'*',schema:'public',table:'campaign_adversaries',filter:`campaign_id=eq.${campaignId}`},
         () => { void recarregar(); })
       .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    return () => { void api.removeChannel(channel); };
   }, [campaignId, enabled, recarregar]);
 
   const run = useCallback(async <T,>(operation: () => Promise<T>) => {
