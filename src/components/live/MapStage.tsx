@@ -392,7 +392,9 @@ export const MapStage: React.FC<MapStageProps> = ({
       .map(t=>t.nome);
     const name = nextInstanceName(draft.nome,[...used,...pendingNames.current]);
     pendingNames.current.add(name);
-    onAdicionarToken({...draft,nome:name,hpCurrent:tokenLife?.current,hpMax:tokenLife?.max,
+    onAdicionarToken({...draft,nome:name,
+      hpCurrent: draft.tipo === 'npc' || draft.tipo === 'adversario' ? tokenLife?.current : undefined,
+      hpMax: draft.tipo === 'npc' || draft.tipo === 'adversario' ? tokenLife?.max : undefined,
       x:clamp(draft.x+4,0,100),y:clamp(draft.y+4,0,100)});
   };
 
