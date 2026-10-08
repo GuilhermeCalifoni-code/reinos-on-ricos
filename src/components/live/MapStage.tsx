@@ -302,13 +302,17 @@ export const MapStage: React.FC<MapStageProps> = ({
         campanhaId,
         mapaId: mapaAtual.id,
         tipo: payload.kind,
-        nome: payload.name,
+        nome: payload.kind === 'personagem' ? payload.name : nextInstanceName(payload.name,
+          [...tokensAtuais.filter(t => t.tipo === payload.kind && (t.npcId === payload.id || t.adversaryId === payload.id)).map(t=>t.nome), ...pendingNames.current]),
         imagemUrl: payload.imageUrl || undefined,
         characterId: payload.kind === 'personagem' ? payload.id : undefined,
         npcId: payload.kind === 'npc' ? payload.id : undefined,
         adversaryId: payload.kind === 'adversario' ? payload.id : undefined,
         tokenSize: 1,
         rangeCells: 0,
+        hpCurrent: payload.kind === 'npc' ? npcs.find(n=>n.id===payload.id)?.vida : payload.kind === 'adversario' ? adversarios.find(a=>a.id===payload.id)?.vida : undefined,
+        hpMax: payload.kind === 'npc' ? Math.max(1,npcs.find(n=>n.id===payload.id)?.vidaMaxima ?? npcs.find(n=>n.id===payload.id)?.vida ?? 1) : payload.kind === 'adversario' ? adversarios.find(a=>a.id===payload.id)?.vidaMaxima : undefined,
+        areaRadiusCells: 0,
         cor: cores[payload.kind],
         x: ponto.x,
         y: ponto.y,
@@ -370,11 +374,39 @@ export const MapStage: React.FC<MapStageProps> = ({
 
   const ajustarToken = (patch: Partial<TokenMapa>) => {
     if (!tokenSelecionado || !podeControlarToken(tokenSelecionado)) return;
-    onAtualizarToken(tokenSelecionado.id, patch);
+    setTokenError('');
+    void Promise.resolve(onAtualizarToken(tokenSelecionado.id, patch))
+      .catch(err => setTokenError(err instanceof Error ? err.message : 'Não foi possível salvar a alteração.'));
+  };
+
+  const mudarPvDaCopia = (delta: number) => {
+    if (!mestre || !tokenSelecionado || !tokenLife) return;
+    ajustarToken({hpCurrent:addTokenHp(tokenLife.current,tokenLife.max,delta),hpMax:tokenLife.max});
+  };
+
+  const duplicarToken = () => {
+    if (!mestre || !tokenSelecionado) return;
+    const {id: _id, criadoEm: _created, atualizadoEm: _updated, criadoPor: _author, ...draft} = tokenSelecionado;
+    const used = tokensAtuais.filter(t => t.tipo === draft.tipo
+      && (draft.npcId ? t.npcId === draft.npcId : draft.adversaryId ? t.adversaryId === draft.adversaryId : t.nome.startsWith(draft.nome)))
+      .map(t=>t.nome);
+    const name = nextInstanceName(draft.nome,[...used,...pendingNames.current]);
+    pendingNames.current.add(name);
+    onAdicionarToken({...draft,nome:name,hpCurrent:tokenLife?.current,hpMax:tokenLife?.max,
+      x:clamp(draft.x+4,0,100),y:clamp(draft.y+4,0,100)});
+  };
+
+  const criarCirculoNoMapa = (x:number,y:number) => {
+    if (!mestre || !mapaAtual) return;
+    const name = `Área de efeito ${tokensAtuais.filter(t => (t.areaRadiusCells ?? 0)>0).length+1}`;
+    onAdicionarToken({campanhaId,mapaId:mapaAtual.id,tipo:'marcador',nome:name,
+      tokenSize:.5,rangeCells:0,areaRadiusCells:areaRadius,cor:areaColor,x,y,oculto:false});
   };
 
   useEffect(() => {
     setSelecionadoId(null);
+    setMarcandoArea(false);
+    pendingNames.current.clear();
     centralizar();
   }, [mapaAtual?.id]);
 
