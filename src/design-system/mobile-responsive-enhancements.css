@@ -228,3 +228,190 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) {
   .ro-mobile-drawer,.live-vtt__tool,.live-vtt__drawer { scroll-behavior: auto; }
 }
+
+/* =======================================================================
+   Registro Vivo: não reutilizar .live-table__session (layout legado).
+   A antiga classe recebia position:absolute e fundo creme no tema claro.
+   ======================================================================= */
+.live-table--v5 .live-vtt__drawer > .live-vtt__session-panel {
+  position: relative;
+  inset: auto;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--vtt-text);
+}
+.live-table--v5 .live-vtt__session-panel > .live-table__panel-head,
+.live-table--v5 .live-vtt__session-panel > .live-table__counter-slot,
+.live-table--v5 .live-vtt__session-panel > .live-table__master-note {
+  display: none;
+}
+.live-table--v5 .live-vtt__session-panel > .session-feed {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: .7rem;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--vtt-text);
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__events {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: .35rem;
+  width: 100%;
+  max-height: none;
+  min-height: 0;
+  min-width: 0;
+  margin: 0 0 .4rem;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__events > * {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__event {
+  color: var(--vtt-soft);
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__event > div,
+.live-table--v5 .live-vtt__session-panel .session-feed__event small {
+  color: var(--vtt-muted);
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__event p {
+  color: var(--vtt-text);
+  overflow-wrap: anywhere;
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__composer {
+  position: relative;
+  bottom: auto;
+  display: grid;
+  flex: 0 0 auto;
+  gap: .45rem;
+  min-width: 0;
+  max-width: 100%;
+  max-height: min(42dvh, 21rem);
+  margin: 0;
+  padding: .65rem 0 0;
+  border-top: 1px solid var(--vtt-line);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--vtt-panel);
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__options {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+  gap: .45rem;
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__options > select {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__composer :where(textarea,select,input) {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--vtt-text);
+  background: var(--vtt-input);
+  border-color: var(--vtt-line);
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__composer textarea {
+  display: block;
+  min-height: 4.75rem;
+  max-height: 9rem;
+  resize: vertical;
+}
+.live-table--v5 .live-vtt__session-panel .session-feed__composer .ro-button {
+  justify-self: end;
+  min-height: 2.75rem;
+  padding: .6rem .8rem;
+}
+
+/* O VTT conserva tema escuro mesmo quando o restante do app usa tema claro. */
+:root[data-theme='light'] .live-table--v5 .live-vtt__drawer > .live-vtt__session-panel,
+:root[data-theme='light'] .live-table--v5 .live-vtt__session-panel > .session-feed {
+  color: var(--vtt-text);
+  background: transparent;
+}
+:root[data-theme='light'] .live-table--v5 .live-vtt__session-panel .session-feed__composer {
+  background: var(--vtt-panel);
+}
+:root[data-theme='light'] .live-table--v5 .live-vtt__session-panel .session-feed__composer :where(textarea,select,input) {
+  color: var(--vtt-text);
+  background: var(--vtt-input);
+  border-color: var(--vtt-line);
+}
+
+/* Barra de personagens fica INTEIRA acima do dock, em telas grandes e pequenas.
+   Reservar espaço real evita que a barra inferior oculte fichas. */
+.live-table--v5 .live-vtt__player-bar {
+  z-index: 43;
+  bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+  max-height: min(7rem, 25dvh);
+  min-width: 0;
+  overflow: hidden;
+}
+.live-table--v5 .live-vtt__player-strip {
+  min-height: 0;
+  min-width: 0;
+  overscroll-behavior-x: contain;
+}
+.live-table--v5 .live-vtt__stage-meta {
+  min-width: 0;
+  overflow: hidden;
+}
+@media (max-width: 700px) {
+  .live-table--v5 .live-vtt__player-bar {
+    right: max(.5rem, env(safe-area-inset-right, 0px));
+    left: max(3.7rem, env(safe-area-inset-left, 0px));
+    bottom: calc(5.35rem + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
+  .live-table--v5 .live-vtt__player {
+    min-width: min(10rem, 64vw);
+  }
+  .live-table--v5 .live-vtt__drawer {
+    min-height: 0;
+  }
+  .live-table--v5 .live-vtt__session-panel > .session-feed {
+    padding: .6rem;
+  }
+  .live-table--v5 .live-vtt__session-panel .session-feed__composer {
+    max-height: min(45dvh, 19rem);
+  }
+}
+@media (max-height: 550px) and (max-width: 980px) {
+  .live-table--v5 .live-vtt__player-bar {
+    display: flex;
+    max-height: 3rem;
+    bottom: calc(3.85rem + env(safe-area-inset-bottom, 0px));
+  }
+  .live-table--v5 .live-vtt__player {
+    min-height: 2.4rem;
+    padding-block: .15rem;
+  }
+  .live-table--v5 .live-vtt__session-panel .session-feed__composer {
+    max-height: 48dvh;
+  }
+}
