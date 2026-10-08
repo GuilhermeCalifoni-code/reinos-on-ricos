@@ -316,51 +316,46 @@ export default function App() {
 
     setCampanhaAtivaId(camp.id);
 
-    if (usandoRemoto) {
-      await campaignRepository.atualizar(camp.id, { sessaoAtual: sessao.numero });
+    await campaignRepository.atualizar(camp.id, { sessaoAtual: sessao.numero });
 
-      const primeiraCena = (sessao.cenaIds || [])
-        .map(id => cenasAtuais.find(item => item.id === id))
-        .find(Boolean);
-      const primeiroMapa = (sessao.mapaIds || [])
-        .find(id => mapasAtuais.some(item => item.id === id));
-      const contentType = primeiraCena?.tipoDeConteudo === 'mapa' || (!primeiraCena && primeiroMapa)
-        ? 'mapa'
-        : (primeiraCena?.tipoDeConteudo || sessao.conteudoDeCena || 'ambientacao');
+    const primeiraCena = (sessao.cenaIds || [])
+      .map(id => cenasAtuais.find(item => item.id === id))
+      .find(Boolean);
+    const primeiroMapa = (sessao.mapaIds || [])
+      .find(id => mapasAtuais.some(item => item.id === id));
+    const contentType = primeiraCena?.tipoDeConteudo === 'mapa' || (!primeiraCena && primeiroMapa)
+      ? 'mapa'
+      : (primeiraCena?.tipoDeConteudo || sessao.conteudoDeCena || 'ambientacao');
 
-      if (session?.authUserId) {
-        try {
-          const live = await liveTableRepository.load(camp.id);
-          await liveTableRepository.saveState(camp.id, session.authUserId, {
-            ...live.state,
-            sessionId: sessao.id,
-            activeSceneId: primeiraCena?.id,
-            activeMapId: primeiroMapa,
-            contentType,
-            ruptureGeneral: live.state?.ruptureGeneral ?? camp.rupturaGeral,
-            metadata: {
-              ...(live.state?.metadata || {}),
-              sceneTitle: primeiraCena?.titulo || sessao.titulo,
-              sceneDescription: primeiraCena?.descricao || sessao.descricao || '',
-              sceneImageUrl: primeiraCena?.imagemUrl || sessao.imagemUrl || ''
-            }
-          });
-        } catch (error) {
-          console.error('Não foi possível aplicar a abertura preparada da sessão:', error);
-        }
+    if (session?.authUserId) {
+      try {
+        const live = await liveTableRepository.load(camp.id);
+        await liveTableRepository.saveState(camp.id, session.authUserId, {
+          ...live.state,
+          sessionId: sessao.id,
+          activeSceneId: primeiraCena?.id,
+          activeMapId: primeiroMapa,
+          contentType,
+          ruptureGeneral: live.state?.ruptureGeneral ?? camp.rupturaGeral,
+          metadata: {
+            ...(live.state?.metadata || {}),
+            sceneTitle: primeiraCena?.titulo || sessao.titulo,
+            sceneDescription: primeiraCena?.descricao || sessao.descricao || '',
+            sceneImageUrl: primeiraCena?.imagemUrl || sessao.imagemUrl || ''
+          }
+        });
+      } catch (error) {
+        console.error('Não foi possível aplicar a abertura preparada da sessão:', error);
       }
-
-      await campanhasRemotas.recarregar();
-    } else {
-      atualizarCampanha(camp.id, { sessaoAtual: sessao.numero });
     }
 
+    await campanhasRemotas.recarregar();
     setViewAtiva('modo_mesa');
   };
 
   const handleDetalhesCampanha = (camp: Campanha) => {
     setCampanhaAtivaId(camp.id);
-    setViewAtiva(campaignEntryView(usandoRemoto ? campanhasRemotas.roleDaCampanha(camp.id) : session?.role));
+    setViewAtiva(campaignEntryView(campanhasRemotas.roleDaCampanha(camp.id)));
   };
 
   const handleIniciarCriacaoCampanha = () => {
@@ -395,13 +390,6 @@ export default function App() {
     ]);
   };
 
-  const arquivoParaDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Não foi possível ler a imagem selecionada.'));
-    reader.onload = () => resolve(String(reader.result));
-    reader.readAsDataURL(file);
-  });
-
   const handleExecutarCriacaoCampanha = async (dados: {
     nome: string;
     descricao: string;
@@ -409,40 +397,30 @@ export default function App() {
     imagemArquivo?: File;
     tipo: 'campanha' | 'oneshot' | 'playtest';
   }) => {
-    if (usandoRemoto) {
-      const nova = await campanhasRemotas.criar({
-        nome: dados.nome,
-        descricao: dados.descricao,
-        imagemUrl: dados.imagemUrl,
-        tipo: dados.tipo
-      });
+    const nova = await campanhasRemotas.criar({
+      nome: dados.nome,
+      descricao: dados.descricao,
+      imagemUrl: dados.imagemUrl,
+      tipo: dados.tipo
+    });
 
-      if (dados.imagemArquivo) {
-        try {
-          const path = await campaignAssetService.uploadCampaignCover(nova.id, dados.imagemArquivo);
-          await campaignRepository.atualizarImagem(nova.id, campaignAssetService.toStorageRef(path));
-          await campanhasRemotas.recarregar();
-        } catch (error: any) {
-          alert(`A campanha foi criada, mas a capa não pôde ser enviada. ${error.message || ''}`);
-        }
+    if (dados.imagemArquivo) {
+      try {
+        const path = await campaignAssetService.uploadCampaignCover(nova.id, dados.imagemArquivo);
+        await campaignRepository.atualizarImagem(nova.id, campaignAssetService.toStorageRef(path));
+        await campanhasRemotas.recarregar();
+      } catch (error: any) {
+        alert(`A campanha foi criada, mas a capa não pôde ser enviada. ${error.message || ''}`);
       }
-
-      setCampanhaRemotaAtivaId(nova.id);
-      setViewAtiva('detalhe_campanha');
-      return;
     }
 
-    const imagemUrl = dados.imagemArquivo
-      ? await arquivoParaDataUrl(dados.imagemArquivo)
-      : dados.imagemUrl;
-
-    criarCampanhaLocal({ ...dados, imagemUrl });
+    setCampanhaRemotaAtivaId(nova.id);
     setViewAtiva('detalhe_campanha');
+    r
   };
 
   // Abrir Ficha de Personagem
   const handleAbrirFichaPersonagem = (p: Personagem) => {
-    setPersonagemAtivoId(p.id);
     setPersonagemParaFicha(p);
   };
 
@@ -459,37 +437,40 @@ export default function App() {
   // Upload JSON de Ficha
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
+    if (!file || !session?.authUserId) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      if (content) {
-        const importado = importarJSON(content);
-        if (importado) {
-          alert('Ficha importada com sucesso.');
+    reader.onload = async event => {
+      try {
+        const json = JSON.parse(String(event.target?.result || ''));
+        if (!json?.nome || !json?.atributos || !json?.dominios) {
+          throw new Error('Este arquivo não contém uma ficha válida de Reinos Oníricos.');
         }
+        const draft: Personagem = {
+          ...json,
+          id: `desvelado-import-${Date.now()}`,
+          ownerUserId: session.authUserId,
+          campaignId: undefined,
+          atualizadoEm: new Date().toISOString()
+        };
+        await personagensRemotos.save(draft);
+        alert('Ficha importada para o Supabase com sucesso.');
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Erro ao importar ficha.');
       }
     };
     reader.readAsText(file);
     e.target.value = '';
   };
 
+  const exportarJSON = (personagem: Personagem) => {
+    accountDataService.baixarJson(personagem,
+      `${personagem.nome.toLowerCase().replace(/\\s+/g, '_')}_reinos_oniricos.json`);
+  };
+
   // Se o usuário ainda não escolheu seu perfil (Mestre vs Jogador), exibe a Tela de Login
-  if (!session) {
-    return (
-      <>
-        <LoginScreen
-          personagens={personagens}
-          onLogin={handleLogin}
-          onCriarNovoPersonagem={(nome) => {
-            const novo = criarNovoPersonagem(nome);
-            return novo;
-          }}
-        />
-      </>
-    );
-  }
+  if (authChecking) return <ViewFallback />;
+
+  if (!session) return <LoginScreen onLogin={handleLogin} />;
 
   // Se uma ficha específica estiver aberta em detalhe:
   const renderConteudoPrincipal = () => {
