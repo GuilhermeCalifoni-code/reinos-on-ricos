@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Dice5, ImagePlus, Link2, Pencil, Plus, Trash2, Upload, X } from 'lucide-react';
-import { Adversario, CategoriaHabilidadeAtor, HabilidadeAtor, NPC, TipoTesteAtor } from '../../types/campaign';
+import { Adversario, CategoriaHabilidadeAtor, HabilidadeAtor, NPC, Sessao, TipoTesteAtor } from '../../types/campaign';
+import { SessionResourceLinks } from './SessionResourceLinks';
 import { AssetImage } from '../system/AssetImage';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
 
@@ -12,6 +13,8 @@ interface CampaignActorsPanelProps {
   npcs: NPC[];
   adversarios: Adversario[];
   canManage: boolean;
+  sessions: Sessao[];
+  onUpdateSession: (id: string, patch: Partial<Sessao>) => Promise<unknown> | unknown;
   onAddNpc: (npc: Omit<NPC, 'id'>) => Promise<unknown> | unknown;
   onUpdateNpc: (id: string, patch: Partial<NPC>) => Promise<unknown> | unknown;
   onRemoveNpc: (id: string) => Promise<unknown> | unknown;
@@ -123,7 +126,7 @@ const AbilityEditor: React.FC<{
 };
 
 export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
-  mode, campanhaId, npcs, adversarios, canManage,
+  mode, campanhaId, npcs, adversarios, canManage, sessions, onUpdateSession,
   onAddNpc, onUpdateNpc, onRemoveNpc, onAddAdversary, onUpdateAdversary, onRemoveAdversary
 }) => {
   const [editingNpc, setEditingNpc] = useState<NPC | null>(null);
@@ -291,6 +294,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
                 </div>}
               </div>
 
+              <SessionResourceLinks resourceId={raw.id} field={mode === 'npc' ? 'npcIds' : 'adversarioIds'} sessions={sessions} canManage={canManage} onUpdateSession={onUpdateSession} />
               <dl className="actor-card__stats">
                 {npc?.isDesvelado ? <>
                   <div><dt>PV</dt><dd>{npc.vida ?? 1}/{npc.vidaMaxima ?? npc.vida ?? 1}</dd></div>
