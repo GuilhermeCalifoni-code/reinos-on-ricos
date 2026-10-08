@@ -147,6 +147,18 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
     .slice()
     .sort((a, b) => b.numero - a.numero);
   const ultimaSessao = sessoesCampanha[0] || null;
+  type SessionArrayField = 'npcIds' | 'adversarioIds' | 'localIds' | 'pistaIds' | 'cenaIds' | 'mapaIds' | 'handoutIds';
+  // Excluir no arquivo também limpa vínculos das sessões, sem apagar outros recursos.
+  const removerRecurso = async (
+    id: string, field: SessionArrayField, remover: (resourceId: string) => Promise<unknown> | unknown
+  ) => {
+    await remover(id);
+    for (const sessao of sessoesCampanha) {
+      const vinculados = sessao[field] || [];
+      if (!vinculados.includes(id)) continue;
+      await onAtualizarSessao(sessao.id, { [field]: vinculados.filter(item => item !== id) } as Partial<Sessao>);
+    }
+  };
   const npcsCampanha = npcs.filter(n => n.campanhaId === campanha.id);
   const adversariosCampanha = adversarios.filter(a => a.campanhaId === campanha.id);
   const locaisCampanha = locais.filter(l => l.campanhaId === campanha.id);
@@ -481,10 +493,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             onUpdateSession={onAtualizarSessao}
             onAddScene={onAdicionarCena}
             onUpdateScene={onAtualizarCena}
-            onRemoveScene={onRemoverCena}
+            onRemoveScene={id => removerRecurso(id, 'cenaIds', onRemoverCena)}
             onAddHandout={onAdicionarHandout}
             onUpdateHandout={onAtualizarHandout}
-            onRemoveHandout={onRemoverHandout}
+            onRemoveHandout={id => removerRecurso(id, 'handoutIds', onRemoverHandout)}
           />
         )}
 
@@ -499,10 +511,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             onUpdateSession={onAtualizarSessao}
             onAddScene={onAdicionarCena}
             onUpdateScene={onAtualizarCena}
-            onRemoveScene={onRemoverCena}
+            onRemoveScene={id => removerRecurso(id, 'cenaIds', onRemoverCena)}
             onAddHandout={onAdicionarHandout}
             onUpdateHandout={onAtualizarHandout}
-            onRemoveHandout={onRemoverHandout}
+            onRemoveHandout={id => removerRecurso(id, 'handoutIds', onRemoverHandout)}
           />
         )}
 
@@ -515,7 +527,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             onUpdateSession={onAtualizarSessao}
             onAdd={onAdicionarMapa}
             onUpdate={onAtualizarMapa}
-            onRemove={onRemoverMapa}
+            onRemove={id => removerRecurso(id, 'mapaIds', onRemoverMapa)}
           />
         )}
 
@@ -595,10 +607,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             onUpdateSession={onAtualizarSessao}
             onAddNpc={onAdicionarNPC}
             onUpdateNpc={onAtualizarNPC}
-            onRemoveNpc={onRemoverNPC}
+            onRemoveNpc={id => removerRecurso(id, 'npcIds', onRemoverNPC)}
             onAddAdversary={onAdicionarAdversario}
             onUpdateAdversary={onAtualizarAdversario}
-            onRemoveAdversary={onRemoverAdversario}
+            onRemoveAdversary={id => removerRecurso(id, 'adversarioIds', onRemoverAdversario)}
           />
         )}
 
@@ -614,10 +626,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             onUpdateSession={onAtualizarSessao}
             onAddNpc={onAdicionarNPC}
             onUpdateNpc={onAtualizarNPC}
-            onRemoveNpc={onRemoverNPC}
+            onRemoveNpc={id => removerRecurso(id, 'npcIds', onRemoverNPC)}
             onAddAdversary={onAdicionarAdversario}
             onUpdateAdversary={onAtualizarAdversario}
-            onRemoveAdversary={onRemoverAdversario}
+            onRemoveAdversary={id => removerRecurso(id, 'adversarioIds', onRemoverAdversario)}
           />
         )}
 
@@ -633,10 +645,10 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             onUpdateSession={onAtualizarSessao}
             onAddLocation={onAdicionarLocal}
             onUpdateLocation={onAtualizarLocal}
-            onRemoveLocation={onRemoverLocal}
+            onRemoveLocation={id => removerRecurso(id, 'localIds', onRemoverLocal)}
             onAddClue={onAdicionarPista}
             onUpdateClue={onAtualizarPista}
-            onRemoveClue={onRemoverPista}
+            onRemoveClue={id => removerRecurso(id, 'pistaIds', onRemoverPista)}
           />
         )}
 
