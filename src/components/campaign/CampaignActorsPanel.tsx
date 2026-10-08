@@ -103,14 +103,15 @@ const AbilityEditor: React.FC<{
                 <option value="">Sem rolagem</option>
                 <option value="mundano">Teste Mundano</option>
                 <option value="reflexo">Teste Reflexo</option>
+                <option value="onirico">Teste Onírico</option>
               </select>
             ) : <span className="actor-editor__passive">Sem rolagem</span>}
           </div>
           <textarea rows={2} value={ability.descricao} onChange={event => update(ability.id, { descricao: event.target.value })} placeholder="Descreva o efeito da habilidade." />
           {ability.categoria !== 'passiva' && ability.teste && (
             <div className="actor-editor__roll-config">
-              <label>DT <input type="number" min={1} value={ability.dt ?? 10} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
-              {ability.teste === 'mundano' && <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>}
+              <label>DT <input type="number" min={1} value={ability.dt ?? (ability.teste === 'onirico' ? 13 : 10)} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
+              {ability.teste !== 'reflexo' && <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>}
               <label>{ability.teste === 'reflexo' ? 'Atributo do alvo' : 'Atributo'}
                 <select value={ability.atributo || 'corpo'} onChange={event => update(ability.id, { atributo: event.target.value as HabilidadeAtor['atributo'] })}>
                   <option value="corpo">Corpo</option><option value="mente">Mente</option><option value="vontade">Vontade</option><option value="vinculo">Vínculo</option>
@@ -424,7 +425,20 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
               <label>Deslocamento<input value={(form as NPC).deslocamento || 'Próximo'} onChange={event => setForm({ ...form, deslocamento: event.target.value } as NPC)} /></label>
               <label>Atitude<select value={(form as NPC).atitude} onChange={event => setForm({ ...form, atitude: event.target.value as NPC['atitude'] } as NPC)}><option value="aliado">Aliado</option><option value="neutro">Neutro</option><option value="hostil">Hostil</option><option value="desconhecido">Desconhecido</option></select></label>
             </> : <>
-              <label>Tipo<select value={(form as Adversario).tipo} onChange={event => setForm({ ...form, tipo: event.target.value as Adversario['tipo'] } as Adversario)}><option value="humano">Humano</option><option value="pesadelo">Pesadelo</option><option value="aberracao">Aberração</option><option value="sombra">Sombra</option></select></label>
+              <label>Natureza<select value={(form as Adversario).tipo} onChange={event => setForm({ ...form, tipo: event.target.value as Adversario['tipo'] } as Adversario)}>
+                <optgroup label="Humanos">
+                  <option value="humano_dcr">Humano DCR</option><option value="humano_custodio">Humano Custódio</option><option value="humano_dissonante">Humano Dissonante</option>
+                </optgroup>
+                <optgroup label="Criaturas Oníricas">
+                  <option value="criatura_emocional">Criatura Onírica Emocional</option><option value="criatura_manifesta">Criatura Onírica Manifesta</option><option value="criatura_primordial">Criatura Onírica Primordial</option>
+                </optgroup>
+                <optgroup label="Pesadelos">
+                  <option value="pesadelo_emocional">Pesadelo Emocional</option><option value="pesadelo_manifesto">Pesadelo Manifesto</option><option value="pesadelo_primordial">Pesadelo Primordial</option>
+                </optgroup>
+                <optgroup label="Registros antigos">
+                  <option value="humano">Humano (legado)</option><option value="pesadelo">Pesadelo (legado)</option><option value="aberracao">Aberração (legado)</option><option value="sombra">Sombra (legado)</option>
+                </optgroup>
+              </select></label>
               <label>NA<input type="number" min={1} max={5} value={(form as Adversario).nivel} onChange={event => setForm({ ...form, nivel: Number(event.target.value) } as Adversario)} /></label>
               <label>PV atual<input type="number" min={0} value={(form as Adversario).vida} onChange={event => setForm({ ...form, vida: Number(event.target.value) } as Adversario)} /></label>
               <label>PV máximo<input type="number" min={1} value={(form as Adversario).vidaMaxima} onChange={event => setForm({ ...form, vidaMaxima: Number(event.target.value) } as Adversario)} /></label>
