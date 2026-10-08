@@ -53,7 +53,8 @@ export const MapStage: React.FC<MapStageProps> = ({
   onAtualizarToken,
   onRemoverToken
 }) => {
-  const mapaAtual = mapas.find(mapa => mapa.id === mapaAtualId) || mapas[0];
+  // Nunca exiba outro mapa como substituto quando o mapa ativo não é visível ao jogador.
+  const mapaAtual = mapaAtualId ? mapas.find(mapa => mapa.id === mapaAtualId) : mapas[0];
   const mapaVisivel = Boolean(mapaAtual && (mestre || mapaAtual.visibilidade !== 'mestre_privado'));
   const tokensAtuais = useMemo(
     () => mapaAtual ? tokens.filter(token => token.mapaId === mapaAtual.id && (mestre || !token.oculto)) : [],
@@ -338,6 +339,12 @@ export const MapStage: React.FC<MapStageProps> = ({
         </div>
       )}
 
+      {mestre && mapaAtual?.visibilidade === 'mestre_privado' && (
+        <p className="map-stage__privacy-note" role="status">
+          Este mapa está privado. Os jogadores não podem ver seus tokens nem os movimentos até você clicar em Revelar.
+        </p>
+      )}
+
       <div
         ref={viewport}
         className="map-stage__viewport"
@@ -425,7 +432,13 @@ export const MapStage: React.FC<MapStageProps> = ({
             })}
           </div>
         ) : (
-          <p className="map-stage__empty">{mestre ? 'Crie ou selecione um mapa para a cena.' : 'O mapa desta cena ainda não foi revelado.'}</p>
+          <p className="map-stage__empty" role="status">
+            {mestre
+              ? 'Crie ou selecione um mapa para a cena.'
+              : mapaAtualId
+                ? 'O Mestre ainda não revelou o mapa ativo. Aguarde para ver e mover seu token.'
+                : 'O Mestre ainda não selecionou um mapa para esta cena.'}
+          </p>
         )}
       </div>
 
