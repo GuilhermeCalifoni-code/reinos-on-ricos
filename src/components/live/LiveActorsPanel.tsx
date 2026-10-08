@@ -3,6 +3,7 @@ import { Heart, Shield, Sparkles, UserRound, Users, X } from 'lucide-react';
 import { Personagem } from '../../types/character';
 import { Adversario, NPC } from '../../types/campaign';
 import { AssetImage } from '../system/AssetImage';
+import { ActorCombatControls } from './ActorCombatControls';
 
 type ActorsTab = 'personagens' | 'npcs' | 'ameacas';
 
@@ -16,6 +17,9 @@ interface LiveActorsPanelProps {
   onAbrirFicha: (personagem: Personagem) => void;
   onAjustar: (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => void;
   onRuptura: (personagem: Personagem) => void;
+  onUpdateNpc: (id: string, nextHp: number) => Promise<unknown>;
+  onUpdateAdversary: (id: string, nextHp: number) => Promise<unknown>;
+  onActorRoll: (content: string, details: Record<string, unknown>) => Promise<unknown>;
   onClose: () => void;
 }
 
@@ -37,6 +41,9 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
   onAbrirFicha,
   onAjustar,
   onRuptura,
+  onUpdateNpc,
+  onUpdateAdversary,
+  onActorRoll,
   onClose
 }) => {
   const [tab, setTab] = useState<ActorsTab>('personagens');
@@ -130,11 +137,16 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
                   </span>
                 </div>
                 <div className="live-vtt__actor-resources">
-                  <span><Heart size={12} /> <b>{npc.vida ?? '—'}</b>{npc.isDesvelado ? `/${npc.vidaMaxima ?? npc.vida ?? '—'}` : ''}</span>
+                  <span><Heart size={12} /> <b>{npc.vida ?? '—'}</b>/{npc.vidaMaxima ?? npc.vida ?? '—'}</span>
                   {npc.isDesvelado && <span><Sparkles size={12} /> <b>{npc.foco ?? 0}</b>/{npc.focoMaximo ?? 0}</span>}
                   {npc.isDesvelado && <span className={(npc.ruptura ?? 0) >= 4 ? 'is-danger' : ''}><Shield size={12} /> <b>{npc.ruptura ?? 0}</b>/6</span>}
                   <span><Shield size={12} /> {npc.isDesvelado ? 'Def' : 'DT'} <b>{npc.isDesvelado ? (npc.defesa ?? npc.dificuldade ?? '—') : (npc.dificuldade ?? '—')}</b></span>
                 </div>
+                <ActorCombatControls
+                  key={npc.id} name={npc.nome} hp={npc.vida ?? 0} maxHp={npc.vidaMaxima ?? npc.vida ?? 1}
+                  threatLevel={npc.nivelAmeaca ?? 0} abilities={npc.habilidades || []}
+                  onHpChange={hp => onUpdateNpc(npc.id,hp)} onRoll={onActorRoll}
+                />
               </article>
             ))}
           </>
@@ -162,6 +174,11 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
                   <span><Shield size={12} /> Defesa <b>{adversario.defesa}</b></span>
                   <span>DT <b>{adversario.dificuldade ?? adversario.defesa}</b></span>
                 </div>
+                <ActorCombatControls
+                  key={adversario.id} name={adversario.nome} hp={adversario.vida} maxHp={adversario.vidaMaxima}
+                  threatLevel={adversario.nivel} abilities={adversario.habilidades || []}
+                  onHpChange={hp => onUpdateAdversary(adversario.id,hp)} onRoll={onActorRoll}
+                />
               </article>
             ))}
           </>
