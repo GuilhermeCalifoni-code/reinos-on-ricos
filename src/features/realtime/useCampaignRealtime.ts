@@ -11,6 +11,14 @@ type DraftToken = Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>;
 
 const replace = <T extends { id: string }>(items: T[], item: T) => items.some(current => current.id === item.id) ? items.map(current => current.id === item.id ? item : current) : [...items, item];
 const applyEvent = <T extends { id: string }>(items: T[], event: string, item: T) => event === 'DELETE' ? items.filter(current => current.id !== item.id) : replace(items, item);
+const mergeToken = (items:TokenMapa[],next:TokenMapa) => {
+  const prev=items.find(t=>t.id===next.id);
+  return replace(items,{
+    ...prev,...next,
+    hpCurrent:next.hpCurrent ?? prev?.hpCurrent,
+    hpMax:next.hpMax ?? prev?.hpMax
+  });
+};
 
 export function useCampaignRealtime({ campaignId, userId, userName, role, enabled, fallback, onCharacterUpdate }: {
   campaignId: string;
@@ -46,7 +54,10 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
       state: item => active && setState(item),
       counter: (event, item) => active && setCounters(items => applyEvent(items, event, item)),
       map: (event, item) => active && setMaps(items => applyEvent(items, event, item)),
-      token: (event, item) => active && setTokens(items => applyEvent(items, event, item)),
+      token: (event,item) => active && setTokens(items => event==='DELETE'
+        ? items.filter(t=>t.id!==item.id) : mergeToken(items,item)),
+      resource: item => active && setTokens(items => items.map(t=>t.id===item.tokenId
+        ? {...t,hpCurrent:item.hpCurrent,hpMax:item.hpMax} : t)),
       character: item => active && onCharacterUpdateRef.current?.(item),
       status: value => { if (active) setStatus(value === 'SUBSCRIBED' ? 'connected' : value === 'CHANNEL_ERROR' || value === 'TIMED_OUT' || value === 'CLOSED' ? 'offline' : 'connecting'); }
     });
@@ -72,7 +83,7 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
       const updated = role === 'mestre'
         ? await liveTableRepository.patchToken(id, patch)
         : await liveTableRepository.patchOwnToken(id, patch);
-      setTokens(items => replace(items, updated));
+      setTokens(items => mergeToken(items, updated));
       return updated;
     }),
     removeToken: (id: string) => action(async () => { await liveTableRepository.removeToken(id); setTokens(items => items.filter(item => item.id !== id)); })
