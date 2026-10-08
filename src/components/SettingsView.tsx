@@ -35,6 +35,7 @@ interface SettingsViewProps {
   onSairTodos: () => Promise<void>;
   localDataSummary?: { campanhas: number; personagens: number; itens: number };
   onMigrarDadosLocais?: () => Promise<LocalMigrationReport>;
+  onExportarLegado?: () => void;
 }
 
 interface AccountDetails {
@@ -73,7 +74,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onExportarDados,
   onSairTodos,
   localDataSummary,
-  onMigrarDadosLocais
+  onMigrarDadosLocais,
+  onExportarLegado
 }) => {
   const { theme, setTheme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -356,8 +358,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         <div className="ro-settings__status">
           <ShieldCheck />
           <span>
-            <strong>{remoto ? 'Conta online' : 'Modo local'}</strong>
-            <small>{remoto ? 'Sincronizada pelo Supabase' : 'Dados salvos neste navegador'}</small>
+            <strong>Conta online</strong>
+            <small>Dados no Supabase</small>
           </span>
         </div>
       </header>
@@ -583,8 +585,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             <div className="ro-settings__card-head">
               <span className="ro-settings__icon"><CloudUpload /></span>
               <div>
-                <h2>Sincronização deste dispositivo</h2>
-                <p>Leve para a nuvem o que foi criado aqui antes da conta online.</p>
+                <h2>Resgatar dados antigos</h2>
+                <p>Importe dados do antigo modo local. O modo local de jogo foi desativado.</p>
               </div>
             </div>
 
@@ -594,7 +596,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <span><strong>{localDataSummary?.personagens ?? 0}</strong><small>fichas locais</small></span>
                 <span><strong>{localDataSummary?.itens ?? 0}</strong><small>itens de preparação</small></span>
               </div>
-              <p>Use isto uma vez em cada navegador antigo que ainda possua conteúdo que não foi enviado ao Supabase.</p>
+              <p>Os dados antigos permanecem neste navegador até você decidir importá-los. Faça um backup antes de migrar.</p>
+              {onExportarLegado && <button type="button" className="ro-button--quiet" onClick={onExportarLegado}>
+                <Download /> Baixar backup dos dados antigos
+              </button>}
               <button type="button" className="ro-button" disabled={migrandoDados} onClick={() => void migrarDadosLocais()}>
                 <CloudUpload /> {migrandoDados ? 'Enviando para a nuvem…' : 'Sincronizar este dispositivo'}
               </button>
@@ -612,7 +617,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
 
           <dl className="ro-settings__details">
-            <div><dt>Conexão</dt><dd>{remoto ? 'Supabase / online' : 'Local'}</dd></div>
+            <div><dt>Conexão</dt><dd>Supabase / online</dd></div>
             <div><dt>Perfil</dt><dd>{session?.nome || 'Desvelado'}</dd></div>
             {session?.email && <div><dt>E-mail atual</dt><dd>{session.email}</dd></div>}
             {remoto && <div><dt>Login principal</dt><dd>{providerLabel(accountDetails?.provider)}</dd></div>}
@@ -622,7 +627,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </dl>
 
           <button type="button" className="ro-settings__logout" onClick={onTrocarSessao}>
-            <LogOut /> {remoto ? 'Sair deste dispositivo' : 'Encerrar modo local'}
+            <LogOut /> Sair deste dispositivo
           </button>
         </section>
 
@@ -635,7 +640,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
           </div>
           <p className="ro-settings__hint">
-            Perfil e aparência acompanham a conta online. Campanhas, fichas e preparação são salvos no Supabase quando você está conectado. O modo local continua restrito ao navegador.
+            O acesso exige uma conta online. Campanhas, fichas e preparação são salvos no Supabase; dados antigos podem ser resgatados em Configurações.
           </p>
         </section>
       </div>

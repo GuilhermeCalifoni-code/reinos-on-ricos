@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Sidebar, MobileNavigation, MainViewType } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
@@ -6,10 +6,9 @@ import { CampaignsLibraryView } from './components/CampaignsLibraryView';
 import { CreateCharacterModal } from './components/CreateCharacterModal';
 import { RupturaModal } from './components/RupturaModal';
 import { LoginScreen } from './components/LoginScreen';
-import { useCharacterStorage } from './data/characterStore';
-import { useCampaignStorage } from './data/campaignStore';
+import { readLegacyLocalSnapshot, summarizeLegacyLocalSnapshot } from './data/legacyLocalSnapshot';
 import { Personagem, AtributoNome, DominioNome } from './types/character';
-import { Campanha, Sessao } from './types/campaign';
+import { Campanha, Sessao, Contador, TokenMapa } from './types/campaign';
 import { UserSession } from './types/auth';
 import { isSupabaseConfigured } from './lib/supabaseClient';
 import { authService } from './services/auth/authService';
@@ -26,7 +25,9 @@ import { accountDataService } from './services/account/accountDataService';
 import { liveTableRepository } from './features/realtime/liveTableRepository';
 import { usePlatformAccess } from './services/admin/usePlatformAccess';
 
-const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
+// Referências imutáveis: evita reiniciar subscriptions do Realtime a cada render.
+const EMPTY_COUNTERS: Contador[] = [];
+const EMPTY_TOKENS: TokenMapa[] = [];
 
 const CreateCampaignView = React.lazy(() => import('./components/CreateCampaignView').then(module => ({ default: module.CreateCampaignView })));
 const CampaignDetailView = React.lazy(() => import('./components/CampaignDetailView').then(module => ({ default: module.CampaignDetailView })));
@@ -47,17 +48,11 @@ const ViewFallback = () => (
 
 export default function App() {
   const { setTheme } = useTheme();
-  const [session, setSession] = useState<UserSession | null>(() => {
-    try {
-      const salvo = localStorage.getItem(SESSION_STORAGE_KEY);
-      if (salvo) {
-        return JSON.parse(salvo);
-      }
-    } catch (e) {
-      console.error('Erro ao ler sessão salva:', e);
-    }
-    return null;
-  });
+  // Não confia em cache do navegador como sessão autenticada.
+  // O Supabase Auth precisa confirmar a identidade antes de abrir a aplicação.
+  const [session, setSession] = useState<UserSession | null>(null);
+  const [authChecking, setAuthChecking] = useState(isSupabaseConfigured());
+  const legacySummary = useMemo(() => summarizeLegacyLocalSnapshot(readLegacyLocalSnapshot()), []);
   const sessionRef = useRef<UserSession | null>(session);
 
   useEffect(() => {
@@ -67,141 +62,62 @@ export default function App() {
     if (prefs.theme) setTheme(prefs.theme);
   }, [session, setTheme]);
 
-  // Storage de Personagens
-  const {
-    personagens: personagensLocais,
-    personagemAtivo,
-    personagemAtivoId,
-    setPersonagemAtivoId,
-    salvarPersonagem: salvarPersonagemLocal,
-    criarNovoPersonagem,
-    duplicarPersonagem: duplicarPersonagemLocal,
-    excluirPersonagem: excluirPersonagemLocal,
-    exportarJSON,
-    importarJSON
-  } = useCharacterStorage(session?.mesaCodigo || 'ONIRICO-01');
-
-  // Storage de Campanhas
-  const {
-    campanhas: campanhasLocais,
-    campanhaAtivaId: campanhaAtivaIdLocal,
-    campanhaAtiva: campanhaAtivaLocal,
-    setCampanhaAtivaId: setCampanhaAtivaIdLocal,
-    criarCampanha: criarCampanhaLocal,
-    atualizarCampanha,
-    removerCampanha,
-    sessoes,
-    criarSessao,
-    atualizarSessao,
-    npcs,
-    adicionarNPC,
-    atualizarNPC,
-    removerNPC,
-    adversarios,
-    adicionarAdversario,
-    atualizarAdversario,
-    removerAdversario,
-    locais,
-    adicionarLocal,
-    atualizarLocal,
-    removerLocal,
-    pistas,
-    adicionarPista,
-    atualizarPista,
-    removerPista,
-    loreEntries,
-    adicionarLore,
-    anotacoes,
-    adicionarAnotacao,
-    contadores,
-    adicionarContador,
-    atualizarContador,
-    removerContador,
-    duplicarContador,
-    mapas,
-    adicionarMapa,
-    atualizarMapa,
-    removerMapa,
-    tokensMapa,
-    adicionarTokenMapa,
-    atualizarTokenMapa,
-    removerTokenMapa,
-    cenas,
-    adicionarCena,
-    atualizarCena,
-    removerCena,
-    handouts,
-    adicionarHandout,
-    atualizarHandout,
-    removerHandout
-  } = useCampaignStorage();
-  const campanhasRemotas = useRemoteCampaigns(session?.modoConexao === 'supabase' ? session.authUserId : undefined);
+  const campanhasRemotas = useRemoteCampaigns(session?.authUserId);
   const [campanhaRemotaAtivaId, setCampanhaRemotaAtivaId] = useState<string | null>(null);
-  const usandoRemoto = session?.modoConexao === 'supabase' && Boolean(session.authUserId) && isSupabaseConfigured();
+  const usandoRemoto = Boolean(session?.authUserId) && isSupabaseConfigured();
   const platformAccess = usePlatformAccess(usandoRemoto ? session?.authUserId : undefined);
   const canAccessAdmin = platformAccess.canViewUsers || platformAccess.canManageCampaignRoles;
-  const campanhas = usandoRemoto ? campanhasRemotas.campanhas : campanhasLocais;
-  const campanhaAtivaId = usandoRemoto ? campanhaRemotaAtivaId : campanhaAtivaIdLocal;
-  const campanhaAtiva = usandoRemoto
-    ? (campanhaRemotaAtivaId ? campanhas.find(c => c.id === campanhaRemotaAtivaId) || null : campanhas[0] || null)
-    : campanhaAtivaLocal;
-  const setCampanhaAtivaId = (id: string) => usandoRemoto ? setCampanhaRemotaAtivaId(id) : setCampanhaAtivaIdLocal(id);
-  const papelDaCampanha = usandoRemoto ? campanhasRemotas.roleDaCampanha(campanhaAtivaId || undefined) || 'observador' : session?.role || 'observador';
-  const podePrepararCampanha = (camp: Campanha) => roleCanPrepare(
-    usandoRemoto ? campanhasRemotas.roleDaCampanha(camp.id) : session?.role
-  );
-  const membroRemotoAtivo = usandoRemoto ? campanhasRemotas.membros.find(membro => membro.campaignId === campanhaAtivaId && membro.userId === session?.authUserId) : undefined;
-  const personagemJogadorId = usandoRemoto ? membroRemotoAtivo?.characterId : session?.personagemVinculadoId;
+  const campanhas = campanhasRemotas.campanhas;
+  const campanhaAtivaId = campanhaRemotaAtivaId;
+  const campanhaAtiva = campanhaRemotaAtivaId
+    ? campanhas.find(c => c.id === campanhaRemotaAtivaId) || null
+    : campanhas[0] || null;
+  const setCampanhaAtivaId = setCampanhaRemotaAtivaId;
+  const papelDaCampanha = campanhasRemotas.roleDaCampanha(campanhaAtiva?.id) || 'observador';
+  const podePrepararCampanha = (camp: Campanha) => roleCanPrepare(campanhasRemotas.roleDaCampanha(camp.id));
+  const membroRemotoAtivo = campanhasRemotas.membros.find(membro => membro.campaignId === campanhaAtiva?.id && membro.userId === session?.authUserId);
+  const personagemJogadorId = membroRemotoAtivo?.characterId;
   const personagensRemotos = useRemoteCharacters(
     usandoRemoto ? session?.authUserId : undefined,
     usandoRemoto ? campanhaAtivaId || undefined : undefined,
     usandoRemoto
   );
-  const personagens = usandoRemoto ? personagensRemotos.characters : personagensLocais;
+  const personagens = personagensRemotos.characters;
 
   const conteudoRemoto = useRemoteCampaignContent(campanhaAtivaId || undefined, usandoRemoto);
-  const sessoesAtuais = usandoRemoto ? conteudoRemoto.sessoes : sessoes;
-  const npcsAtuais = usandoRemoto ? conteudoRemoto.npcs : npcs;
-  const adversariosAtuais = usandoRemoto ? conteudoRemoto.adversarios : adversarios;
-  const locaisAtuais = usandoRemoto ? conteudoRemoto.locais : locais;
-  const pistasAtuais = usandoRemoto ? conteudoRemoto.pistas : pistas;
-  const loreAtual = usandoRemoto ? conteudoRemoto.loreEntries : loreEntries;
-  const anotacoesAtuais = usandoRemoto ? conteudoRemoto.anotacoes : anotacoes;
-  const cenasAtuais = usandoRemoto ? conteudoRemoto.cenas : cenas;
-  const handoutsAtuais = usandoRemoto ? conteudoRemoto.handouts : handouts;
-  const mapasAtuais = usandoRemoto ? conteudoRemoto.mapas : mapas;
+  const sessoesAtuais = conteudoRemoto.sessoes;
+  const npcsAtuais = conteudoRemoto.npcs;
+  const adversariosAtuais = conteudoRemoto.adversarios;
+  const locaisAtuais = conteudoRemoto.locais;
+  const pistasAtuais = conteudoRemoto.pistas;
+  const loreAtual = conteudoRemoto.loreEntries;
+  const anotacoesAtuais = conteudoRemoto.anotacoes;
+  const cenasAtuais = conteudoRemoto.cenas;
+  const handoutsAtuais = conteudoRemoto.handouts;
+  const mapasAtuais = conteudoRemoto.mapas;
   const sessaoAtiva = sessoesAtuais.find(sessao => sessao.numero === campanhaAtiva?.sessaoAtual);
   const sessaoAtivaId = sessaoAtiva?.id;
-  const membrosCampanha = usandoRemoto && campanhaAtivaId ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtivaId) : [];
-  const personagensCampanha = usandoRemoto && campanhaAtivaId
-    ? personagens.filter(personagem => personagem.campaignId === campanhaAtivaId)
+  const membrosCampanha = campanhaAtiva?.id ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id) : [];
+  const personagensCampanha = campanhaAtiva?.id
+    ? personagens.filter(personagem => personagem.campaignId === campanhaAtiva.id)
     : personagens;
 
   const salvarPersonagemPersistente = (personagemAtualizado: Personagem) => {
-    if (usandoRemoto) {
-      const remoto: Personagem = {
-        ...personagemAtualizado,
-        ownerUserId: personagemAtualizado.ownerUserId || session?.authUserId
-      };
-      void personagensRemotos.save(remoto).catch(error => console.error('Erro ao salvar ficha remota:', error));
-      return;
-    }
-    salvarPersonagemLocal(personagemAtualizado);
+    if (!usandoRemoto) return;
+    const remoto: Personagem = {
+      ...personagemAtualizado,
+      ownerUserId: personagemAtualizado.ownerUserId || session?.authUserId
+    };
+    void personagensRemotos.save(remoto).catch(error => console.error('Erro ao salvar ficha no Supabase:', error));
   };
 
   const excluirPersonagemPersistente = (id: string) => {
-    if (usandoRemoto) {
-      void personagensRemotos.remove(id).catch(error => console.error('Erro ao excluir ficha remota:', error));
-      return;
-    }
-    excluirPersonagemLocal(id);
+    if (!usandoRemoto) return;
+    void personagensRemotos.remove(id).catch(error => console.error('Erro ao excluir ficha remota:', error));
   };
 
   const duplicarPersonagemPersistente = (id: string) => {
-    if (!usandoRemoto) {
-      duplicarPersonagemLocal(id);
-      return;
-    }
+    if (!usandoRemoto) return;
     const original = personagens.find(item => item.id === id);
     if (!original || !session?.authUserId) return;
     const copia: Personagem = {
@@ -221,7 +137,7 @@ export default function App() {
     let ativo = true;
 
     const persistirSessaoRemota = async (supabaseSession: Awaited<ReturnType<typeof authService.sessaoAtual>>) => {
-      if (!ativo || !supabaseSession?.user || sessionRef.current?.modoConexao === 'local') return;
+      if (!ativo || !supabaseSession?.user) return;
 
       const profile = await authService.perfil(supabaseSession.user);
       if (!ativo) return;
@@ -244,39 +160,28 @@ export default function App() {
 
       sessionRef.current = restaurada;
       setSession(restaurada);
-      try {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(restaurada));
-      } catch (error) {
-        console.error('Erro ao sincronizar sessão autenticada:', error);
-      }
+      setAuthChecking(false);
     };
 
     const limparSessaoRemotaEmCache = () => {
-      if (sessionRef.current?.modoConexao !== 'supabase') return;
       sessionRef.current = null;
-      try {
-        localStorage.removeItem(SESSION_STORAGE_KEY);
-      } catch (error) {
-        console.error('Erro ao limpar sessão autenticada inválida:', error);
-      }
       setSession(null);
+      setAuthChecking(false);
     };
 
-    if (sessionRef.current?.modoConexao !== 'local') {
-      void authService.sessaoAtual()
-        .then(async (supabaseSession) => {
-          if (!ativo) return;
-          if (!supabaseSession?.user) {
-            limparSessaoRemotaEmCache();
-            return;
-          }
-          await persistirSessaoRemota(supabaseSession);
-        })
-        .catch(() => {
-          // Falha de rede não deve expulsar o usuário. A sessão em cache permanece
-          // e a interface pode se recuperar quando a conectividade voltar.
-        });
-    }
+    void authService.sessaoAtual()
+      .then(async (supabaseSession) => {
+        if (!ativo) return;
+        if (!supabaseSession?.user) {
+          limparSessaoRemotaEmCache();
+          return;
+        }
+        await persistirSessaoRemota(supabaseSession);
+      })
+      .catch(() => {
+        // Sem acesso local offline: falha da conexão mantém a tela de autenticação.
+        if (ativo) setAuthChecking(false);
+      });
 
     const subscription = authService.onAuthStateChange((event, supabaseSession) => {
       if (!ativo) return;
@@ -288,7 +193,6 @@ export default function App() {
 
       if (
         supabaseSession?.user &&
-        sessionRef.current?.modoConexao !== 'local' &&
         (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED')
       ) {
         void persistirSessaoRemota(supabaseSession).catch(() => undefined);
@@ -337,15 +241,7 @@ export default function App() {
     setCampanhaRemotaAtivaId(null);
     sessionRef.current = novaSession;
     setSession(novaSession);
-    try {
-      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(novaSession));
-    } catch (e) {
-      console.error('Erro ao persistir sessão:', e);
-    }
-
-    if (novaSession.personagemVinculadoId) {
-      setPersonagemAtivoId(novaSession.personagemVinculadoId);
-    }
+    setAuthChecking(false);
     // Contas remotas não têm um papel global: Mestre/Jogador/Observador é definido por campanha.
     // O Dashboard é o ponto de entrada correto para qualquer conta autenticada.
     setViewAtiva('dashboard');
@@ -356,11 +252,6 @@ export default function App() {
       if (!current) return current;
       const atualizada = { ...current, ...patch };
       sessionRef.current = atualizada;
-      try {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(atualizada));
-      } catch (error) {
-        console.error('Erro ao persistir alterações da sessão:', error);
-      }
       return atualizada;
     });
   };
@@ -370,22 +261,7 @@ export default function App() {
       throw new Error('Entre em uma conta online para sincronizar este dispositivo.');
     }
 
-    const report = await localCloudMigrationService.migrate({
-      campanhas: campanhasLocais,
-      sessoes,
-      npcs,
-      adversarios,
-      locais,
-      pistas,
-      loreEntries,
-      anotacoes,
-      cenas,
-      handouts,
-      contadores,
-      mapas,
-      tokensMapa,
-      personagens: personagensLocais
-    }, session.authUserId);
+    const report = await localCloudMigrationService.migrate(readLegacyLocalSnapshot(), session.authUserId);
 
     await Promise.all([
       campanhasRemotas.recarregar(),
@@ -401,64 +277,32 @@ export default function App() {
     applyUIPreferences(next);
     if (next.theme) setTheme(next.theme);
 
-    if (usandoRemoto) {
-      await authService.atualizarPreferencias(next);
-    }
+    await authService.atualizarPreferencias(next);
 
     handleAtualizarSessao({ uiPreferences: next });
   };
 
   const handleExportarDados = async () => {
-    if (usandoRemoto) {
-      const payload = await accountDataService.exportarConta();
-      accountDataService.baixarJson(payload, `reinos-oniricos-backup-${new Date().toISOString().slice(0, 10)}.json`);
-      return;
-    }
+    const payload = await accountDataService.exportarConta();
+    accountDataService.baixarJson(payload, `reinos-oniricos-backup-${new Date().toISOString().slice(0, 10)}.json`);
+  };
 
+  const handleExportarLegado = () => {
     accountDataService.baixarJson({
       formato: 'reinos-oniricos-local-backup-v1',
       exportadoEm: new Date().toISOString(),
-      perfil: session,
-      campanhas: campanhasLocais,
-      personagens: personagensLocais,
-      sessoes,
-      npcs,
-      adversarios,
-      locais,
-      pistas,
-      loreEntries,
-      anotacoes,
-      cenas,
-      handouts,
-      contadores,
-      mapas,
-      tokensMapa
-    }, `reinos-oniricos-local-${new Date().toISOString().slice(0, 10)}.json`);
+      ...readLegacyLocalSnapshot()
+    }, `reinos-oniricos-legado-${new Date().toISOString().slice(0, 10)}.json`);
   };
 
   const handleSairTodos = async () => {
-    if (!usandoRemoto) {
-      handleTrocarSessao();
-      return;
-    }
-
     await authService.sairTodos();
-    try {
-      localStorage.removeItem(SESSION_STORAGE_KEY);
-    } catch (error) {
-      console.error('Erro ao limpar sessão local após logout global:', error);
-    }
     sessionRef.current = null;
     setSession(null);
   };
 
   const handleTrocarSessao = () => {
-    if (session?.modoConexao === 'supabase') void authService.sair().catch(() => undefined);
-    try {
-      localStorage.removeItem(SESSION_STORAGE_KEY);
-    } catch (e) {
-      console.error('Erro ao limpar sessão:', e);
-    }
+    void authService.sair().catch(() => undefined);
     setCampanhaRemotaAtivaId(null);
     sessionRef.current = null;
     setSession(null);
@@ -476,51 +320,46 @@ export default function App() {
 
     setCampanhaAtivaId(camp.id);
 
-    if (usandoRemoto) {
-      await campaignRepository.atualizar(camp.id, { sessaoAtual: sessao.numero });
+    await campaignRepository.atualizar(camp.id, { sessaoAtual: sessao.numero });
 
-      const primeiraCena = (sessao.cenaIds || [])
-        .map(id => cenasAtuais.find(item => item.id === id))
-        .find(Boolean);
-      const primeiroMapa = (sessao.mapaIds || [])
-        .find(id => mapasAtuais.some(item => item.id === id));
-      const contentType = primeiraCena?.tipoDeConteudo === 'mapa' || (!primeiraCena && primeiroMapa)
-        ? 'mapa'
-        : (primeiraCena?.tipoDeConteudo || sessao.conteudoDeCena || 'ambientacao');
+    const primeiraCena = (sessao.cenaIds || [])
+      .map(id => cenasAtuais.find(item => item.id === id))
+      .find(Boolean);
+    const primeiroMapa = (sessao.mapaIds || [])
+      .find(id => mapasAtuais.some(item => item.id === id));
+    const contentType = primeiraCena?.tipoDeConteudo === 'mapa' || (!primeiraCena && primeiroMapa)
+      ? 'mapa'
+      : (primeiraCena?.tipoDeConteudo || sessao.conteudoDeCena || 'ambientacao');
 
-      if (session?.authUserId) {
-        try {
-          const live = await liveTableRepository.load(camp.id);
-          await liveTableRepository.saveState(camp.id, session.authUserId, {
-            ...live.state,
-            sessionId: sessao.id,
-            activeSceneId: primeiraCena?.id,
-            activeMapId: primeiroMapa,
-            contentType,
-            ruptureGeneral: live.state?.ruptureGeneral ?? camp.rupturaGeral,
-            metadata: {
-              ...(live.state?.metadata || {}),
-              sceneTitle: primeiraCena?.titulo || sessao.titulo,
-              sceneDescription: primeiraCena?.descricao || sessao.descricao || '',
-              sceneImageUrl: primeiraCena?.imagemUrl || sessao.imagemUrl || ''
-            }
-          });
-        } catch (error) {
-          console.error('Não foi possível aplicar a abertura preparada da sessão:', error);
-        }
+    if (session?.authUserId) {
+      try {
+        const live = await liveTableRepository.load(camp.id);
+        await liveTableRepository.saveState(camp.id, session.authUserId, {
+          ...live.state,
+          sessionId: sessao.id,
+          activeSceneId: primeiraCena?.id,
+          activeMapId: primeiroMapa,
+          contentType,
+          ruptureGeneral: live.state?.ruptureGeneral ?? camp.rupturaGeral,
+          metadata: {
+            ...(live.state?.metadata || {}),
+            sceneTitle: primeiraCena?.titulo || sessao.titulo,
+            sceneDescription: primeiraCena?.descricao || sessao.descricao || '',
+            sceneImageUrl: primeiraCena?.imagemUrl || sessao.imagemUrl || ''
+          }
+        });
+      } catch (error) {
+        console.error('Não foi possível aplicar a abertura preparada da sessão:', error);
       }
-
-      await campanhasRemotas.recarregar();
-    } else {
-      atualizarCampanha(camp.id, { sessaoAtual: sessao.numero });
     }
 
+    await campanhasRemotas.recarregar();
     setViewAtiva('modo_mesa');
   };
 
   const handleDetalhesCampanha = (camp: Campanha) => {
     setCampanhaAtivaId(camp.id);
-    setViewAtiva(campaignEntryView(usandoRemoto ? campanhasRemotas.roleDaCampanha(camp.id) : session?.role));
+    setViewAtiva(campaignEntryView(campanhasRemotas.roleDaCampanha(camp.id)));
   };
 
   const handleIniciarCriacaoCampanha = () => {
@@ -555,13 +394,6 @@ export default function App() {
     ]);
   };
 
-  const arquivoParaDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Não foi possível ler a imagem selecionada.'));
-    reader.onload = () => resolve(String(reader.result));
-    reader.readAsDataURL(file);
-  });
-
   const handleExecutarCriacaoCampanha = async (dados: {
     nome: string;
     descricao: string;
@@ -569,40 +401,29 @@ export default function App() {
     imagemArquivo?: File;
     tipo: 'campanha' | 'oneshot' | 'playtest';
   }) => {
-    if (usandoRemoto) {
-      const nova = await campanhasRemotas.criar({
-        nome: dados.nome,
-        descricao: dados.descricao,
-        imagemUrl: dados.imagemUrl,
-        tipo: dados.tipo
-      });
+    const nova = await campanhasRemotas.criar({
+      nome: dados.nome,
+      descricao: dados.descricao,
+      imagemUrl: dados.imagemUrl,
+      tipo: dados.tipo
+    });
 
-      if (dados.imagemArquivo) {
-        try {
-          const path = await campaignAssetService.uploadCampaignCover(nova.id, dados.imagemArquivo);
-          await campaignRepository.atualizarImagem(nova.id, campaignAssetService.toStorageRef(path));
-          await campanhasRemotas.recarregar();
-        } catch (error: any) {
-          alert(`A campanha foi criada, mas a capa não pôde ser enviada. ${error.message || ''}`);
-        }
+    if (dados.imagemArquivo) {
+      try {
+        const path = await campaignAssetService.uploadCampaignCover(nova.id, dados.imagemArquivo);
+        await campaignRepository.atualizarImagem(nova.id, campaignAssetService.toStorageRef(path));
+        await campanhasRemotas.recarregar();
+      } catch (error: any) {
+        alert(`A campanha foi criada, mas a capa não pôde ser enviada. ${error.message || ''}`);
       }
-
-      setCampanhaRemotaAtivaId(nova.id);
-      setViewAtiva('detalhe_campanha');
-      return;
     }
 
-    const imagemUrl = dados.imagemArquivo
-      ? await arquivoParaDataUrl(dados.imagemArquivo)
-      : dados.imagemUrl;
-
-    criarCampanhaLocal({ ...dados, imagemUrl });
+    setCampanhaRemotaAtivaId(nova.id);
     setViewAtiva('detalhe_campanha');
   };
 
   // Abrir Ficha de Personagem
   const handleAbrirFichaPersonagem = (p: Personagem) => {
-    setPersonagemAtivoId(p.id);
     setPersonagemParaFicha(p);
   };
 
@@ -619,37 +440,40 @@ export default function App() {
   // Upload JSON de Ficha
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
+    if (!file || !session?.authUserId) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      if (content) {
-        const importado = importarJSON(content);
-        if (importado) {
-          alert('Ficha importada com sucesso.');
+    reader.onload = async event => {
+      try {
+        const json = JSON.parse(String(event.target?.result || ''));
+        if (!json?.nome || !json?.atributos || !json?.dominios) {
+          throw new Error('Este arquivo não contém uma ficha válida de Reinos Oníricos.');
         }
+        const draft: Personagem = {
+          ...json,
+          id: `desvelado-import-${Date.now()}`,
+          ownerUserId: session.authUserId,
+          campaignId: undefined,
+          atualizadoEm: new Date().toISOString()
+        };
+        await personagensRemotos.save(draft);
+        alert('Ficha importada para o Supabase com sucesso.');
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Erro ao importar ficha.');
       }
     };
     reader.readAsText(file);
     e.target.value = '';
   };
 
+  const exportarJSON = (personagem: Personagem) => {
+    accountDataService.baixarJson(personagem,
+      `${personagem.nome.toLowerCase().replace(/\\s+/g, '_')}_reinos_oniricos.json`);
+  };
+
   // Se o usuário ainda não escolheu seu perfil (Mestre vs Jogador), exibe a Tela de Login
-  if (!session) {
-    return (
-      <>
-        <LoginScreen
-          personagens={personagens}
-          onLogin={handleLogin}
-          onCriarNovoPersonagem={(nome) => {
-            const novo = criarNovoPersonagem(nome);
-            return novo;
-          }}
-        />
-      </>
-    );
-  }
+  if (authChecking) return <ViewFallback />;
+
+  if (!session) return <LoginScreen onLogin={handleLogin} />;
 
   // Se uma ficha específica estiver aberta em detalhe:
   const renderConteudoPrincipal = () => {
@@ -717,8 +541,8 @@ export default function App() {
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             canPrepareCampaign={podePrepararCampanha}
-            personagensParaVinculo={usandoRemoto ? personagensRemotos.personal.filter(personagem => !personagem.campaignId) : undefined}
-            onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
+            personagensParaVinculo={personagensRemotos.personal.filter(personagem => !personagem.campaignId)}
+            onEntrarComCodigo={handleEntrarComCodigoRemoto}
             avatarUrl={session.avatarUrl}
             onAbrirCampanhas={() => setViewAtiva('campanhas')}
             onAbrirPersonagens={() => setViewAtiva('personagens')}
@@ -732,12 +556,12 @@ export default function App() {
         return (
           <CampaignsLibraryView
             campanhas={campanhas}
-            personagensParaVinculo={usandoRemoto ? personagensRemotos.personal.filter(personagem => !personagem.campaignId) : undefined}
+            personagensParaVinculo={personagensRemotos.personal.filter(personagem => !personagem.campaignId)}
             onNovaCampanha={handleIniciarCriacaoCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             onContinuarCampanha={handleContinuarCampanha}
             canPrepareCampaign={podePrepararCampanha}
-            onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
+            onEntrarComCodigo={handleEntrarComCodigoRemoto}
           />
         );
 
@@ -754,7 +578,7 @@ export default function App() {
           <CampaignDetailView
             campanha={campanhaAtiva}
             personagens={personagensCampanha}
-            personagensPessoais={usandoRemoto ? personagensRemotos.personal : personagens}
+            personagensPessoais={personagensRemotos.personal}
             sessoes={sessoesAtuais}
             npcs={npcsAtuais}
             adversarios={adversariosAtuais}
@@ -768,38 +592,38 @@ export default function App() {
             onIniciarSessao={handleContinuarCampanha}
             onAbrirSessao={handleAbrirSessaoPreparada}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
-            onNovaSessao={(campaignId, dados) => usandoRemoto ? void conteudoRemoto.criarSessao(campaignId, dados) : void criarSessao(campaignId, dados)}
-            onAtualizarSessao={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarSessao(id, patch) : atualizarSessao(id, patch)}
-            onAdicionarNPC={(item) => usandoRemoto ? conteudoRemoto.adicionarNPC(item) : adicionarNPC(item)}
-            onAtualizarNPC={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarNPC(id, patch) : atualizarNPC(id, patch)}
-            onRemoverNPC={(id) => usandoRemoto ? conteudoRemoto.removerNPC(id) : removerNPC(id)}
-            onAdicionarAdversario={(item) => usandoRemoto ? conteudoRemoto.adicionarAdversario(item) : adicionarAdversario(item)}
-            onAtualizarAdversario={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarAdversario(id, patch) : atualizarAdversario(id, patch)}
-            onRemoverAdversario={(id) => usandoRemoto ? conteudoRemoto.removerAdversario(id) : removerAdversario(id)}
-            onAdicionarLocal={(item) => usandoRemoto ? conteudoRemoto.adicionarLocal(item) : adicionarLocal(item)}
-            onAtualizarLocal={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarLocal(id, patch) : atualizarLocal(id, patch)}
-            onRemoverLocal={(id) => usandoRemoto ? conteudoRemoto.removerLocal(id) : removerLocal(id)}
-            onAdicionarPista={(item) => usandoRemoto ? conteudoRemoto.adicionarPista(item) : adicionarPista(item)}
-            onAtualizarPista={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarPista(id, patch) : atualizarPista(id, patch)}
-            onRemoverPista={(id) => usandoRemoto ? conteudoRemoto.removerPista(id) : removerPista(id)}
-            onAdicionarLore={(item) => usandoRemoto ? void conteudoRemoto.adicionarLore(item) : adicionarLore(item)}
-            onAdicionarAnotacao={(campaignId, titulo, conteudo) => usandoRemoto ? conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo) : adicionarAnotacao(campaignId, titulo, conteudo)}
-            onAdicionarCena={(item) => usandoRemoto ? conteudoRemoto.adicionarCena(item) : adicionarCena(item)}
-            onAtualizarCena={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarCena(id, patch) : atualizarCena(id, patch)}
-            onRemoverCena={(id) => usandoRemoto ? conteudoRemoto.removerCena(id) : removerCena(id)}
-            onAdicionarHandout={(item) => usandoRemoto ? conteudoRemoto.adicionarHandout(item) : adicionarHandout(item)}
-            onAtualizarHandout={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarHandout(id, patch) : atualizarHandout(id, patch)}
-            onRemoverHandout={(id) => usandoRemoto ? conteudoRemoto.removerHandout(id) : removerHandout(id)}
-            onAdicionarMapa={(item) => usandoRemoto ? conteudoRemoto.adicionarMapa(item) : adicionarMapa(item)}
-            onAtualizarMapa={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarMapa(id, patch) : atualizarMapa(id, patch)}
-            onRemoverMapa={(id) => usandoRemoto ? conteudoRemoto.removerMapa(id) : removerMapa(id)}
-            membros={usandoRemoto ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id) : []}
+            onNovaSessao={(campaignId, dados) => { void conteudoRemoto.criarSessao(campaignId, dados); }}
+            onAtualizarSessao={conteudoRemoto.atualizarSessao}
+            onAdicionarNPC={conteudoRemoto.adicionarNPC}
+            onAtualizarNPC={conteudoRemoto.atualizarNPC}
+            onRemoverNPC={conteudoRemoto.removerNPC}
+            onAdicionarAdversario={conteudoRemoto.adicionarAdversario}
+            onAtualizarAdversario={conteudoRemoto.atualizarAdversario}
+            onRemoverAdversario={conteudoRemoto.removerAdversario}
+            onAdicionarLocal={conteudoRemoto.adicionarLocal}
+            onAtualizarLocal={conteudoRemoto.atualizarLocal}
+            onRemoverLocal={conteudoRemoto.removerLocal}
+            onAdicionarPista={conteudoRemoto.adicionarPista}
+            onAtualizarPista={conteudoRemoto.atualizarPista}
+            onRemoverPista={conteudoRemoto.removerPista}
+            onAdicionarLore={(item) => { void conteudoRemoto.adicionarLore(item); }}
+            onAdicionarAnotacao={(campaignId, titulo, conteudo) => { void conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo); }}
+            onAdicionarCena={conteudoRemoto.adicionarCena}
+            onAtualizarCena={conteudoRemoto.atualizarCena}
+            onRemoverCena={conteudoRemoto.removerCena}
+            onAdicionarHandout={conteudoRemoto.adicionarHandout}
+            onAtualizarHandout={conteudoRemoto.atualizarHandout}
+            onRemoverHandout={conteudoRemoto.removerHandout}
+            onAdicionarMapa={conteudoRemoto.adicionarMapa}
+            onAtualizarMapa={conteudoRemoto.atualizarMapa}
+            onRemoverMapa={conteudoRemoto.removerMapa}
+            membros={campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id)}
             currentUserId={session.authUserId}
             canManageMembers={papelDaCampanha === 'mestre'}
-            onRegenerarCodigo={usandoRemoto ? campanhasRemotas.regenerarCodigo : undefined}
-            onAtualizarMembro={usandoRemoto ? campanhasRemotas.atualizarMembro : undefined}
-            onVincularMinhaFicha={usandoRemoto ? handleVincularMinhaFicha : undefined}
-            onExcluirCampanha={usandoRemoto ? (id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); } : removerCampanha}
+            onRegenerarCodigo={campanhasRemotas.regenerarCodigo}
+            onAtualizarMembro={campanhasRemotas.atualizarMembro}
+            onVincularMinhaFicha={handleVincularMinhaFicha}
+            onExcluirCampanha={(id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); }}
           />
         ) : (
           <DashboardView
@@ -809,8 +633,8 @@ export default function App() {
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             canPrepareCampaign={podePrepararCampanha}
-            personagensParaVinculo={usandoRemoto ? personagens : undefined}
-            onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
+            personagensParaVinculo={personagens}
+            onEntrarComCodigo={handleEntrarComCodigoRemoto}
           />
         );
 
@@ -833,27 +657,27 @@ export default function App() {
             pistas={pistasAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             handouts={handoutsAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             members={membrosCampanha}
-            registroOnline={usandoRemoto}
+            registroOnline={true}
             onVoltarParaCampanha={() => setViewAtiva(
               papelDaCampanha === 'mestre' ? 'detalhe_campanha' : 'campanhas'
             )}
             onAtualizarPersonagem={salvarPersonagemPersistente}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
-            contadores={contadores}
-            onAdicionarContador={adicionarContador}
-            onAtualizarContador={atualizarContador}
-            onRemoverContador={removerContador}
-            onDuplicarContador={duplicarContador}
+            contadores={EMPTY_COUNTERS}
+            onAdicionarContador={() => undefined}
+            onAtualizarContador={() => undefined}
+            onRemoverContador={() => undefined}
+            onDuplicarContador={() => undefined}
             mapas={mapasAtuais}
-            onAdicionarMapa={usandoRemoto ? ((item) => { void conteudoRemoto.adicionarMapa(item); }) : adicionarMapa}
-            onAtualizarMapa={usandoRemoto ? ((id, patch) => { void conteudoRemoto.atualizarMapa(id, patch); }) : atualizarMapa}
-            onRemoverMapa={usandoRemoto ? ((id) => { void conteudoRemoto.removerMapa(id); }) : removerMapa}
-            onAtualizarSessao={usandoRemoto ? conteudoRemoto.atualizarSessao : ((id, patch) => atualizarSessao(id, patch))}
-            tokensMapa={tokensMapa}
-            onAdicionarTokenMapa={adicionarTokenMapa}
-            onAtualizarTokenMapa={atualizarTokenMapa}
-            onRemoverTokenMapa={removerTokenMapa}
+            onAdicionarMapa={(item) => { void conteudoRemoto.adicionarMapa(item); }}
+            onAtualizarMapa={(id, patch) => { void conteudoRemoto.atualizarMapa(id, patch); }}
+            onRemoverMapa={(id) => { void conteudoRemoto.removerMapa(id); }}
+            onAtualizarSessao={conteudoRemoto.atualizarSessao}
+            tokensMapa={EMPTY_TOKENS}
+            onAdicionarTokenMapa={() => undefined}
+            onAtualizarTokenMapa={() => undefined}
+            onRemoverTokenMapa={() => undefined}
           />
         ) : null;
 
@@ -883,24 +707,9 @@ export default function App() {
             onAtualizarPreferencias={handleAtualizarPreferencias}
             onExportarDados={handleExportarDados}
             onSairTodos={handleSairTodos}
-            localDataSummary={{
-              campanhas: campanhasLocais.length,
-              personagens: personagensLocais.length,
-              itens:
-                sessoes.length +
-                npcs.length +
-                adversarios.length +
-                locais.length +
-                pistas.length +
-                loreEntries.length +
-                anotacoes.length +
-                cenas.length +
-                handouts.length +
-                contadores.length +
-                mapas.length +
-                tokensMapa.length
-            }}
-            onMigrarDadosLocais={usandoRemoto ? handleMigrarDadosLocais : undefined}
+            localDataSummary={legacySummary}
+            onMigrarDadosLocais={handleMigrarDadosLocais}
+            onExportarLegado={handleExportarLegado}
           />
         );
 
@@ -969,35 +778,25 @@ export default function App() {
           isOpen={modalCriarPersonagem}
           onClose={() => setModalCriarPersonagem(false)}
           onCriar={async (novo, imagemArquivo) => {
-            if (usandoRemoto) {
-              let salvo = await personagensRemotos.save({
-                ...novo,
-                ownerUserId: novo.ownerUserId || session?.authUserId
-              });
+            let salvo = await personagensRemotos.save({
+              ...novo,
+              ownerUserId: novo.ownerUserId || session?.authUserId
+            });
 
-              if (imagemArquivo) {
-                try {
-                  const path = await campaignAssetService.uploadCharacterPortrait(salvo.id, imagemArquivo);
-                  salvo = await personagensRemotos.save({
-                    ...salvo,
-                    imagemUrl: campaignAssetService.toStorageRef(path),
-                    atualizadoEm: new Date().toISOString()
-                  });
-                } catch (error: any) {
-                  alert(`A ficha foi criada, mas o retrato não pôde ser enviado. ${error.message || ''}`);
-                }
+            if (imagemArquivo) {
+              try {
+                const path = await campaignAssetService.uploadCharacterPortrait(salvo.id, imagemArquivo);
+                salvo = await personagensRemotos.save({
+                  ...salvo,
+                  imagemUrl: campaignAssetService.toStorageRef(path),
+                  atualizadoEm: new Date().toISOString()
+                });
+              } catch (error: any) {
+                alert(`A ficha foi criada, mas o retrato não pôde ser enviado. ${error.message || ''}`);
               }
-
-              setPersonagemParaFicha(salvo);
-              return;
             }
 
-            const imagemUrl = imagemArquivo
-              ? await arquivoParaDataUrl(imagemArquivo)
-              : novo.imagemUrl;
-            const local = { ...novo, imagemUrl };
-            salvarPersonagemLocal(local);
-            setPersonagemParaFicha(local);
+            setPersonagemParaFicha(salvo);
           }}
         />
       )}
