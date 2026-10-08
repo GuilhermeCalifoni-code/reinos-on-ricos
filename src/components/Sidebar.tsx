@@ -9,6 +9,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
+  ShieldCheck,
   Users,
   X
 } from 'lucide-react';
@@ -21,13 +22,15 @@ export type MainViewType =
   | 'criar_campanha'
   | 'detalhe_campanha'
   | 'modo_mesa'
-  | 'configuracoes';
+  | 'configuracoes'
+  | 'administracao';
 
 interface SidebarProps {
   viewAtiva: MainViewType;
   setViewAtiva: (v: MainViewType) => void;
   onNovaCampanha: () => void;
   onSair: () => void;
+  canAccessAdmin?: boolean;
 }
 
 const SIDEBAR_COLLAPSED_KEY = 'reinos_oniricos_sidebar_collapsed_v1';
@@ -51,7 +54,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   viewAtiva,
   setViewAtiva,
   onNovaCampanha,
-  onSair
+  onSair,
+  canAccessAdmin = false
 }) => {
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -91,6 +95,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <nav className="ro-sidebar__nav" aria-label="Navegação principal">
+        {canAccessAdmin && <button onClick={() => setViewAtiva('administracao')}
+          className={viewAtiva === 'administracao' ? 'is-active' : ''}
+          title={collapsed ? 'Administração' : undefined}>
+          <ShieldCheck/><span>Administração</span>
+        </button>}
         {navItems.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -133,13 +142,15 @@ interface MobileNavigationProps {
   setViewAtiva: (v: MainViewType) => void;
   onNovaCampanha: () => void;
   onSair: () => void;
+  canAccessAdmin?: boolean;
 }
 
 export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   viewAtiva,
   setViewAtiva,
   onNovaCampanha,
-  onSair
+  onSair,
+  canAccessAdmin = false
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -182,6 +193,10 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
             </div>
 
             <nav>
+              {canAccessAdmin && <button type="button" onClick={() => navigate('administracao')}
+                className={viewAtiva === 'administracao' ? 'is-active' : ''}>
+                <ShieldCheck/><span>Administração</span>
+              </button>}
               {navItems.map(({ id, label, icon: Icon }) => (
                 <button key={id} type="button" onClick={() => navigate(id)} className={isSectionActive(viewAtiva, id) ? 'is-active' : ''}>
                   <Icon /><span>{label}</span>
