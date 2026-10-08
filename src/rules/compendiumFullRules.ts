@@ -2,7 +2,7 @@ export interface CompendiumRuleTable { headers: string[]; rows: string[][]; }
 export interface CompendiumRuleSection { title?: string; paragraphs?: string[]; bullets?: string[]; table?: CompendiumRuleTable; note?: string; }
 export interface CompendiumRuleDocument { source: string; pages: string; sections: CompendiumRuleSection[]; }
 
-const GUIDE = 'Livro Básico — Guia Rápido de Regras';
+const GUIDE = 'Livro Básico VF10 — Guia Rápido de Regras (edição 2026)';
 
 export const FULL_COMPENDIUM_RULES: Record<string, CompendiumRuleDocument> = {
   'teste-mundano': { source: GUIDE, pages: '153', sections: [
@@ -10,7 +10,7 @@ export const FULL_COMPENDIUM_RULES: Record<string, CompendiumRuleDocument> = {
     { title: 'Quando rolar', bullets: ['Role dados apenas quando houver incerteza relevante e uma consequência interessante para a falha.','Quando não houver incerteza relevante, a ação simplesmente acontece.'] }
   ]},
   'teste-reflexo': { source: GUIDE, pages: '153', sections: [
-    { title: 'Teste Reflexo', paragraphs: ['Role 1d20 + Atributo apropriado. É um Teste Mundano pedido como resposta imediata a um gatilho narrativo: habilidade de um Adversário, perigo ambiental ou outro efeito. O Mestre determina o Atributo e a DT conforme o gatilho. Foco, Vantagem e Desvantagem podem ser usados nas condições habituais.'] }
+    { title: 'Teste Reflexo', paragraphs: ['Role 1d20 + Atributo apropriado. É um Teste Mundano pedido como resposta imediata a um gatilho narrativo: habilidade de um Adversário, perigo ambiental ou outro efeito. O Mestre determina o Atributo e a DT conforme o gatilho. Foco, Vantagem e Desvantagem podem ser usados nas condições habituais. Não é uma segunda resistência contra o Sonhar: uma manifestação bem-sucedida aconteceu; o Reflexo só cabe quando existe uma consequência concreta, oportunidade imediata de reação e forma plausível de evitá-la.'] }
   ]},
   'criticos': { source: GUIDE, pages: '154', sections: [
     { title: 'Críticos', bullets: ['Mundano: 20 natural é sucesso automático; se causar dano, o dano é crítico.','Onírico: Convergência é o crítico; a manifestação acontece, reduz 1 Ruptura e o dano, se houver, é crítico.','Dano crítico = valor máximo do dado + nova rolagem do dado + modificador aplicável.'] }
@@ -94,7 +94,7 @@ export const FULL_COMPENDIUM_RULES: Record<string, CompendiumRuleDocument> = {
     { title: 'Criaturas e Reinos Oníricos', paragraphs: ['Só é possível perceber ou manipular um aspecto que realmente exista. Aparência humana não garante organismo, matéria convencional ou Consciência reconhecível.'] }
   ]},
   'natureza-onirica': { source: 'Livro Básico e Livro de Adversários', pages: 'Livro Básico 125–136; Adversários 8–10', sections: [
-    { title: 'Natureza e aspectos existentes', paragraphs: ['A Natureza estabelece quais aspectos da Realidade existem na criatura e podem ser afetados por Domínios. Aparência humana não garante Vida, Substância ou Consciência. A ausência do aspecto não impede manipular outros elementos da Cena.'] },
+    { title: 'Natureza e aspectos existentes', paragraphs: ['A Natureza estabelece quais aspectos da Realidade existem na criatura e podem ser afetados pelos Domínios. Aparência humana não garante Vida, Substância ou Consciência. A ausência do aspecto impede manipulá-lo na própria criatura, mas não impede manipular outros aspectos presentes na Cena.'] },
     { title: 'Humanos', bullets: ['Humano DCR: agentes e Custódios da Diretoria de Continuidade da Realidade.','Humano Custódio: Desvelado supervisionado pela DCR.','Humano Dissonante: Desvelado dos Círculos Dissonantes.'] },
     { title: 'Criaturas Oníricas e Pesadelos', bullets: [
       'Emocional: constitui-se de experiências emocionais e consciência; não possui Vida ou Substância.',
@@ -136,10 +136,10 @@ export const FULL_COMPENDIUM_RULES: Record<string, CompendiumRuleDocument> = {
   ]},
   'dano': { source: GUIDE, pages: '158', sections: [
     { title: 'Converter dano em perda de PV', bullets: ['Dano ≤ R: perde 1 PV.','Dano > R: perde 2 PV.','Regra opcional - Dano Massivo: dano > 2 × R: perde 3 PV.','Depois da comparação, um Desvelado pode gastar 1 PO para reduzir a perda em 1 PV.'] },
-    { title: 'Área e dano contínuo', paragraphs: ['Em Área, faça um único teste contra a maior Defesa ou Dificuldade dos alvos. Role o dano uma vez e aplique o mesmo resultado a todos os atingidos. Área não é automática: precisa ser coerente com a fonte. Perigos contínuos repetem o mesmo dado ao fim de cada Rodada enquanto a exposição continuar.'] }
+    { title: 'Área e dano contínuo', paragraphs: ['Em Área, faça um único teste contra a maior Defesa ou Dificuldade dos alvos. Role o dano uma vez e aplique o mesmo resultado a todos os atingidos. Área não é automática: precisa ser coerente com a fonte. Quando uma fonte de dano persistir, resolva novas ocorrências conforme sua duração e as circunstâncias da Cena; não repita automaticamente o dano no fim de toda Rodada se a manifestação foi instantânea.'] }
   ]},
   'movimento-morte': { source: GUIDE, pages: '158', sections: [
-    { title: 'Movimento de Morte', paragraphs: ['Ao chegar a 0 PV, role 2d20 sem Atributo, um de Realidade e um de Sonhar, cada um contra DT 13.'], table: { headers: ['Resultado','Destino'], rows: [['Convergência','Consciente. Recupere 2 PV.'],['Realidade vence','Estabiliza. Permanece inconsciente com 0 PV e precisa de cuidados ou Descanso.'],['Sonhar vence','Consciente. Recupere 1 PV e +1 Ruptura.'],['Divergência','O Personagem morre.']] }, note: 'O jogador descreve como o Sonhar devolve sua vida ou como a Realidade a tira.' }
+    { title: 'Movimento de Morte', paragraphs: ['Ao chegar a 0 PV, o Personagem fica inconsciente e começa a morrer. Em seu próximo turno, role 2d20 sem Atributo: um de Realidade e um de Sonhar, cada um contra DT 13.'], table: { headers: ['Resultado','Destino'], rows: [['Convergência','Consciente. Recupere 2 PV.'],['Realidade vence','Estabiliza. Permanece inconsciente com 0 PV e precisa de cuidados ou Descanso.'],['Sonhar vence','Consciente. Recupere 1 PV e +1 Ruptura.'],['Divergência','O Personagem morre.']] }, note: 'O jogador descreve como o Sonhar devolve sua vida ou como a Realidade a tira.' }
   ]},
   'intensidade-dano': { source: GUIDE, pages: '155–157', sections: [
     { title: 'Exemplos de Armas e Armamentos Mundanos', table: { headers: ['Arma / Armamento','Dano típico','Área','Distância Máxima','Exemplos / Referência'], rows: [['Ataque desarmado','d4','Alvo','CaC','Soco, chute, cabeçada'],['Objeto improvisado','d4','Alvo','Muito Próximo','Garrafa, ferramenta pequena, objeto contundente'],['Arma contundente','d6','Alvo','CaC','Cassetete, bastão, taco de baseball'],['Arma branca curta','d6','Alvo','CaC','Faca, canivete, punhal'],['Arma branca pesada','d8','Alvo','CaC','Machado, facão, lâmina grande'],['Arma curta','d8','Alvo','Longe','Pistola, revólver'],['Submetralhadora','d8','Alvo','Longe','Rajadas de calibre de arma curta'],['Espingarda','d10','Alvo / Muito Próximo','Próximo','Disparo de curta distância'],['Fuzil','d10','Alvo','Muito Longe','Fuzil de assalto ou de precisão'],['Metralhadora','d10','Alvo / Muito Próximo','Muito Longe','Fogo automático sustentado'],['Granada','d10','Muito Próximo','Próximo','Explosão e fragmentação'],['Explosivo pesado','d12','Próximo','Longe','Carga explosiva, bomba de grande potência']] }, note: 'Legenda: CaC: Corpo a Corpo' },
@@ -157,7 +157,7 @@ export const FULL_COMPENDIUM_RULES: Record<string, CompendiumRuleDocument> = {
     { title: 'Consequência e pressão', paragraphs: ['Falhas e Rupturas devem mover a situação, não apenas bloquear. Use ambiente, tempo, atenção indesejada, perda de posição, Condições, Contadores, perigo ou novas escolhas. Seja consistente, não idêntico: situações semelhantes devem seguir o mesmo princípio, mas a ficção pode mudar a consequência.'] }
   ]},
   'delirio-mesa': { source: GUIDE, pages: '165', sections: [
-    { title: 'Delírio em mesa', paragraphs: ['Pergunte se um Velado percebeu algo impossível, com que clareza e se existe explicação plausível. Leve não gera Delírio; Moderado e Intenso geram. O efeito mecânico continua +1 Ruptura para todos os Desvelados presentes.'] }
+    { title: 'Delírio em mesa', paragraphs: ['Pergunte se um Velado percebeu algo impossível, com que clareza e se existe explicação plausível. Coincidente não gera Delírio; Moderado e Intenso geram. O efeito mecânico continua +1 Ruptura para todos os Desvelados presentes.'] }
   ]},
   'ficha-adversario': { source: GUIDE, pages: '166', sections: [
     { title: 'Ficha mínima', paragraphs: ['Um Adversário precisa de Dificuldade, Vida, Resistência, Nível de Ameaça, Passivas, Ações e, quando necessário, Reações.'], table: { headers: ['NA','Vida','Mod. dano quando aplicável'], rows: [['1','3','+1'],['2','5','+2'],['3','7','+3'],['4','9','+4'],['5','12','+5']] } },
