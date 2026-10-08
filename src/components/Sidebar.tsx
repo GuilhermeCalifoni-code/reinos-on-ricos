@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   BookOpen,
   HeartHandshake,
@@ -153,10 +153,29 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
   canAccessAdmin = false
 }) => {
   const [open, setOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setOpen(false);
   }, [viewAtiva]);
+
+  useEffect(() => {
+    if (!open) return;
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButton.current?.focus();
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setOpen(false);
+      menuButton.current?.focus();
+    };
+    document.addEventListener('keydown', onEscape);
+    return () => {
+      document.body.style.overflow = oldOverflow;
+      document.removeEventListener('keydown', onEscape);
+    };
+  }, [open]);
 
   const navigate = (view: MainViewType) => {
     setViewAtiva(view);
@@ -169,6 +188,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
         <button
           type="button"
           className="ro-mobile-shell__menu"
+          ref={menuButton}
           onClick={() => setOpen(true)}
           aria-label="Abrir menu"
           aria-expanded={open}
@@ -189,7 +209,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
           <aside className="ro-mobile-drawer__panel">
             <div className="ro-mobile-drawer__head">
               <img src="/ro-login-logo.webp" alt="Reinos Oníricos RPG" />
-              <button type="button" onClick={() => setOpen(false)} aria-label="Fechar menu"><X /></button>
+              <button type="button" ref={closeButton} onClick={() => { setOpen(false); menuButton.current?.focus(); }} aria-label="Fechar menu"><X /></button>
             </div>
 
             <nav>
