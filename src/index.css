@@ -13,6 +13,7 @@
 @import "./design-system/live-table-v5.css";
 @import "./design-system/session-studio.css";
 @import "./design-system/platform-admin.css";
+@import "./design-system/mobile-responsive-enhancements.css";
 
 @layer base {
   :root {
