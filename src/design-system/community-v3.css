@@ -1158,3 +1158,26 @@
     padding: 18px;
   }
 }
+
+
+/* Mural da Comunidade: publicações pendentes e aprovadas */
+.ro-community-v3__feed { display:grid;gap:1rem; padding:clamp(1rem,4vw,2.5rem);border-top:1px solid var(--ro-line); }
+.ro-community-v3__feed > p { color:var(--ro-paper-muted);line-height:1.6;max-width:880px; }
+.ro-community-v3__feed .ro-community-v3__section-head { display:flex;align-items:flex-end;justify-content:space-between;gap:.8rem;flex-wrap:wrap; }
+.ro-community-v3__feed .ro-community-v3__section-head > span { font-size:.73rem;color:var(--ro-copper); }
+.ro-community-v3__compose { display:grid;gap:.8rem;min-width:0;max-width:800px;padding:1rem;border:1px solid var(--ro-line);background:var(--ro-surface); }
+.ro-community-v3__compose label { display:grid;gap:.35rem;color:var(--ro-paper-muted);font-size:.79rem; }
+.ro-community-v3__compose :where(input,textarea) { box-sizing:border-box;width:100%;max-width:100%;min-width:0;padding:.75rem;background:var(--ro-bg);color:var(--ro-paper);border:1px solid var(--ro-line-strong);border-radius:3px;font:inherit; }
+.ro-community-v3__compose button { width:max-content;display:inline-flex;align-items:center;gap:.4rem;min-height:44px;padding:.7rem 1rem;background:var(--ro-copper);color:var(--ro-bg);border:0;cursor:pointer; }
+.ro-community-v3__compose button:disabled { opacity:.5;cursor:wait; }
+.ro-community-v3__post-list { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:.8rem;min-width:0; }
+.ro-community-v3__post { display:grid;align-content:start;gap:.65rem;padding:1rem;background:var(--ro-surface);border:1px solid var(--ro-line);min-width:0; }
+.ro-community-v3__post > div { display:grid;gap:.25rem; }
+.ro-community-v3__post strong { color:var(--ro-paper);font-size:.94rem; }
+.ro-community-v3__post small { color:var(--ro-paper-muted);font-size:.72rem; }
+.ro-community-v3__post p { font-size:.82rem;line-height:1.65;color:var(--ro-paper-muted);overflow-wrap:anywhere;white-space:pre-wrap; }
+@media(max-width:700px) {
+  .ro-community-v3__feed { padding-inline:1rem; }
+  .ro-community-v3__compose :where(input,textarea) { font-size:16px; }
+  .ro-community-v3__post-list { grid-template-columns:minmax(0,1fr); }
+}
