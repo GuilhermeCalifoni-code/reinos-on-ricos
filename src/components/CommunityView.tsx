@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import {
   CommunityPlan,
+  CommunityPost,
+  CommunityAccessStatus,
   communityService
 } from '../services/community/communityService';
 
@@ -61,18 +63,52 @@ export const CommunityView: React.FC = () => {
   const [interestPlan, setInterestPlan] = useState<string | null>(null);
   const [interestMessage, setInterestMessage] = useState('');
   const [showMatrix, setShowMatrix] = useState(false);
+  const [access,setAccess] = useState<CommunityAccessStatus | null>(null);
+  const [posts,setPosts] = useState<CommunityPost[]>([]);
+  const [feedError,setFeedError] = useState('');
+  const [feedNotice,setFeedNotice] = useState('');
+  const [postTitle,setPostTitle] = useState('');
+  const [postBody,setPostBody] = useState('');
+  const [postSending,setPostSending] = useState(false);
+
+  const loadFeed = async () => {
+    const [me,items] = await Promise.all([communityService.meuAcesso(), communityService.listarPublicacoes()]);
+    setAccess(me);setPosts(items);
+  };
+  useEffect(()=>{
+    let active=true;
+    void Promise.all([communityService.meuAcesso(),communityService.listarPublicacoes()])
+      .then(([me,items])=>{if(active){setAccess(me);setPosts(items);}})
+      .catch(e=>{if(active)setFeedError(e instanceof Error?e.message:'Mural indisponível.');});
+    return ()=>{active=false;};
+  },[]);
+
+  const sendPost=async (event:React.FormEvent) => {
+    event.preventDefault();
+    if(postSending)return;
+    setPostSending(true);setFeedError('');setFeedNotice('');
+    try {
+      await communityService.enviarPublicacao(postTitle,postBody);
+      setPostTitle('');setPostBody('');
+      await loadFeed();
+      setFeedNotice('Publicação enviada! Ela aparecerá no mural depois da aprovação da moderação.');
+    } catch(e){setFeedError(e instanceof Error?e.message:'Não foi possível enviar a publicação.');}
+    finally{setPostSending(false);}
+  };
 
   useEffect(() => {
     let alive = true;
 
     Promise.all([
       communityService.listarPlanos(),
-      communityService.assinaturaAtual().catch(() => null)
+      communityService.assinaturaAtual().catch(() => null),
+      communityService.meuAcesso().catch(() => null)
     ])
-      .then(([catalog, membership]) => {
+      .then(([catalog, membership, manualAccess]) => {
         if (!alive) return;
         setPlans(catalog);
-        setActivePlanSlug(membership?.plan.slug || 'aberto');
+        const effectiveRank = Math.max(membership?.plan.rank || 0, manualAccess?.effective_rank || 0);
+        setActivePlanSlug(catalog.find(plan => plan.rank === effectiveRank)?.slug || 'aberto');
       })
       .catch((error: any) => {
         if (!alive) return;
@@ -155,6 +191,37 @@ export const CommunityView: React.FC = () => {
           <FileDown />
           <div><strong>PDF como benefício real</strong><span>Assinantes levam os livros oficiais para leitura offline.</span></div>
         </article>
+      </section>
+
+      <section className="ro-community-v3__feed" aria-label="Mural da comunidade">
+        <div className="ro-community-v3__section-head">
+          <div><p className="ro-eyebrow">Comunidade</p><h2>Mural dos Desvelados</h2></div>
+          {access && <span>Seu acesso: {access.status==='blocked'?'restrito':'liberado'}
+            {access.manual_plan_slug?` · benefício manual ${access.manual_plan_slug}`:''}</span>}
+        </div>
+        <p>Compartilhe notícias, experiências e ideias do RPG. Novas publicações passam por aprovação antes de serem exibidas aos outros participantes.</p>
+        {access?.status==='blocked'
+          ? <p role="status">Seu acesso à Comunidade está restrito pela administração. As campanhas e fichas permanecem independentes dessa restrição.</p>
+          : <form className="ro-community-v3__compose" onSubmit={event=>void sendPost(event)}>
+              <label>Título
+                <input required minLength={3} maxLength={160} value={postTitle} onChange={event=>setPostTitle(event.target.value)} placeholder="O que você quer compartilhar?"/>
+              </label>
+              <label>Publicação
+                <textarea required minLength={3} maxLength={5000} rows={4} value={postBody} onChange={event=>setPostBody(event.target.value)} placeholder="Escreva sua mensagem para a Comunidade"/>
+              </label>
+              <button type="submit" disabled={postSending||access===null}>{postSending?'Enviando…':'Enviar para aprovação'} <ArrowRight size={16}/></button>
+            </form>}
+        {feedError && <p role="alert" className="ro-community-v3__state">{feedError}</p>}
+        {feedNotice && <p role="status" className="ro-community-v3__state">{feedNotice}</p>}
+        <div className="ro-community-v3__post-list">
+          {posts.map(post=><article key={post.id} className="ro-community-v3__post">
+            <div><strong>{post.title}</strong>
+              <small>{post.status==='approved'?'Publicado':post.status==='pending'?'Aguardando aprovação':'Não aprovado'} · {new Date(post.created_at).toLocaleDateString('pt-BR')}</small></div>
+            <p>{post.body}</p>
+            {post.status==='rejected'&&post.review_note&&<small>Motivo: {post.review_note}</small>}
+          </article>)}
+          {!posts.length && !feedError && <p>O mural ainda não tem publicações aprovadas. Seja um dos primeiros a participar.</p>}
+        </div>
       </section>
 
       <section id="community-levels" className="ro-community-v3__levels">

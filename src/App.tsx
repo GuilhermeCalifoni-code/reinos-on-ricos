@@ -66,7 +66,7 @@ export default function App() {
   const [campanhaRemotaAtivaId, setCampanhaRemotaAtivaId] = useState<string | null>(null);
   const usandoRemoto = Boolean(session?.authUserId) && isSupabaseConfigured();
   const platformAccess = usePlatformAccess(usandoRemoto ? session?.authUserId : undefined);
-  const canAccessAdmin = platformAccess.canViewUsers || platformAccess.canManageCampaignRoles;
+  const canAccessAdmin = platformAccess.canViewUsers || platformAccess.canManageCampaignRoles || platformAccess.canManageCommunity || platformAccess.canModerateCommunity;
   const campanhas = campanhasRemotas.campanhas;
   const campanhaAtivaId = campanhaRemotaAtivaId;
   const campanhaAtiva = campanhaRemotaAtivaId

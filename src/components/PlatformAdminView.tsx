@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Crown, KeyRound, RefreshCcw, Save, Search, Shield, Users } from 'lucide-react';
+import { Crown, KeyRound, RefreshCcw, Save, Search, Shield, Users, BookUser, ListChecks } from 'lucide-react';
+import { CommunityAdminPanel } from './CommunityAdminPanel';
 import {
   PlatformAccess, PlatformCampaignMember, PlatformPermission, PlatformRole,
   PlatformUser, platformAdminService
@@ -9,7 +10,9 @@ interface Props { access: PlatformAccess; }
 
 const availablePermissions: { key: PlatformPermission; label: string; detail: string }[] = [
   { key: 'users.view', label: 'Consultar usuários', detail: 'Ler diretório de contas da plataforma.' },
-  { key: 'campaign_roles.manage', label: 'Gerenciar papéis de campanhas', detail: 'Alterar Mestre, Jogador e Observador em campanhas existentes.' }
+  { key: 'campaign_roles.manage', label: 'Gerenciar papéis de campanhas', detail: 'Alterar Mestre, Jogador e Observador em campanhas existentes.' },
+  { key: 'community.members.manage', label: 'Liberar acesso à Comunidade', detail: 'Localizar e-mails e liberar, bloquear ou conceder níveis manualmente.' },
+  { key: 'community.posts.moderate', label: 'Moderar publicações', detail: 'Aprovar ou rejeitar publicações enviadas ao mural da Comunidade.' }
 ];
 
 const roleLabels: Record<PlatformRole,string> = {
@@ -23,7 +26,9 @@ export const PlatformAdminView: React.FC<Props> = ({ access }) => {
   const root = access.role === 'super_admin';
   const canUsers = root || access.permissions.includes('users.view');
   const canCampaigns = root || access.permissions.includes('campaign_roles.manage');
-  const [section, setSection] = useState<'users' | 'campaigns'>(canUsers ? 'users' : 'campaigns');
+  const canCommunity = root || access.permissions.includes('community.members.manage');
+  const canModerate = root || access.permissions.includes('community.posts.moderate');
+  const [section, setSection] = useState<'community' | 'moderation' | 'users' | 'campaigns'>(canCommunity ? 'community' : canModerate ? 'moderation' : canUsers ? 'users' : 'campaigns');
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<PlatformUser[]>([]);
   const [members, setMembers] = useState<PlatformCampaignMember[]>([]);
@@ -76,7 +81,7 @@ export const PlatformAdminView: React.FC<Props> = ({ access }) => {
     finally { setBusy(false); }
   };
 
-  if (!canUsers && !canCampaigns) return (
+  if (!canUsers && !canCampaigns && !canCommunity && !canModerate) return (
     <div className="platform-admin"><p role="alert">Seu perfil não possui acesso ao painel administrativo.</p></div>
   );
 
@@ -84,11 +89,19 @@ export const PlatformAdminView: React.FC<Props> = ({ access }) => {
     <section className="platform-admin">
       <header className="platform-admin__hero">
         <div className="platform-admin__eyebrow"><Shield size={16}/> Administração da plataforma</div>
-        <h1>Central de Permissões</h1>
-        <p>Controle cargos globais e papéis de campanha sem misturar as autorizações dos dois ambientes.</p>
+        <h1>Administração da Comunidade</h1>
+        <p>Busque usuários pelo e-mail de login para liberar benefícios e moderar publicações. As permissões de campanhas continuam separadas.</p>
         <div className="platform-admin__identity"><Crown size={16}/> Seu nível: <strong>{roleLabels[access.role]}</strong></div>
       </header>
       <div className="platform-admin__toolbar">
+        {canCommunity && <button type="button" className={section==='community'?'is-active':''}
+          onClick={()=>{setSection('community');setSearch('');setEdit(null);}}>
+          <BookUser size={15}/> Liberações por e-mail
+        </button>}
+        {canModerate && <button type="button" className={section==='moderation'?'is-active':''}
+          onClick={()=>{setSection('moderation');setSearch('');setEdit(null);}}>
+          <ListChecks size={15}/> Publicações pendentes
+        </button>}
         {canUsers && <button className={section === 'users' ? 'is-active' : ''} onClick={() => { setSection('users'); setSearch(''); setEdit(null); }}>
           <Users size={15}/> Contas da plataforma
         </button>}
@@ -96,16 +109,17 @@ export const PlatformAdminView: React.FC<Props> = ({ access }) => {
           <KeyRound size={15}/> Papéis nas campanhas
         </button>}
       </div>
-      <div className="platform-admin__filters">
+      {(section==='community'||section==='moderation') && <CommunityAdminPanel mode={section==='community'?'access':'moderation'}/>}
+      {(section==='users'||section==='campaigns') && <div className="platform-admin__filters">
         <Search size={16}/>
         <input type="search" aria-label="Buscar usuários ou campanhas" value={search}
           onChange={event => setSearch(event.target.value)}
           placeholder={section === 'users' ? 'Buscar por nome ou e-mail' : 'Buscar campanha ou e-mail'} />
         <button type="button" onClick={() => void refresh()} title="Atualizar lista"><RefreshCcw size={16}/></button>
-      </div>
+      </div>}
       {error && <p className="platform-admin__message is-error" role="alert">{error}</p>}
       {notice && <p className="platform-admin__message" role="status">{notice}</p>}
-      <div className="platform-admin__list">
+      {(section==='users'||section==='campaigns') && <div className="platform-admin__list">
         {section === 'users' && canUsers && users.map(user => (
           <article className="platform-admin__item" key={user.user_id}>
             <div>
@@ -131,7 +145,7 @@ export const PlatformAdminView: React.FC<Props> = ({ access }) => {
         ))}
         {section === 'users' && canUsers && users.length === 0 && <p>Nenhuma conta encontrada.</p>}
         {section === 'campaigns' && canCampaigns && members.length === 0 && <p>Nenhum membro de campanha encontrado.</p>}
-      </div>
+      </div>}
       {edit && root && (
         <div className="actor-editor__backdrop" onMouseDown={() => !busy && setEdit(null)}>
           <div className="platform-admin__modal" role="dialog" aria-modal="true" aria-label="Editar permissões" onMouseDown={event => event.stopPropagation()}>

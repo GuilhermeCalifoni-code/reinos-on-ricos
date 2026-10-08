@@ -34,3 +34,24 @@
 .platform-admin__modal-actions { display: flex; justify-content: flex-end; gap: .8rem; }
 .platform-admin__modal-actions button { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem .9rem; }
 @media (max-width:600px) { .platform-admin__item { align-items: stretch; flex-direction: column; } .platform-admin__role-select { width: 100%; } }
+
+
+.platform-admin__community { display:grid;gap:1rem;min-width:0; }
+.platform-admin__community h2 { font:500 clamp(1.4rem,3vw,2rem) 'Cormorant Garamond',Georgia,serif; }
+.platform-admin__community > p,.platform-admin__review-heading p { font-size:.81rem;line-height:1.55;color:var(--ro-paper-muted); }
+.platform-admin__lookup { display:flex;gap:.5rem;flex-wrap:wrap; }
+.platform-admin__lookup input { flex:1 1 260px;min-width:0;min-height:44px;padding:.65rem;background:var(--ro-bg);color:var(--ro-paper);border:1px solid var(--ro-line-strong); }
+.platform-admin__lookup button,.platform-admin__account > button { display:inline-flex;gap:.5rem;align-items:center;min-height:44px; }
+.platform-admin__account,.platform-admin__review-card { display:grid;gap:.75rem;min-width:0;padding:1rem;border:1px solid var(--ro-line);background:var(--ro-surface); }
+.platform-admin__account > div:first-child { display:grid;gap:.3rem; }
+.platform-admin__account strong,.platform-admin__review-card strong { color:var(--ro-paper); }
+.platform-admin__account span,.platform-admin__account small,.platform-admin__review-card small { color:var(--ro-paper-muted);font-size:.74rem;overflow-wrap:anywhere; }
+.platform-admin__account p,.platform-admin__review-card p { color:var(--ro-paper-muted);line-height:1.6;font-size:.8rem;overflow-wrap:anywhere;white-space:pre-wrap; }
+.platform-admin__account-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(235px,100%),1fr));gap:1rem; }
+.platform-admin__account-grid label,.platform-admin__review-heading label { display:grid;gap:.45rem;color:var(--ro-paper-muted);font-size:.78rem; }
+.platform-admin__account-grid select,.platform-admin__review-heading select { box-sizing:border-box;width:100%;min-height:44px;padding:.6rem;background:var(--ro-bg);color:var(--ro-paper);border:1px solid var(--ro-line-strong); }
+.platform-admin__review-heading { display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap; }
+.platform-admin__review-card > div:first-child { display:grid;gap:.3rem; }
+.platform-admin__review-actions { display:flex;gap:.5rem;flex-wrap:wrap; }
+.platform-admin__review-actions button { display:inline-flex;align-items:center;gap:.4rem;min-height:44px;padding:.6rem 1rem;border:1px solid var(--ro-line-strong);color:var(--ro-paper);background:var(--ro-bg);cursor:pointer; }
+.platform-admin__review-actions button:disabled { opacity:.4;cursor:wait; }
