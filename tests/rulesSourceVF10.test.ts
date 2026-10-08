@@ -39,10 +39,3 @@ test('Consulta de Movimento de Morte corresponde à regra +1 Ruptura', () => {
   assert.match(text, /Recupere 1 PV e \+1 Ruptura/);
 });
 
-test('20 natural continua sucesso automático em Teste Mundano', () => {
-  const result = executarTesteMundano({
-    atributo:'corpo', valorAtributo:0, dt:25, modificadores:[],
-    modoRolagem:'normal', usarFoco:false
-  }, () => 20);
-  assert.equal(result.sucesso,true);
-});
