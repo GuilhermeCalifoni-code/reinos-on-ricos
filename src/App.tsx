@@ -589,37 +589,37 @@ export default function App() {
             onAbrirSessao={handleAbrirSessaoPreparada}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
             onNovaSessao={(campaignId, dados) => { void conteudoRemoto.criarSessao(campaignId, dados); }}
-            onAtualizarSessao={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarSessao(id, patch) : atualizarSessao(id, patch)}
-            onAdicionarNPC={(item) => usandoRemoto ? conteudoRemoto.adicionarNPC(item) : adicionarNPC(item)}
-            onAtualizarNPC={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarNPC(id, patch) : atualizarNPC(id, patch)}
-            onRemoverNPC={(id) => usandoRemoto ? conteudoRemoto.removerNPC(id) : removerNPC(id)}
-            onAdicionarAdversario={(item) => usandoRemoto ? conteudoRemoto.adicionarAdversario(item) : adicionarAdversario(item)}
-            onAtualizarAdversario={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarAdversario(id, patch) : atualizarAdversario(id, patch)}
-            onRemoverAdversario={(id) => usandoRemoto ? conteudoRemoto.removerAdversario(id) : removerAdversario(id)}
-            onAdicionarLocal={(item) => usandoRemoto ? conteudoRemoto.adicionarLocal(item) : adicionarLocal(item)}
-            onAtualizarLocal={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarLocal(id, patch) : atualizarLocal(id, patch)}
-            onRemoverLocal={(id) => usandoRemoto ? conteudoRemoto.removerLocal(id) : removerLocal(id)}
-            onAdicionarPista={(item) => usandoRemoto ? conteudoRemoto.adicionarPista(item) : adicionarPista(item)}
-            onAtualizarPista={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarPista(id, patch) : atualizarPista(id, patch)}
-            onRemoverPista={(id) => usandoRemoto ? conteudoRemoto.removerPista(id) : removerPista(id)}
+            onAtualizarSessao={conteudoRemoto.atualizarSessao}
+            onAdicionarNPC={conteudoRemoto.adicionarNPC}
+            onAtualizarNPC={conteudoRemoto.atualizarNPC}
+            onRemoverNPC={conteudoRemoto.removerNPC}
+            onAdicionarAdversario={conteudoRemoto.adicionarAdversario}
+            onAtualizarAdversario={conteudoRemoto.atualizarAdversario}
+            onRemoverAdversario={conteudoRemoto.removerAdversario}
+            onAdicionarLocal={conteudoRemoto.adicionarLocal}
+            onAtualizarLocal={conteudoRemoto.atualizarLocal}
+            onRemoverLocal={conteudoRemoto.removerLocal}
+            onAdicionarPista={conteudoRemoto.adicionarPista}
+            onAtualizarPista={conteudoRemoto.atualizarPista}
+            onRemoverPista={conteudoRemoto.removerPista}
             onAdicionarLore={(item) => { void conteudoRemoto.adicionarLore(item); }}
             onAdicionarAnotacao={(campaignId, titulo, conteudo) => { void conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo); }}
-            onAdicionarCena={(item) => usandoRemoto ? conteudoRemoto.adicionarCena(item) : adicionarCena(item)}
-            onAtualizarCena={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarCena(id, patch) : atualizarCena(id, patch)}
-            onRemoverCena={(id) => usandoRemoto ? conteudoRemoto.removerCena(id) : removerCena(id)}
-            onAdicionarHandout={(item) => usandoRemoto ? conteudoRemoto.adicionarHandout(item) : adicionarHandout(item)}
-            onAtualizarHandout={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarHandout(id, patch) : atualizarHandout(id, patch)}
-            onRemoverHandout={(id) => usandoRemoto ? conteudoRemoto.removerHandout(id) : removerHandout(id)}
-            onAdicionarMapa={(item) => usandoRemoto ? conteudoRemoto.adicionarMapa(item) : adicionarMapa(item)}
-            onAtualizarMapa={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarMapa(id, patch) : atualizarMapa(id, patch)}
-            onRemoverMapa={(id) => usandoRemoto ? conteudoRemoto.removerMapa(id) : removerMapa(id)}
+            onAdicionarCena={conteudoRemoto.adicionarCena}
+            onAtualizarCena={conteudoRemoto.atualizarCena}
+            onRemoverCena={conteudoRemoto.removerCena}
+            onAdicionarHandout={conteudoRemoto.adicionarHandout}
+            onAtualizarHandout={conteudoRemoto.atualizarHandout}
+            onRemoverHandout={conteudoRemoto.removerHandout}
+            onAdicionarMapa={conteudoRemoto.adicionarMapa}
+            onAtualizarMapa={conteudoRemoto.atualizarMapa}
+            onRemoverMapa={conteudoRemoto.removerMapa}
             membros={campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id)}
             currentUserId={session.authUserId}
             canManageMembers={papelDaCampanha === 'mestre'}
             onRegenerarCodigo={campanhasRemotas.regenerarCodigo}
             onAtualizarMembro={campanhasRemotas.atualizarMembro}
             onVincularMinhaFicha={handleVincularMinhaFicha}
-            onExcluirCampanha={usandoRemoto ? (id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); } : removerCampanha}
+            onExcluirCampanha={(id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); }}
           />
         ) : (
           <DashboardView
