@@ -21,6 +21,7 @@ interface CampaignsLibraryViewProps {
   onNovaCampanha: () => void;
   onDetalhesCampanha: (campanha: Campanha) => void;
   onContinuarCampanha: (campanha: Campanha) => void;
+  canPrepareCampaign?: (campanha: Campanha) => boolean;
   onEntrarComCodigo?: (codigo: string, personagemId?: string) => Promise<void>;
 }
 
@@ -57,6 +58,7 @@ export const CampaignsLibraryView: React.FC<CampaignsLibraryViewProps> = ({
   onNovaCampanha,
   onDetalhesCampanha,
   onContinuarCampanha,
+  canPrepareCampaign = () => false,
   onEntrarComCodigo
 }) => {
   const [busca, setBusca] = useState('');
@@ -237,13 +239,14 @@ export const CampaignsLibraryView: React.FC<CampaignsLibraryViewProps> = ({
         <div className={`ro-library__showcase ${filtradas.length === 1 ? 'is-single' : ''}`}>
           {filtradas.map((campanha, index) => {
             const destaque = index === 0;
+            const podePreparar = canPrepareCampaign(campanha);
             return (
               <article key={campanha.id} className={`ro-library__campaign-card ${destaque ? 'is-featured' : 'is-secondary'}`}>
                 <button
                   type="button"
                   className="ro-library__campaign-media"
-                  onClick={() => onDetalhesCampanha(campanha)}
-                  aria-label={`Abrir detalhes de ${campanha.nome}`}
+                  onClick={() => (podePreparar ? onDetalhesCampanha : onContinuarCampanha)(campanha)}
+                  aria-label={podePreparar ? `Preparar ${campanha.nome}` : `Entrar na Mesa Ao Vivo de ${campanha.nome}`}
                 >
                   <AssetImage src={campanha.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="" />
                   <span className="ro-library__campaign-shade" />
@@ -266,9 +269,11 @@ export const CampaignsLibraryView: React.FC<CampaignsLibraryViewProps> = ({
                   </div>
 
                   <div className="ro-library__campaign-actions">
-                    <button type="button" className="ro-library__prepare-action" onClick={() => onDetalhesCampanha(campanha)}>
-                      <BookOpen /> Preparar
-                    </button>
+                    {podePreparar && (
+                      <button type="button" className="ro-library__prepare-action" onClick={() => onDetalhesCampanha(campanha)}>
+                        <BookOpen /> Preparar
+                      </button>
+                    )}
                     <button type="button" className="ro-library__enter-action" onClick={() => onContinuarCampanha(campanha)}>
                       Entrar na mesa <ArrowRight />
                     </button>
