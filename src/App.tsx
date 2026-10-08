@@ -537,8 +537,8 @@ export default function App() {
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             canPrepareCampaign={podePrepararCampanha}
-            personagensParaVinculo={usandoRemoto ? personagensRemotos.personal.filter(personagem => !personagem.campaignId) : undefined}
-            onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
+            personagensParaVinculo={personagensRemotos.personal.filter(personagem => !personagem.campaignId)}
+            onEntrarComCodigo={handleEntrarComCodigoRemoto}
             avatarUrl={session.avatarUrl}
             onAbrirCampanhas={() => setViewAtiva('campanhas')}
             onAbrirPersonagens={() => setViewAtiva('personagens')}
@@ -552,12 +552,12 @@ export default function App() {
         return (
           <CampaignsLibraryView
             campanhas={campanhas}
-            personagensParaVinculo={usandoRemoto ? personagensRemotos.personal.filter(personagem => !personagem.campaignId) : undefined}
+            personagensParaVinculo={personagensRemotos.personal.filter(personagem => !personagem.campaignId)}
             onNovaCampanha={handleIniciarCriacaoCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             onContinuarCampanha={handleContinuarCampanha}
             canPrepareCampaign={podePrepararCampanha}
-            onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
+            onEntrarComCodigo={handleEntrarComCodigoRemoto}
           />
         );
 
@@ -574,7 +574,7 @@ export default function App() {
           <CampaignDetailView
             campanha={campanhaAtiva}
             personagens={personagensCampanha}
-            personagensPessoais={usandoRemoto ? personagensRemotos.personal : personagens}
+            personagensPessoais={personagensRemotos.personal}
             sessoes={sessoesAtuais}
             npcs={npcsAtuais}
             adversarios={adversariosAtuais}
@@ -588,7 +588,7 @@ export default function App() {
             onIniciarSessao={handleContinuarCampanha}
             onAbrirSessao={handleAbrirSessaoPreparada}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
-            onNovaSessao={(campaignId, dados) => usandoRemoto ? void conteudoRemoto.criarSessao(campaignId, dados) : void criarSessao(campaignId, dados)}
+            onNovaSessao={(campaignId, dados) => { void conteudoRemoto.criarSessao(campaignId, dados); }}
             onAtualizarSessao={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarSessao(id, patch) : atualizarSessao(id, patch)}
             onAdicionarNPC={(item) => usandoRemoto ? conteudoRemoto.adicionarNPC(item) : adicionarNPC(item)}
             onAtualizarNPC={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarNPC(id, patch) : atualizarNPC(id, patch)}
@@ -602,8 +602,8 @@ export default function App() {
             onAdicionarPista={(item) => usandoRemoto ? conteudoRemoto.adicionarPista(item) : adicionarPista(item)}
             onAtualizarPista={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarPista(id, patch) : atualizarPista(id, patch)}
             onRemoverPista={(id) => usandoRemoto ? conteudoRemoto.removerPista(id) : removerPista(id)}
-            onAdicionarLore={(item) => usandoRemoto ? void conteudoRemoto.adicionarLore(item) : adicionarLore(item)}
-            onAdicionarAnotacao={(campaignId, titulo, conteudo) => usandoRemoto ? conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo) : adicionarAnotacao(campaignId, titulo, conteudo)}
+            onAdicionarLore={(item) => { void conteudoRemoto.adicionarLore(item); }}
+            onAdicionarAnotacao={(campaignId, titulo, conteudo) => { void conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo); }}
             onAdicionarCena={(item) => usandoRemoto ? conteudoRemoto.adicionarCena(item) : adicionarCena(item)}
             onAtualizarCena={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarCena(id, patch) : atualizarCena(id, patch)}
             onRemoverCena={(id) => usandoRemoto ? conteudoRemoto.removerCena(id) : removerCena(id)}
@@ -613,12 +613,12 @@ export default function App() {
             onAdicionarMapa={(item) => usandoRemoto ? conteudoRemoto.adicionarMapa(item) : adicionarMapa(item)}
             onAtualizarMapa={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarMapa(id, patch) : atualizarMapa(id, patch)}
             onRemoverMapa={(id) => usandoRemoto ? conteudoRemoto.removerMapa(id) : removerMapa(id)}
-            membros={usandoRemoto ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id) : []}
+            membros={campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id)}
             currentUserId={session.authUserId}
             canManageMembers={papelDaCampanha === 'mestre'}
-            onRegenerarCodigo={usandoRemoto ? campanhasRemotas.regenerarCodigo : undefined}
-            onAtualizarMembro={usandoRemoto ? campanhasRemotas.atualizarMembro : undefined}
-            onVincularMinhaFicha={usandoRemoto ? handleVincularMinhaFicha : undefined}
+            onRegenerarCodigo={campanhasRemotas.regenerarCodigo}
+            onAtualizarMembro={campanhasRemotas.atualizarMembro}
+            onVincularMinhaFicha={handleVincularMinhaFicha}
             onExcluirCampanha={usandoRemoto ? (id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); } : removerCampanha}
           />
         ) : (
@@ -629,8 +629,8 @@ export default function App() {
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             canPrepareCampaign={podePrepararCampanha}
-            personagensParaVinculo={usandoRemoto ? personagens : undefined}
-            onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
+            personagensParaVinculo={personagens}
+            onEntrarComCodigo={handleEntrarComCodigoRemoto}
           />
         );
 
@@ -653,7 +653,7 @@ export default function App() {
             pistas={pistasAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             handouts={handoutsAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             members={membrosCampanha}
-            registroOnline={usandoRemoto}
+            registroOnline={true}
             onVoltarParaCampanha={() => setViewAtiva(
               papelDaCampanha === 'mestre' ? 'detalhe_campanha' : 'campanhas'
             )}
