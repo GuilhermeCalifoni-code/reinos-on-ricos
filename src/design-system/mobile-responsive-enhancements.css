@@ -1,0 +1,230 @@
+/* Adaptação mobile real — regras finais após os temas e módulos.
+   Pequenas telas, rotação, teclado virtual e áreas seguras iOS/Android. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.ro-app-shell, .ro-app-shell > div, .ro-app-shell main { min-width: 0; }
+.ro-app-shell :where(input,select,textarea) { min-width: 0; }
+.ro-app-shell :where(h1,h2,h3,p,strong,small) { overflow-wrap: anywhere; }
+.ro-app-shell :where(img,video) { max-width: 100%; height: auto; }
+.ro-app-shell :where(.ro-settings__card,.session-studio,.campaign-assets,.campaign-maps,.ro-character-card) { min-width: 0; }
+.ro-app-shell :where(table) { max-width: 100%; }
+
+/* UI de interação: links e botões não devem exigir toque milimétrico. */
+@media (pointer: coarse) {
+  .ro-mobile-shell :where(button),
+  .ro-mobile-drawer :where(button),
+  .campaign-v4 > nav button,
+  .session-studio__sequence-actions button,
+  .session-studio__resource-card,
+  .live-table--v5 .live-vtt__topbar button,
+  .live-table--v5 .live-vtt__rail button,
+  .live-table--v5 .live-vtt__dock button,
+  .live-table--v5 .live-vtt__drawer-head button,
+  .live-table--v5 .map-stage__library--v4 button,
+  .live-table--v5 .map-stage__library--v4 select,
+  .live-table--v5 .map-stage__token-inspector button {
+    min-height: 44px;
+  }
+  .ro-app-shell :where(button,select) { -webkit-tap-highlight-color: transparent; }
+}
+
+/* Evita zoom automático do Safari ao focar formulários. */
+@media (max-width: 767px) {
+  .ro-app-shell :where(input:not([type=checkbox]):not([type=radio]),textarea,select),
+  .login-onirico__panel :where(input,textarea,select) { font-size: max(16px, 1rem); }
+  .ro-app-shell :where(input,textarea,select) { max-width: 100%; }
+  .ro-mobile-shell {
+    padding-top: env(safe-area-inset-top,0px);
+    min-height: calc(50px + env(safe-area-inset-top,0px));
+  }
+  .ro-mobile-drawer { max-height: 100dvh; }
+  .ro-mobile-drawer__panel {
+    max-height: 100dvh;
+    padding-bottom: env(safe-area-inset-bottom,0px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ro-library__grid, .ro-home__characters, .ro-settings__grid,
+  .campaign-assets__grid, .campaign-resource-manager,
+  .session-studio__library-grid {
+    min-width: 0;
+    grid-template-columns: minmax(0,1fr);
+  }
+  .session-studio__top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .75rem;
+  }
+  .session-studio__layout {
+    min-height: 0;
+    grid-template-columns: minmax(0,1fr);
+  }
+  .session-studio__timeline {
+    border-right: 0;
+    border-bottom: 1px solid var(--ro-line);
+  }
+  .session-studio__map-strip {
+    grid-template-columns: repeat(auto-fit,minmax(min(150px,100%),1fr));
+  }
+  .session-resource-links__chips, .campaign-assets__actions,
+  .campaign-maps__actions { flex-wrap: wrap; }
+  :where(.actor-editor,.session-studio__quick-modal,.platform-admin__modal) {
+    box-sizing: border-box;
+    width: min(100%,calc(100vw - 16px));
+    max-width: calc(100vw - 16px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+/* A Mesa usa toda a altura visível, mesmo com teclado virtual e barras móveis. */
+@media (max-width: 980px) {
+  .live-table--v5 {
+    height: 100dvh;
+    min-height: 0;
+    max-height: 100dvh;
+    width: 100%;
+  }
+  .live-vtt__topbar { min-width: 0; }
+  .live-vtt__campaign { min-width: 0; }
+  .live-vtt__campaign strong {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .live-vtt__drawer {
+    max-height: calc(100% - 5rem);
+    overscroll-behavior: contain;
+  }
+  .live-vtt__drawer :where(input,textarea,select),
+  .live-vtt__tool :where(input,textarea,select) { font-size: max(16px,1rem); }
+  .live-vtt__tool {
+    width: min(900px,100%);
+    max-height: calc(100dvh - 2rem - env(safe-area-inset-bottom,0px));
+  }
+  .live-vtt__tool-body {
+    max-height: calc(100dvh - 6.5rem - env(safe-area-inset-bottom,0px));
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .live-vtt__tool-backdrop {
+    padding: max(.5rem,env(safe-area-inset-top,0px))
+             .5rem
+             max(.5rem,env(safe-area-inset-bottom,0px));
+  }
+}
+
+/* Smartphone: barra de ações acessível e material preparado sem cortes. */
+@media (max-width: 700px) {
+  .live-table--v5 { min-height: 0; }
+  .live-vtt__topbar {
+    gap: .35rem;
+    padding-left: max(.4rem,env(safe-area-inset-left,0px));
+    padding-right: max(.4rem,env(safe-area-inset-right,0px));
+  }
+  .live-vtt__top-actions { gap: .15rem; }
+  .live-vtt__campaign strong { max-width: min(35vw,170px); }
+  .live-vtt__user { display: none; }
+  .live-vtt__mode-switch {
+    right: max(.5rem,env(safe-area-inset-right,0px));
+    max-width: calc(100vw - 1rem);
+    overflow-x: auto;
+  }
+  .live-vtt__mode-switch button { flex: 0 0 auto; }
+  .live-vtt__rail {
+    left: max(.4rem,env(safe-area-inset-left,0px));
+    bottom: calc(4.55rem + env(safe-area-inset-bottom,0px));
+  }
+  .live-vtt__dock {
+    right: max(.5rem,env(safe-area-inset-right,0px));
+    left: max(.5rem,env(safe-area-inset-left,0px));
+    bottom: max(.4rem,env(safe-area-inset-bottom,0px));
+  }
+  .live-vtt__dock button { min-width: 0; min-height: 48px; }
+  .live-vtt__drawer {
+    bottom: calc(4.4rem + env(safe-area-inset-bottom,0px));
+    right: max(.5rem,env(safe-area-inset-right,0px));
+    left: max(3.7rem,env(safe-area-inset-left,0px));
+    min-width: 0;
+  }
+  .live-vtt__player-bar {
+    bottom: calc(4.2rem + env(safe-area-inset-bottom,0px));
+    min-width: 0;
+  }
+  /* Não ocultar os controles de revelar/grade em celulares do Mestre. */
+  .live-table--v5 .map-stage__library--v4 {
+    display: flex;
+    top: 3.6rem;
+    right: .45rem;
+    width: calc(100% - 4.3rem);
+    max-width: calc(100% - 4.3rem);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+  }
+  .live-table--v5 .map-stage__library--v4 :where(button,select) {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    align-items: center;
+  }
+  .live-table--v5 .map-stage__library--v4 select {
+    width: min(180px,42vw);
+    min-width: 110px;
+  }
+  .live-table--v5 .map-stage__privacy-note {
+    right: .5rem;
+    top: 6.8rem;
+    max-width: calc(100% - 4.7rem);
+    font-size: .7rem;
+  }
+  .live-table--v5 .map-stage__token-inspector {
+    top: auto;
+    bottom: calc(8rem + env(safe-area-inset-bottom,0px));
+    right: .5rem;
+    width: min(300px,calc(100% - 4.5rem));
+    max-height: min(48dvh,360px);
+    overflow-y: auto;
+  }
+  .live-table--v5 .map-stage__setup {
+    bottom: calc(8rem + env(safe-area-inset-bottom,0px));
+    max-height: 45%;
+    overflow-y: auto;
+  }
+}
+
+/* Telefones pequenos (320px / 360px), inclusive paisagem. */
+@media (max-width: 390px) {
+  .live-vtt__campaign strong { max-width: 24vw; font-size: .75rem; }
+  .live-vtt__topbar { gap: .2rem; }
+  .live-vtt__brand img { max-width: 28px; }
+  .live-vtt__top-actions { gap: .1rem; }
+  .live-vtt__presentation,.live-vtt__leave { min-width: 36px; padding: 0; }
+  .live-vtt__tool-backdrop { padding-inline: .25rem; }
+  .ro-settings,.ro-library,.ro-home { padding-inline: 12px; }
+}
+
+/* Paisagem em telefones: área de jogo visível sem scroll bloqueado por 620px. */
+@media (max-height: 550px) and (max-width: 980px) {
+  .live-table--v5 { min-height: 0; }
+  .live-vtt__topbar { min-height: 46px; padding-block: .2rem; }
+  .live-vtt__rail { bottom: calc(3.6rem + env(safe-area-inset-bottom,0px)); gap: .1rem; }
+  .live-vtt__rail button { min-height: 36px; width: 36px; }
+  .live-vtt__dock button { min-height: 42px; }
+  .live-vtt__drawer { top: .2rem; bottom: calc(3.4rem + env(safe-area-inset-bottom,0px)); }
+  .live-vtt__player-bar { display: none; }
+  .live-vtt__tool-backdrop { align-items: start; }
+  .live-vtt__tool { max-height: calc(100dvh - 1rem); }
+  .live-vtt__tool-body { max-height: calc(100dvh - 5rem); }
+  .live-table--v5 .map-stage__token-inspector {
+    max-height: 65dvh;
+    bottom: calc(3.7rem + env(safe-area-inset-bottom,0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ro-mobile-drawer,.live-vtt__tool,.live-vtt__drawer { scroll-behavior: auto; }
+}
