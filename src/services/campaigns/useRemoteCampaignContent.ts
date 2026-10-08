@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Adversario, Anotacao, Cena, Handout, Local, LoreEntry, MapaNarrativo, NPC, NovaSessaoInput, Pista, Sessao } from '../../types/campaign';
 import { campaignContentRepository } from './campaignContentRepository';
+import { supabase } from '../../lib/supabaseClient';
 
 const empty = {
   sessoes: [] as Sessao[],
@@ -29,6 +30,19 @@ export function useRemoteCampaignContent(campaignId?: string, enabled = false) {
   }, [campaignId, enabled]);
 
   useEffect(() => { void recarregar(); }, [recarregar]);
+
+  useEffect(() => {
+    if (!supabase || !enabled || !campaignId) return;
+    const channel = supabase.channel(`campaign-actors:${campaignId}`)
+      .on('postgres_changes',
+        {event:'*',schema:'public',table:'campaign_npcs',filter:`campaign_id=eq.${campaignId}`},
+        () => { void recarregar(); })
+      .on('postgres_changes',
+        {event:'*',schema:'public',table:'campaign_adversaries',filter:`campaign_id=eq.${campaignId}`},
+        () => { void recarregar(); })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [campaignId, enabled, recarregar]);
 
   const run = useCallback(async <T,>(operation: () => Promise<T>) => {
     try {
