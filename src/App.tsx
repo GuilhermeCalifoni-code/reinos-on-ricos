@@ -8,7 +8,7 @@ import { RupturaModal } from './components/RupturaModal';
 import { LoginScreen } from './components/LoginScreen';
 import { readLegacyLocalSnapshot, summarizeLegacyLocalSnapshot } from './data/legacyLocalSnapshot';
 import { Personagem, AtributoNome, DominioNome } from './types/character';
-import { Campanha, Sessao } from './types/campaign';
+import { Campanha, Sessao, Contador, TokenMapa } from './types/campaign';
 import { UserSession } from './types/auth';
 import { isSupabaseConfigured } from './lib/supabaseClient';
 import { authService } from './services/auth/authService';
@@ -24,6 +24,10 @@ import { applyUIPreferences, loadLocalUIPreferences, saveLocalUIPreferences } fr
 import { accountDataService } from './services/account/accountDataService';
 import { liveTableRepository } from './features/realtime/liveTableRepository';
 import { usePlatformAccess } from './services/admin/usePlatformAccess';
+
+// Referências imutáveis: evita reiniciar subscriptions do Realtime a cada render.
+const EMPTY_COUNTERS: Contador[] = [];
+const EMPTY_TOKENS: TokenMapa[] = [];
 
 const CreateCampaignView = React.lazy(() => import('./components/CreateCampaignView').then(module => ({ default: module.CreateCampaignView })));
 const CampaignDetailView = React.lazy(() => import('./components/CampaignDetailView').then(module => ({ default: module.CampaignDetailView })));
@@ -660,7 +664,7 @@ export default function App() {
             onAtualizarPersonagem={salvarPersonagemPersistente}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
-            contadores={[]}
+            contadores={EMPTY_COUNTERS}
             onAdicionarContador={() => undefined}
             onAtualizarContador={() => undefined}
             onRemoverContador={() => undefined}
@@ -670,7 +674,7 @@ export default function App() {
             onAtualizarMapa={(id, patch) => { void conteudoRemoto.atualizarMapa(id, patch); }}
             onRemoverMapa={(id) => { void conteudoRemoto.removerMapa(id); }}
             onAtualizarSessao={conteudoRemoto.atualizarSessao}
-            tokensMapa={[]}
+            tokensMapa={EMPTY_TOKENS}
             onAdicionarTokenMapa={() => undefined}
             onAtualizarTokenMapa={() => undefined}
             onRemoverTokenMapa={() => undefined}
