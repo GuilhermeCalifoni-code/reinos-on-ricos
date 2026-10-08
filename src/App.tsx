@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Sidebar, MobileNavigation, MainViewType } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
@@ -6,8 +6,7 @@ import { CampaignsLibraryView } from './components/CampaignsLibraryView';
 import { CreateCharacterModal } from './components/CreateCharacterModal';
 import { RupturaModal } from './components/RupturaModal';
 import { LoginScreen } from './components/LoginScreen';
-import { useCharacterStorage } from './data/characterStore';
-import { useCampaignStorage } from './data/campaignStore';
+import { readLegacyLocalSnapshot, summarizeLegacyLocalSnapshot } from './data/legacyLocalSnapshot';
 import { Personagem, AtributoNome, DominioNome } from './types/character';
 import { Campanha, Sessao } from './types/campaign';
 import { UserSession } from './types/auth';
@@ -47,17 +46,11 @@ const ViewFallback = () => (
 
 export default function App() {
   const { setTheme } = useTheme();
-  const [session, setSession] = useState<UserSession | null>(() => {
-    try {
-      const salvo = localStorage.getItem(SESSION_STORAGE_KEY);
-      if (salvo) {
-        return JSON.parse(salvo);
-      }
-    } catch (e) {
-      console.error('Erro ao ler sessão salva:', e);
-    }
-    return null;
-  });
+  // Não confia em cache do navegador como sessão autenticada.
+  // O Supabase Auth precisa confirmar a identidade antes de abrir a aplicação.
+  const [session, setSession] = useState<UserSession | null>(null);
+  const [authChecking, setAuthChecking] = useState(isSupabaseConfigured());
+  const legacySummary = useMemo(() => summarizeLegacyLocalSnapshot(readLegacyLocalSnapshot()), []);
   const sessionRef = useRef<UserSession | null>(session);
 
   useEffect(() => {
@@ -67,141 +60,62 @@ export default function App() {
     if (prefs.theme) setTheme(prefs.theme);
   }, [session, setTheme]);
 
-  // Storage de Personagens
-  const {
-    personagens: personagensLocais,
-    personagemAtivo,
-    personagemAtivoId,
-    setPersonagemAtivoId,
-    salvarPersonagem: salvarPersonagemLocal,
-    criarNovoPersonagem,
-    duplicarPersonagem: duplicarPersonagemLocal,
-    excluirPersonagem: excluirPersonagemLocal,
-    exportarJSON,
-    importarJSON
-  } = useCharacterStorage(session?.mesaCodigo || 'ONIRICO-01');
-
-  // Storage de Campanhas
-  const {
-    campanhas: campanhasLocais,
-    campanhaAtivaId: campanhaAtivaIdLocal,
-    campanhaAtiva: campanhaAtivaLocal,
-    setCampanhaAtivaId: setCampanhaAtivaIdLocal,
-    criarCampanha: criarCampanhaLocal,
-    atualizarCampanha,
-    removerCampanha,
-    sessoes,
-    criarSessao,
-    atualizarSessao,
-    npcs,
-    adicionarNPC,
-    atualizarNPC,
-    removerNPC,
-    adversarios,
-    adicionarAdversario,
-    atualizarAdversario,
-    removerAdversario,
-    locais,
-    adicionarLocal,
-    atualizarLocal,
-    removerLocal,
-    pistas,
-    adicionarPista,
-    atualizarPista,
-    removerPista,
-    loreEntries,
-    adicionarLore,
-    anotacoes,
-    adicionarAnotacao,
-    contadores,
-    adicionarContador,
-    atualizarContador,
-    removerContador,
-    duplicarContador,
-    mapas,
-    adicionarMapa,
-    atualizarMapa,
-    removerMapa,
-    tokensMapa,
-    adicionarTokenMapa,
-    atualizarTokenMapa,
-    removerTokenMapa,
-    cenas,
-    adicionarCena,
-    atualizarCena,
-    removerCena,
-    handouts,
-    adicionarHandout,
-    atualizarHandout,
-    removerHandout
-  } = useCampaignStorage();
-  const campanhasRemotas = useRemoteCampaigns(session?.modoConexao === 'supabase' ? session.authUserId : undefined);
+  const campanhasRemotas = useRemoteCampaigns(session?.authUserId);
   const [campanhaRemotaAtivaId, setCampanhaRemotaAtivaId] = useState<string | null>(null);
-  const usandoRemoto = session?.modoConexao === 'supabase' && Boolean(session.authUserId) && isSupabaseConfigured();
+  const usandoRemoto = Boolean(session?.authUserId) && isSupabaseConfigured();
   const platformAccess = usePlatformAccess(usandoRemoto ? session?.authUserId : undefined);
   const canAccessAdmin = platformAccess.canViewUsers || platformAccess.canManageCampaignRoles;
-  const campanhas = usandoRemoto ? campanhasRemotas.campanhas : campanhasLocais;
-  const campanhaAtivaId = usandoRemoto ? campanhaRemotaAtivaId : campanhaAtivaIdLocal;
-  const campanhaAtiva = usandoRemoto
-    ? (campanhaRemotaAtivaId ? campanhas.find(c => c.id === campanhaRemotaAtivaId) || null : campanhas[0] || null)
-    : campanhaAtivaLocal;
-  const setCampanhaAtivaId = (id: string) => usandoRemoto ? setCampanhaRemotaAtivaId(id) : setCampanhaAtivaIdLocal(id);
-  const papelDaCampanha = usandoRemoto ? campanhasRemotas.roleDaCampanha(campanhaAtivaId || undefined) || 'observador' : session?.role || 'observador';
-  const podePrepararCampanha = (camp: Campanha) => roleCanPrepare(
-    usandoRemoto ? campanhasRemotas.roleDaCampanha(camp.id) : session?.role
-  );
-  const membroRemotoAtivo = usandoRemoto ? campanhasRemotas.membros.find(membro => membro.campaignId === campanhaAtivaId && membro.userId === session?.authUserId) : undefined;
-  const personagemJogadorId = usandoRemoto ? membroRemotoAtivo?.characterId : session?.personagemVinculadoId;
+  const campanhas = campanhasRemotas.campanhas;
+  const campanhaAtivaId = campanhaRemotaAtivaId;
+  const campanhaAtiva = campanhaRemotaAtivaId
+    ? campanhas.find(c => c.id === campanhaRemotaAtivaId) || null
+    : campanhas[0] || null;
+  const setCampanhaAtivaId = setCampanhaRemotaAtivaId;
+  const papelDaCampanha = campanhasRemotas.roleDaCampanha(campanhaAtiva?.id) || 'observador';
+  const podePrepararCampanha = (camp: Campanha) => roleCanPrepare(campanhasRemotas.roleDaCampanha(camp.id));
+  const membroRemotoAtivo = campanhasRemotas.membros.find(membro => membro.campaignId === campanhaAtiva?.id && membro.userId === session?.authUserId);
+  const personagemJogadorId = membroRemotoAtivo?.characterId;
   const personagensRemotos = useRemoteCharacters(
     usandoRemoto ? session?.authUserId : undefined,
     usandoRemoto ? campanhaAtivaId || undefined : undefined,
     usandoRemoto
   );
-  const personagens = usandoRemoto ? personagensRemotos.characters : personagensLocais;
+  const personagens = personagensRemotos.characters;
 
   const conteudoRemoto = useRemoteCampaignContent(campanhaAtivaId || undefined, usandoRemoto);
-  const sessoesAtuais = usandoRemoto ? conteudoRemoto.sessoes : sessoes;
-  const npcsAtuais = usandoRemoto ? conteudoRemoto.npcs : npcs;
-  const adversariosAtuais = usandoRemoto ? conteudoRemoto.adversarios : adversarios;
-  const locaisAtuais = usandoRemoto ? conteudoRemoto.locais : locais;
-  const pistasAtuais = usandoRemoto ? conteudoRemoto.pistas : pistas;
-  const loreAtual = usandoRemoto ? conteudoRemoto.loreEntries : loreEntries;
-  const anotacoesAtuais = usandoRemoto ? conteudoRemoto.anotacoes : anotacoes;
-  const cenasAtuais = usandoRemoto ? conteudoRemoto.cenas : cenas;
-  const handoutsAtuais = usandoRemoto ? conteudoRemoto.handouts : handouts;
-  const mapasAtuais = usandoRemoto ? conteudoRemoto.mapas : mapas;
+  const sessoesAtuais = conteudoRemoto.sessoes;
+  const npcsAtuais = conteudoRemoto.npcs;
+  const adversariosAtuais = conteudoRemoto.adversarios;
+  const locaisAtuais = conteudoRemoto.locais;
+  const pistasAtuais = conteudoRemoto.pistas;
+  const loreAtual = conteudoRemoto.loreEntries;
+  const anotacoesAtuais = conteudoRemoto.anotacoes;
+  const cenasAtuais = conteudoRemoto.cenas;
+  const handoutsAtuais = conteudoRemoto.handouts;
+  const mapasAtuais = conteudoRemoto.mapas;
   const sessaoAtiva = sessoesAtuais.find(sessao => sessao.numero === campanhaAtiva?.sessaoAtual);
   const sessaoAtivaId = sessaoAtiva?.id;
-  const membrosCampanha = usandoRemoto && campanhaAtivaId ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtivaId) : [];
-  const personagensCampanha = usandoRemoto && campanhaAtivaId
-    ? personagens.filter(personagem => personagem.campaignId === campanhaAtivaId)
+  const membrosCampanha = campanhaAtiva?.id ? campanhasRemotas.membros.filter(membro => membro.campaignId === campanhaAtiva.id) : [];
+  const personagensCampanha = campanhaAtiva?.id
+    ? personagens.filter(personagem => personagem.campaignId === campanhaAtiva.id)
     : personagens;
 
   const salvarPersonagemPersistente = (personagemAtualizado: Personagem) => {
-    if (usandoRemoto) {
-      const remoto: Personagem = {
-        ...personagemAtualizado,
-        ownerUserId: personagemAtualizado.ownerUserId || session?.authUserId
-      };
-      void personagensRemotos.save(remoto).catch(error => console.error('Erro ao salvar ficha remota:', error));
-      return;
-    }
-    salvarPersonagemLocal(personagemAtualizado);
+    if (!usandoRemoto) return;
+    const remoto: Personagem = {
+      ...personagemAtualizado,
+      ownerUserId: personagemAtualizado.ownerUserId || session?.authUserId
+    };
+    void personagensRemotos.save(remoto).catch(error => console.error('Erro ao salvar ficha no Supabase:', error));
   };
 
   const excluirPersonagemPersistente = (id: string) => {
-    if (usandoRemoto) {
-      void personagensRemotos.remove(id).catch(error => console.error('Erro ao excluir ficha remota:', error));
-      return;
-    }
-    excluirPersonagemLocal(id);
+    if (!usandoRemoto) return;
+    void personagensRemotos.remove(id).catch(error => console.error('Erro ao excluir ficha remota:', error));
   };
 
   const duplicarPersonagemPersistente = (id: string) => {
-    if (!usandoRemoto) {
-      duplicarPersonagemLocal(id);
-      return;
-    }
+    if (!usandoRemoto) return;
     const original = personagens.find(item => item.id === id);
     if (!original || !session?.authUserId) return;
     const copia: Personagem = {
