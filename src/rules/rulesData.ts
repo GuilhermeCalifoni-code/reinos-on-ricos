@@ -83,18 +83,18 @@ export const DISTANCIAS_REINOS_ONIRICOS: Record<DistanciaFaixa, {
   },
   muito_proxima: {
     nome: 'Muito Próxima',
-    descricao: 'Poucos passos dentro do mesmo cômodo.',
+    descricao: 'Aproximadamente 1,5 a 3 m.',
     exemplos: 'Mesa ao lado, cruzar uma sala pequena, alcance de um golpe com passo.'
   },
   proxima: {
     nome: 'Próxima',
-    descricao: 'Distância de um salão amplo, pátio ou travessia de rua.',
+    descricao: 'Aproximadamente 3 a 9 m.',
     exemplos: 'Outro lado de uma sala grande, calçada oposta, alcance de arremesso.'
   },
   longe: {
     nome: 'Longe',
-    descricao: 'Extensão de um quarteirão, corredor longo ou saguão de metrô.',
-    exemplos: 'Final do quarteirão, topo de uma escada monumental, disparo à distância.'
+    descricao: 'Aproximadamente 9 a 15 m.',
+    exemplos: 'Extremidade de um corredor, outro lado de um pátio ou distância além de uma sala comum.'
   },
   muito_longe: {
     nome: 'Muito Longe',
