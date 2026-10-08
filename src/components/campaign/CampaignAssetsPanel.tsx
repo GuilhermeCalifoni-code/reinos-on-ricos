@@ -228,13 +228,14 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
                   <input
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif"
-                    onChange={e => setFile(e.target.files?.[0] || null)}
+                    onChange={e => { setFile(e.target.files?.[0] || null); setRemoveAttached(false); }}
                   />
                 </label>
                 <span className="campaign-assets__or">ou</span>
-                <input value={imageUrl} onChange={e => { setImageUrl(e.target.value); if (e.target.value) setFile(null); }} placeholder="URL visual opcional" />
+                <input value={imageUrl} onChange={e => { setImageUrl(e.target.value); setRemoveAttached(false); if (e.target.value) setFile(null); }} placeholder="URL visual opcional" />
               </div>
             )}
+            {editingId && <button type="button" className="ro-button--quiet" onClick={() => { setRemoveAttached(true); setFile(null); setImageUrl(''); }}>Remover imagem</button>}
             <button className="ro-button" disabled={busy}>{busy ? 'Salvando…' : editingId ? 'Salvar alterações' : 'Criar cena'}</button>
             {editingId && <button type="button" className="ro-button--quiet" onClick={reset}>Cancelar edição</button>}
           </form>
@@ -291,8 +292,9 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
             onChange={event => { setImageUrl(event.target.value); setFile(null); setRemoveAttached(false); }} />
           <label className="campaign-assets__file">
             <span>{file ? file.name : 'Selecionar arquivo'}</span>
-            <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
+            <input type="file" onChange={e => { setFile(e.target.files?.[0] || null); setRemoveAttached(false); }} />
           </label>
+          {editingId && <button type="button" className="ro-button--quiet" onClick={() => { setRemoveAttached(true); setFile(null); setImageUrl(''); }}>Remover arquivo</button>}
           <button className="ro-button" disabled={busy}>{busy ? 'Salvando…' : editingId ? 'Salvar alterações' : 'Adicionar handout'}</button>
           {editingId && <button type="button" className="ro-button--quiet" onClick={reset}>Cancelar edição</button>}
         </form>
