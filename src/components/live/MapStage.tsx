@@ -142,24 +142,29 @@ export const MapStage: React.FC<MapStageProps> = ({
       if (!actor) return;
 
       const tipo = kind as TipoTokenMapa;
-      onAdicionarToken({
-        campanhaId,
-        mapaId: mapaAtual.id,
-        tipo,
-        nome: actor.nome,
-        imagemUrl: actor.imagemUrl,
-        characterId: kind === 'personagem' ? id : undefined,
-        npcId: kind === 'npc' ? id : undefined,
-        adversaryId: kind === 'adversario' ? id : undefined,
-        tokenSize: 1,
-        rangeCells: 0,
-        cor: cores[tipo],
-        x: 50,
-        y: 50,
-        oculto: false
-      });
+      const prevNames = tokensAtuais.filter(t => t.tipo === tipo
+        && (tipo === 'npc' ? t.npcId === id : tipo === 'adversario' ? t.adversaryId === id : t.characterId === id))
+        .map(t => t.nome);
+      const usedNames = [...prevNames, ...pendingNames.current];
+      for (let i = 0; i < quantidade; i++) {
+        const name = tipo === 'personagem' ? actor.nome : nextInstanceName(actor.nome, usedNames);
+        usedNames.push(name);
+        pendingNames.current.add(name);
+        onAdicionarToken({
+          campanhaId, mapaId: mapaAtual.id, tipo, nome: name, imagemUrl: actor.imagemUrl,
+          characterId: kind === 'personagem' ? id : undefined,
+          npcId: kind === 'npc' ? id : undefined,
+          adversaryId: kind === 'adversario' ? id : undefined,
+          hpCurrent: npc?.vida ?? adversario?.vida,
+          hpMax: npc ? Math.max(1,npc.vidaMaxima ?? npc.vida ?? 1) : adversario?.vidaMaxima,
+          tokenSize: 1, rangeCells: 0, areaRadiusCells: 0,
+          cor: cores[tipo], x: clamp(45 + i * 4, 0, 100), y: clamp(45 + i * 4, 0, 100),
+          oculto: false
+        });
+      }
       onActorUsed?.(kind as 'personagem' | 'npc' | 'adversario', id);
       setTokenSource('manual');
+      setQuantidade(1);
       return;
     }
 
@@ -171,6 +176,7 @@ export const MapStage: React.FC<MapStageProps> = ({
       nome: novoToken.trim(),
       tokenSize: 1,
       rangeCells: 0,
+      areaRadiusCells: 0,
       cor: cores[tipoToken],
       x: 50,
       y: 50,
