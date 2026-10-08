@@ -774,35 +774,25 @@ export default function App() {
           isOpen={modalCriarPersonagem}
           onClose={() => setModalCriarPersonagem(false)}
           onCriar={async (novo, imagemArquivo) => {
-            if (usandoRemoto) {
-              let salvo = await personagensRemotos.save({
-                ...novo,
-                ownerUserId: novo.ownerUserId || session?.authUserId
-              });
+            let salvo = await personagensRemotos.save({
+              ...novo,
+              ownerUserId: novo.ownerUserId || session?.authUserId
+            });
 
-              if (imagemArquivo) {
-                try {
-                  const path = await campaignAssetService.uploadCharacterPortrait(salvo.id, imagemArquivo);
-                  salvo = await personagensRemotos.save({
-                    ...salvo,
-                    imagemUrl: campaignAssetService.toStorageRef(path),
-                    atualizadoEm: new Date().toISOString()
-                  });
-                } catch (error: any) {
-                  alert(`A ficha foi criada, mas o retrato não pôde ser enviado. ${error.message || ''}`);
-                }
+            if (imagemArquivo) {
+              try {
+                const path = await campaignAssetService.uploadCharacterPortrait(salvo.id, imagemArquivo);
+                salvo = await personagensRemotos.save({
+                  ...salvo,
+                  imagemUrl: campaignAssetService.toStorageRef(path),
+                  atualizadoEm: new Date().toISOString()
+                });
+              } catch (error: any) {
+                alert(`A ficha foi criada, mas o retrato não pôde ser enviado. ${error.message || ''}`);
               }
-
-              setPersonagemParaFicha(salvo);
-              return;
             }
 
-            const imagemUrl = imagemArquivo
-              ? await arquivoParaDataUrl(imagemArquivo)
-              : novo.imagemUrl;
-            const local = { ...novo, imagemUrl };
-            salvarPersonagemLocal(local);
-            setPersonagemParaFicha(local);
+            setPersonagemParaFicha(salvo);
           }}
         />
       )}
