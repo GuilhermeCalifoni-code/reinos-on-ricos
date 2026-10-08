@@ -20,7 +20,9 @@ import { campaignAssetService } from '../../services/storage/campaignAssetServic
 import { ArrowLeft, FileText, Image as ImageIcon, Layers3, Map as MapIcon, MessageSquareText, Moon, Radio, Users } from 'lucide-react';
 
 interface LiveTableProps {
-  campanha: Campanha; personagens: Personagem[]; npcs: NPC[]; adversarios: Adversario[]; role: UserRole; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
+  campanha: Campanha; personagens: Personagem[]; npcs: NPC[]; adversarios: Adversario[]; role: UserRole;
+  onAtualizarNPC: (id: string, patch: Partial<NPC>) => Promise<unknown>;
+  onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown>; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
   onAtualizarPersonagem: (personagem: Personagem) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem) => void;
   contadores: Contador[]; onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarContador: (id: string, parcial: Partial<Contador>) => void; onRemoverContador: (id: string) => void; onDuplicarContador: (id: string) => void;
   mapas: MapaNarrativo[]; onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void; onRemoverMapa: (id: string) => void; onAtualizarSessao?: (id: string, patch: Partial<Sessao>) => Promise<unknown> | unknown;
@@ -28,7 +30,7 @@ interface LiveTableProps {
 }
 
 export const LiveTable: React.FC<LiveTableProps> = (props) => {
-  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
+  const { campanha, personagens, npcs, adversarios, role, onAtualizarNPC, onAtualizarAdversario, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
   const mestre = role === 'mestre';
   const personagensVisiveis = useMemo(() => mestre ? personagens : personagens.filter(p => p.id === personagemJogadorId), [mestre, personagemJogadorId, personagens]);
   const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || personagens[0]?.id || '');
@@ -425,6 +427,15 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               onAbrirFicha={onAbrirFicha}
               onAjustar={ajustar}
               onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')}
+              onUpdateNpc={(id,hp) => onAtualizarNPC(id,{vida:hp})}
+              onUpdateAdversary={(id,hp) => onAtualizarAdversario(id,{vida:hp})}
+              onActorRoll={async (content,details) => {
+                if (!mestre) throw new Error('Somente o Mestre pode rolar por NPCs e adversários.');
+                await registro.registrar({
+                  type:'roll', visibility:'mestre', content,
+                  metadata:{...details,kind:'actor_combat'}
+                });
+              }}
               onClose={() => setPartyOpen(false)}
             />
           </aside>
