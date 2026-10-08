@@ -275,6 +275,50 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
 
       {realtime.error && <p className="live-vtt__sync-error">Sincronização indisponível: {realtime.error}</p>}
 
+      {!cinematic && (
+        <div className="live-vtt__player-bar" aria-label="Personagens presentes">
+          <div className="live-vtt__player-bar-label">
+            <span>Presentes</span>
+            <small>{personagensVisiveis.length}</small>
+          </div>
+
+          <div className="live-vtt__player-strip">
+            {personagensVisiveis.length === 0 && (
+              <span className="live-vtt__player-empty">Nenhuma ficha vinculada à mesa.</span>
+            )}
+            {personagensVisiveis.map(personagem => (
+              <button
+                type="button"
+                key={personagem.id}
+                className={`live-vtt__player ${selecionado?.id === personagem.id ? 'is-selected' : ''}`}
+                onClick={() => setSelecionadoId(personagem.id)}
+                draggable={mestre}
+                onDragStart={(event) => {
+                  if (!mestre) return;
+                  event.dataTransfer.effectAllowed = 'copy';
+                  event.dataTransfer.setData('application/x-ro-actor', JSON.stringify({
+                    kind: 'personagem',
+                    id: personagem.id,
+                    name: personagem.nome,
+                    imageUrl: personagem.imagemUrl || ''
+                  }));
+                }}
+                title={mestre ? `${personagem.nome} · arraste para o mapa` : personagem.nome}
+              >
+                <span className={`live-vtt__player-avatar ${personagem.imagemUrl ? 'has-image' : ''}`}>
+                  {personagem.imagemUrl
+                    ? <AssetImage src={personagem.imagemUrl} alt="" />
+                    : personagem.nome.slice(0, 2).toUpperCase()}
+                </span>
+                <span className="live-vtt__player-copy">
+                  <strong>{personagem.nome}</strong>
+                  <small>PV {personagem.vidaAtual}/{personagem.vidaMaxima} · FO {personagem.focoAtual}/{personagem.focoMaximo} · R {personagem.ruptura}/6</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="live-vtt__shell">
         {!cinematic && (
           <nav className="live-vtt__rail" aria-label="Painéis da mesa">
@@ -326,50 +370,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
             {conteudo === 'mapa' ? mapaCena : cena}
           </div>
 
-          {!cinematic && (
-            <div className="live-vtt__player-bar" aria-label="Personagens presentes">
-              <div className="live-vtt__player-bar-label">
-                <span>Presentes</span>
-                <small>{personagensVisiveis.length}</small>
-              </div>
 
-              <div className="live-vtt__player-strip">
-                {personagensVisiveis.length === 0 && (
-                  <span className="live-vtt__player-empty">Nenhuma ficha vinculada à mesa.</span>
-                )}
-                {personagensVisiveis.map(personagem => (
-                  <button
-                    type="button"
-                    key={personagem.id}
-                    className={`live-vtt__player ${selecionado?.id === personagem.id ? 'is-selected' : ''}`}
-                    onClick={() => setSelecionadoId(personagem.id)}
-                    draggable={mestre}
-                    onDragStart={(event) => {
-                      if (!mestre) return;
-                      event.dataTransfer.effectAllowed = 'copy';
-                      event.dataTransfer.setData('application/x-ro-actor', JSON.stringify({
-                        kind: 'personagem',
-                        id: personagem.id,
-                        name: personagem.nome,
-                        imageUrl: personagem.imagemUrl || ''
-                      }));
-                    }}
-                    title={mestre ? `${personagem.nome} · arraste para o mapa` : personagem.nome}
-                  >
-                    <span className={`live-vtt__player-avatar ${personagem.imagemUrl ? 'has-image' : ''}`}>
-                      {personagem.imagemUrl
-                        ? <AssetImage src={personagem.imagemUrl} alt="" />
-                        : personagem.nome.slice(0, 2).toUpperCase()}
-                    </span>
-                    <span className="live-vtt__player-copy">
-                      <strong>{personagem.nome}</strong>
-                      <small>PV {personagem.vidaAtual}/{personagem.vidaMaxima} · FO {personagem.focoAtual}/{personagem.focoMaximo} · R {personagem.ruptura}/6</small>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </main>
 
         {!cinematic && mestre && directorOpen && (
