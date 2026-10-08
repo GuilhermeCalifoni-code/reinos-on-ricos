@@ -134,7 +134,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     }
   };
 
-  // Executar Movimento de Morte (Livro Básico VF5)
+  // Executar Movimento de Morte (Livro Básico VF10, pág. 42)
   const handleRolarMovimentoMorte = () => {
     const res = resolverMovimentoMorte();
     setResultadoMorte({
@@ -769,7 +769,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                   Movimento de Morte
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Ao chegar a 0 de Vida, o personagem aposta sua existência desafiando o Véu.
+                  Ao chegar a 0 PV, o personagem fica inconsciente e realiza o Movimento de Morte no próximo turno.
                 </p>
               </div>
             </div>
@@ -786,8 +786,8 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
               </p>
               <div className="p-3 rounded bg-slate-950 border border-slate-800 space-y-1 text-[11px]">
                 <p><strong className="text-emerald-400">Convergência:</strong> Realidade e Sonhar mantêm o personagem. Recupere 2 de Vida.</p>
-                <p><strong className="text-amber-400">Realidade vence:</strong> O corpo resiste. Recupere 1 de Vida.</p>
-                <p><strong className="text-cyan-400">Sonhar vence:</strong> O impossível impede sua morte. Recupere 1 de Vida e receba +2 de Ruptura.</p>
+                <p><strong className="text-amber-400">Realidade vence:</strong> O personagem estabiliza, mas permanece inconsciente com 0 PV e precisa de cuidados ou Descanso.</p>
+                <p><strong className="text-cyan-400">Sonhar vence:</strong> O impossível impede sua morte. Recupere 1 PV, receba +1 de Ruptura e fique consciente.</p>
                 <p><strong className="text-rose-400">Divergência:</strong> Nenhum dos mundos consegue sustentá-lo. O personagem morre.</p>
               </div>
               
