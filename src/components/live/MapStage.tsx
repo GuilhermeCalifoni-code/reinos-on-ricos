@@ -449,6 +449,13 @@ export const MapStage: React.FC<MapStageProps> = ({
             </>
           )}
 
+          {mapaAtual && <div className="map-stage__area-tools">
+            <label title="Raio do círculo em células">Raio <input aria-label="Raio da área em casas" type="number" min={1} max={30} value={areaRadius}
+              onChange={event=>setAreaRadius(clamp(Math.round(Number(event.target.value)||1),1,30))}/></label>
+            <input type="color" aria-label="Cor do círculo de efeito" value={areaColor} onChange={event=>setAreaColor(event.target.value)}/>
+            <button type="button" className={marcandoArea?'is-active':''} aria-pressed={marcandoArea}
+              onClick={()=>setMarcandoArea(v=>!v)}>{marcandoArea?'Concluir áreas':'Marcar círculo'}</button>
+          </div>}
           <button type="button" onClick={centralizar}><Crosshair size={13} /> Centralizar</button>
           <button type="button" onClick={() => viewport.current?.requestFullscreen?.()}><Maximize2 size={13} /></button>
         </div>
@@ -460,9 +467,12 @@ export const MapStage: React.FC<MapStageProps> = ({
         </p>
       )}
 
+      {marcandoArea && mestre && <div className="map-stage__area-hint" role="status">
+        Clique ou toque no mapa para marcar círculos de área de efeito. Use “Concluir áreas” para voltar a mover tokens.
+      </div>}
       <div
         ref={viewport}
-        className="map-stage__viewport"
+        className={`map-stage__viewport ${marcandoArea ? 'is-placing-area' : ''}`}
         onDragOver={event => {
           if (mestre && mapaAtual) {
             event.preventDefault();
@@ -478,6 +488,12 @@ export const MapStage: React.FC<MapStageProps> = ({
         }}
         onPointerDown={event => {
           if (!(event.target as HTMLElement).closest('.map-stage__token')) {
+            if (marcandoArea && mestre && mapaAtual) {
+              const pos = pontoNoCanvas(event.clientX,event.clientY);
+              if (pos) criarCirculoNoMapa(pos.x,pos.y);
+              event.preventDefault();
+              return;
+            }
             if (event.pointerType === 'touch') {
               registrarToque(event.pointerId, { x: event.clientX, y: event.clientY });
             }
@@ -515,6 +531,7 @@ export const MapStage: React.FC<MapStageProps> = ({
               const posicao = posicoesLocais[token.id] || token;
               const tokenSize = clamp(token.tokenSize ?? 1, .5, 4);
               const rangeCells = clamp(token.rangeCells ?? 0, 0, 30);
+              const areaRadiusCells = clamp(token.areaRadiusCells ?? 0,0,30);
               const sizePx = gridSize * tokenSize;
               const canControl = podeControlarToken(token);
               const selected = selecionadoId === token.id;
@@ -529,7 +546,8 @@ export const MapStage: React.FC<MapStageProps> = ({
                     top: `${posicao.y}%`,
                     '--token-color': token.cor,
                     '--token-size': `${sizePx}px`,
-                    '--range-size': `${Math.max(0, rangeCells * gridSize * 2)}px`
+                    '--range-size': `${Math.max(0, rangeCells * gridSize * 2)}px`,
+                    '--area-size': `${areaRadiusCells * gridSize * 2}px`
                   } as React.CSSProperties}
                   onClick={event => {
                     event.stopPropagation();
@@ -547,6 +565,7 @@ export const MapStage: React.FC<MapStageProps> = ({
                   }}
                   title={canControl ? `${token.nome} · arraste para mover` : token.nome}
                 >
+                  {areaRadiusCells > 0 && <span className="map-stage__area-circle"><em>{areaRadiusCells} casas</em></span>}
                   {selected && rangeCells > 0 && <span className="map-stage__range-ring"><em>{rangeCells} casas</em></span>}
                   <span className="map-stage__token-face">
                     {token.imagemUrl
