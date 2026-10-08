@@ -20,6 +20,7 @@ import {
   ResultadoOniricoTipo
 } from '../types/character';
 import { executarTesteMundano, executarTesteOnirico, resolverMovimentoMorte } from '../rules/rulesEngine';
+import { rollActorDamage } from '../features/realtime/roActorCombat';
 import { NewSessionEvent } from '../types/sessionEvent';
 
 interface DiceRollerProps {
@@ -36,7 +37,21 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   onSalvarPersonagem,
   onAbrirModalRuptura, onRegistrarRolagem
 }) => {
-  const [abaAtiva, setAbaAtiva] = useState<'mundano' | 'onirico' | 'morte'>('mundano');
+  const [abaAtiva, setAbaAtiva] = useState<'mundano' | 'onirico' | 'morte' | 'dano'>('mundano');
+
+  const [dadoDano,setDadoDano] = useState(8);
+  const [danoDoSonhar,setDanoDoSonhar] = useState(true);
+  const [resultadoDano,setResultadoDano] = useState<{dado:number;bonus:number;total:number}|null>(null);
+  const rolarDanoDoPersonagem = () => {
+    const bonus = danoDoSonhar ? Math.min(5,Math.max(1,personagemAtivo?.nivel ?? 1)) : 0;
+    const rolled = rollActorDamage(dadoDano,bonus,danoDoSonhar);
+    setResultadoDano({dado:rolled.die,bonus,total:rolled.total});
+    onRegistrarRolagem?.({
+      type:'roll',
+      content:`${personagemAtivo?.nome || 'Mesa'} · Dano ${danoDoSonhar?'do Sonhar':'mundano'}: 1d${dadoDano} (${rolled.die}) + ${bonus} = ${rolled.total}.`,
+      metadata:{kind:'player_damage',dice:dadoDano,die:rolled.die,bonus,total:rolled.total,onirico:danoDoSonhar}
+    });
+  };
 
   // Estado do Teste Mundano
   const [atribMundano, setAtribMundano] = useState<AtributoNome>(atributoInicial || 'corpo');
@@ -179,6 +194,12 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
           <span>Teste Onírico (Realidade + Sonhar)</span>
         </button>
 
+        <button type="button"
+          onClick={() => setAbaAtiva('dano')}
+          className={`py-2.5 px-4 rounded font-bold uppercase tracking-wider ${abaAtiva==='dano'?'bg-amber-950/80 text-amber-300':'text-slate-400 hover:text-slate-200'}`}>
+          <Dice5 className="w-4 h-4 inline mr-1" /> Dano
+        </button>
+
         <button
           onClick={() => setAbaAtiva('morte')}
           className={`py-2.5 px-4 rounded font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition ${
@@ -191,6 +212,25 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
           <span>Movimento de Morte</span>
         </button>
       </div>
+
+      {abaAtiva === 'dano' && (
+        <section className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 space-y-4">
+          <h3 className="text-xl font-bold text-slate-100">Dano do Sonhar</h3>
+          <p className="text-slate-300 text-sm">O dano diretamente produzido pelo Sonhar soma o nível do Desvelado ao dado. Dano mundano não recebe esse bônus automaticamente.</p>
+          <label className="text-slate-200 flex gap-2 items-center">Dado
+            <select className="bg-slate-950 border border-slate-700 rounded p-2 text-slate-100" value={dadoDano} onChange={e=>setDadoDano(Number(e.target.value))}>
+              {[4,6,8,10,12,20].map(n=><option value={n} key={n}>d{n}</option>)}
+            </select>
+          </label>
+          <label className="flex gap-2 items-center text-slate-200">
+            <input type="checkbox" checked={danoDoSonhar} onChange={e=>setDanoDoSonhar(e.target.checked)}/> Fonte onírica
+          </label>
+          <p className="text-slate-400 text-sm">{danoDoSonhar?`Bônus de nível do Desvelado: +${Math.min(5,Math.max(1,personagemAtivo?.nivel??1))}`:'Dano mundano: sem bônus automático de nível'} · d20 somente em casos excepcionais.</p>
+          <button type="button" className="ro-button" onClick={rolarDanoDoPersonagem}>Rolar dano</button>
+          {resultadoDano && <p className="text-slate-100" role="status">Dado: {resultadoDano.dado} + {resultadoDano.bonus} = <strong>{resultadoDano.total}</strong></p>}
+          <p className="text-slate-400 text-xs">O resultado do dado não retira PV automaticamente. Compare-o à Resistência do alvo ou utilize a regra específica de Vida: Cura e Ferimento.</p>
+        </section>
+      )}
 
       {/* ABA 1: TESTE MUNDANO */}
       {abaAtiva === 'mundano' && (
