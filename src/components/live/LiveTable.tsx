@@ -94,8 +94,8 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   }, [compartilhando, effectiveSessionId, realtime.state?.sessionId, sessionDescription, sessionTitle]);
   const selecionarFerramenta = (proxima: LiveTool) => setFerramenta(atual => atual === proxima ? 'nenhuma' : proxima);
   const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeSceneId?: string; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
-  const mudarConteudo = (proximo: ConteudoDeCena) => { setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
-  const selecionarMapa = (id: string) => { setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
+  const mudarConteudo = (proximo: ConteudoDeCena) => { if (!compartilhando) return; setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
+  const selecionarMapa = (id: string) => { if (!compartilhando) return; setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
 
   const ensureSessionLink = async (field: 'cenaIds' | 'mapaIds' | 'pistaIds' | 'handoutIds' | 'npcIds' | 'adversarioIds', id: string) => {
     if (!mestre || !sessao || !onAtualizarSessao) return;
@@ -105,6 +105,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   };
 
   const ativarCena = async (scene: Cena) => {
+    if (!compartilhando) return;
     setActiveSceneLocalId(scene.id);
     const contentType: ConteudoDeCena = scene.tipoDeConteudo === 'mapa' ? 'ambientacao' : scene.tipoDeConteudo;
     setConteudoLocal(contentType);
@@ -127,12 +128,14 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   };
 
   const ativarMapa = async (mapa: MapaNarrativo) => {
+    if (!compartilhando) return;
     selecionarMapa(mapa.id);
     await ensureSessionLink('mapaIds', mapa.id);
     registrarSemFalhar(sessionEventFactories.map(`Mapa ativado: ${mapa.titulo}.`));
   };
 
   const apresentarPista = async (pista: Pista) => {
+    if (!compartilhando) return;
     const contentType: ConteudoDeCena = pista.imagemUrl ? 'imagem' : 'handout';
     setConteudoLocal(contentType);
     setSceneCopyLocal({ title: pista.titulo, description: pista.descricao });
@@ -152,6 +155,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   };
 
   const apresentarHandout = async (handout: Handout) => {
+    if (!compartilhando) return;
     let url = handout.arquivoUrl || '';
     if (!url && handout.storagePath) {
       try { url = await campaignAssetService.signedUrl(handout.storagePath); } catch { url = ''; }
@@ -175,23 +179,24 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   };
 
   const atualizarTextoCena = (title: string, description: string) => {
+    if (!compartilhando) return;
     setSceneCopyLocal({ title, description });
     salvarEstado({ metadata: { ...(realtime.state?.metadata || {}), sceneTitle: title, sceneDescription: description } });
     registrarSemFalhar({ type: 'scene_change', content: `Cena atualizada: ${title}.`, metadata: { sceneTitle: title } });
   };
   const atualizarPersonagemMesa = (personagem: Personagem) => { onAtualizarPersonagem(personagem); if (compartilhando && personagem.campaignId === campanha.id) void realtime.patchCharacterResources(personagem.id, { vidaAtual: personagem.vidaAtual, focoAtual: personagem.focoAtual, ruptura: personagem.ruptura, protecaoOniricaAtual: personagem.protecaoOniricaAtual }).catch(() => undefined); };
   const ajustar = (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => { const maximo = campo === 'vidaAtual' ? personagem.vidaMaxima : personagem.focoMaximo; atualizarPersonagemMesa({ ...personagem, [campo]: Math.max(0, Math.min(maximo, personagem[campo] + delta)), atualizadoEm: new Date().toISOString() }); if (campo === 'vidaAtual') registrarSemFalhar(sessionEventFactories.damage(personagem.id, personagem.nome, delta)); };
-  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addCounter(item).catch(() => undefined); else onAdicionarContador(item); };
-  const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando) void realtime.patchCounter(id, patch).catch(() => undefined); else onAtualizarContador(id, patch); };
-  const removerContador = (id: string) => { if (compartilhando) void realtime.removeCounter(id).catch(() => undefined); else onRemoverContador(id); };
-  const duplicarContador = (id: string) => { if (!compartilhando) return onDuplicarContador(id); const original = contadoresAtuais.find(item => item.id === id); if (original) { const { id: _id, criadoEm: _criado, atualizadoEm: _atualizado, ...draft } = original; void realtime.addCounter({ ...draft, nome: `${draft.nome} (cópia)` }).catch(() => undefined); } };
+  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addCounter(item).catch(() => undefined); };
+  const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando) void realtime.patchCounter(id, patch).catch(() => undefined); };
+  const removerContador = (id: string) => { if (compartilhando) void realtime.removeCounter(id).catch(() => undefined); };
+  const duplicarContador = (id: string) => { if (!compartilhando) return; const original = contadoresAtuais.find(item => item.id === id); if (original) { const { id: _id, criadoEm: _criado, atualizadoEm: _atualizado, ...draft } = original; void realtime.addCounter({ ...draft, nome: `${draft.nome} (cópia)` }).catch(() => undefined); } };
   const adicionarMapa = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addMap(item).then(mapa => { setMapaLocalId(mapa.id); salvarEstado({ activeMapId: mapa.id, contentType: 'mapa' }); registrarSemFalhar(sessionEventFactories.map(`Mapa criado: ${mapa.titulo}.`)); }).catch(() => undefined); else { onAdicionarMapa(item); setConteudoLocal('mapa'); registrarSemFalhar(sessionEventFactories.map(`Mapa criado: ${item.titulo}.`)); } };
   const atualizarMapa = (id: string, patch: Partial<MapaNarrativo>) => { if (compartilhando) void realtime.patchMap(id, patch).catch(() => undefined); else onAtualizarMapa(id, patch); };
   const removerMapa = (id: string) => { const mapa = mapasAtuais.find(item => item.id === id); if (compartilhando) void realtime.removeMap(id).then(() => { if (mapaAtualId === id) salvarEstado({ activeMapId: undefined }); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); }).catch(() => undefined); else { onRemoverMapa(id); if (mapaAtualId === id) setMapaLocalId(undefined); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); } };
   const adicionarToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addToken(item).catch(() => undefined); else onAdicionarTokenMapa(item); };
   const atualizarToken = (id: string, patch: Partial<TokenMapa>) => { if (compartilhando) void realtime.patchToken(id, patch).catch(() => undefined); else onAtualizarTokenMapa(id, patch); };
   const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(() => undefined); else onRemoverTokenMapa(id); };
-  const statusTexto = !registroOnline ? 'Local' : realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
+  const statusTexto = realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
   const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} imageUrl={sceneImageUrl} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
   const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagemJogadorId={personagemJogadorId} personagens={personagens} npcs={npcs} adversarios={adversarios} onActorUsed={(kind, id) => { if (kind === 'npc') void ensureSessionLink('npcIds', id); if (kind === 'adversario') void ensureSessionLink('adversarioIds', id); }} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
