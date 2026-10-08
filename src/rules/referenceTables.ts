@@ -1,5 +1,4 @@
 export type CaracteristicaPotencia =
-  | 'alcance'
   | 'area'
   | 'contador'
   | 'dano'
@@ -26,12 +25,6 @@ export const REGRAS_PASSOS_POTENCIA: Array<{
   observacao?: string;
 }> = [
   {
-    id: 'alcance',
-    nome: 'Alcance',
-    regra: 'Base = Muito Próximo. ±1 categoria de Alcance por Passo.',
-    observacao: 'Usar Potência para Alcance requer o Domínio Espaço.'
-  },
-  {
     id: 'area',
     nome: 'Área',
     regra: 'Base = Alvo. ±1 faixa por Passo.'
@@ -50,7 +43,7 @@ export const REGRAS_PASSOS_POTENCIA: Array<{
   {
     id: 'deslocamento',
     nome: 'Deslocamento',
-    regra: '1–2 Passos: ignora o Teste Reflexo de Correr. 3 Passos: Muito Longe.'
+    regra: '1 Passo: Longe; 2 Passos: Muito Longe; 3 Passos: Além.'
   },
   {
     id: 'defesa',
@@ -75,8 +68,8 @@ export const REGRAS_PASSOS_POTENCIA: Array<{
   {
     id: 'tamanho',
     nome: 'Tamanho',
-    regra: 'Base = Pequeno. ±1 categoria por Passo.',
-    observacao: 'A regra detalhada de Potência e a seção de Objetos e Estruturas usam Pequeno como referência.'
+    regra: 'Base = Médio. ±1 categoria por Passo.',
+    observacao: 'O Livro Básico atualizado usa Médio como referência de Potência para Tamanho.'
   },
   {
     id: 'testes',

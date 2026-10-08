@@ -9,6 +9,8 @@ interface MesaViewProps {
   personagens: Personagem[];
   npcs: NPC[];
   adversarios: Adversario[];
+  onAtualizarNPC: (id:string,patch:Partial<NPC>) => Promise<unknown>;
+  onAtualizarAdversario: (id:string,patch:Partial<Adversario>) => Promise<unknown>;
   role: UserRole;
   personagemJogadorId?: string;
   userId?: string;
@@ -43,7 +45,7 @@ interface MesaViewProps {
 }
 
 export const MesaView: React.FC<MesaViewProps> = ({
-  campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltarParaCampanha,
+  campanha, personagens, npcs, adversarios, onAtualizarNPC, onAtualizarAdversario, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltarParaCampanha,
   onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
   contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
   mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
@@ -53,6 +55,8 @@ export const MesaView: React.FC<MesaViewProps> = ({
     personagens={personagens}
     npcs={npcs}
     adversarios={adversarios}
+    onAtualizarNPC={onAtualizarNPC}
+    onAtualizarAdversario={onAtualizarAdversario}
     role={role}
     personagemJogadorId={personagemJogadorId}
     userId={userId}

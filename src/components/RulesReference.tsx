@@ -70,8 +70,8 @@ export const RulesReference: React.FC = () => {
 
           <article className="ro-surface">
             <p className="ro-eyebrow">Teste Reflexo</p>
-            <h3>Um Teste Mundano em resposta a um gatilho</h3>
-            <p>O Mestre escolhe Atributo e DT conforme a ficção. Foco pode ser usado normalmente. Vantagem e Desvantagem aplicam-se a Testes Mundanos e Reflexos, nunca a Testes Oníricos.</p>
+            <h3>Um Teste Mundano em resposta a perigo, habilidade ou evento disparador</h3>
+            <p>O Mestre pede 1d20 + Atributo apropriado como resposta ao gatilho narrativo e determina a DT. Foco, Vantagem e Desvantagem aplicam-se normalmente. Não é uma rolagem extra automática em todos os ataques.</p>
           </article>
 
           <article className="ro-surface">
@@ -105,6 +105,7 @@ export const RulesReference: React.FC = () => {
 
           <article className="ro-surface">
             <p className="ro-eyebrow">Domínios</p>
+            <p><strong>N1 — Percepção Onírica:</strong> o nível 1 de todos os cinco Domínios permite perceber e compreender aspectos existentes. Não exige Teste Onírico para percepção simples; informações complexas exigem teste e não há onisciência.</p>
             <div className="rules-reference__domains">
               {Object.values(DESCRICAO_DOMINIOS).map(dominio => <div key={dominio.nome}><h4>{dominio.nome}</h4><p>{dominio.tema}</p><small>{dominio.manifestacoesTipicas}</small></div>)}
             </div>
@@ -168,7 +169,7 @@ export const RulesReference: React.FC = () => {
               <p><strong>Uma característica:</strong> todos os Passos vão para a característica escolhida.</p>
               <p><strong>Consequências naturais:</strong> uma manifestação pode causar dano, queda ou deslocamento como consequências da mesma alteração sem transformar cada consequência em um “benefício” comprado por Passo.</p>
               <p><strong>Dano:</strong> a progressão usual é d4 → d6 → d8 → d10 → d12. Potência não avança automaticamente para d20; d20 é reservado aos casos excepcionais indicados pelo livro.</p>
-              <p><strong>Tamanho:</strong> esta referência usa <em>Pequeno</em> como base porque é o valor indicado na regra detalhada de Potência e na seção de Objetos e Estruturas.</p>
+              <p><strong>Tamanho:</strong> o Livro Básico atualizado usa <em>Médio</em> como referência para Passos de Potência que alteram Tamanho.</p>
             </div>
           </article>
         </div>
@@ -278,7 +279,7 @@ export const RulesReference: React.FC = () => {
           <article className="ro-surface">
             <p className="ro-eyebrow">Movimento</p>
             <h3>Movimento integra a Ação</h3>
-            <p>O Movimento pode ser dividido antes e depois da Ação. O Deslocamento básico é Próximo. Correr exige Teste Reflexo de Corpo DT 15 ou mais; sucesso duplica o Deslocamento na Ação, falha mantém o normal.</p>
+            <p>O Movimento pode ser dividido antes e depois da Ação. O Deslocamento básico é Próximo. Para Correr, gaste sua Ação e desloque-se até Longe. Não é necessário Teste Reflexo para simplesmente Correr.</p>
           </article>
 
           <article className="ro-surface">
@@ -346,7 +347,7 @@ export const RulesReference: React.FC = () => {
 
           <article className="ro-surface">
             <p className="ro-eyebrow">Dano Contínuo</p>
-            <p>Perigos como fogo, eletricidade e ácido causam o dano inicial normalmente. Se a exposição continuar, aplique o mesmo dado novamente ao final de cada Rodada até o alvo sair da área, interromper a fonte ou deixar de permanecer exposto.</p>
+            <p>Perigos como fogo, eletricidade e ácido causam o dano inicial normalmente. Se a fonte persistir, o Mestre resolve novas ocorrências conforme a duração e as circunstâncias narrativas. Uma manifestação instantânea não passa a causar dano a cada Rodada sem regra aplicável.</p>
           </article>
 
           <article className="ro-surface">
@@ -355,7 +356,7 @@ export const RulesReference: React.FC = () => {
             <div className="rules-reference__compact-list">
               <p><strong>Convergência:</strong> recupere 2 PV.</p>
               <p><strong>Realidade vence:</strong> permanece Inconsciente com 0 PV; precisa de cuidados ou Descanso.</p>
-              <p><strong>Sonhar vence:</strong> recupere 1 PV e +2 Ruptura.</p>
+              <p><strong>Sonhar vence:</strong> recupere 1 PV e +1 Ruptura.</p>
               <p><strong>Divergência:</strong> o Personagem morre; a descrição pertence ao Jogador.</p>
             </div>
           </article>
@@ -414,7 +415,7 @@ export const RulesReference: React.FC = () => {
           <article className="ro-surface">
             <p className="ro-eyebrow">Contadores</p>
             <h3>Processos, pressão, perseguições e conflitos em etapas</h3>
-            <p>Defina valor inicial, objetivo, direção e gatilhos. Quando o Sonhar participa: Convergência progride 1 e −1 Ruptura; Realidade vence recua 1; Sonhar vence progride 1 e +1 Ruptura; Divergência recua 2 e +2 Ruptura, quando recuar fizer sentido.</p>
+            <p>Defina valor inicial, objetivo, direção e gatilhos. Quando o Sonhar participa: Convergência progride 2 e −1 Ruptura; Realidade vence recua 1; Sonhar vence progride 1 e +1 Ruptura; Divergência recua 2 e +2 Ruptura, quando recuar fizer sentido.</p>
           </article>
 
           <article className="ro-surface">

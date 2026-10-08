@@ -152,7 +152,7 @@ export interface Contador {
 }
 
 export type CategoriaHabilidadeAtor = 'passiva' | 'acao' | 'reacao';
-export type TipoTesteAtor = 'mundano' | 'reflexo';
+export type TipoTesteAtor = 'mundano' | 'reflexo' | 'onirico';
 
 export interface HabilidadeAtor {
   id: string;
@@ -194,7 +194,10 @@ export interface Adversario {
   id: string;
   campanhaId: string;
   nome: string;
-  tipo: 'humano' | 'pesadelo' | 'aberracao' | 'sombra';
+  tipo: 'humano' | 'pesadelo' | 'aberracao' | 'sombra'
+    | 'humano_dcr' | 'humano_custodio' | 'humano_dissonante'
+    | 'criatura_emocional' | 'criatura_manifesta' | 'criatura_primordial'
+    | 'pesadelo_emocional' | 'pesadelo_manifesto' | 'pesadelo_primordial';
   nivel: number;
   vida: number;
   vidaMaxima: number;

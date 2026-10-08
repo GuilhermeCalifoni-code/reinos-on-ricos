@@ -4,6 +4,7 @@ import { Adversario, CategoriaHabilidadeAtor, HabilidadeAtor, NPC, Sessao, TipoT
 import { SessionResourceLinks } from './SessionResourceLinks';
 import { AssetImage } from '../system/AssetImage';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
+import { rollActorOnirico } from '../../features/realtime/roActorCombat';
 
 type Mode = 'npc' | 'adversario';
 
@@ -28,6 +29,10 @@ interface RollResult {
   ability: string;
   kind: TipoTesteAtor;
   die?: number;
+  realidade?: number;
+  sonhar?: number;
+  outcome?: string;
+  ruptura?: number;
   modifier?: number;
   total?: number;
   dt: number;
@@ -103,14 +108,15 @@ const AbilityEditor: React.FC<{
                 <option value="">Sem rolagem</option>
                 <option value="mundano">Teste Mundano</option>
                 <option value="reflexo">Teste Reflexo</option>
+                <option value="onirico">Teste Onírico</option>
               </select>
             ) : <span className="actor-editor__passive">Sem rolagem</span>}
           </div>
           <textarea rows={2} value={ability.descricao} onChange={event => update(ability.id, { descricao: event.target.value })} placeholder="Descreva o efeito da habilidade." />
           {ability.categoria !== 'passiva' && ability.teste && (
             <div className="actor-editor__roll-config">
-              <label>DT <input type="number" min={1} value={ability.dt ?? 10} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
-              {ability.teste === 'mundano' && <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>}
+              <label>DT <input type="number" min={1} value={ability.dt ?? (ability.teste === 'onirico' ? 13 : 10)} onChange={event => update(ability.id, { dt: Number(event.target.value) || 10 })} /></label>
+              {ability.teste !== 'reflexo' && <label>Mod. <input type="number" value={ability.modificador ?? 0} onChange={event => update(ability.id, { modificador: Number(event.target.value) || 0 })} /></label>}
               <label>{ability.teste === 'reflexo' ? 'Atributo do alvo' : 'Atributo'}
                 <select value={ability.atributo || 'corpo'} onChange={event => update(ability.id, { atributo: event.target.value as HabilidadeAtor['atributo'] })}>
                   <option value="corpo">Corpo</option><option value="mente">Mente</option><option value="vontade">Vontade</option><option value="vinculo">Vínculo</option>
@@ -251,6 +257,12 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
       return;
     }
 
+    if (ability.teste === 'onirico') {
+      const result = rollActorOnirico(ability.dt ?? 13, ability.modificador ?? 0);
+      setRoll({actor:actorName,ability:ability.nome,kind:'onirico',dt:result.dt,
+        realidade:result.realidade,sonhar:result.sonhar,modifier:result.modifier,outcome:result.outcome,ruptura:result.ruptura});
+      return;
+    }
     const die = Math.floor(Math.random() * 20) + 1;
     const modifier = ability.modificador || 0;
     setRoll({ actor: actorName, ability: ability.nome, kind: 'mundano', die, modifier, total: die + modifier, dt, atributo: ability.atributo });
@@ -316,7 +328,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
                 {(['passiva','acao','reacao'] as CategoriaHabilidadeAtor[]).map(category => abilities.filter(a => a.categoria === category).map(ability => (
                   <div key={ability.id} className="actor-card__ability">
                     <div className="actor-card__ability-title"><span>{category === 'acao' ? 'Ação' : category === 'reacao' ? 'Reação' : 'Passiva'}</span><strong>{ability.nome}</strong>
-                      {ability.teste && category !== 'passiva' && <button onClick={() => rollAbility(name, ability, difficulty)}><Dice5 size={13} /> {ability.teste === 'reflexo' ? 'Solicitar Reflexo' : 'Rolar Mundano'}</button>}
+                      {ability.teste && category !== 'passiva' && <button onClick={() => rollAbility(name, ability, difficulty)}><Dice5 size={13} /> {ability.teste === 'reflexo' ? 'Solicitar Reflexo' : ability.teste === 'onirico' ? 'Rolar Onírico' : 'Rolar Mundano'}</button>}
                     </div>
                     <p>{ability.descricao}</p>
                   </div>
@@ -424,7 +436,20 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
               <label>Deslocamento<input value={(form as NPC).deslocamento || 'Próximo'} onChange={event => setForm({ ...form, deslocamento: event.target.value } as NPC)} /></label>
               <label>Atitude<select value={(form as NPC).atitude} onChange={event => setForm({ ...form, atitude: event.target.value as NPC['atitude'] } as NPC)}><option value="aliado">Aliado</option><option value="neutro">Neutro</option><option value="hostil">Hostil</option><option value="desconhecido">Desconhecido</option></select></label>
             </> : <>
-              <label>Tipo<select value={(form as Adversario).tipo} onChange={event => setForm({ ...form, tipo: event.target.value as Adversario['tipo'] } as Adversario)}><option value="humano">Humano</option><option value="pesadelo">Pesadelo</option><option value="aberracao">Aberração</option><option value="sombra">Sombra</option></select></label>
+              <label>Natureza<select value={(form as Adversario).tipo} onChange={event => setForm({ ...form, tipo: event.target.value as Adversario['tipo'] } as Adversario)}>
+                <optgroup label="Humanos">
+                  <option value="humano_dcr">Humano DCR</option><option value="humano_custodio">Humano Custódio</option><option value="humano_dissonante">Humano Dissonante</option>
+                </optgroup>
+                <optgroup label="Criaturas Oníricas">
+                  <option value="criatura_emocional">Criatura Onírica Emocional</option><option value="criatura_manifesta">Criatura Onírica Manifesta</option><option value="criatura_primordial">Criatura Onírica Primordial</option>
+                </optgroup>
+                <optgroup label="Pesadelos">
+                  <option value="pesadelo_emocional">Pesadelo Emocional</option><option value="pesadelo_manifesto">Pesadelo Manifesto</option><option value="pesadelo_primordial">Pesadelo Primordial</option>
+                </optgroup>
+                <optgroup label="Registros antigos">
+                  <option value="humano">Humano (legado)</option><option value="pesadelo">Pesadelo (legado)</option><option value="aberracao">Aberração (legado)</option><option value="sombra">Sombra (legado)</option>
+                </optgroup>
+              </select></label>
               <label>NA<input type="number" min={1} max={5} value={(form as Adversario).nivel} onChange={event => setForm({ ...form, nivel: Number(event.target.value) } as Adversario)} /></label>
               <label>PV atual<input type="number" min={0} value={(form as Adversario).vida} onChange={event => setForm({ ...form, vida: Number(event.target.value) } as Adversario)} /></label>
               <label>PV máximo<input type="number" min={1} value={(form as Adversario).vidaMaxima} onChange={event => setForm({ ...form, vidaMaxima: Number(event.target.value) } as Adversario)} /></label>
@@ -448,13 +473,19 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
 
       {roll && <div className="actor-roll__backdrop" onMouseDown={() => setRoll(null)}>
         <div className="actor-roll" onMouseDown={event => event.stopPropagation()}>
-          <p className="ro-eyebrow">{roll.kind === 'reflexo' ? 'Teste Reflexo' : 'Teste Mundano'}</p>
+          <p className="ro-eyebrow">{roll.kind === 'reflexo' ? 'Teste Reflexo' : roll.kind === 'onirico' ? 'Teste Onírico' : 'Teste Mundano'}</p>
           <h3>{roll.actor} · {roll.ability}</h3>
           {roll.kind === 'reflexo' ? (
             <div className="actor-roll__request">
               <strong>O alvo realiza o teste.</strong>
               <p>Role 1d20 + {roll.atributo === 'vinculo' ? 'Vínculo' : roll.atributo === 'vontade' ? 'Vontade' : roll.atributo === 'mente' ? 'Mente' : 'Corpo'} contra DT {roll.dt}.</p>
               <small>Teste Reflexo é um Teste Mundano de reação. O modificador pertence ao alvo, não ao NPC ou Adversário.</small>
+            </div>
+          ) : roll.kind === 'onirico' ? (
+            <div className="actor-roll__request">
+              <strong>Realidade: {roll.realidade} + {roll.modifier ?? 0} · Sonhar: {roll.sonhar} + {roll.modifier ?? 0}</strong>
+              <p>DT {roll.dt} · {roll.outcome} · Ruptura {roll.ruptura !== undefined && roll.ruptura >= 0 ? '+' : ''}{roll.ruptura}</p>
+              <small>Dados independentes: não se comparam entre si.</small>
             </div>
           ) : (
             <>
