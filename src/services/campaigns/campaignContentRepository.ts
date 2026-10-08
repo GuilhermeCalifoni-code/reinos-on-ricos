@@ -319,6 +319,24 @@ export const campaignContentRepository = {
     return mapLocation(data);
   },
 
+  async atualizarLocal(id: string, patch: Partial<Local>) {
+    const values: Record<string, unknown> = {};
+    if (patch.nome !== undefined) values.nome = patch.nome;
+    if (patch.tipo !== undefined) values.tipo = patch.tipo;
+    if (patch.descricao !== undefined) values.descricao = patch.descricao;
+    if (patch.anomaliaDetectada !== undefined) values.anomalia_detectada = patch.anomaliaDetectada || null;
+    if (patch.imagemUrl !== undefined) values.imagem_url = patch.imagemUrl || null;
+    if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
+    const { data, error } = await client().from('campaign_locations').update(values).eq('id', id).select().single();
+    if (error) throw error;
+    return mapLocation(data);
+  },
+
+  async removerLocal(id: string) {
+    const { error } = await client().from('campaign_locations').delete().eq('id', id);
+    if (error) throw error;
+  },
+
   async adicionarPista(novo: Omit<Pista, 'id'>) {
     const { data, error } = await client().from('campaign_clues').insert({
       campaign_id: novo.campanhaId, titulo: novo.titulo, tipo: novo.tipo,
