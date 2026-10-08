@@ -660,20 +660,20 @@ export default function App() {
             onAtualizarPersonagem={salvarPersonagemPersistente}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
-            contadores={contadores}
-            onAdicionarContador={adicionarContador}
-            onAtualizarContador={atualizarContador}
-            onRemoverContador={removerContador}
-            onDuplicarContador={duplicarContador}
+            contadores={[]}
+            onAdicionarContador={() => undefined}
+            onAtualizarContador={() => undefined}
+            onRemoverContador={() => undefined}
+            onDuplicarContador={() => undefined}
             mapas={mapasAtuais}
-            onAdicionarMapa={usandoRemoto ? ((item) => { void conteudoRemoto.adicionarMapa(item); }) : adicionarMapa}
-            onAtualizarMapa={usandoRemoto ? ((id, patch) => { void conteudoRemoto.atualizarMapa(id, patch); }) : atualizarMapa}
-            onRemoverMapa={usandoRemoto ? ((id) => { void conteudoRemoto.removerMapa(id); }) : removerMapa}
-            onAtualizarSessao={usandoRemoto ? conteudoRemoto.atualizarSessao : ((id, patch) => atualizarSessao(id, patch))}
-            tokensMapa={tokensMapa}
-            onAdicionarTokenMapa={adicionarTokenMapa}
-            onAtualizarTokenMapa={atualizarTokenMapa}
-            onRemoverTokenMapa={removerTokenMapa}
+            onAdicionarMapa={(item) => { void conteudoRemoto.adicionarMapa(item); }}
+            onAtualizarMapa={(id, patch) => { void conteudoRemoto.atualizarMapa(id, patch); }}
+            onRemoverMapa={(id) => { void conteudoRemoto.removerMapa(id); }}
+            onAtualizarSessao={conteudoRemoto.atualizarSessao}
+            tokensMapa={[]}
+            onAdicionarTokenMapa={() => undefined}
+            onAtualizarTokenMapa={() => undefined}
+            onRemoverTokenMapa={() => undefined}
           />
         ) : null;
 
@@ -703,24 +703,9 @@ export default function App() {
             onAtualizarPreferencias={handleAtualizarPreferencias}
             onExportarDados={handleExportarDados}
             onSairTodos={handleSairTodos}
-            localDataSummary={{
-              campanhas: campanhasLocais.length,
-              personagens: personagensLocais.length,
-              itens:
-                sessoes.length +
-                npcs.length +
-                adversarios.length +
-                locais.length +
-                pistas.length +
-                loreEntries.length +
-                anotacoes.length +
-                cenas.length +
-                handouts.length +
-                contadores.length +
-                mapas.length +
-                tokensMapa.length
-            }}
-            onMigrarDadosLocais={usandoRemoto ? handleMigrarDadosLocais : undefined}
+            localDataSummary={legacySummary}
+            onMigrarDadosLocais={handleMigrarDadosLocais}
+            onExportarLegado={handleExportarLegado}
           />
         );
 
