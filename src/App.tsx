@@ -645,6 +645,8 @@ export default function App() {
             personagens={personagensCampanha}
             npcs={npcsAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             adversarios={adversariosAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
+            onAtualizarNPC={conteudoRemoto.atualizarNPC}
+            onAtualizarAdversario={conteudoRemoto.atualizarAdversario}
             role={papelDaCampanha}
             personagemJogadorId={personagemJogadorId}
             userId={session.authUserId}
