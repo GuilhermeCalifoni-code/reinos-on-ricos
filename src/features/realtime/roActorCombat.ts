@@ -9,13 +9,13 @@ export type ActorRoll =
 const randomDie = (sides: number, rand: () => number) => Math.floor(Math.min(0.999999999,Math.max(0,rand())) * sides) + 1;
 const score = (value: number) => Number.isFinite(value) ? Math.trunc(value) : 0;
 
-export function rollActorMundano(dt = 12, modifier = 0, rand = Math.random): ActorRoll {
+export function rollActorMundano(dt = 12, modifier = 0, rand = Math.random): Extract<ActorRoll,{kind:'mundano'}> {
   const die = randomDie(20,rand);
   const total = die + score(modifier);
   return { kind:'mundano',die,modifier:score(modifier),total,dt,success:die===20 || total>=dt,critical:die===20 };
 }
 
-export function rollActorOnirico(dt = 13, modifier = 0, rand = Math.random): ActorRoll {
+export function rollActorOnirico(dt = 13, modifier = 0, rand = Math.random): Extract<ActorRoll,{kind:'onirico'}> {
   const realidade = randomDie(20,rand);
   const sonhar = randomDie(20,rand);
   const r = realidade + score(modifier) >= dt;
@@ -25,7 +25,7 @@ export function rollActorOnirico(dt = 13, modifier = 0, rand = Math.random): Act
   return {kind:'onirico',realidade,sonhar,modifier:score(modifier),dt,outcome,ruptura};
 }
 
-export function rollActorDamage(faces: number, modifier: number, onirico: boolean, rand = Math.random): ActorRoll {
+export function rollActorDamage(faces: number, modifier: number, onirico: boolean, rand = Math.random): Extract<ActorRoll,{kind:'dano'}> {
   if (![4,6,8,10,12,20].includes(faces)) throw new Error('Dado de dano inválido');
   const die = randomDie(faces,rand);
   return {kind:'dano',faces,die,modifier:score(modifier),total:die+score(modifier),onirico};
@@ -34,7 +34,7 @@ export function rollActorDamage(faces: number, modifier: number, onirico: boolea
 export const clampActorHp = (current: number, maximum: number, delta: number) =>
   Math.max(0,Math.min(Math.max(0,score(maximum)),score(current)+score(delta)));
 
-export function abilityRoll(ability: HabilidadeAtor, rand = Math.random): ActorRoll | null {
+export function abilityRoll(ability: HabilidadeAtor, rand = Math.random): Exclude<ActorRoll,{kind:'dano'}> | null {
   if (ability.categoria==='passiva' || !ability.teste || ability.teste==='reflexo') return null;
   if (ability.teste==='onirico') return rollActorOnirico(ability.dt ?? 13,ability.modificador ?? 0,rand);
   return rollActorMundano(ability.dt ?? 12,ability.modificador ?? 0,rand);
