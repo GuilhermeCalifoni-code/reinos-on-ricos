@@ -38,6 +38,21 @@ export interface CommunityMembership {
   cancelAtPeriodEnd: boolean;
 }
 
+export interface CommunityPost {
+  id: string;
+  author_id: string;
+  title: string;
+  body: string;
+  status: 'pending' | 'approved' | 'rejected';
+  review_note: string;
+  created_at: string;
+}
+export interface CommunityAccessStatus {
+  status: 'allowed' | 'blocked';
+  effective_rank: number;
+  manual_plan_slug: string | null;
+}
+
 const requireClient = () => {
   if (!supabase) throw new Error('Supabase não está configurado neste ambiente.');
   return supabase;
@@ -65,6 +80,28 @@ const mapPlan = (row: any): CommunityPlan => ({
 });
 
 export const communityService = {
+  async meuAcesso(): Promise<CommunityAccessStatus> {
+    const {data,error}=await requireClient().rpc('community_my_access');
+    if(error)throw error;
+    return (data || {status:'allowed',effective_rank:0,manual_plan_slug:null}) as CommunityAccessStatus;
+  },
+  async listarPublicacoes(): Promise<CommunityPost[]> {
+    const {data,error}=await requireClient().from('community_posts')
+      .select('id,author_id,title,body,status,review_note,created_at')
+      .order('created_at',{ascending:false}).limit(60);
+    if(error)throw error;
+    return (data||[]) as CommunityPost[];
+  },
+  async enviarPublicacao(title:string,body:string): Promise<void> {
+    const client=requireClient();
+    const {data:{user},error:userError}=await client.auth.getUser();
+    if(userError)throw userError;
+    if(!user)throw new Error('Faça login antes de publicar.');
+    const {error}=await client.from('community_posts').insert({
+      author_id:user.id,title:title.trim(),body:body.trim(),status:'pending'
+    });
+    if(error)throw error;
+  },
   async listarPlanos(): Promise<CommunityPlan[]> {
     const { data, error } = await requireClient()
       .from('community_plans')
