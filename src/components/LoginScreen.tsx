@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Personagem } from '../types/character';
 import { UserSession } from '../types/auth';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
 import { authService } from '../services/auth/authService';
 
 interface LoginScreenProps {
-  personagens: Personagem[];
   onLogin: (session: UserSession) => void;
-  onCriarNovoPersonagem: (nome?: string) => Personagem;
 }
 
-type AuthMode = 'entrar' | 'cadastro' | 'local' | 'nova_senha';
+type AuthMode = 'entrar' | 'cadastro' | 'nova_senha';
 type OAuthProvider = 'google' | 'discord';
 
 const GoogleIcon = () => (
@@ -28,16 +25,13 @@ const DiscordIcon = () => (
   </svg>
 );
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({
-  personagens, onLogin, onCriarNovoPersonagem
-}) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const remoto = isSupabaseConfigured();
   const [modo, setModo] = useState<AuthMode>('entrar');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
   const [nome, setNome] = useState('');
-  const [codigo, setCodigo] = useState('ONIRICO-01');
   const [erro, setErro] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -81,7 +75,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setMensagem('');
 
     if (!remoto) {
-      setErro('O acesso online ainda não está configurado neste deploy. Você pode usar o Modo local agora.');
+      setErro('O acesso online está indisponível. A plataforma exige conexão com o Supabase.');
       return;
     }
 
@@ -100,7 +94,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     setMensagem('');
 
     if (!remoto) {
-      setErro('O acesso online ainda não está configurado neste deploy. Você pode usar o Modo local agora.');
+      setErro('O acesso online está indisponível. A plataforma exige conexão com o Supabase.');
       return;
     }
 
@@ -152,26 +146,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
   };
 
-  const entrarLocal = (event: React.FormEvent) => {
-    event.preventDefault();
-    const personagem = personagens[0] || onCriarNovoPersonagem(nome || 'Novo Desvelado');
-    onLogin({
-      id: `local-${Date.now()}`,
-      role: 'mestre',
-      nome: nome || 'Narrador Onírico',
-      mesaCodigo: codigo.toUpperCase(),
-      personagemVinculadoId: personagem.id,
-      modoConexao: 'local'
-    });
-  };
-
   const titulo = modo === 'cadastro'
     ? 'Crie seu acesso.'
     : modo === 'nova_senha'
       ? 'Definir nova senha'
-      : modo === 'local'
-        ? 'Modo local'
-        : 'Bem-vindo de volta.';
+      : 'Bem-vindo de volta.';
 
   const renderSocialButtons = (contexto: 'login' | 'cadastro') => (
     <div className={`login-onirico__social-grid login-onirico__social-grid--${contexto}`}>
@@ -244,7 +223,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <div className="login-onirico__switch" role="tablist" aria-label="Forma de acesso">
                 <button type="button" onClick={() => trocarModo('entrar')} className={modo === 'entrar' ? 'is-active' : ''}>Entrar</button>
                 <button type="button" onClick={() => trocarModo('cadastro')} className={modo === 'cadastro' ? 'is-active' : ''}>Criar conta</button>
-                <button type="button" onClick={() => trocarModo('local')} className={modo === 'local' ? 'is-active' : ''}>Modo local</button>
               </div>
             )}
 
@@ -252,7 +230,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <p className="login-onirico__panel-copy">
               {modo === 'entrar' && 'Acesse sua conta para continuar na Vigília.'}
               {modo === 'cadastro' && 'Escolha como quer entrar. Sua conta será criada pelo Google ou Discord, sem uma nova senha.'}
-              {modo === 'local' && 'Use o modo local para jogo no mesmo dispositivo, sem sincronização online.'}
               {modo === 'nova_senha' && 'Escolha uma nova senha para recuperar seu acesso.'}
             </p>
 
@@ -403,38 +380,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               </>
             )}
 
-            {modo === 'local' && (
-              <>
-                <form onSubmit={entrarLocal} className="login-onirico__form">
-                  <label>
-                    <span>Nome</span>
-                    <div className="login-onirico__field-control">
-                      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c.8-4.2 3.1-6 7-6s6.2 1.8 7 6"/></svg>
-                      <input autoComplete="name" value={nome} onChange={event => setNome(event.target.value)} placeholder="Como devemos chamar você?" />
-                    </div>
-                  </label>
 
-                  <label>
-                    <span>Código da mesa local</span>
-                    <div className="login-onirico__field-control">
-                      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 5h14v14H5zM9 9h6v6H9z" /></svg>
-                      <input value={codigo} onChange={event => setCodigo(event.target.value)} placeholder="ONIRICO-01" />
-                    </div>
-                  </label>
-
-                  <button className="login-onirico__submit">
-                    <span className="login-onirico__submit-star" aria-hidden="true">✦</span>
-                    <strong>Acessar modo local</strong>
-                    <span aria-hidden="true">→</span>
-                  </button>
-                </form>
-
-                <div className="login-onirico__offline-note">
-                  <strong>Modo local</strong>
-                  <span>Os dados ficam neste dispositivo e não são sincronizados com outras pessoas.</span>
-                </div>
-              </>
-            )}
           </div>
         </section>
       </main>
