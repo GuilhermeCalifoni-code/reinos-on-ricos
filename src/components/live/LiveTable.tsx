@@ -30,7 +30,7 @@ interface LiveTableProps {
 }
 
 export const LiveTable: React.FC<LiveTableProps> = (props) => {
-  const { campanha, personagens, npcs, adversarios, role, onAtualizarNPC, onAtualizarAdversario, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
+  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
   const mestre = role === 'mestre';
   const personagensVisiveis = useMemo(() => mestre ? personagens : personagens.filter(p => p.id === personagemJogadorId), [mestre, personagemJogadorId, personagens]);
   const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || personagens[0]?.id || '');
@@ -196,7 +196,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const atualizarMapa = (id: string, patch: Partial<MapaNarrativo>) => { if (compartilhando) void realtime.patchMap(id, patch).catch(() => undefined); };
   const removerMapa = (id: string) => { const mapa = mapasAtuais.find(item => item.id === id); if (compartilhando) void realtime.removeMap(id).then(() => { if (mapaAtualId === id) salvarEstado({ activeMapId: undefined }); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); }).catch(() => undefined); };
   const adicionarToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addToken(item).catch(() => undefined); };
-  const atualizarToken = (id: string, patch: Partial<TokenMapa>) => { if (compartilhando) void realtime.patchToken(id, patch).catch(() => undefined); };
+  const atualizarToken = (id: string, patch: Partial<TokenMapa>): Promise<unknown> => compartilhando ? realtime.patchToken(id, patch) : Promise.reject(new Error('Mesa não sincronizada.'));
   const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(() => undefined); };
   const statusTexto = realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
@@ -422,14 +422,14 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               personagens={personagensVisiveis}
               npcs={npcs}
               adversarios={adversarios}
+              tokens={tokensAtuais.filter(t=>t.mapaId===mapaAtualId)}
+              onTokenHpChange={(tokenId,hp,hpMax)=>atualizarToken(tokenId,{hpCurrent:hp,hpMax})}
               selecionadoId={selecionado?.id || ''}
               mestre={mestre}
               onSelecionar={setSelecionadoId}
               onAbrirFicha={onAbrirFicha}
               onAjustar={ajustar}
               onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')}
-              onUpdateNpc={(id,hp) => onAtualizarNPC(id,{vida:hp})}
-              onUpdateAdversary={(id,hp) => onAtualizarAdversario(id,{vida:hp})}
               onActorRoll={async (content,details) => {
                 if (!mestre) throw new Error('Somente o Mestre pode rolar por NPCs e adversários.');
                 await registro.registrar({

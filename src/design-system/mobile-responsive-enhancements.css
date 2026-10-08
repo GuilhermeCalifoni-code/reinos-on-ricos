@@ -558,3 +558,154 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     min-height: 2.6rem;
   }
 }
+
+/* Cópias independentes de NPCs/ameaças */
+.live-table--v5 .live-vtt__actor-instance {
+  margin: .45rem .6rem .65rem;
+  padding: .6rem;
+  border: 1px solid var(--vtt-line);
+  border-left: 2px solid var(--vtt-accent);
+  border-radius: 5px;
+  background: rgba(0,0,0,.15);
+  display: grid;
+  gap: .35rem;
+}
+.live-table--v5 .live-vtt__actor-instance > strong { color: var(--vtt-text); font-size: .8rem; }
+.live-table--v5 .live-vtt__actor-instance-location,
+.live-table--v5 .live-vtt__actor-instance-empty {
+  color: var(--vtt-muted);
+  font-size: .7rem;
+  line-height: 1.4;
+}
+.live-table--v5 .live-vtt__actor-instance-empty { padding: .6rem; }
+.live-table--v5 .live-vtt__actor-instance .live-vtt__combat { padding: .4rem 0; }
+
+/* Marcação de áreas circulares: desenhadas em unidades reais da grade, dentro do canvas. */
+.live-table--v5 .map-stage__viewport.is-placing-area { cursor: crosshair; }
+.live-table--v5 .map-stage__viewport.is-placing-area:active { cursor: crosshair; }
+.live-table--v5 .map-stage__area-circle {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: var(--area-size);
+  height: var(--area-size);
+  transform: translate(-50%,-50%);
+  border: 2px dashed var(--token-color);
+  border-radius: 50%;
+  background: color-mix(in srgb,var(--token-color) 16%,transparent);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.6), inset 0 0 2rem rgba(0,0,0,.06);
+  pointer-events: none;
+}
+.live-table--v5 .map-stage__area-circle em {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: .18rem .4rem;
+  border-radius: 4px;
+  background: rgba(5,8,13,.85);
+  color: #fff;
+  font: normal 10px/1.2 ui-monospace,monospace;
+  white-space: nowrap;
+}
+.live-table--v5 .map-stage__area-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  flex: 0 0 auto;
+}
+.live-table--v5 .map-stage__area-tools label {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: .7rem;
+  color: var(--vtt-soft);
+}
+.live-table--v5 .map-stage__area-tools input[type="number"] {
+  width: 3.6rem;
+  min-height: 2rem;
+  padding: .2rem;
+  border: 1px solid var(--vtt-line);
+  border-radius: 4px;
+  background: var(--vtt-panel);
+  color: var(--vtt-text);
+}
+.live-table--v5 .map-stage__area-tools input[type="color"] {
+  width: 2rem;
+  height: 2rem;
+  padding: .1rem;
+  border: 1px solid var(--vtt-line);
+  border-radius: 4px;
+  background: transparent;
+}
+.live-table--v5 .map-stage__area-tools button.is-active {
+  border-color: var(--vtt-accent);
+  background: rgba(194,148,85,.25);
+}
+.live-table--v5 .map-stage__area-hint {
+  position: absolute;
+  z-index: 30;
+  top: 5rem;
+  left: 4.6rem;
+  max-width: min(360px,calc(100% - 5.2rem));
+  border: 1px solid var(--vtt-accent);
+  border-radius: 5px;
+  padding: .55rem .7rem;
+  background: rgba(8,12,18,.94);
+  color: var(--vtt-text);
+  font-size: .72rem;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.live-table--v5 .map-stage__token-health {
+  display: grid;
+  gap: .4rem;
+  padding: .7rem;
+  border-top: 1px solid var(--vtt-line);
+  color: var(--vtt-text);
+  font-size: .72rem;
+}
+.live-table--v5 .map-stage__token-health > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+.live-table--v5 .map-stage__token-health label {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  min-width: 0;
+}
+.live-table--v5 .map-stage__token-health input[type="number"] { width: 4rem; }
+.live-table--v5 .map-stage__token-health input[type="text"] { min-width: 0; flex: 1; }
+.live-table--v5 .map-stage__token-health input,
+.live-table--v5 .map-stage__token-health button {
+  min-height: 2rem;
+  padding: .25rem;
+  background: var(--vtt-input);
+  border: 1px solid var(--vtt-line);
+  border-radius: 3px;
+  color: var(--vtt-text);
+}
+.live-table--v5 .map-stage__token-health small { color: var(--vtt-muted);line-height:1.5; }
+.live-table--v5 .map-stage__token-error { color: #f19b9b;font-size:.68rem;padding:.35rem; }
+.live-table--v5 .map-stage__batch-qty {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .75rem;
+  color: var(--vtt-soft);
+}
+.live-table--v5 .map-stage__batch-qty input {
+  width: 4rem;
+  background: var(--vtt-input);
+  border: 1px solid var(--vtt-line);
+  color: var(--vtt-text);
+}
+@media(max-width:700px) {
+  .live-table--v5 .map-stage__area-hint { left: .7rem; top: 7.25rem; }
+  .live-table--v5 .map-stage__token-inspector { max-height: 48dvh; overflow-y:auto; }
+  .live-table--v5 .map-stage__area-tools label { font-size: .65rem; }
+}

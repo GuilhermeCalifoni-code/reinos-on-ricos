@@ -113,6 +113,9 @@ export interface TokenMapa {
   adversaryId?: string;
   tokenSize?: number;
   rangeCells?: number;
+  hpCurrent?: number;
+  hpMax?: number;
+  areaRadiusCells?: number;
   cor: string;
   x: number;
   y: number;

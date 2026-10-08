@@ -5,6 +5,7 @@ import { Personagem } from '../../types/character';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
 import { AssetImage } from '../system/AssetImage';
 import { calculatePinchCamera, centerBetween, distanceBetween, Point2D } from '../../features/realtime/mapTouchGeometry';
+import { addTokenHp, nextInstanceName, resolvedTokenHp } from '../../features/realtime/mapTokenInstances';
 
 interface MapStageProps {
   campanhaId: string;
@@ -22,7 +23,7 @@ interface MapStageProps {
   onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void;
   onRemoverMapa: (id: string) => void;
   onAdicionarToken: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
-  onAtualizarToken: (id: string, parcial: Partial<TokenMapa>) => void;
+  onAtualizarToken: (id: string, parcial: Partial<TokenMapa>) => Promise<unknown> | void;
   onRemoverToken: (id: string) => void;
 }
 
@@ -88,9 +89,23 @@ export const MapStage: React.FC<MapStageProps> = ({
   const [novoToken, setNovoToken] = useState('');
   const [tipoToken, setTipoToken] = useState<TipoTokenMapa>('marcador');
   const [tokenSource, setTokenSource] = useState('manual');
+  const [quantidade, setQuantidade] = useState(1);
+  const [hpAmount, setHpAmount] = useState(1);
+  const [marcandoArea, setMarcandoArea] = useState(false);
+  const [areaRadius, setAreaRadius] = useState(3);
+  const [areaColor, setAreaColor] = useState('#dc884c');
+  const [tokenError, setTokenError] = useState('');
+  const pendingNames = useRef(new Set<string>());
 
   const gridSize = clamp(mapaAtual?.gridSize ?? 64, 24, 160);
   const tokenSelecionado = tokensAtuais.find(token => token.id === selecionadoId) || null;
+  const npcDoToken = tokenSelecionado?.npcId ? npcs.find(npc => npc.id === tokenSelecionado.npcId) : undefined;
+  const adversarioDoToken = tokenSelecionado?.adversaryId ? adversarios.find(a => a.id === tokenSelecionado.adversaryId) : undefined;
+  const tokenLife = tokenSelecionado
+    ? resolvedTokenHp(tokenSelecionado,
+        npcDoToken?.vida ?? adversarioDoToken?.vida,
+        npcDoToken?.vidaMaxima ?? adversarioDoToken?.vidaMaxima)
+    : null;
 
   const podeControlarToken = (token: TokenMapa) =>
     mestre || Boolean(personagemJogadorId && token.characterId === personagemJogadorId);
@@ -127,24 +142,29 @@ export const MapStage: React.FC<MapStageProps> = ({
       if (!actor) return;
 
       const tipo = kind as TipoTokenMapa;
-      onAdicionarToken({
-        campanhaId,
-        mapaId: mapaAtual.id,
-        tipo,
-        nome: actor.nome,
-        imagemUrl: actor.imagemUrl,
-        characterId: kind === 'personagem' ? id : undefined,
-        npcId: kind === 'npc' ? id : undefined,
-        adversaryId: kind === 'adversario' ? id : undefined,
-        tokenSize: 1,
-        rangeCells: 0,
-        cor: cores[tipo],
-        x: 50,
-        y: 50,
-        oculto: false
-      });
+      const prevNames = tokensAtuais.filter(t => t.tipo === tipo
+        && (tipo === 'npc' ? t.npcId === id : tipo === 'adversario' ? t.adversaryId === id : t.characterId === id))
+        .map(t => t.nome);
+      const usedNames = [...prevNames, ...pendingNames.current];
+      for (let i = 0; i < quantidade; i++) {
+        const name = tipo === 'personagem' ? actor.nome : nextInstanceName(actor.nome, usedNames);
+        usedNames.push(name);
+        pendingNames.current.add(name);
+        onAdicionarToken({
+          campanhaId, mapaId: mapaAtual.id, tipo, nome: name, imagemUrl: actor.imagemUrl,
+          characterId: kind === 'personagem' ? id : undefined,
+          npcId: kind === 'npc' ? id : undefined,
+          adversaryId: kind === 'adversario' ? id : undefined,
+          hpCurrent: npc?.vida ?? adversario?.vida,
+          hpMax: npc ? Math.max(1,npc.vidaMaxima ?? npc.vida ?? 1) : adversario?.vidaMaxima,
+          tokenSize: 1, rangeCells: 0, areaRadiusCells: 0,
+          cor: cores[tipo], x: clamp(45 + i * 4, 0, 100), y: clamp(45 + i * 4, 0, 100),
+          oculto: false
+        });
+      }
       onActorUsed?.(kind as 'personagem' | 'npc' | 'adversario', id);
       setTokenSource('manual');
+      setQuantidade(1);
       return;
     }
 
@@ -156,6 +176,7 @@ export const MapStage: React.FC<MapStageProps> = ({
       nome: novoToken.trim(),
       tokenSize: 1,
       rangeCells: 0,
+      areaRadiusCells: 0,
       cor: cores[tipoToken],
       x: 50,
       y: 50,
@@ -281,13 +302,17 @@ export const MapStage: React.FC<MapStageProps> = ({
         campanhaId,
         mapaId: mapaAtual.id,
         tipo: payload.kind,
-        nome: payload.name,
+        nome: payload.kind === 'personagem' ? payload.name : nextInstanceName(payload.name,
+          [...tokensAtuais.filter(t => t.tipo === payload.kind && (t.npcId === payload.id || t.adversaryId === payload.id)).map(t=>t.nome), ...pendingNames.current]),
         imagemUrl: payload.imageUrl || undefined,
         characterId: payload.kind === 'personagem' ? payload.id : undefined,
         npcId: payload.kind === 'npc' ? payload.id : undefined,
         adversaryId: payload.kind === 'adversario' ? payload.id : undefined,
         tokenSize: 1,
         rangeCells: 0,
+        hpCurrent: payload.kind === 'npc' ? npcs.find(n=>n.id===payload.id)?.vida : payload.kind === 'adversario' ? adversarios.find(a=>a.id===payload.id)?.vida : undefined,
+        hpMax: payload.kind === 'npc' ? Math.max(1,npcs.find(n=>n.id===payload.id)?.vidaMaxima ?? npcs.find(n=>n.id===payload.id)?.vida ?? 1) : payload.kind === 'adversario' ? adversarios.find(a=>a.id===payload.id)?.vidaMaxima : undefined,
+        areaRadiusCells: 0,
         cor: cores[payload.kind],
         x: ponto.x,
         y: ponto.y,
@@ -349,11 +374,41 @@ export const MapStage: React.FC<MapStageProps> = ({
 
   const ajustarToken = (patch: Partial<TokenMapa>) => {
     if (!tokenSelecionado || !podeControlarToken(tokenSelecionado)) return;
-    onAtualizarToken(tokenSelecionado.id, patch);
+    setTokenError('');
+    void Promise.resolve(onAtualizarToken(tokenSelecionado.id, patch))
+      .catch(err => setTokenError(err instanceof Error ? err.message : 'Não foi possível salvar a alteração.'));
+  };
+
+  const mudarPvDaCopia = (delta: number) => {
+    if (!mestre || !tokenSelecionado || !tokenLife) return;
+    ajustarToken({hpCurrent:addTokenHp(tokenLife.current,tokenLife.max,delta),hpMax:tokenLife.max});
+  };
+
+  const duplicarToken = () => {
+    if (!mestre || !tokenSelecionado) return;
+    const {id: _id, criadoEm: _created, atualizadoEm: _updated, criadoPor: _author, ...draft} = tokenSelecionado;
+    const used = tokensAtuais.filter(t => t.tipo === draft.tipo
+      && (draft.npcId ? t.npcId === draft.npcId : draft.adversaryId ? t.adversaryId === draft.adversaryId : t.nome.startsWith(draft.nome)))
+      .map(t=>t.nome);
+    const name = nextInstanceName(draft.nome,[...used,...pendingNames.current]);
+    pendingNames.current.add(name);
+    onAdicionarToken({...draft,nome:name,
+      hpCurrent: draft.tipo === 'npc' || draft.tipo === 'adversario' ? tokenLife?.current : undefined,
+      hpMax: draft.tipo === 'npc' || draft.tipo === 'adversario' ? tokenLife?.max : undefined,
+      x:clamp(draft.x+4,0,100),y:clamp(draft.y+4,0,100)});
+  };
+
+  const criarCirculoNoMapa = (x:number,y:number) => {
+    if (!mestre || !mapaAtual) return;
+    const name = `Área de efeito ${tokensAtuais.filter(t => (t.areaRadiusCells ?? 0)>0).length+1}`;
+    onAdicionarToken({campanhaId,mapaId:mapaAtual.id,tipo:'marcador',nome:name,
+      tokenSize:.5,rangeCells:0,areaRadiusCells:areaRadius,cor:areaColor,x,y,oculto:false});
   };
 
   useEffect(() => {
     setSelecionadoId(null);
+    setMarcandoArea(false);
+    pendingNames.current.clear();
     centralizar();
   }, [mapaAtual?.id]);
 
@@ -396,6 +451,13 @@ export const MapStage: React.FC<MapStageProps> = ({
             </>
           )}
 
+          {mapaAtual && <div className="map-stage__area-tools">
+            <label title="Raio do círculo em células">Raio <input aria-label="Raio da área em casas" type="number" min={1} max={30} value={areaRadius}
+              onChange={event=>setAreaRadius(clamp(Math.round(Number(event.target.value)||1),1,30))}/></label>
+            <input type="color" aria-label="Cor do círculo de efeito" value={areaColor} onChange={event=>setAreaColor(event.target.value)}/>
+            <button type="button" className={marcandoArea?'is-active':''} aria-pressed={marcandoArea}
+              onClick={()=>setMarcandoArea(v=>!v)}>{marcandoArea?'Concluir áreas':'Marcar círculo'}</button>
+          </div>}
           <button type="button" onClick={centralizar}><Crosshair size={13} /> Centralizar</button>
           <button type="button" onClick={() => viewport.current?.requestFullscreen?.()}><Maximize2 size={13} /></button>
         </div>
@@ -407,9 +469,12 @@ export const MapStage: React.FC<MapStageProps> = ({
         </p>
       )}
 
+      {marcandoArea && mestre && <div className="map-stage__area-hint" role="status">
+        Clique ou toque no mapa para marcar círculos de área de efeito. Use “Concluir áreas” para voltar a mover tokens.
+      </div>}
       <div
         ref={viewport}
-        className="map-stage__viewport"
+        className={`map-stage__viewport ${marcandoArea ? 'is-placing-area' : ''}`}
         onDragOver={event => {
           if (mestre && mapaAtual) {
             event.preventDefault();
@@ -425,6 +490,12 @@ export const MapStage: React.FC<MapStageProps> = ({
         }}
         onPointerDown={event => {
           if (!(event.target as HTMLElement).closest('.map-stage__token')) {
+            if (marcandoArea && mestre && mapaAtual) {
+              const pos = pontoNoCanvas(event.clientX,event.clientY);
+              if (pos) criarCirculoNoMapa(pos.x,pos.y);
+              event.preventDefault();
+              return;
+            }
             if (event.pointerType === 'touch') {
               registrarToque(event.pointerId, { x: event.clientX, y: event.clientY });
             }
@@ -462,6 +533,7 @@ export const MapStage: React.FC<MapStageProps> = ({
               const posicao = posicoesLocais[token.id] || token;
               const tokenSize = clamp(token.tokenSize ?? 1, .5, 4);
               const rangeCells = clamp(token.rangeCells ?? 0, 0, 30);
+              const areaRadiusCells = clamp(token.areaRadiusCells ?? 0,0,30);
               const sizePx = gridSize * tokenSize;
               const canControl = podeControlarToken(token);
               const selected = selecionadoId === token.id;
@@ -476,7 +548,8 @@ export const MapStage: React.FC<MapStageProps> = ({
                     top: `${posicao.y}%`,
                     '--token-color': token.cor,
                     '--token-size': `${sizePx}px`,
-                    '--range-size': `${Math.max(0, rangeCells * gridSize * 2)}px`
+                    '--range-size': `${Math.max(0, rangeCells * gridSize * 2)}px`,
+                    '--area-size': `${areaRadiusCells * gridSize * 2}px`
                   } as React.CSSProperties}
                   onClick={event => {
                     event.stopPropagation();
@@ -494,6 +567,7 @@ export const MapStage: React.FC<MapStageProps> = ({
                   }}
                   title={canControl ? `${token.nome} · arraste para mover` : token.nome}
                 >
+                  {areaRadiusCells > 0 && <span className="map-stage__area-circle"><em>{areaRadiusCells} casas</em></span>}
                   {selected && rangeCells > 0 && <span className="map-stage__range-ring"><em>{rangeCells} casas</em></span>}
                   <span className="map-stage__token-face">
                     {token.imagemUrl
@@ -526,6 +600,34 @@ export const MapStage: React.FC<MapStageProps> = ({
             <button type="button" onClick={() => setSelecionadoId(null)}>×</button>
           </div>
 
+          {mestre && (tokenSelecionado.tipo === 'npc' || tokenSelecionado.tipo === 'adversario') && tokenLife && (
+            <div className="map-stage__token-health">
+              <strong>PV desta cópia: {tokenLife.current}/{tokenLife.max}</strong>
+              <div>
+                <label>Quantidade <input type="number" min={1} max={999} value={hpAmount}
+                  onChange={e=>setHpAmount(clamp(Math.round(Number(e.target.value)||1),1,999))}/></label>
+                <button type="button" onClick={()=>mudarPvDaCopia(-hpAmount)}>− PV</button>
+                <button type="button" onClick={()=>mudarPvDaCopia(hpAmount)}>+ PV</button>
+              </div>
+              <label>PV máximo <input type="number" min={1} max={99999} value={tokenLife.max}
+                onChange={e=>{
+                  const hpMax=clamp(Math.round(Number(e.target.value)||1),1,99999);
+                  ajustarToken({hpMax,hpCurrent:Math.min(hpMax,tokenLife.current)});
+                }}/></label>
+              <small>Altera apenas este token; a ficha-base e outras cópias permanecem intactas.</small>
+            </div>
+          )}
+          {mestre && (tokenSelecionado.areaRadiusCells ?? 0) > 0 && (
+            <div className="map-stage__token-health">
+              <strong>Marcação de área de efeito</strong>
+              <label>Nome <input value={tokenSelecionado.nome} maxLength={120}
+                onChange={e=>ajustarToken({nome:e.target.value})}/></label>
+              <label>Raio (casas) <input type="number" min={1} max={30} value={tokenSelecionado.areaRadiusCells}
+                onChange={e=>ajustarToken({areaRadiusCells:clamp(Math.round(Number(e.target.value)||1),1,30)})}/></label>
+              <label>Cor <input type="color" value={tokenSelecionado.cor} onChange={e=>ajustarToken({cor:e.target.value})}/></label>
+            </div>
+          )}
+          {tokenError && <p className="map-stage__token-error" role="alert">{tokenError}</p>}
           <div className="map-stage__token-control">
             <span>Tamanho</span>
             <div>
@@ -564,6 +666,7 @@ export const MapStage: React.FC<MapStageProps> = ({
 
           {mestre && (
             <div className="map-stage__token-inspector-actions">
+              <button type="button" onClick={duplicarToken}><Plus size={13}/> Duplicar cópia</button>
               <button type="button" onClick={() => ajustarToken({ oculto: !tokenSelecionado.oculto })}>
                 {tokenSelecionado.oculto ? <Eye size={13} /> : <EyeOff size={13} />}
                 {tokenSelecionado.oculto ? 'Revelar' : 'Ocultar'}
@@ -674,8 +777,14 @@ export const MapStage: React.FC<MapStageProps> = ({
                     </>
                   )}
 
+                  {tokenSource !== 'manual' && !tokenSource.startsWith('personagem:') && (
+                    <label className="map-stage__batch-qty">
+                      Cópias <input type="number" min={1} max={12} value={quantidade}
+                        onChange={e=>setQuantidade(clamp(Math.round(Number(e.target.value)||1),1,12))}/>
+                    </label>
+                  )}
                   <button className="ro-button" disabled={tokenSource === 'manual' && !novoToken.trim()}>
-                    {tokenSource === 'manual' ? 'Adicionar marcador' : 'Colocar ficha no mapa'}
+                    {tokenSource === 'manual' ? 'Adicionar marcador' : `Colocar ${tokenSource.startsWith('personagem:') ? 1 : quantidade} no mapa`}
                   </button>
                 </form>
               </>
