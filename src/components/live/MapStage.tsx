@@ -4,6 +4,7 @@ import { Adversario, MapaNarrativo, NPC, TipoTokenMapa, TokenMapa } from '../../
 import { Personagem } from '../../types/character';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
 import { AssetImage } from '../system/AssetImage';
+import { calculatePinchCamera, centerBetween, distanceBetween, Point2D } from '../../features/realtime/mapTouchGeometry';
 
 interface MapStageProps {
   campanhaId: string;
@@ -68,6 +69,13 @@ export const MapStage: React.FC<MapStageProps> = ({
   const [arrastando, setArrastando] = useState<string | null>(null);
   const [posicoesLocais, setPosicoesLocais] = useState<Record<string, { x: number; y: number }>>({});
   const [movendoCamera, setMovendoCamera] = useState<{ x: number; y: number } | null>(null);
+  const pointerPositions = useRef(new Map<number, Point2D>());
+  const pinchGesture = useRef<{
+    distance: number;
+    center: Point2D;
+    zoom: number;
+    pan: Point2D;
+  } | null>(null);
   const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
 
   const [novoMapa, setNovoMapa] = useState('');
@@ -167,7 +175,44 @@ export const MapStage: React.FC<MapStageProps> = ({
     };
   };
 
+  const registrarToque = (pointerId: number, point: Point2D) => {
+    pointerPositions.current.set(pointerId, point);
+    if (pointerPositions.current.size !== 2) return;
+    const [first, second] = [...pointerPositions.current.values()];
+    pinchGesture.current = {
+      distance: distanceBetween(first, second),
+      center: centerBetween(first, second),
+      zoom,
+      pan
+    };
+    // Segundo dedo cancela o arrasto do token antes de alterar a câmera.
+    setArrastando(null);
+    setPosicoesLocais({});
+    setMovendoCamera(null);
+  };
+
   const mover = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (pointerPositions.current.has(event.pointerId)) {
+      pointerPositions.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+    const pinch = pinchGesture.current;
+    if (pinch && pointerPositions.current.size === 2 && viewport.current) {
+      const [first, second] = [...pointerPositions.current.values()];
+      const bounds = viewport.current.getBoundingClientRect();
+      const camera = calculatePinchCamera({
+        zoom: pinch.zoom,
+        pan: pinch.pan,
+        startDistance: pinch.distance,
+        currentDistance: distanceBetween(first, second),
+        initialCenter: pinch.center,
+        currentCenter: centerBetween(first, second),
+        viewportOrigin: { x: bounds.left, y: bounds.top }
+      });
+      setZoom(camera.zoom);
+      setPan(camera.pan);
+      return;
+    }
+    if (pinch) return;
     if (arrastando) {
       const ponto = pontoNoCanvas(event.clientX, event.clientY);
       if (!ponto) return;
@@ -196,6 +241,23 @@ export const MapStage: React.FC<MapStageProps> = ({
     }
     setArrastando(null);
     setMovendoCamera(null);
+  };
+
+  const liberarPonteiro = (event: React.PointerEvent<HTMLDivElement>, cancelled = false) => {
+    pointerPositions.current.delete(event.pointerId);
+    if (pinchGesture.current) {
+      if (pointerPositions.current.size < 2) pinchGesture.current = null;
+      setMovendoCamera(null);
+      setArrastando(null);
+      return;
+    }
+    if (cancelled) {
+      setArrastando(null);
+      setPosicoesLocais({});
+      setMovendoCamera(null);
+    } else {
+      finalizarArrasto();
+    }
   };
 
   const dropActor = (event: React.DragEvent<HTMLDivElement>) => {
@@ -356,12 +418,21 @@ export const MapStage: React.FC<MapStageProps> = ({
         }}
         onDrop={dropActor}
         onPointerMove={mover}
-        onPointerUp={finalizarArrasto}
-        onPointerLeave={finalizarArrasto}
+        onPointerUp={event => liberarPonteiro(event)}
+        onPointerCancel={event => liberarPonteiro(event, true)}
+        onPointerLeave={event => {
+          if (event.pointerType === 'mouse') finalizarArrasto();
+        }}
         onPointerDown={event => {
           if (!(event.target as HTMLElement).closest('.map-stage__token')) {
-            setSelecionadoId(null);
-            setMovendoCamera({ x: event.clientX, y: event.clientY });
+            if (event.pointerType === 'touch') {
+              registrarToque(event.pointerId, { x: event.clientX, y: event.clientY });
+            }
+            if (!pinchGesture.current) {
+              setSelecionadoId(null);
+              setMovendoCamera({ x: event.clientX, y: event.clientY });
+            }
+            event.currentTarget.setPointerCapture(event.pointerId);
           }
         }}
         onWheel={event => {
@@ -414,7 +485,10 @@ export const MapStage: React.FC<MapStageProps> = ({
                   onPointerDown={event => {
                     event.stopPropagation();
                     setSelecionadoId(token.id);
-                    if (!canControl) return;
+                    if (event.pointerType === 'touch') {
+                      registrarToque(event.pointerId, { x: event.clientX, y: event.clientY });
+                    }
+                    if (!canControl || pinchGesture.current) return;
                     setArrastando(token.id);
                     event.currentTarget.setPointerCapture(event.pointerId);
                   }}
