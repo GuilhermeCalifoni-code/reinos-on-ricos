@@ -598,6 +598,34 @@ export const MapStage: React.FC<MapStageProps> = ({
             <button type="button" onClick={() => setSelecionadoId(null)}>×</button>
           </div>
 
+          {mestre && (tokenSelecionado.tipo === 'npc' || tokenSelecionado.tipo === 'adversario') && tokenLife && (
+            <div className="map-stage__token-health">
+              <strong>PV desta cópia: {tokenLife.current}/{tokenLife.max}</strong>
+              <div>
+                <label>Quantidade <input type="number" min={1} max={999} value={hpAmount}
+                  onChange={e=>setHpAmount(clamp(Math.round(Number(e.target.value)||1),1,999))}/></label>
+                <button type="button" onClick={()=>mudarPvDaCopia(-hpAmount)}>− PV</button>
+                <button type="button" onClick={()=>mudarPvDaCopia(hpAmount)}>+ PV</button>
+              </div>
+              <label>PV máximo <input type="number" min={1} max={99999} value={tokenLife.max}
+                onChange={e=>{
+                  const hpMax=clamp(Math.round(Number(e.target.value)||1),1,99999);
+                  ajustarToken({hpMax,hpCurrent:Math.min(hpMax,tokenLife.current)});
+                }}/></label>
+              <small>Altera apenas este token; a ficha-base e outras cópias permanecem intactas.</small>
+            </div>
+          )}
+          {mestre && (tokenSelecionado.areaRadiusCells ?? 0) > 0 && (
+            <div className="map-stage__token-health">
+              <strong>Marcação de área de efeito</strong>
+              <label>Nome <input value={tokenSelecionado.nome} maxLength={120}
+                onChange={e=>ajustarToken({nome:e.target.value})}/></label>
+              <label>Raio (casas) <input type="number" min={1} max={30} value={tokenSelecionado.areaRadiusCells}
+                onChange={e=>ajustarToken({areaRadiusCells:clamp(Math.round(Number(e.target.value)||1),1,30)})}/></label>
+              <label>Cor <input type="color" value={tokenSelecionado.cor} onChange={e=>ajustarToken({cor:e.target.value})}/></label>
+            </div>
+          )}
+          {tokenError && <p className="map-stage__token-error" role="alert">{tokenError}</p>}
           <div className="map-stage__token-control">
             <span>Tamanho</span>
             <div>
@@ -636,6 +664,7 @@ export const MapStage: React.FC<MapStageProps> = ({
 
           {mestre && (
             <div className="map-stage__token-inspector-actions">
+              <button type="button" onClick={duplicarToken}><Plus size={13}/> Duplicar cópia</button>
               <button type="button" onClick={() => ajustarToken({ oculto: !tokenSelecionado.oculto })}>
                 {tokenSelecionado.oculto ? <Eye size={13} /> : <EyeOff size={13} />}
                 {tokenSelecionado.oculto ? 'Revelar' : 'Ocultar'}
@@ -746,8 +775,14 @@ export const MapStage: React.FC<MapStageProps> = ({
                     </>
                   )}
 
+                  {tokenSource !== 'manual' && !tokenSource.startsWith('personagem:') && (
+                    <label className="map-stage__batch-qty">
+                      Cópias <input type="number" min={1} max={12} value={quantidade}
+                        onChange={e=>setQuantidade(clamp(Math.round(Number(e.target.value)||1),1,12))}/>
+                    </label>
+                  )}
                   <button className="ro-button" disabled={tokenSource === 'manual' && !novoToken.trim()}>
-                    {tokenSource === 'manual' ? 'Adicionar marcador' : 'Colocar ficha no mapa'}
+                    {tokenSource === 'manual' ? 'Adicionar marcador' : `Colocar ${tokenSource.startsWith('personagem:') ? 1 : quantidade} no mapa`}
                   </button>
                 </form>
               </>
