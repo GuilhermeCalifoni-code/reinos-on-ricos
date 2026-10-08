@@ -366,9 +366,9 @@ export function resolverMovimentoMorte(
       sucessoSonhar,
       tipo: 'sonhar_vence',
       titulo: 'SONHAR VENCE',
-      efeito: 'Algo impossível impede sua morte. Recupere 1 PV, receba +2 Ruptura e fique Consciente.',
+      efeito: 'Algo impossível impede sua morte. Recupere 1 PV, receba +1 Ruptura e fique Consciente.',
       recuperaVida: 1,
-      recebeRuptura: 2,
+      recebeRuptura: 1,
       ficaConsciente: true,
       morre: false
     };
