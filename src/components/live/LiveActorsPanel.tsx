@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Heart, Shield, Sparkles, UserRound, Users, X } from 'lucide-react';
 import { Personagem } from '../../types/character';
-import { Adversario, NPC } from '../../types/campaign';
+import { Adversario, NPC, TokenMapa } from '../../types/campaign';
+import { resolvedTokenHp } from '../../features/realtime/mapTokenInstances';
 import { AssetImage } from '../system/AssetImage';
 import { ActorCombatControls } from './ActorCombatControls';
 
@@ -11,6 +12,8 @@ interface LiveActorsPanelProps {
   personagens: Personagem[];
   npcs: NPC[];
   adversarios: Adversario[];
+  tokens: TokenMapa[];
+  onTokenHpChange: (tokenId: string, currentHp: number, maximumHp: number) => Promise<unknown>;
   selecionadoId: string;
   mestre: boolean;
   onSelecionar: (id: string) => void;
@@ -35,14 +38,14 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
   personagens,
   npcs,
   adversarios,
+  tokens,
+  onTokenHpChange,
   selecionadoId,
   mestre,
   onSelecionar,
   onAbrirFicha,
   onAjustar,
   onRuptura,
-  onUpdateNpc,
-  onUpdateAdversary,
   onActorRoll,
   onClose
 }) => {
@@ -122,65 +125,65 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
         {mestre && tab === 'npcs' && (
           <>
             {npcs.length === 0 && <p className="live-vtt__drawer-empty">Nenhum NPC preparado para esta campanha.</p>}
-            {npcs.map(npc => (
-              <article
-                key={npc.id}
-                className="live-vtt__actor-card"
-                draggable
-                onDragStart={event => startDrag(event, { kind: 'npc', id: npc.id, name: npc.nome, imageUrl: npc.imagemUrl })}
-              >
+            {npcs.map(npc => {
+              const copies = tokens.filter(t=>t.tipo==='npc'&&t.npcId===npc.id);
+              return (
+              <article key={npc.id} className="live-vtt__actor-card" draggable
+                onDragStart={event => startDrag(event,{kind:'npc',id:npc.id,name:npc.nome,imageUrl:npc.imagemUrl})}>
                 <div className="live-vtt__actor-main is-static">
-                  <Portrait image={npc.imagemUrl} name={npc.nome} />
-                  <span>
-                    <strong>{npc.nome}</strong>
-                    <small>{npc.isDesvelado ? 'Desvelado' : (npc.papel || npc.conceito || 'NPC')} · {npc.atitude}</small>
-                  </span>
+                  <Portrait image={npc.imagemUrl} name={npc.nome}/>
+                  <span><strong>{npc.nome}</strong><small>Modelo de NPC · {copies.length} cópias no mapa</small></span>
                 </div>
                 <div className="live-vtt__actor-resources">
-                  <span><Heart size={12} /> <b>{npc.vida ?? '—'}</b>/{npc.vidaMaxima ?? npc.vida ?? '—'}</span>
-                  {npc.isDesvelado && <span><Sparkles size={12} /> <b>{npc.foco ?? 0}</b>/{npc.focoMaximo ?? 0}</span>}
-                  {npc.isDesvelado && <span className={(npc.ruptura ?? 0) >= 4 ? 'is-danger' : ''}><Shield size={12} /> <b>{npc.ruptura ?? 0}</b>/6</span>}
-                  <span><Shield size={12} /> {npc.isDesvelado ? 'Def' : 'DT'} <b>{npc.isDesvelado ? (npc.defesa ?? npc.dificuldade ?? '—') : (npc.dificuldade ?? '—')}</b></span>
+                  <span>PV modelo: <b>{npc.vida ?? 0}</b>/{npc.vidaMaxima ?? npc.vida ?? 1}</span>
                 </div>
-                <ActorCombatControls
-                  key={npc.id} name={npc.nome} hp={npc.vida ?? 0} maxHp={npc.vidaMaxima ?? npc.vida ?? 1}
-                  threatLevel={npc.nivelAmeaca ?? 0} abilities={npc.habilidades || []}
-                  onHpChange={hp => onUpdateNpc(npc.id,hp)} onRoll={onActorRoll}
-                />
+                {copies.length === 0 && <p className="live-vtt__actor-instance-empty">Arraste o modelo para o mapa ou use “Biblioteca e criação rápida” para criar várias cópias.</p>}
+                {copies.map(token=>{
+                  const hp = resolvedTokenHp(token,npc.vida,npc.vidaMaxima);
+                  return <div key={token.id} className="live-vtt__actor-instance">
+                    <strong>{token.nome}</strong>
+                    <span className="live-vtt__actor-instance-location">Cópia independente · PV {hp.current}/{hp.max}</span>
+                    <ActorCombatControls key={token.id} name={token.nome} hp={hp.current} maxHp={hp.max}
+                      threatLevel={npc.nivelAmeaca ?? 0} abilities={npc.habilidades || []}
+                      onHpChange={value=>onTokenHpChange(token.id,value,hp.max)}
+                      onRoll={(content,details)=>onActorRoll(content,{...details,tokenId:token.id})}/>
+                  </div>;
+                })}
               </article>
-            ))}
+            )})}
           </>
         )}
 
         {mestre && tab === 'ameacas' && (
           <>
             {adversarios.length === 0 && <p className="live-vtt__drawer-empty">Nenhuma ameaça preparada para esta campanha.</p>}
-            {adversarios.map(adversario => (
-              <article
-                key={adversario.id}
-                className="live-vtt__actor-card is-threat"
-                draggable
-                onDragStart={event => startDrag(event, { kind: 'adversario', id: adversario.id, name: adversario.nome, imageUrl: adversario.imagemUrl })}
-              >
+            {adversarios.map(adversario => {
+              const copies=tokens.filter(t=>t.tipo==='adversario'&&t.adversaryId===adversario.id);
+              return <article key={adversario.id} className="live-vtt__actor-card is-threat" draggable
+                onDragStart={event=>startDrag(event,{kind:'adversario',id:adversario.id,name:adversario.nome,imageUrl:adversario.imagemUrl})}>
                 <div className="live-vtt__actor-main is-static">
-                  <Portrait image={adversario.imagemUrl} name={adversario.nome} />
-                  <span>
-                    <strong>{adversario.nome}</strong>
-                    <small>{adversario.tipo} · Nível {adversario.nivel}</small>
-                  </span>
+                  <Portrait image={adversario.imagemUrl} name={adversario.nome}/>
+                  <span><strong>{adversario.nome}</strong><small>{adversario.tipo} · Nível {adversario.nivel} · {copies.length} cópias</small></span>
                 </div>
                 <div className="live-vtt__actor-resources">
-                  <span><Heart size={12} /> <b>{adversario.vida}</b>/{adversario.vidaMaxima}</span>
-                  <span><Shield size={12} /> Defesa <b>{adversario.defesa}</b></span>
+                  <span>PV modelo: <b>{adversario.vida}</b>/{adversario.vidaMaxima}</span>
+                  <span>Defesa <b>{adversario.defesa}</b></span>
                   <span>DT <b>{adversario.dificuldade ?? adversario.defesa}</b></span>
                 </div>
-                <ActorCombatControls
-                  key={adversario.id} name={adversario.nome} hp={adversario.vida} maxHp={adversario.vidaMaxima}
-                  threatLevel={adversario.nivel} abilities={adversario.habilidades || []}
-                  onHpChange={hp => onUpdateAdversary(adversario.id,hp)} onRoll={onActorRoll}
-                />
-              </article>
-            ))}
+                {copies.length === 0 && <p className="live-vtt__actor-instance-empty">Arraste o modelo para o mapa ou adicione várias cópias pela biblioteca.</p>}
+                {copies.map(token=>{
+                  const hp=resolvedTokenHp(token,adversario.vida,adversario.vidaMaxima);
+                  return <div key={token.id} className="live-vtt__actor-instance">
+                    <strong>{token.nome}</strong>
+                    <span className="live-vtt__actor-instance-location">Cópia independente · PV {hp.current}/{hp.max}</span>
+                    <ActorCombatControls key={token.id} name={token.nome} hp={hp.current} maxHp={hp.max}
+                      threatLevel={adversario.nivel} abilities={adversario.habilidades||[]}
+                      onHpChange={value=>onTokenHpChange(token.id,value,hp.max)}
+                      onRoll={(content,details)=>onActorRoll(content,{...details,tokenId:token.id})}/>
+                  </div>;
+                })}
+              </article>;
+            })}
           </>
         )}
       </div>
