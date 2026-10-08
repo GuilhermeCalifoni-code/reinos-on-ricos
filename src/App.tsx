@@ -25,8 +25,6 @@ import { accountDataService } from './services/account/accountDataService';
 import { liveTableRepository } from './features/realtime/liveTableRepository';
 import { usePlatformAccess } from './services/admin/usePlatformAccess';
 
-const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
-
 const CreateCampaignView = React.lazy(() => import('./components/CreateCampaignView').then(module => ({ default: module.CreateCampaignView })));
 const CampaignDetailView = React.lazy(() => import('./components/CampaignDetailView').then(module => ({ default: module.CampaignDetailView })));
 const MesaView = React.lazy(() => import('./components/MesaView').then(module => ({ default: module.MesaView })));
@@ -135,7 +133,7 @@ export default function App() {
     let ativo = true;
 
     const persistirSessaoRemota = async (supabaseSession: Awaited<ReturnType<typeof authService.sessaoAtual>>) => {
-      if (!ativo || !supabaseSession?.user || sessionRef.current?.modoConexao === 'local') return;
+      if (!ativo || !supabaseSession?.user) return;
 
       const profile = await authService.perfil(supabaseSession.user);
       if (!ativo) return;
@@ -158,39 +156,28 @@ export default function App() {
 
       sessionRef.current = restaurada;
       setSession(restaurada);
-      try {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(restaurada));
-      } catch (error) {
-        console.error('Erro ao sincronizar sessão autenticada:', error);
-      }
+      setAuthChecking(false);
     };
 
     const limparSessaoRemotaEmCache = () => {
-      if (sessionRef.current?.modoConexao !== 'supabase') return;
       sessionRef.current = null;
-      try {
-        localStorage.removeItem(SESSION_STORAGE_KEY);
-      } catch (error) {
-        console.error('Erro ao limpar sessão autenticada inválida:', error);
-      }
       setSession(null);
+      setAuthChecking(false);
     };
 
-    if (sessionRef.current?.modoConexao !== 'local') {
-      void authService.sessaoAtual()
-        .then(async (supabaseSession) => {
-          if (!ativo) return;
-          if (!supabaseSession?.user) {
-            limparSessaoRemotaEmCache();
-            return;
-          }
-          await persistirSessaoRemota(supabaseSession);
-        })
-        .catch(() => {
-          // Falha de rede não deve expulsar o usuário. A sessão em cache permanece
-          // e a interface pode se recuperar quando a conectividade voltar.
-        });
-    }
+    void authService.sessaoAtual()
+      .then(async (supabaseSession) => {
+        if (!ativo) return;
+        if (!supabaseSession?.user) {
+          limparSessaoRemotaEmCache();
+          return;
+        }
+        await persistirSessaoRemota(supabaseSession);
+      })
+      .catch(() => {
+        // Sem acesso local offline: falha da conexão mantém a tela de autenticação.
+        if (ativo) setAuthChecking(false);
+      });
 
     const subscription = authService.onAuthStateChange((event, supabaseSession) => {
       if (!ativo) return;
@@ -202,7 +189,6 @@ export default function App() {
 
       if (
         supabaseSession?.user &&
-        sessionRef.current?.modoConexao !== 'local' &&
         (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED')
       ) {
         void persistirSessaoRemota(supabaseSession).catch(() => undefined);
@@ -251,15 +237,7 @@ export default function App() {
     setCampanhaRemotaAtivaId(null);
     sessionRef.current = novaSession;
     setSession(novaSession);
-    try {
-      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(novaSession));
-    } catch (e) {
-      console.error('Erro ao persistir sessão:', e);
-    }
-
-    if (novaSession.personagemVinculadoId) {
-      setPersonagemAtivoId(novaSession.personagemVinculadoId);
-    }
+    setAuthChecking(false);
     // Contas remotas não têm um papel global: Mestre/Jogador/Observador é definido por campanha.
     // O Dashboard é o ponto de entrada correto para qualquer conta autenticada.
     setViewAtiva('dashboard');
@@ -270,11 +248,6 @@ export default function App() {
       if (!current) return current;
       const atualizada = { ...current, ...patch };
       sessionRef.current = atualizada;
-      try {
-        localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(atualizada));
-      } catch (error) {
-        console.error('Erro ao persistir alterações da sessão:', error);
-      }
       return atualizada;
     });
   };
@@ -284,22 +257,7 @@ export default function App() {
       throw new Error('Entre em uma conta online para sincronizar este dispositivo.');
     }
 
-    const report = await localCloudMigrationService.migrate({
-      campanhas: campanhasLocais,
-      sessoes,
-      npcs,
-      adversarios,
-      locais,
-      pistas,
-      loreEntries,
-      anotacoes,
-      cenas,
-      handouts,
-      contadores,
-      mapas,
-      tokensMapa,
-      personagens: personagensLocais
-    }, session.authUserId);
+    const report = await localCloudMigrationService.migrate(readLegacyLocalSnapshot(), session.authUserId);
 
     await Promise.all([
       campanhasRemotas.recarregar(),
@@ -315,64 +273,32 @@ export default function App() {
     applyUIPreferences(next);
     if (next.theme) setTheme(next.theme);
 
-    if (usandoRemoto) {
-      await authService.atualizarPreferencias(next);
-    }
+    await authService.atualizarPreferencias(next);
 
     handleAtualizarSessao({ uiPreferences: next });
   };
 
   const handleExportarDados = async () => {
-    if (usandoRemoto) {
-      const payload = await accountDataService.exportarConta();
-      accountDataService.baixarJson(payload, `reinos-oniricos-backup-${new Date().toISOString().slice(0, 10)}.json`);
-      return;
-    }
+    const payload = await accountDataService.exportarConta();
+    accountDataService.baixarJson(payload, `reinos-oniricos-backup-${new Date().toISOString().slice(0, 10)}.json`);
+  };
 
+  const handleExportarLegado = () => {
     accountDataService.baixarJson({
       formato: 'reinos-oniricos-local-backup-v1',
       exportadoEm: new Date().toISOString(),
-      perfil: session,
-      campanhas: campanhasLocais,
-      personagens: personagensLocais,
-      sessoes,
-      npcs,
-      adversarios,
-      locais,
-      pistas,
-      loreEntries,
-      anotacoes,
-      cenas,
-      handouts,
-      contadores,
-      mapas,
-      tokensMapa
-    }, `reinos-oniricos-local-${new Date().toISOString().slice(0, 10)}.json`);
+      ...readLegacyLocalSnapshot()
+    }, `reinos-oniricos-legado-${new Date().toISOString().slice(0, 10)}.json`);
   };
 
   const handleSairTodos = async () => {
-    if (!usandoRemoto) {
-      handleTrocarSessao();
-      return;
-    }
-
     await authService.sairTodos();
-    try {
-      localStorage.removeItem(SESSION_STORAGE_KEY);
-    } catch (error) {
-      console.error('Erro ao limpar sessão local após logout global:', error);
-    }
     sessionRef.current = null;
     setSession(null);
   };
 
   const handleTrocarSessao = () => {
-    if (session?.modoConexao === 'supabase') void authService.sair().catch(() => undefined);
-    try {
-      localStorage.removeItem(SESSION_STORAGE_KEY);
-    } catch (e) {
-      console.error('Erro ao limpar sessão:', e);
-    }
+    void authService.sair().catch(() => undefined);
     setCampanhaRemotaAtivaId(null);
     sessionRef.current = null;
     setSession(null);
