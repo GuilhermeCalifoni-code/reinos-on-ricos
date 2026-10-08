@@ -101,12 +101,14 @@ export const CommunityView: React.FC = () => {
 
     Promise.all([
       communityService.listarPlanos(),
-      communityService.assinaturaAtual().catch(() => null)
+      communityService.assinaturaAtual().catch(() => null),
+      communityService.meuAcesso().catch(() => null)
     ])
-      .then(([catalog, membership]) => {
+      .then(([catalog, membership, manualAccess]) => {
         if (!alive) return;
         setPlans(catalog);
-        setActivePlanSlug(membership?.plan.slug || 'aberto');
+        const effectiveRank = Math.max(membership?.plan.rank || 0, manualAccess?.effective_rank || 0);
+        setActivePlanSlug(catalog.find(plan => plan.rank === effectiveRank)?.slug || 'aberto');
       })
       .catch((error: any) => {
         if (!alive) return;
