@@ -4,6 +4,7 @@ import { Adversario, CategoriaHabilidadeAtor, HabilidadeAtor, NPC, Sessao, TipoT
 import { SessionResourceLinks } from './SessionResourceLinks';
 import { AssetImage } from '../system/AssetImage';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
+import { rollActorOnirico } from '../../features/realtime/roActorCombat';
 
 type Mode = 'npc' | 'adversario';
 
@@ -28,6 +29,10 @@ interface RollResult {
   ability: string;
   kind: TipoTesteAtor;
   die?: number;
+  realidade?: number;
+  sonhar?: number;
+  outcome?: string;
+  ruptura?: number;
   modifier?: number;
   total?: number;
   dt: number;
@@ -252,6 +257,12 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
       return;
     }
 
+    if (ability.teste === 'onirico') {
+      const result = rollActorOnirico(ability.dt ?? 13, ability.modificador ?? 0);
+      setRoll({actor:actorName,ability:ability.nome,kind:'onirico',dt:result.dt,
+        realidade:result.realidade,sonhar:result.sonhar,modifier:result.modifier,outcome:result.outcome,ruptura:result.ruptura});
+      return;
+    }
     const die = Math.floor(Math.random() * 20) + 1;
     const modifier = ability.modificador || 0;
     setRoll({ actor: actorName, ability: ability.nome, kind: 'mundano', die, modifier, total: die + modifier, dt, atributo: ability.atributo });
@@ -317,7 +328,7 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
                 {(['passiva','acao','reacao'] as CategoriaHabilidadeAtor[]).map(category => abilities.filter(a => a.categoria === category).map(ability => (
                   <div key={ability.id} className="actor-card__ability">
                     <div className="actor-card__ability-title"><span>{category === 'acao' ? 'Ação' : category === 'reacao' ? 'Reação' : 'Passiva'}</span><strong>{ability.nome}</strong>
-                      {ability.teste && category !== 'passiva' && <button onClick={() => rollAbility(name, ability, difficulty)}><Dice5 size={13} /> {ability.teste === 'reflexo' ? 'Solicitar Reflexo' : 'Rolar Mundano'}</button>}
+                      {ability.teste && category !== 'passiva' && <button onClick={() => rollAbility(name, ability, difficulty)}><Dice5 size={13} /> {ability.teste === 'reflexo' ? 'Solicitar Reflexo' : ability.teste === 'onirico' ? 'Rolar Onírico' : 'Rolar Mundano'}</button>}
                     </div>
                     <p>{ability.descricao}</p>
                   </div>
@@ -462,13 +473,19 @@ export const CampaignActorsPanel: React.FC<CampaignActorsPanelProps> = ({
 
       {roll && <div className="actor-roll__backdrop" onMouseDown={() => setRoll(null)}>
         <div className="actor-roll" onMouseDown={event => event.stopPropagation()}>
-          <p className="ro-eyebrow">{roll.kind === 'reflexo' ? 'Teste Reflexo' : 'Teste Mundano'}</p>
+          <p className="ro-eyebrow">{roll.kind === 'reflexo' ? 'Teste Reflexo' : roll.kind === 'onirico' ? 'Teste Onírico' : 'Teste Mundano'}</p>
           <h3>{roll.actor} · {roll.ability}</h3>
           {roll.kind === 'reflexo' ? (
             <div className="actor-roll__request">
               <strong>O alvo realiza o teste.</strong>
               <p>Role 1d20 + {roll.atributo === 'vinculo' ? 'Vínculo' : roll.atributo === 'vontade' ? 'Vontade' : roll.atributo === 'mente' ? 'Mente' : 'Corpo'} contra DT {roll.dt}.</p>
               <small>Teste Reflexo é um Teste Mundano de reação. O modificador pertence ao alvo, não ao NPC ou Adversário.</small>
+            </div>
+          ) : roll.kind === 'onirico' ? (
+            <div className="actor-roll__request">
+              <strong>Realidade: {roll.realidade} + {roll.modifier ?? 0} · Sonhar: {roll.sonhar} + {roll.modifier ?? 0}</strong>
+              <p>DT {roll.dt} · {roll.outcome} · Ruptura {roll.ruptura !== undefined && roll.ruptura >= 0 ? '+' : ''}{roll.ruptura}</p>
+              <small>Dados independentes: não se comparam entre si.</small>
             </div>
           ) : (
             <>
