@@ -5,6 +5,7 @@ import { Personagem } from '../../types/character';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
 import { AssetImage } from '../system/AssetImage';
 import { calculatePinchCamera, centerBetween, distanceBetween, Point2D } from '../../features/realtime/mapTouchGeometry';
+import { addTokenHp, nextInstanceName, resolvedTokenHp } from '../../features/realtime/mapTokenInstances';
 
 interface MapStageProps {
   campanhaId: string;
@@ -22,7 +23,7 @@ interface MapStageProps {
   onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void;
   onRemoverMapa: (id: string) => void;
   onAdicionarToken: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
-  onAtualizarToken: (id: string, parcial: Partial<TokenMapa>) => void;
+  onAtualizarToken: (id: string, parcial: Partial<TokenMapa>) => Promise<unknown> | void;
   onRemoverToken: (id: string) => void;
 }
 
@@ -88,9 +89,23 @@ export const MapStage: React.FC<MapStageProps> = ({
   const [novoToken, setNovoToken] = useState('');
   const [tipoToken, setTipoToken] = useState<TipoTokenMapa>('marcador');
   const [tokenSource, setTokenSource] = useState('manual');
+  const [quantidade, setQuantidade] = useState(1);
+  const [hpAmount, setHpAmount] = useState(1);
+  const [marcandoArea, setMarcandoArea] = useState(false);
+  const [areaRadius, setAreaRadius] = useState(3);
+  const [areaColor, setAreaColor] = useState('#dc884c');
+  const [tokenError, setTokenError] = useState('');
+  const pendingNames = useRef(new Set<string>());
 
   const gridSize = clamp(mapaAtual?.gridSize ?? 64, 24, 160);
   const tokenSelecionado = tokensAtuais.find(token => token.id === selecionadoId) || null;
+  const npcDoToken = tokenSelecionado?.npcId ? npcs.find(npc => npc.id === tokenSelecionado.npcId) : undefined;
+  const adversarioDoToken = tokenSelecionado?.adversaryId ? adversarios.find(a => a.id === tokenSelecionado.adversaryId) : undefined;
+  const tokenLife = tokenSelecionado
+    ? resolvedTokenHp(tokenSelecionado,
+        npcDoToken?.vida ?? adversarioDoToken?.vida,
+        npcDoToken?.vidaMaxima ?? adversarioDoToken?.vidaMaxima)
+    : null;
 
   const podeControlarToken = (token: TokenMapa) =>
     mestre || Boolean(personagemJogadorId && token.characterId === personagemJogadorId);
