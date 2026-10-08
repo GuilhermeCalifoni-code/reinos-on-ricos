@@ -14,6 +14,7 @@ import { UserSession } from './types/auth';
 import { isSupabaseConfigured } from './lib/supabaseClient';
 import { authService } from './services/auth/authService';
 import { useRemoteCampaigns } from './services/campaigns/useRemoteCampaigns';
+import { canPrepareCampaign as roleCanPrepare, campaignEntryView } from './services/campaigns/campaignNavigationPolicy';
 import { useRemoteCampaignContent } from './services/campaigns/useRemoteCampaignContent';
 import { useRemoteCharacters } from './services/characters/useRemoteCharacters';
 import { campaignRepository } from './services/campaigns/campaignRepository';
@@ -146,9 +147,9 @@ export default function App() {
     : campanhaAtivaLocal;
   const setCampanhaAtivaId = (id: string) => usandoRemoto ? setCampanhaRemotaAtivaId(id) : setCampanhaAtivaIdLocal(id);
   const papelDaCampanha = usandoRemoto ? campanhasRemotas.roleDaCampanha(campanhaAtivaId || undefined) || 'observador' : session?.role || 'observador';
-  const podePrepararCampanha = (camp: Campanha) => usandoRemoto
-    ? campanhasRemotas.roleDaCampanha(camp.id) === 'mestre'
-    : session?.role === 'mestre';
+  const podePrepararCampanha = (camp: Campanha) => roleCanPrepare(
+    usandoRemoto ? campanhasRemotas.roleDaCampanha(camp.id) : session?.role
+  );
   const membroRemotoAtivo = usandoRemoto ? campanhasRemotas.membros.find(membro => membro.campaignId === campanhaAtivaId && membro.userId === session?.authUserId) : undefined;
   const personagemJogadorId = usandoRemoto ? membroRemotoAtivo?.characterId : session?.personagemVinculadoId;
   const personagensRemotos = useRemoteCharacters(
@@ -519,7 +520,7 @@ export default function App() {
 
   const handleDetalhesCampanha = (camp: Campanha) => {
     setCampanhaAtivaId(camp.id);
-    setViewAtiva(podePrepararCampanha(camp) ? 'detalhe_campanha' : 'modo_mesa');
+    setViewAtiva(campaignEntryView(usandoRemoto ? campanhasRemotas.roleDaCampanha(camp.id) : session?.role));
   };
 
   const handleIniciarCriacaoCampanha = () => {
