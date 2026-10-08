@@ -101,7 +101,7 @@ export const COMPENDIUM_ENTRIES: CompendiumEntry[] = [
       'Oculto: ações que dependam de localizar ou perceber diretamente o alvo podem sofrer Desvantagem; se perceber for impossível, a ação não pode ser realizada.',
       'Impedido: se a limitação torna uma ação impossível, ela não pode ser feita; se apenas a dificulta significativamente, o Teste Mundano sofre Desvantagem.',
       'Vulnerável: ações do próprio afetado podem sofrer Desvantagem quando a vulnerabilidade interferir diretamente; ações contra ele podem receber Vantagem quando explorarem essa vulnerabilidade.',
-      'No Sonhar, uma Condição relevante pode aumentar a DT Onírica em +2; se tornar um requisito impossível, a manifestação não pode ser realizada daquela maneira.',
+      'Se uma Condição dificultar significativamente a manifestação, a DT Onírica aumenta em +2. Se impedir condição indispensável para manifestar, ela é impossível daquela maneira.',
       'Aumentos de DT por Condições não se acumulam; considere apenas a mais relevante.'
     ],
     keywords: ['condição', 'condições', 'oculto', 'impedido', 'vulnerável', 'cego', 'agarrado', 'caído', 'desorientado'],
@@ -325,7 +325,7 @@ export const COMPENDIUM_ENTRIES: CompendiumEntry[] = [
     answer: 'O Movimento integra a Ação e pode ser dividido antes e depois dela. O Deslocamento base é Próximo.',
     details: [
       'Correr como Ação desloca até Longe.',
-      'Para Correr e ainda usar outra Ação, faça Teste Reflexo de Corpo DT 15 ou mais; sucesso permite o deslocamento ampliado e outra Ação, falha mantém o Movimento e a Ação normais.',
+      'Correr usa a Ação do Personagem e permite Deslocamento até Longe. Não exige Teste Reflexo de Corpo para simplesmente Correr.',
       'Abrir porta destrancada, pegar objeto, sacar arma ou ligar lanterna são interações simples que integram o Movimento.'
     ],
     keywords: ['movimento', 'correr', 'deslocamento', 'próximo', 'longe', 'andar'],
