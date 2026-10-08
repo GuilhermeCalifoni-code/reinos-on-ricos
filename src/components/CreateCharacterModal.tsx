@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, X, Check, Sparkles, UserPlus, ImagePlus, Upload, Link2 } from 'lucide-react';
+import { X, Check, UserPlus, ImagePlus, Upload, Link2, Shield, Heart, Sparkles, Anchor, Moon, Eye, Brain, Waves, Box, Leaf, Flame } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome } from '../types/character';
 import { TABELA_PROGRESSAO } from '../rules/rulesData';
 import { calcularResistencia, calcularDefesa, calcularVidaMaxima, validarDistribuicaoDominios } from '../rules/rulesEngine';
@@ -53,6 +53,20 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
     setPreviewImagem(url);
     return () => URL.revokeObjectURL(url);
   }, [imagemArquivo]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !salvando) onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isOpen, onClose, salvando]);
 
   if (!isOpen) return null;
 
@@ -136,301 +150,265 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
     }
   };
 
+
+  const vidaMaxima = calcularVidaMaxima(nivel);
+  const resistencia = calcularResistencia(atributos.corpo);
+  const defesa = calcularDefesa(atributoPrincipal, atributos, nivel).defesa;
+  const hasInvalidFields = !atributosValidos || !dominiosCompletos;
+  const attributeItems: { id: AtributoNome; label: string; symbol: React.ReactNode }[] = [
+    { id: 'corpo', label: 'Corpo', symbol: <Heart size={19} /> },
+    { id: 'mente', label: 'Mente', symbol: <Brain size={19} /> },
+    { id: 'vontade', label: 'Vontade', symbol: <Flame size={19} /> },
+    { id: 'vinculo', label: 'Vínculo', symbol: <Anchor size={19} /> }
+  ];
+  const domainItems: { id: DominioNome; label: string; symbol: React.ReactNode }[] = [
+    { id: 'consciencia', label: 'Consciência', symbol: <Eye size={16} /> },
+    { id: 'espaco', label: 'Espaço', symbol: <Box size={16} /> },
+    { id: 'fluxo', label: 'Fluxo', symbol: <Waves size={16} /> },
+    { id: 'substancia', label: 'Substância', symbol: <Sparkles size={16} /> },
+    { id: 'vida', label: 'Vida', symbol: <Leaf size={16} /> }
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#11141c] border border-slate-700/80 rounded-lg max-w-xl w-full shadow-2xl overflow-hidden animate-in fade-in duration-200 max-h-[90vh] flex flex-col font-mono text-xs">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#161b26] shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-400">
-              <UserPlus className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-100 font-['Chakra_Petch'] uppercase tracking-wider">
-                Criar Novo Desvelado
-              </h3>
-              <p className="text-[11px] text-slate-400">
-                Regras Oficiais do Livro Básico (Níveis 1 a 5)
-              </p>
-            </div>
+    <div className="ro-character-create-backdrop">
+      <div role="dialog" aria-modal="true" aria-labelledby="ro-create-character-title" className="ro-character-create-dialog">
+        <header className="ro-character-create-header">
+          <span className="ro-character-create-emblem" aria-hidden="true"><UserPlus size={26} /></span>
+          <div className="ro-character-create-heading">
+            <span className="ro-character-create-eyebrow">REINOS ONÍRICOS · PERSONAGENS</span>
+            <h2 id="ro-create-character-title">Criar novo Desvelado</h2>
+            <p>Ficha inicial · Regras do Livro Básico · Níveis 1 a 5</p>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800/60 transition"
-          >
-            <X className="w-5 h-5" />
+          <button className="ro-character-create-icon-button" type="button" onClick={onClose} disabled={salvando} aria-label="Fechar criação de Desvelado">
+            <X size={21} />
           </button>
-        </div>
+        </header>
 
-        {/* Formulário com Scroll */}
-        <div className="p-5 space-y-4 overflow-y-auto flex-1">
-          
-          {/* Retrato */}
-          <section className="rounded border border-slate-800 bg-slate-950/55 p-3">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="w-full sm:w-28 h-28 shrink-0 overflow-hidden rounded border border-slate-700 bg-[#0d1118] flex items-center justify-center">
-                {previewRetrato ? (
-                  <img src={previewRetrato} alt="Prévia do retrato" className="w-full h-full object-cover" />
-                ) : (
-                  <ImagePlus className="w-8 h-8 text-slate-600" />
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <div>
-                  <span className="text-slate-300 block mb-1 font-semibold">Retrato do Desvelado</span>
-                  <small className="text-[10px] text-slate-500">A imagem acompanha a ficha e aparece na Mesa Ao Vivo.</small>
+        <div className="ro-character-create-scroll">
+          <div className="ro-character-create-layout">
+            <form id="ro-create-character-form" className="ro-character-create-form" onSubmit={event => { event.preventDefault(); void handleCriar(); }}>
+              <section className="ro-character-create-section" aria-labelledby="ro-create-identity">
+                <div className="ro-character-create-section-title">
+                  <h3 id="ro-create-identity">Identidade</h3>
+                  <span>Quem atravessou o Véu?</span>
                 </div>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => setModoImagem('upload')} className={`px-2.5 py-1.5 rounded border flex items-center gap-1.5 ${modoImagem === 'upload' ? 'border-cyan-500 text-cyan-300 bg-cyan-950/40' : 'border-slate-700 text-slate-400'}`}>
-                    <Upload className="w-3.5 h-3.5" /> Arquivo
-                  </button>
-                  <button type="button" onClick={() => setModoImagem('url')} className={`px-2.5 py-1.5 rounded border flex items-center gap-1.5 ${modoImagem === 'url' ? 'border-cyan-500 text-cyan-300 bg-cyan-950/40' : 'border-slate-700 text-slate-400'}`}>
-                    <Link2 className="w-3.5 h-3.5" /> URL
-                  </button>
-                </div>
-                {modoImagem === 'upload' ? (
-                  <label className="block cursor-pointer rounded border border-dashed border-slate-700 px-3 py-2 text-slate-400 hover:border-cyan-700">
-                    <span>{imagemArquivo ? imagemArquivo.name : 'Escolher PNG, JPG, WEBP ou GIF · até 15 MB'}</span>
-                    <input
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/gif"
-                      className="hidden"
-                      onChange={event => {
-                        const file = event.target.files?.[0] || null;
-                        if (file && file.size <= 15 * 1024 * 1024 && file.type.startsWith('image/')) {
-                          setImagemArquivo(file);
-                          setErroSalvar('');
-                        } else if (file) {
-                          setErroSalvar('Use uma imagem PNG, JPG, WEBP ou GIF de até 15 MB.');
-                          event.target.value = '';
-                        }
-                      }}
-                    />
+                <div className="ro-character-create-fields">
+                  <label>Nome do personagem <input required maxLength={120} value={nome} onChange={event => setNome(event.target.value)}
+                    placeholder="Ex.: Clara Mendes" autoComplete="off" /></label>
+                  <label>Jogador / convidado <input maxLength={120} value={jogador} onChange={event => setJogador(event.target.value)}
+                    placeholder="Ex.: Marina" autoComplete="off" /></label>
+                  <label>Nível inicial
+                    <select value={nivel} onChange={event => setNivel(Number(event.target.value))}>
+                      {[1,2,3,4,5].map(value =>
+                        <option key={value} value={value}>Nível {value} · {TABELA_PROGRESSAO[value].pontosDeSonhar} pontos de Sonhar</option>)}
+                    </select>
                   </label>
-                ) : (
-                  <input
-                    type="url"
-                    value={imagemUrl}
-                    onChange={event => setImagemUrl(event.target.value)}
-                    placeholder="https://..."
-                    className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
-                  />
-                )}
+                  <label>Conceito do Desvelado
+                    <select value={conceito} onChange={event => setConceito(event.target.value as typeof conceito)}>
+                      {(['Lúcido','Tecelão','Desperto','Ecoante'] as const).map(value => <option key={value} value={value}>{value}</option>)}
+                    </select>
+                  </label>
+                </div>
+              </section>
+
+              <section className="ro-character-create-section" aria-labelledby="ro-create-portrait">
+                <div className="ro-character-create-section-title">
+                  <h3 id="ro-create-portrait">Retrato</h3>
+                  <span>Sua imagem também aparece na Mesa Ao Vivo.</span>
+                </div>
+                <div className="ro-character-create-portrait-controls">
+                  <div className="ro-character-create-portrait-thumb">
+                    {previewRetrato
+                      ? <img src={previewRetrato} alt="Retrato selecionado do Desvelado" />
+                      : <ImagePlus size={34} aria-hidden="true" />}
+                  </div>
+                  <div className="ro-character-create-portrait-inputs">
+                    <div className="ro-character-create-image-switch" aria-label="Origem da imagem">
+                      <button type="button" className={modoImagem === 'upload' ? 'is-active' : ''}
+                        onClick={() => setModoImagem('upload')} aria-pressed={modoImagem === 'upload'}>
+                        <Upload size={15}/> Arquivo
+                      </button>
+                      <button type="button" className={modoImagem === 'url' ? 'is-active' : ''}
+                        onClick={() => setModoImagem('url')} aria-pressed={modoImagem === 'url'}>
+                        <Link2 size={15}/> URL
+                      </button>
+                    </div>
+                    {modoImagem === 'upload' ? (
+                      <label className="ro-character-create-file">
+                        <Upload size={17}/>
+                        <span>{imagemArquivo ? imagemArquivo.name : 'Escolher imagem · PNG, JPG, WEBP ou GIF · até 15 MB'}</span>
+                        <input type="file" accept="image/png,image/jpeg,image/webp,image/gif"
+                          onChange={event => {
+                            const file = event.target.files?.[0] || null;
+                            if (file && file.size <= 15 * 1024 * 1024 &&
+                              ['image/png','image/jpeg','image/webp','image/gif'].includes(file.type)) {
+                              setImagemArquivo(file);
+                              setErroSalvar('');
+                            } else if (file) {
+                              setErroSalvar('Use PNG, JPG, WEBP ou GIF de até 15 MB.');
+                              event.target.value = '';
+                            }
+                          }}
+                        />
+                      </label>
+                    ) : (
+                      <label>Endereço da imagem
+                        <input type="url" value={imagemUrl} placeholder="https://exemplo.com/retrato.png"
+                          onChange={event => setImagemUrl(event.target.value)}/>
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              <section className="ro-character-create-section" aria-labelledby="ro-create-attributes">
+                <div className="ro-character-create-section-title">
+                  <h3 id="ro-create-attributes">Atributos</h3>
+                  <span>Escolha o atributo principal e distribua os valores do nível.</span>
+                </div>
+                <p className={atributosValidos ? 'ro-character-create-score is-valid' : 'ro-character-create-score is-invalid'}>
+                  Soma {somaAtributos}/{pontosAtributoEsperados} · Atributo principal: {attributeItems.find(a => a.id === atributoPrincipal)?.label}
+                </p>
+                <div className="ro-character-create-attributes">
+                  {attributeItems.map(item => {
+                    const value = atributos[item.id];
+                    const principal = atributoPrincipal === item.id;
+                    return <div className={principal ? 'ro-character-create-attribute is-primary' : 'ro-character-create-attribute'} key={item.id}>
+                      <label className="ro-character-create-attribute-head">
+                        <span>{item.symbol}{item.label}</span>
+                        <input type="radio" name="principalRadio" checked={principal} onChange={() => setAtributoPrincipal(item.id)}
+                          aria-label={`Definir ${item.label} como atributo principal`} />
+                      </label>
+                      <div className="ro-character-create-adjuster">
+                        <button type="button" disabled={value <= -1} onClick={() => handleUpdateAtributo(item.id,value-1)}
+                          aria-label={`Diminuir ${item.label}`}>−</button>
+                        <output aria-label={`Valor de ${item.label}`}>{value >= 0 ? '+' + value : value}</output>
+                        <button type="button" disabled={value >= 4 || somaAtributos >= pontosAtributoEsperados}
+                          onClick={() => handleUpdateAtributo(item.id,value+1)} aria-label={`Aumentar ${item.label}`}>+</button>
+                      </div>
+                    </div>;
+                  })}
+                </div>
+                {!atributosValidos && <p className="ro-character-create-validation" role="status">
+                  {nivel === 1
+                    ? 'No nível 1, distribua exatamente +2, +1, 0 e −1 entre os quatro atributos.'
+                    : `Neste nível, os atributos devem somar ${pontosAtributoEsperados}, com valores entre −1 e +4.`}
+                </p>}
+              </section>
+
+              <section className="ro-character-create-section" aria-labelledby="ro-create-stats">
+                <div className="ro-character-create-section-title">
+                  <h3 id="ro-create-stats">Estatísticas</h3>
+                  <span>Calculadas automaticamente pela progressão oficial.</span>
+                </div>
+                <div className="ro-character-create-stats">
+                  {[
+                    {label:'PV',value:vidaMaxima,info:'Vida máxima',symbol:<Heart size={20}/>},
+                    {label:'Defesa',value:defesa,info:'8 + Corpo',symbol:<Shield size={20}/>},
+                    {label:'Resistência',value:resistencia,info:'6 + Corpo',symbol:<Shield size={20}/>},
+                    {label:'Foco (PF)',value:prog.focoBase,info:'Nível ' + nivel,symbol:<Flame size={20}/>},
+                    {label:'Proteção Onírica',value:prog.protecaoOniricaBase,info:'Nível ' + nivel,symbol:<Sparkles size={20}/>},
+                    {label:'Ruptura',value:0,info:'Inicial',symbol:<Moon size={20}/>}
+                  ].map(item => <div className="ro-character-create-stat" key={item.label}>
+                    {item.symbol}<span>{item.label}</span><strong>{item.value}</strong><small>{item.info}</small>
+                  </div>)}
+                </div>
+              </section>
+
+              <section className="ro-character-create-section" aria-labelledby="ro-create-domains">
+                <div className="ro-character-create-section-title">
+                  <h3 id="ro-create-domains">Domínios do Sonhar</h3>
+                  <span>Distribua os pontos sem ultrapassar o limite por Domínio.</span>
+                </div>
+                <p className={dominiosCompletos ? 'ro-character-create-score is-valid' : 'ro-character-create-score is-invalid'}>
+                  {validacao.pontosUsados}/{validacao.pontosTotais} pontos · Máximo {prog.dominioMaximo} por Domínio
+                </p>
+                <div className="ro-character-create-domains">
+                  {domainItems.map(item => {
+                    const selected = dominios[item.id] || 0;
+                    return <div className="ro-character-create-domain" key={item.id}>
+                      <span className="ro-character-create-domain-label">{item.symbol}{item.label}</span>
+                      <div className="ro-character-create-domain-values" role="group" aria-label={`Nível de ${item.label}`}>
+                        {[0,1,2,3,4,5].map(value => <button type="button" key={value}
+                          className={value === selected ? 'is-selected' : ''}
+                          aria-pressed={selected === value}
+                          disabled={value > prog.dominioMaximo || (value > selected && validacao.pontosUsados - selected + value > validacao.pontosTotais)}
+                          onClick={() => handleUpdateDominio(item.id,value)}>{value}</button>)}
+                      </div>
+                    </div>;
+                  })}
+                </div>
+                {!dominiosCompletos && <p className="ro-character-create-validation" role="status">
+                  {validacao.erros?.[0] || 'Distribua todos os pontos de Domínio para continuar.'}
+                </p>}
+              </section>
+
+              <section className="ro-character-create-section" aria-labelledby="ro-create-anchor">
+                <div className="ro-character-create-section-title">
+                  <h3 id="ro-create-anchor">Ancoragem</h3>
+                  <span>Pessoa, lembrança, objeto ou lugar que mantém seu vínculo com a Realidade.</span>
+                </div>
+                <label className="ro-character-create-anchor-field">
+                  <span>Seu elo com a Realidade</span>
+                  <input type="text" maxLength={500} value={ancoragem}
+                    onChange={event => setAncoragem(event.target.value)}
+                    placeholder="Ex.: Uma fita cassete antiga com a voz do meu irmão…"/>
+                </label>
+              </section>
+            </form>
+
+            <aside className="ro-character-create-preview" aria-label="Prévia da ficha em criação">
+              <div className="ro-character-create-section-title">
+                <h3>Prévia da ficha</h3><span>Atualiza enquanto você preenche o formulário.</span>
               </div>
-            </div>
-          </section>
-
-          {/* Identidade */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-slate-300 block mb-1 font-semibold">Nome do Personagem:</label>
-              <input
-                type="text"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                placeholder="Ex: Clara Mendes"
-                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
-              />
-            </div>
-
-            <div>
-              <label className="text-slate-300 block mb-1 font-semibold">Jogador / Convidado:</label>
-              <input
-                type="text"
-                value={jogador}
-                onChange={(e) => setJogador(e.target.value)}
-                placeholder="Ex: Marina"
-                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-slate-300 block mb-1 font-semibold">Nível Inicial:</label>
-              <select
-                value={nivel}
-                onChange={(e) => setNivel(Number(e.target.value))}
-                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
-              >
-                {[1, 2, 3, 4, 5].map(n => (
-                  <option key={n} value={n}>Nível {n} ({TABELA_PROGRESSAO[n].pontosDeSonhar} Pontos de Domínio)</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-slate-300 block mb-1 font-semibold">Conceito do Desvelado:</label>
-              <select
-                value={conceito}
-                onChange={(e) => setConceito(e.target.value as any)}
-                className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
-              >
-                {['Lúcido', 'Tecelão', 'Desperto', 'Ecoante'].map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Atributos */}
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="text-slate-300 font-semibold">Atributos:</label>
-              <span className={atributosValidos ? 'text-[10px] text-emerald-400' : 'text-[10px] text-rose-400'}>
-                Soma {somaAtributos}/{pontosAtributoEsperados} · Defesa = 8 + Corpo
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {[
-                { id: 'corpo', nome: 'Corpo' },
-                { id: 'mente', nome: 'Mente' },
-                { id: 'vontade', nome: 'Vontade' },
-                { id: 'vinculo', nome: 'Vínculo' }
-              ].map(at => {
-                const chave = at.id as AtributoNome;
-                const valor = atributos[chave];
-                const isPrincipal = atributoPrincipal === chave;
-
-                return (
-                  <div key={at.id} className={`p-2 rounded border ${isPrincipal ? 'bg-cyan-950/50 border-cyan-500' : 'bg-slate-950 border-slate-800'}`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-slate-200">{at.nome}</span>
-                      <input
-                        type="radio"
-                        name="principalRadio"
-                        checked={isPrincipal}
-                        onChange={() => setAtributoPrincipal(chave)}
-                        title="Marcar como Atributo Principal"
-                        className="text-cyan-500 focus:ring-cyan-500/30"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateAtributo(chave, valor - 1)}
-                        className="w-5 h-5 rounded bg-slate-800 text-slate-300"
-                      >
-                        -
-                      </button>
-                      <span className="font-bold text-cyan-400 text-sm">
-                        {valor >= 0 ? `+${valor}` : valor}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleUpdateAtributo(chave, valor + 1)}
-                        className="w-5 h-5 rounded bg-slate-800 text-slate-300"
-                      >
-                        +
-                      </button>
-                    </div>
+              <div className="ro-character-create-preview-portrait">
+                {previewRetrato
+                  ? <img src={previewRetrato} alt="Retrato selecionado para a ficha" />
+                  : <div className="ro-character-create-no-portrait"><UserPlus size={44}/><span>Seu retrato aparecerá aqui</span></div>}
+              </div>
+              <div className="ro-character-create-preview-name">
+                <h4>{nome.trim() || 'Seu Desvelado'}</h4>
+                <p>Nível {nivel} · {conceito}{jogador.trim() ? ' · ' + jogador.trim() : ''}</p>
+              </div>
+              <div className="ro-character-create-preview-vitals">
+                <div><Heart size={16}/><span>PV</span><strong>{vidaMaxima}</strong></div>
+                <div><Flame size={16}/><span>Foco</span><strong>{prog.focoBase}</strong></div>
+                <div><Sparkles size={16}/><span>PO</span><strong>{prog.protecaoOniricaBase}</strong></div>
+                <div><Moon size={16}/><span>Ruptura</span><strong>0</strong></div>
+              </div>
+              <div className="ro-character-create-preview-defense"><Shield size={18}/> Defesa <strong>{defesa}</strong><small>Resistência {resistencia}</small></div>
+              <div className="ro-character-create-preview-domains">
+                <h5>Domínios do Sonhar <span>{validacao.pontosUsados}/{validacao.pontosTotais}</span></h5>
+                {domainItems.map(item => <div key={item.id}>
+                  <span>{item.symbol}{item.label}</span>
+                  <div className="ro-character-create-preview-track">
+                    <i style={{width: ((dominios[item.id] || 0)/5*100) + '%'}} />
                   </div>
-                );
-              })}
-            </div>
+                  <b>{dominios[item.id] || 0}</b>
+                </div>)}
+              </div>
+              <div className="ro-character-create-preview-anchor"><Anchor size={18}/>
+                <div><strong>Ancoragem</strong><p>{ancoragem.trim() || 'Seu elo com a Realidade aparecerá aqui.'}</p></div>
+              </div>
+              <p className="ro-character-create-preview-notice"><Eye size={15}/> Prévia visual. Sua ficha completa será criada com as regras e os recursos do sistema.</p>
+            </aside>
           </div>
-
-          {!atributosValidos && (
-            <div className="rounded border border-rose-900/60 bg-rose-950/30 p-2.5 text-[11px] text-rose-200">
-              {nivel === 1
-                ? 'No Nível 1 distribua exatamente +2, +1, 0 e -1 entre os quatro Atributos.'
-                : `A progressão deste nível exige soma total ${pontosAtributoEsperados} nos Atributos, preservando o limite mínimo -1 e máximo +4.`}
-            </div>
-          )}
-
-          {/* Domínios */}
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="text-slate-300 font-semibold">Distribuição de Domínios:</label>
-              <span className={dominiosCompletos ? 'text-cyan-400 font-bold' : 'text-rose-400 font-bold'}>
-                {validacao.pontosUsados} / {validacao.pontosTotais} Pontos (Máx {prog.dominioMaximo})
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {[
-                { id: 'consciencia', nome: 'Consciência' },
-                { id: 'espaco', nome: 'Espaço' },
-                { id: 'fluxo', nome: 'Fluxo' },
-                { id: 'substancia', nome: 'Substância' },
-                { id: 'vida', nome: 'Vida' }
-              ].map(d => {
-                const chave = d.id as DominioNome;
-                const nv = dominios[chave] || 0;
-
-                return (
-                  <div key={d.id} className="p-2 rounded bg-slate-950 border border-slate-800 flex items-center justify-between">
-                    <span className="font-bold text-slate-200">{d.nome}</span>
-                    <div className="flex gap-1">
-                      {[0, 1, 2, 3, 4, 5].map(lvl => {
-                        const acimaLimite = lvl > prog.dominioMaximo;
-                        const ativo = lvl === nv;
-                        return (
-                          <button
-                            key={lvl}
-                            type="button"
-                            disabled={acimaLimite}
-                            onClick={() => handleUpdateDominio(chave, lvl)}
-                            className={`w-5 h-5 rounded text-[10px] font-bold border ${
-                              acimaLimite
-                                ? 'bg-slate-950/40 border-slate-900 text-slate-700 cursor-not-allowed'
-                                : ativo
-                                ? 'bg-cyan-500 border-cyan-400 text-slate-950'
-                                : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
-                            }`}
-                          >
-                            {lvl}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Ancoragem */}
-          <div>
-            <label className="text-slate-300 block mb-1 font-semibold">Ancoragem (Elo com a Realidade):</label>
-            <input
-              type="text"
-              value={ancoragem}
-              onChange={(e) => setAncoragem(e.target.value)}
-              placeholder="Ex: Uma fita cassete antiga com a voz do meu irmão..."
-              className="w-full px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-100 focus:outline-none focus:border-cyan-500"
-            />
-          </div>
-
         </div>
 
-        {erroSalvar ? (
-          <div className="mx-5 mb-0 rounded border border-amber-700/60 bg-amber-950/30 px-3 py-2 text-[11px] text-amber-100">
-            {erroSalvar}
+        <footer className="ro-character-create-footer">
+          <div aria-live="polite">
+            {erroSalvar && <p className="ro-character-create-error" role="alert">{erroSalvar}</p>}
+            {!erroSalvar && hasInvalidFields && <p className="ro-character-create-footnote">
+              Complete a distribuição de atributos e Domínios para criar a ficha.
+            </p>}
           </div>
-        ) : null}
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-5 py-3 border-t border-slate-800 bg-[#161b26] shrink-0">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1.5 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded font-medium transition"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleCriar}
-            disabled={!fichaValida || salvando}
-            className={`px-4 py-1.5 text-slate-950 font-bold bg-cyan-400 rounded shadow-[0_0_12px_rgba(6,182,212,0.3)] flex items-center gap-1.5 transition ${fichaValida ? 'hover:bg-cyan-300' : 'opacity-50 cursor-not-allowed'}`}
-          >
-            <Check className="w-4 h-4" />
-            {salvando ? 'Salvando…' : 'Criar Desvelado'}
-          </button>
-        </div>
-
+          <div className="ro-character-create-footer-buttons">
+            <button type="button" className="ro-character-create-cancel" disabled={salvando} onClick={onClose}>Cancelar</button>
+            <button type="submit" form="ro-create-character-form" className="ro-character-create-submit" disabled={!fichaValida || salvando}>
+              <Check size={18}/>{salvando ? 'Salvando…' : 'Criar Desvelado'}
+            </button>
+          </div>
+        </footer>
       </div>
     </div>
   );
