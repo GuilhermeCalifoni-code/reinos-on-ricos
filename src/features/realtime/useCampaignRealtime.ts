@@ -68,7 +68,13 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
     patchMap: (id: string, patch: Partial<MapaNarrativo>) => action(async () => { const updated = await liveTableRepository.patchMap(id, patch); setMaps(items => replace(items, updated)); return updated; }),
     removeMap: (id: string) => action(async () => { await liveTableRepository.removeMap(id); setMaps(items => items.filter(item => item.id !== id)); }),
     addToken: (item: DraftToken) => action(async () => { const created = await liveTableRepository.addToken(item); setTokens(items => replace(items, created)); return created; }),
-    patchToken: (id: string, patch: Partial<TokenMapa>) => action(async () => { const updated = await liveTableRepository.patchToken(id, patch); setTokens(items => replace(items, updated)); return updated; }),
+    patchToken: (id: string, patch: Partial<TokenMapa>) => action(async () => {
+      const updated = role === 'mestre'
+        ? await liveTableRepository.patchToken(id, patch)
+        : await liveTableRepository.patchOwnToken(id, patch);
+      setTokens(items => replace(items, updated));
+      return updated;
+    }),
     removeToken: (id: string) => action(async () => { await liveTableRepository.removeToken(id); setTokens(items => items.filter(item => item.id !== id)); })
     , patchCharacterResources: (id: string, patch: Partial<CharacterResourceUpdate>) => action(() => liveTableRepository.patchCharacterResources(id, patch))
   };

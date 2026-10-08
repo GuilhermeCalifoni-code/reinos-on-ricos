@@ -118,6 +118,7 @@ const mapMap = (row: any): MapaNarrativo => ({
   storagePath: row.storage_path || undefined,
   visibilidade: row.visibilidade,
   gradeVisivel: Boolean(row.grade_visivel),
+  gridSize: Number(row.grid_size || 64),
   criadoEm: row.criado_em,
   atualizadoEm: row.atualizado_em,
   criadoPor: row.criado_por || undefined
@@ -430,7 +431,8 @@ export const campaignContentRepository = {
       imagem_url: novo.imagemUrl || null,
       storage_path: novo.storagePath || null,
       visibilidade: novo.visibilidade,
-      grade_visivel: Boolean(novo.gradeVisivel)
+      grade_visivel: Boolean(novo.gradeVisivel),
+      grid_size: novo.gridSize ?? 64
     }).select().single();
     if (error) throw error;
     return mapMap(data);
@@ -443,6 +445,7 @@ export const campaignContentRepository = {
     if (patch.storagePath !== undefined) values.storage_path = patch.storagePath || null;
     if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade;
     if (patch.gradeVisivel !== undefined) values.grade_visivel = patch.gradeVisivel;
+    if (patch.gridSize !== undefined) values.grid_size = Math.max(24, Math.min(160, patch.gridSize));
     values.atualizado_em = new Date().toISOString();
     const { data, error } = await client().from('narrative_maps').update(values).eq('id', id).select().single();
     if (error) throw error;

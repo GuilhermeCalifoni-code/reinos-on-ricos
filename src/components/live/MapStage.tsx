@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Crosshair, Eye, EyeOff, Grid3X3, Maximize2, Minus, Plus, Ruler, Trash2, Upload } from 'lucide-react';
 import { Adversario, MapaNarrativo, NPC, TipoTokenMapa, TokenMapa } from '../../types/campaign';
 import { Personagem } from '../../types/character';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
@@ -9,6 +10,7 @@ interface MapStageProps {
   mapas: MapaNarrativo[];
   tokens: TokenMapa[];
   mestre: boolean;
+  personagemJogadorId?: string;
   personagens?: Personagem[];
   npcs?: NPC[];
   adversarios?: Adversario[];
@@ -23,20 +25,50 @@ interface MapStageProps {
   onRemoverToken: (id: string) => void;
 }
 
-const cores: Record<TipoTokenMapa, string> = { personagem: '#c8a568', npc: '#8ea1bb', adversario: '#bd6570', marcador: '#a99c83' };
+const cores: Record<TipoTokenMapa, string> = {
+  personagem: '#c8a568',
+  npc: '#8ea1bb',
+  adversario: '#bd6570',
+  marcador: '#a99c83'
+};
+
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 export const MapStage: React.FC<MapStageProps> = ({
-  campanhaId, mapas, tokens, mestre, personagens = [], npcs = [], adversarios = [], onActorUsed, mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken
+  campanhaId,
+  mapas,
+  tokens,
+  mestre,
+  personagemJogadorId,
+  personagens = [],
+  npcs = [],
+  adversarios = [],
+  onActorUsed,
+  mapaAtualId,
+  onSelecionarMapa,
+  onAdicionarMapa,
+  onAtualizarMapa,
+  onRemoverMapa,
+  onAdicionarToken,
+  onAtualizarToken,
+  onRemoverToken
 }) => {
   const mapaAtual = mapas.find(mapa => mapa.id === mapaAtualId) || mapas[0];
   const mapaVisivel = Boolean(mapaAtual && (mestre || mapaAtual.visibilidade !== 'mestre_privado'));
-  const tokensAtuais = mapaAtual ? tokens.filter(token => token.mapaId === mapaAtual.id && (mestre || !token.oculto)) : [];
+  const tokensAtuais = useMemo(
+    () => mapaAtual ? tokens.filter(token => token.mapaId === mapaAtual.id && (mestre || !token.oculto)) : [],
+    [mapaAtual, mestre, tokens]
+  );
+
   const viewport = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [arrastando, setArrastando] = useState<string | null>(null);
   const [posicoesLocais, setPosicoesLocais] = useState<Record<string, { x: number; y: number }>>({});
   const [movendoCamera, setMovendoCamera] = useState<{ x: number; y: number } | null>(null);
+  const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
+
   const [novoMapa, setNovoMapa] = useState('');
   const [novaImagem, setNovaImagem] = useState('');
   const [novoStoragePath, setNovoStoragePath] = useState('');
@@ -47,6 +79,13 @@ export const MapStage: React.FC<MapStageProps> = ({
   const [novoToken, setNovoToken] = useState('');
   const [tipoToken, setTipoToken] = useState<TipoTokenMapa>('marcador');
   const [tokenSource, setTokenSource] = useState('manual');
+
+  const gridSize = clamp(mapaAtual?.gridSize ?? 64, 24, 160);
+  const tokenSelecionado = tokensAtuais.find(token => token.id === selecionadoId) || null;
+
+  const podeControlarToken = (token: TokenMapa) =>
+    mestre || Boolean(personagemJogadorId && token.characterId === personagemJogadorId);
+
   const criarMapa = (event: React.FormEvent) => {
     event.preventDefault();
     if (!novoMapa.trim() || uploading) return;
@@ -56,7 +95,8 @@ export const MapStage: React.FC<MapStageProps> = ({
       imagemUrl: novoStoragePath ? undefined : (novaImagem.trim() || undefined),
       storagePath: novoStoragePath || undefined,
       visibilidade: 'revelado_jogadores',
-      gradeVisivel: false
+      gradeVisivel: true,
+      gridSize: 64
     });
     setNovoMapa('');
     setNovaImagem('');
@@ -64,6 +104,7 @@ export const MapStage: React.FC<MapStageProps> = ({
     setArquivoNome('');
     setAssetError('');
   };
+
   const criarToken = (event: React.FormEvent) => {
     event.preventDefault();
     if (!mapaAtual) return;
@@ -75,6 +116,7 @@ export const MapStage: React.FC<MapStageProps> = ({
       const adversario = kind === 'adversario' ? adversarios.find(item => item.id === id) : undefined;
       const actor = personagem || npc || adversario;
       if (!actor) return;
+
       const tipo = kind as TipoTokenMapa;
       onAdicionarToken({
         campanhaId,
@@ -85,6 +127,8 @@ export const MapStage: React.FC<MapStageProps> = ({
         characterId: kind === 'personagem' ? id : undefined,
         npcId: kind === 'npc' ? id : undefined,
         adversaryId: kind === 'adversario' ? id : undefined,
+        tokenSize: 1,
+        rangeCells: 0,
         cor: cores[tipo],
         x: 50,
         y: 50,
@@ -101,6 +145,8 @@ export const MapStage: React.FC<MapStageProps> = ({
       mapaId: mapaAtual.id,
       tipo: tipoToken,
       nome: novoToken.trim(),
+      tokenSize: 1,
+      rangeCells: 0,
       cor: cores[tipoToken],
       x: 50,
       y: 50,
@@ -108,8 +154,51 @@ export const MapStage: React.FC<MapStageProps> = ({
     });
     setNovoToken('');
   };
+
+  const pontoNoCanvas = (clientX: number, clientY: number) => {
+    const node = canvas.current;
+    if (!node) return null;
+    const box = node.getBoundingClientRect();
+    if (!box.width || !box.height) return null;
+    return {
+      x: clamp(((clientX - box.left) / box.width) * 100, 0, 100),
+      y: clamp(((clientY - box.top) / box.height) * 100, 0, 100)
+    };
+  };
+
+  const mover = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (arrastando) {
+      const ponto = pontoNoCanvas(event.clientX, event.clientY);
+      if (!ponto) return;
+      setPosicoesLocais(atual => ({ ...atual, [arrastando]: ponto }));
+      return;
+    }
+
+    if (movendoCamera) {
+      setPan(atual => ({
+        x: atual.x + event.clientX - movendoCamera.x,
+        y: atual.y + event.clientY - movendoCamera.y
+      }));
+      setMovendoCamera({ x: event.clientX, y: event.clientY });
+    }
+  };
+
+  const finalizarArrasto = () => {
+    if (arrastando && posicoesLocais[arrastando]) {
+      onAtualizarToken(arrastando, posicoesLocais[arrastando]);
+    }
+    if (arrastando) {
+      setPosicoesLocais(atual => {
+        const { [arrastando]: _removida, ...restante } = atual;
+        return restante;
+      });
+    }
+    setArrastando(null);
+    setMovendoCamera(null);
+  };
+
   const dropActor = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!mestre || !mapaAtual || !viewport.current) return;
+    if (!mestre || !mapaAtual) return;
     event.preventDefault();
     const raw = event.dataTransfer.getData('application/x-ro-actor');
     if (!raw) return;
@@ -122,12 +211,8 @@ export const MapStage: React.FC<MapStageProps> = ({
         imageUrl?: string;
       };
       if (!['personagem', 'npc', 'adversario'].includes(payload.kind)) return;
-
-      const box = viewport.current.getBoundingClientRect();
-      const canvasX = (event.clientX - box.left - pan.x) / zoom;
-      const canvasY = (event.clientY - box.top - pan.y) / zoom;
-      const x = Math.max(2, Math.min(98, (canvasX / box.width) * 100));
-      const y = Math.max(2, Math.min(98, (canvasY / box.height) * 100));
+      const ponto = pontoNoCanvas(event.clientX, event.clientY);
+      if (!ponto) return;
 
       onAdicionarToken({
         campanhaId,
@@ -138,14 +223,16 @@ export const MapStage: React.FC<MapStageProps> = ({
         characterId: payload.kind === 'personagem' ? payload.id : undefined,
         npcId: payload.kind === 'npc' ? payload.id : undefined,
         adversaryId: payload.kind === 'adversario' ? payload.id : undefined,
+        tokenSize: 1,
+        rangeCells: 0,
         cor: cores[payload.kind],
-        x,
-        y,
+        x: ponto.x,
+        y: ponto.y,
         oculto: false
       });
       onActorUsed?.(payload.kind, payload.id);
     } catch {
-      // Payload externo ou inválido: simplesmente ignore.
+      // Payload externo/inválido.
     }
   };
 
@@ -157,21 +244,6 @@ export const MapStage: React.FC<MapStageProps> = ({
     event.dataTransfer.setData('application/x-ro-actor', JSON.stringify(payload));
   };
 
-  const mover = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!viewport.current) return;
-    if (arrastando) {
-      const box = viewport.current.getBoundingClientRect();
-      setPosicoesLocais(atual => ({ ...atual, [arrastando]: { x: Math.max(2, Math.min(98, ((event.clientX - box.left) / box.width) * 100)), y: Math.max(2, Math.min(98, ((event.clientY - box.top) / box.height) * 100)) } }));
-    } else if (movendoCamera) {
-      setPan(atual => ({ x: atual.x + event.clientX - movendoCamera.x, y: atual.y + event.clientY - movendoCamera.y }));
-      setMovendoCamera({ x: event.clientX, y: event.clientY });
-    }
-  };
-  const finalizarArrasto = () => {
-    if (arrastando && posicoesLocais[arrastando]) onAtualizarToken(arrastando, posicoesLocais[arrastando]);
-    if (arrastando) setPosicoesLocais(atual => { const { [arrastando]: _, ...restante } = atual; return restante; });
-    setArrastando(null); setMovendoCamera(null);
-  };
   const selecionarArquivo = async (file?: File) => {
     if (!file) return;
     setAssetError('');
@@ -183,6 +255,7 @@ export const MapStage: React.FC<MapStageProps> = ({
       setAssetError('A imagem excede o limite de 15 MB.');
       return;
     }
+
     setArquivoNome(file.name);
     if (campaignAssetService.isRemoteCampaignId(campanhaId)) {
       setUploading(true);
@@ -191,18 +264,35 @@ export const MapStage: React.FC<MapStageProps> = ({
         setNovoStoragePath(path);
         setNovaImagem('');
       } catch (error: any) {
-        const mensagem = error.message || 'Não foi possível enviar a imagem.';
-        setAssetError(`${mensagem} Verifique se a migration de Storage foi aplicada no Supabase.`);
+        setAssetError(error.message || 'Não foi possível enviar a imagem.');
       } finally {
         setUploading(false);
       }
       return;
     }
+
     const reader = new FileReader();
-    reader.onload = () => { setNovaImagem(String(reader.result)); setNovoStoragePath(''); };
+    reader.onload = () => {
+      setNovaImagem(String(reader.result));
+      setNovoStoragePath('');
+    };
     reader.readAsDataURL(file);
   };
-  const fullscreen = () => viewport.current?.requestFullscreen?.();
+
+  const centralizar = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const ajustarToken = (patch: Partial<TokenMapa>) => {
+    if (!tokenSelecionado || !podeControlarToken(tokenSelecionado)) return;
+    onAtualizarToken(tokenSelecionado.id, patch);
+  };
+
+  useEffect(() => {
+    setSelecionadoId(null);
+    centralizar();
+  }, [mapaAtual?.id]);
 
   useEffect(() => {
     let ativo = true;
@@ -210,72 +300,126 @@ export const MapStage: React.FC<MapStageProps> = ({
       setImagemResolvida(mapaAtual?.imagemUrl || '');
       return () => { ativo = false; };
     }
+
     setImagemResolvida('');
     void campaignAssetService.signedUrl(mapaAtual.storagePath)
       .then(url => { if (ativo) setImagemResolvida(url); })
       .catch(() => { if (ativo) setImagemResolvida(''); });
+
     return () => { ativo = false; };
   }, [mapaAtual?.imagemUrl, mapaAtual?.storagePath]);
+
   return (
     <section className="map-stage map-stage--v4">
-      <header className="map-stage__head">
-        <div>
-          <p className="ro-eyebrow">Mapa da cena</p>
-          <h2>{mapaAtual?.titulo || 'Nenhum mapa selecionado'}</h2>
-        </div>
-        <div className="map-stage__tools">
-          <button onClick={() => setZoom(valor => Math.max(.6, valor - .1))} aria-label="Diminuir zoom">−</button>
-          <span>{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom(valor => Math.min(2, valor + .1))} aria-label="Aumentar zoom">+</button>
-          <button onClick={fullscreen}>⛶</button>
-        </div>
-      </header>
-
       {mestre && (
         <div className="map-stage__library map-stage__library--v4">
-          <select value={mapaAtual?.id || ''} onChange={(e) => onSelecionarMapa(e.target.value)} aria-label="Selecionar mapa">
+          <select value={mapaAtual?.id || ''} onChange={event => onSelecionarMapa(event.target.value)} aria-label="Selecionar mapa">
             <option value="">Selecionar mapa</option>
             {mapas.map(mapa => <option key={mapa.id} value={mapa.id}>{mapa.titulo}</option>)}
           </select>
-          {mapaAtual && <button onClick={() => onAtualizarMapa(mapaAtual.id, { gradeVisivel: !mapaAtual.gradeVisivel })}>{mapaAtual.gradeVisivel ? 'Sem grade' : 'Grade'}</button>}
-          {mapaAtual && <button onClick={() => onAtualizarMapa(mapaAtual.id, { visibilidade: mapaAtual.visibilidade === 'mestre_privado' ? 'revelado_jogadores' : 'mestre_privado' })}>{mapaAtual.visibilidade === 'mestre_privado' ? 'Revelar' : 'Ocultar'}</button>}
-          <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Centralizar</button>
+
+          {mapaAtual && (
+            <>
+              <button type="button" onClick={() => onAtualizarMapa(mapaAtual.id, { gradeVisivel: !mapaAtual.gradeVisivel })}>
+                <Grid3X3 size={13} /> {mapaAtual.gradeVisivel ? 'Grade ativa' : 'Sem grade'}
+              </button>
+              <button type="button" title="Diminuir células" onClick={() => onAtualizarMapa(mapaAtual.id, { gridSize: clamp(gridSize - 8, 24, 160) })}><Minus size={13} /></button>
+              <span className="map-stage__grid-size">{gridSize}px</span>
+              <button type="button" title="Aumentar células" onClick={() => onAtualizarMapa(mapaAtual.id, { gridSize: clamp(gridSize + 8, 24, 160) })}><Plus size={13} /></button>
+              <button type="button" onClick={() => onAtualizarMapa(mapaAtual.id, { visibilidade: mapaAtual.visibilidade === 'mestre_privado' ? 'revelado_jogadores' : 'mestre_privado' })}>
+                {mapaAtual.visibilidade === 'mestre_privado' ? <Eye size={13} /> : <EyeOff size={13} />}
+                {mapaAtual.visibilidade === 'mestre_privado' ? 'Revelar' : 'Ocultar'}
+              </button>
+            </>
+          )}
+
+          <button type="button" onClick={centralizar}><Crosshair size={13} /> Centralizar</button>
+          <button type="button" onClick={() => viewport.current?.requestFullscreen?.()}><Maximize2 size={13} /></button>
         </div>
       )}
 
       <div
         ref={viewport}
-        className={`map-stage__viewport ${mapaAtual?.gradeVisivel ? 'has-grid' : ''}`}
-        onDragOver={(event) => { if (mestre && mapaAtual) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; } }}
+        className="map-stage__viewport"
+        onDragOver={event => {
+          if (mestre && mapaAtual) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'copy';
+          }
+        }}
         onDrop={dropActor}
         onPointerMove={mover}
         onPointerUp={finalizarArrasto}
         onPointerLeave={finalizarArrasto}
-        onPointerDown={(e) => { if (!(e.target as HTMLElement).closest('.map-stage__token')) setMovendoCamera({ x: e.clientX, y: e.clientY }); }}
-        onWheel={(e) => { e.preventDefault(); setZoom(valor => Math.max(.6, Math.min(2, valor + (e.deltaY < 0 ? .1 : -.1)))); }}
+        onPointerDown={event => {
+          if (!(event.target as HTMLElement).closest('.map-stage__token')) {
+            setSelecionadoId(null);
+            setMovendoCamera({ x: event.clientX, y: event.clientY });
+          }
+        }}
+        onWheel={event => {
+          event.preventDefault();
+          setZoom(valor => clamp(valor + (event.deltaY < 0 ? .1 : -.1), .5, 3));
+        }}
       >
         {mapaVisivel && mapaAtual ? (
-          <div className="map-stage__canvas" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, backgroundImage: imagemResolvida ? `url(${imagemResolvida})` : undefined }}>
+          <div
+            ref={canvas}
+            className="map-stage__canvas"
+            style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
+          >
+            <div
+              className="map-stage__map-image"
+              style={{ backgroundImage: imagemResolvida ? `url("${imagemResolvida}")` : undefined }}
+            />
+            {mapaAtual.gradeVisivel && (
+              <div
+                className="map-stage__grid-overlay"
+                style={{ backgroundSize: `${gridSize}px ${gridSize}px` }}
+              />
+            )}
             {!imagemResolvida && <span className="map-stage__placeholder">Adicione uma imagem para transformar este espaço no mapa da cena.</span>}
+
             {tokensAtuais.map(token => {
               const posicao = posicoesLocais[token.id] || token;
+              const tokenSize = clamp(token.tokenSize ?? 1, .5, 4);
+              const rangeCells = clamp(token.rangeCells ?? 0, 0, 30);
+              const sizePx = gridSize * tokenSize;
+              const canControl = podeControlarToken(token);
+              const selected = selecionadoId === token.id;
+
               return (
                 <button
+                  type="button"
                   key={token.id}
-                  className={`map-stage__token token--${token.tipo} ${token.oculto ? 'is-hidden' : ''}`}
-                  style={{ left: `${posicao.x}%`, top: `${posicao.y}%`, '--token-color': token.cor } as React.CSSProperties}
-                  onPointerDown={(e) => {
-                    if (!mestre) return;
-                    e.stopPropagation();
-                    setArrastando(token.id);
-                    (e.currentTarget as HTMLButtonElement).setPointerCapture(e.pointerId);
+                  className={`map-stage__token token--${token.tipo} ${token.oculto ? 'is-hidden' : ''} ${selected ? 'is-selected' : ''} ${canControl ? 'is-controllable' : ''}`}
+                  style={{
+                    left: `${posicao.x}%`,
+                    top: `${posicao.y}%`,
+                    '--token-color': token.cor,
+                    '--token-size': `${sizePx}px`,
+                    '--range-size': `${Math.max(0, rangeCells * gridSize * 2)}px`
+                  } as React.CSSProperties}
+                  onClick={event => {
+                    event.stopPropagation();
+                    setSelecionadoId(token.id);
                   }}
-                  onDoubleClick={() => mestre && onAtualizarToken(token.id, { nome: window.prompt('Nome do token', token.nome) || token.nome })}
-                  title={mestre ? `${token.nome} · arraste para mover · duplo clique para renomear` : token.nome}
+                  onPointerDown={event => {
+                    event.stopPropagation();
+                    setSelecionadoId(token.id);
+                    if (!canControl) return;
+                    setArrastando(token.id);
+                    event.currentTarget.setPointerCapture(event.pointerId);
+                  }}
+                  title={canControl ? `${token.nome} · arraste para mover` : token.nome}
                 >
-                  {token.imagemUrl
-                    ? <AssetImage src={token.imagemUrl} alt="" />
-                    : token.nome.slice(0, 2).toUpperCase()}
+                  {selected && rangeCells > 0 && <span className="map-stage__range-ring"><em>{rangeCells} casas</em></span>}
+                  <span className="map-stage__token-face">
+                    {token.imagemUrl
+                      ? <AssetImage src={token.imagemUrl} alt="" />
+                      : token.nome.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="map-stage__token-name">{token.nome}</span>
                 </button>
               );
             })}
@@ -284,6 +428,66 @@ export const MapStage: React.FC<MapStageProps> = ({
           <p className="map-stage__empty">{mestre ? 'Crie ou selecione um mapa para a cena.' : 'O mapa desta cena ainda não foi revelado.'}</p>
         )}
       </div>
+
+      {tokenSelecionado && podeControlarToken(tokenSelecionado) && (
+        <aside className="map-stage__token-inspector">
+          <div className="map-stage__token-inspector-head">
+            <div>
+              <small>{tokenSelecionado.tipo}</small>
+              <strong>{tokenSelecionado.nome}</strong>
+            </div>
+            <button type="button" onClick={() => setSelecionadoId(null)}>×</button>
+          </div>
+
+          <div className="map-stage__token-control">
+            <span>Tamanho</span>
+            <div>
+              <button type="button" onClick={() => ajustarToken({ tokenSize: clamp((tokenSelecionado.tokenSize ?? 1) - .25, .5, 4) })}><Minus size={13} /></button>
+              <b>{(tokenSelecionado.tokenSize ?? 1).toFixed(2)}×</b>
+              <button type="button" onClick={() => ajustarToken({ tokenSize: clamp((tokenSelecionado.tokenSize ?? 1) + .25, .5, 4) })}><Plus size={13} /></button>
+            </div>
+          </div>
+
+          <div className="map-stage__token-control map-stage__token-control--range">
+            <span><Ruler size={13} /> Raio de movimento</span>
+            <div className="map-stage__range-presets">
+              {[0, 2, 4, 6, 8, 12].map(value => (
+                <button
+                  type="button"
+                  key={value}
+                  className={(tokenSelecionado.rangeCells ?? 0) === value ? 'is-active' : ''}
+                  onClick={() => ajustarToken({ rangeCells: value })}
+                >
+                  {value === 0 ? 'Off' : value}
+                </button>
+              ))}
+            </div>
+            <label>
+              <input
+                type="number"
+                min={0}
+                max={30}
+                step={1}
+                value={tokenSelecionado.rangeCells ?? 0}
+                onChange={event => ajustarToken({ rangeCells: clamp(Number(event.target.value) || 0, 0, 30) })}
+              />
+              <span>casas</span>
+            </label>
+          </div>
+
+          {mestre && (
+            <div className="map-stage__token-inspector-actions">
+              <button type="button" onClick={() => ajustarToken({ oculto: !tokenSelecionado.oculto })}>
+                {tokenSelecionado.oculto ? <Eye size={13} /> : <EyeOff size={13} />}
+                {tokenSelecionado.oculto ? 'Revelar' : 'Ocultar'}
+              </button>
+              <button type="button" className="is-danger" onClick={() => { onRemoverToken(tokenSelecionado.id); setSelecionadoId(null); }}>
+                <Trash2 size={13} /> Remover
+              </button>
+            </div>
+          )}
+        </aside>
+      )}
 
       {mestre && mapaAtual && (
         <div className="map-stage__actor-shelf">
@@ -300,7 +504,7 @@ export const MapStage: React.FC<MapStageProps> = ({
                 onDragStart={event => startActorDrag(event, { kind: 'personagem', id: personagem.id, name: personagem.nome, imageUrl: personagem.imagemUrl })}
                 title={`Arrastar ${personagem.nome}`}
               >
-                <span>{personagem.imagemUrl ? <AssetImage src={personagem.imagemUrl} alt="" /> : personagem.nome.slice(0,2).toUpperCase()}</span>
+                <span>{personagem.imagemUrl ? <AssetImage src={personagem.imagemUrl} alt="" /> : personagem.nome.slice(0, 2).toUpperCase()}</span>
                 <em>{personagem.nome}</em>
               </button>
             ))}
@@ -312,7 +516,7 @@ export const MapStage: React.FC<MapStageProps> = ({
                 onDragStart={event => startActorDrag(event, { kind: 'npc', id: npc.id, name: npc.nome, imageUrl: npc.imagemUrl })}
                 title={`Arrastar ${npc.nome}`}
               >
-                <span>{npc.imagemUrl ? <AssetImage src={npc.imagemUrl} alt="" /> : npc.nome.slice(0,2).toUpperCase()}</span>
+                <span>{npc.imagemUrl ? <AssetImage src={npc.imagemUrl} alt="" /> : npc.nome.slice(0, 2).toUpperCase()}</span>
                 <em>{npc.nome}</em>
               </button>
             ))}
@@ -324,7 +528,7 @@ export const MapStage: React.FC<MapStageProps> = ({
                 onDragStart={event => startActorDrag(event, { kind: 'adversario', id: adversario.id, name: adversario.nome, imageUrl: adversario.imagemUrl })}
                 title={`Arrastar ${adversario.nome}`}
               >
-                <span>{adversario.imagemUrl ? <AssetImage src={adversario.imagemUrl} alt="" /> : adversario.nome.slice(0,2).toUpperCase()}</span>
+                <span>{adversario.imagemUrl ? <AssetImage src={adversario.imagemUrl} alt="" /> : adversario.nome.slice(0, 2).toUpperCase()}</span>
                 <em>{adversario.nome}</em>
               </button>
             ))}
@@ -332,24 +536,18 @@ export const MapStage: React.FC<MapStageProps> = ({
         </div>
       )}
 
-      {mapaAtual && (
-        <footer className="map-stage__caption">
-          <div><strong>{mapaAtual.titulo}</strong><small>{mapaAtual.gradeVisivel ? 'Grade ativa' : 'Mapa narrativo'}</small></div>
-          <span>{mapaAtual.visibilidade === 'mestre_privado' ? 'Privado do Mestre' : 'Visível à mesa'}</span>
-        </footer>
-      )}
-
       {mestre && (
         <details className="map-stage__setup">
-          <summary>Preparar mapa e tokens</summary>
+          <summary>Biblioteca e criação rápida</summary>
           <div className="map-stage__setup-body">
             <form onSubmit={criarMapa} className="map-stage__create">
-              <input value={novoMapa} onChange={(e) => setNovoMapa(e.target.value)} placeholder="Nome do novo mapa" />
-              <input value={novaImagem} onChange={(e) => { setNovaImagem(e.target.value); setNovoStoragePath(''); setArquivoNome(''); }} placeholder="URL da imagem, opcional" />
+              <input value={novoMapa} onChange={event => setNovoMapa(event.target.value)} placeholder="Nome do novo mapa" />
+              <input value={novaImagem} onChange={event => { setNovaImagem(event.target.value); setNovoStoragePath(''); setArquivoNome(''); }} placeholder="URL da imagem, opcional" />
               <label className={`map-stage__file ${novoStoragePath || novaImagem ? 'has-file' : ''}`}>
+                <Upload size={14} />
                 <strong>{uploading ? 'Enviando imagem…' : arquivoNome || (novoStoragePath ? 'Imagem pronta' : 'Anexar imagem')}</strong>
                 <small>{novoStoragePath ? 'Upload concluído' : 'PNG, JPG, WEBP ou GIF · até 15 MB'}</small>
-                <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={uploading} onChange={(e) => void selecionarArquivo(e.target.files?.[0])} />
+                <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={uploading} onChange={event => void selecionarArquivo(event.target.files?.[0])} />
               </label>
               <button className="ro-button" disabled={uploading || !novoMapa.trim()}>Criar mapa</button>
               {assetError && <span className="map-stage__asset-error">{assetError}</span>}
@@ -358,11 +556,11 @@ export const MapStage: React.FC<MapStageProps> = ({
             {mapaAtual && (
               <>
                 <form onSubmit={criarToken} className="map-stage__create map-stage__create--token">
-                  <select value={tokenSource} onChange={(e) => setTokenSource(e.target.value)} aria-label="Origem do token">
+                  <select value={tokenSource} onChange={event => setTokenSource(event.target.value)} aria-label="Origem do token">
                     <option value="manual">Marcador manual</option>
                     {personagens.length > 0 && (
                       <optgroup label="Desvelados dos jogadores">
-                        {personagens.map(personagem => <option key={personagem.id} value={`personagem:${personagem.id}`}>{personagem.nome} · {personagem.jogador || 'Jogador'}</option>)}
+                        {personagens.map(personagem => <option key={personagem.id} value={`personagem:${personagem.id}`}>{personagem.nome}</option>)}
                       </optgroup>
                     )}
                     {npcs.length > 0 && (
@@ -376,10 +574,11 @@ export const MapStage: React.FC<MapStageProps> = ({
                       </optgroup>
                     )}
                   </select>
+
                   {tokenSource === 'manual' && (
                     <>
-                      <input value={novoToken} onChange={(e) => setNovoToken(e.target.value)} placeholder="Nome do marcador" />
-                      <select value={tipoToken} onChange={(e) => setTipoToken(e.target.value as TipoTokenMapa)}>
+                      <input value={novoToken} onChange={event => setNovoToken(event.target.value)} placeholder="Nome do marcador" />
+                      <select value={tipoToken} onChange={event => setTipoToken(event.target.value as TipoTokenMapa)}>
                         <option value="marcador">Marcador</option>
                         <option value="personagem">Personagem manual</option>
                         <option value="npc">NPC manual</option>
@@ -387,21 +586,11 @@ export const MapStage: React.FC<MapStageProps> = ({
                       </select>
                     </>
                   )}
+
                   <button className="ro-button" disabled={tokenSource === 'manual' && !novoToken.trim()}>
                     {tokenSource === 'manual' ? 'Adicionar marcador' : 'Colocar ficha no mapa'}
                   </button>
                 </form>
-                <div className="map-stage__tokens">
-                  {tokens.filter(token => token.mapaId === mapaAtual.id).map(token => (
-                    <div key={token.id}>
-                      <span style={{ background: token.cor }} />
-                      <strong>{token.nome}</strong>
-                      <button onClick={() => onAtualizarToken(token.id, { oculto: !token.oculto })}>{token.oculto ? 'Revelar' : 'Ocultar'}</button>
-                      <button onClick={() => onRemoverToken(token.id)} className="is-danger">Remover</button>
-                    </div>
-                  ))}
-                </div>
-                <button onClick={() => onRemoverMapa(mapaAtual.id)} className="map-stage__delete is-danger">Excluir mapa atual</button>
               </>
             )}
           </div>

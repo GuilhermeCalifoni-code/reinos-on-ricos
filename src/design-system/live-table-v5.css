@@ -1957,3 +1957,452 @@
     inset: 5.4rem .75rem 8rem 3.7rem;
   }
 }
+
+
+/* ==========================================================================
+   Mesa VTT unificada + canvas de mapa V6
+   A Mesa é um ambiente cinematográfico próprio e permanece escura mesmo
+   quando a biblioteca geral está em tema claro. Isso evita chrome claro
+   misturado com palco/dock escuros.
+   ========================================================================== */
+:root[data-theme='light'] .live-table--v5 {
+  --vtt-bg: #090c10;
+  --vtt-panel: rgba(15, 19, 24, .96);
+  --vtt-panel-strong: #11161d;
+  --vtt-surface: #171d24;
+  --vtt-surface-2: #1d242c;
+  --vtt-line: rgba(226, 211, 187, .12);
+  --vtt-line-strong: rgba(203, 158, 92, .38);
+  --vtt-text: #f2eee7;
+  --vtt-muted: #958f87;
+  --vtt-soft: #c7c0b5;
+  --vtt-accent: #c29455;
+  --vtt-accent-bright: #e0b978;
+  --vtt-danger: #b85e68;
+  --vtt-safe: #73a28b;
+  --vtt-topbar: rgba(9, 12, 16, .96);
+  --vtt-stage-bg: radial-gradient(circle at 50% 38%, rgba(255,255,255,.018), transparent 28rem), #090c10;
+  --vtt-stage-scene: radial-gradient(circle at 50% 42%, rgba(98,81,123,.13), transparent 28rem), linear-gradient(145deg, #12171d, #080b0e 72%);
+  --vtt-stage-overlay: linear-gradient(90deg, rgba(7,10,13,.56), transparent 26%, transparent 74%, rgba(7,10,13,.42)), linear-gradient(180deg, rgba(7,10,13,.2), transparent 28%, rgba(7,10,13,.7));
+  --vtt-scene-copy: linear-gradient(90deg, rgba(8,11,14,.82), rgba(8,11,14,.3), transparent);
+  --vtt-input: #0c1015;
+  --vtt-map-bg: radial-gradient(ellipse at 50% 45%, #20262d, #090c10 73%);
+  --vtt-control-bg: rgba(10,14,18,.92);
+  --vtt-tool-bg: #11161c;
+
+  --ro-ink: #090c10;
+  --ro-charcoal: #11161d;
+  --ro-charcoal-raised: #171d24;
+  --ro-paper: #f2eee7;
+  --ro-paper-muted: #c7c0b5;
+  --ro-ash: #958f87;
+  --ro-copper: #c29455;
+  --ro-copper-bright: #e0b978;
+  --ro-rift: #713b35;
+  --ro-line: rgba(226, 211, 187, .12);
+  --ro-line-strong: rgba(203, 158, 92, .38);
+  --ro-bg: #090c10;
+  --ro-bg-soft: #0d1116;
+  --ro-surface: #11161d;
+  --ro-surface-raised: #171d24;
+  --ro-input: #0c1015;
+  --ro-header-bg: rgba(9,12,16,.96);
+  --ro-panel-bg: rgba(15,19,24,.96);
+  --ro-accent-soft: rgba(194,148,85,.10);
+  --ro-on-accent: #120d07;
+  color-scheme: dark;
+  background:
+    radial-gradient(circle at 72% 15%, rgba(87,70,111,.12), transparent 32rem),
+    radial-gradient(circle at 20% 100%, rgba(164,102,49,.08), transparent 28rem),
+    var(--vtt-bg);
+}
+
+:root[data-theme='light'] .live-table--v5 .live-vtt__topbar,
+:root[data-theme='light'] .live-table--v5 .live-vtt__drawer,
+:root[data-theme='light'] .live-table--v5 .live-vtt__dock,
+:root[data-theme='light'] .live-table--v5 .live-vtt__tool {
+  background-color: var(--vtt-panel-strong);
+  color: var(--vtt-text);
+  box-shadow: 0 18px 48px rgba(0,0,0,.42);
+}
+
+:root[data-theme='light'] .live-table--v5 .live-vtt__mode-switch,
+:root[data-theme='light'] .live-table--v5 .live-vtt__presentation {
+  background: rgba(255,255,255,.025);
+}
+
+:root[data-theme='light'] .live-table--v5 .live-vtt__leave {
+  border-color: rgba(184,94,104,.34);
+  background: rgba(184,94,104,.10);
+  color: #dca2a8;
+}
+
+:root[data-theme='light'] .live-table--v5 .live-table__stage-copy h2 {
+  color: #fffaf2;
+  text-shadow: 0 6px 24px rgba(0,0,0,.52);
+}
+
+:root[data-theme='light'] .live-table--v5 .live-table__stage-copy > p:not(.ro-eyebrow) {
+  color: rgba(242,238,231,.72);
+}
+
+/* O rolador deixa de herdar superfícies creme dentro da Mesa. */
+.live-table--v5 .dice-roller--ro {
+  color: var(--vtt-soft);
+}
+.live-table--v5 .dice-roller--ro [class*="bg-\[var(--ro-surface)\]"] {
+  background: var(--vtt-panel-strong) !important;
+}
+.live-table--v5 .dice-roller--ro [class*="bg-slate-950"] {
+  background-color: #0b0f14 !important;
+}
+.live-table--v5 .dice-roller--ro [class*="bg-slate-900"] {
+  background-color: #121820 !important;
+}
+.live-table--v5 .dice-roller--ro [class*="border-slate-"] {
+  border-color: rgba(226,211,187,.14) !important;
+}
+
+/* Mapa, imagem e grade vivem no MESMO canvas transformado. */
+.live-table--v5 .map-stage--v4 .map-stage__viewport {
+  overflow: hidden;
+  touch-action: none;
+  background: var(--vtt-map-bg);
+  cursor: grab;
+}
+.live-table--v5 .map-stage--v4 .map-stage__viewport:active {
+  cursor: grabbing;
+}
+.live-table--v5 .map-stage__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-origin: 0 0;
+  background: #0b0f14;
+}
+.live-table--v5 .map-stage__map-image,
+.live-table--v5 .map-stage__grid-overlay {
+  position: absolute;
+  inset: 0;
+}
+.live-table--v5 .map-stage__map-image {
+  z-index: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  filter: saturate(.92) contrast(.98) brightness(.88);
+}
+.live-table--v5 .map-stage__grid-overlay {
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(230,220,200,.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230,220,200,.18) 1px, transparent 1px);
+  box-shadow: inset 0 0 0 1px rgba(230,220,200,.13);
+}
+.live-table--v5 .map-stage__placeholder {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* token: hitbox, retrato, nome, seleção e alcance */
+.live-table--v5 .map-stage__token {
+  position: absolute;
+  z-index: 5;
+  width: var(--token-size);
+  height: var(--token-size);
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  box-shadow: none;
+  cursor: default;
+  user-select: none;
+  touch-action: none;
+}
+.live-table--v5 .map-stage__token.is-controllable {
+  cursor: grab;
+}
+.live-table--v5 .map-stage__token.is-controllable:active {
+  cursor: grabbing;
+}
+.live-table--v5 .map-stage__token-face {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 3px solid rgba(8,10,13,.94);
+  border-radius: 50%;
+  background: #1b222b;
+  color: #fff;
+  font: 800 .58rem ui-monospace, monospace;
+  box-shadow:
+    0 0 0 2px var(--token-color),
+    0 8px 22px rgba(0,0,0,.52);
+}
+.live-table--v5 .map-stage__token.is-selected .map-stage__token-face {
+  box-shadow:
+    0 0 0 2px var(--token-color),
+    0 0 0 5px rgba(224,185,120,.30),
+    0 9px 24px rgba(0,0,0,.56);
+}
+.live-table--v5 .map-stage__token-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.live-table--v5 .map-stage__token-name {
+  position: absolute;
+  z-index: 4;
+  top: calc(100% + 6px);
+  left: 50%;
+  max-width: 130px;
+  transform: translateX(-50%);
+  overflow: hidden;
+  padding: .2rem .36rem;
+  border: 1px solid rgba(226,211,187,.15);
+  border-radius: 4px;
+  background: rgba(7,10,13,.88);
+  color: #f2eee7;
+  font: 600 .48rem/1 Inter, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: 0 5px 14px rgba(0,0,0,.32);
+  pointer-events: none;
+}
+.live-table--v5 .map-stage__range-ring {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  width: var(--range-size);
+  height: var(--range-size);
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(224,185,120,.78);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(194,148,85,.04) 0 48%, rgba(194,148,85,.10) 49% 50%, rgba(194,148,85,.025) 51%);
+  box-shadow:
+    0 0 0 1px rgba(8,10,13,.4),
+    inset 0 0 45px rgba(194,148,85,.06);
+  pointer-events: none;
+}
+.live-table--v5 .map-stage__range-ring::before,
+.live-table--v5 .map-stage__range-ring::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  content: "";
+  background: rgba(224,185,120,.34);
+  transform: translate(-50%, -50%);
+}
+.live-table--v5 .map-stage__range-ring::before {
+  width: 100%;
+  height: 1px;
+}
+.live-table--v5 .map-stage__range-ring::after {
+  width: 1px;
+  height: 100%;
+}
+.live-table--v5 .map-stage__range-ring em {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: .16rem .3rem;
+  border-radius: 999px;
+  background: rgba(7,10,13,.86);
+  color: var(--vtt-accent-bright);
+  font: normal .42rem ui-monospace, monospace;
+  white-space: nowrap;
+}
+
+/* toolbar: grade realmente configurável */
+.live-table--v5 .map-stage__library--v4 {
+  width: min(760px, calc(100% - 7rem));
+  align-items: center;
+}
+.live-table--v5 .map-stage__library--v4 button {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  white-space: nowrap;
+}
+.live-table--v5 .map-stage__grid-size {
+  min-width: 2.75rem;
+  color: var(--vtt-accent-bright);
+  font: 700 .48rem ui-monospace, monospace;
+  text-align: center;
+}
+
+/* inspector do token */
+.map-stage__token-inspector {
+  position: absolute;
+  z-index: 24;
+  right: 1rem;
+  top: 4.6rem;
+  width: 250px;
+  overflow: hidden;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: 8px;
+  background: rgba(11,15,20,.95);
+  color: var(--vtt-soft);
+  box-shadow: 0 18px 48px rgba(0,0,0,.42);
+  backdrop-filter: blur(16px);
+}
+.map-stage__token-inspector-head {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+  padding: .65rem .7rem;
+  border-bottom: 1px solid var(--vtt-line);
+}
+.map-stage__token-inspector-head small,
+.map-stage__token-inspector-head strong {
+  display: block;
+}
+.map-stage__token-inspector-head small {
+  color: var(--vtt-accent);
+  font: .44rem ui-monospace, monospace;
+  text-transform: uppercase;
+}
+.map-stage__token-inspector-head strong {
+  overflow: hidden;
+  margin-top: .18rem;
+  color: var(--vtt-text);
+  font: 500 .9rem "Cormorant Garamond", Georgia, serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.map-stage__token-inspector-head > button {
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 1px solid var(--vtt-line);
+  border-radius: 4px;
+  color: var(--vtt-muted);
+}
+.map-stage__token-control {
+  padding: .65rem .7rem;
+  border-bottom: 1px solid var(--vtt-line);
+}
+.map-stage__token-control > span {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  margin-bottom: .45rem;
+  color: var(--vtt-muted);
+  font: 600 .5rem Inter, sans-serif;
+}
+.map-stage__token-control > div {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+.map-stage__token-control > div > button,
+.map-stage__range-presets button {
+  min-width: 2rem;
+  min-height: 2rem;
+  border: 1px solid var(--vtt-line);
+  border-radius: 4px;
+  background: var(--vtt-input);
+  color: var(--vtt-soft);
+}
+.map-stage__token-control > div > b {
+  min-width: 4.2rem;
+  color: var(--vtt-text);
+  font: 700 .55rem ui-monospace, monospace;
+  text-align: center;
+}
+.map-stage__range-presets {
+  display: grid !important;
+  grid-template-columns: repeat(6, 1fr);
+  gap: .22rem !important;
+}
+.map-stage__range-presets button {
+  min-width: 0;
+  min-height: 1.85rem;
+  padding: 0;
+  font-size: .46rem;
+}
+.map-stage__range-presets button.is-active {
+  border-color: var(--vtt-line-strong);
+  background: rgba(194,148,85,.14);
+  color: var(--vtt-accent-bright);
+}
+.map-stage__token-control--range label {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: .4rem;
+  margin-top: .45rem;
+}
+.map-stage__token-control--range input {
+  min-width: 0;
+  height: 2rem;
+  border: 1px solid var(--vtt-line);
+  border-radius: 4px;
+  padding: 0 .45rem;
+  background: var(--vtt-input);
+  color: var(--vtt-text);
+  font-size: .54rem;
+}
+.map-stage__token-control--range label span {
+  color: var(--vtt-muted);
+  font-size: .48rem;
+}
+.map-stage__token-inspector-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.map-stage__token-inspector-actions button {
+  display: inline-flex;
+  min-height: 2.2rem;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem;
+  color: var(--vtt-muted);
+  font-size: .48rem;
+}
+.map-stage__token-inspector-actions button + button {
+  border-left: 1px solid var(--vtt-line);
+}
+.map-stage__token-inspector-actions button.is-danger {
+  color: #dca2a8;
+}
+
+/* mantém o HUD inteiro no mesmo tom, inclusive dock e saída */
+.live-table--v5 .live-vtt__dock,
+.live-table--v5 .live-vtt__rail {
+  background: rgba(10,14,18,.96);
+}
+.live-table--v5 .live-vtt__leave {
+  background: rgba(118,44,52,.20);
+  border-color: rgba(184,94,104,.35);
+  color: #e1aab0;
+}
+.live-table--v5 .live-vtt__leave:hover {
+  background: rgba(118,44,52,.34);
+}
+
+@media (max-width: 900px) {
+  .live-table--v5 .map-stage__library--v4 {
+    width: calc(100% - 4.3rem);
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  .map-stage__token-inspector {
+    right: .5rem;
+    top: 7rem;
+    width: min(250px, calc(100% - 4.3rem));
+  }
+}

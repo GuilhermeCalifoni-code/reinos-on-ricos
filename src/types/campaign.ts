@@ -93,6 +93,7 @@ export interface MapaNarrativo {
   storagePath?: string;
   visibilidade: VisibilidadeConteudo;
   gradeVisivel?: boolean;
+  gridSize?: number;
   criadoEm: string;
   atualizadoEm: string;
   criadoPor?: string;
@@ -110,6 +111,8 @@ export interface TokenMapa {
   characterId?: string;
   npcId?: string;
   adversaryId?: string;
+  tokenSize?: number;
+  rangeCells?: number;
   cor: string;
   x: number;
   y: number;

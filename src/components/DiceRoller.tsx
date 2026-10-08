@@ -151,7 +151,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+    <div className="dice-roller--ro space-y-6 max-w-5xl mx-auto pb-12">
       
       {/* Abas de Navegação do Rolador */}
       <div className="bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-2 flex gap-2 font-mono text-xs">
