@@ -43,16 +43,18 @@ export const CampaignCluesLocationsPanel: React.FC<Props> = ({
   const [imageUrl, setImageUrl] = useState('');
   const [removeImage, setRemoveImage] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const isClue = mode === 'pistas';
   const items = isClue ? clues : locations;
   const current = items.find(item => item.id === editingId);
-  const displayImage = file ? URL.createObjectURL(file) : removeImage ? '' : imageUrl || current?.imagemUrl || '';
+  const displayImage = previewUrl || (removeImage ? '' : imageUrl || current?.imagemUrl || '');
   React.useEffect(() => {
-    if (!file) return;
-    // A prévia é temporária; liberar a URL ao escolher outra imagem ou fechar.
-    return () => { /* a URL é revogada em efeito dedicado abaixo */ };
+    if (!file) { setPreviewUrl(''); return; }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
   }, [file]);
 
   const close = () => { setEditorOpen(false); setEditingId(null); setFile(null); setError(''); };
