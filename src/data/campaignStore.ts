@@ -240,6 +240,10 @@ export function useCampaignStorage() {
     setLocais(prev => [...prev, item]);
   };
 
+  const atualizarLocal = (id: string, parcial: Partial<Local>) =>
+    setLocais(prev => prev.map(item => item.id === id ? { ...item, ...parcial } : item));
+  const removerLocal = (id: string) => setLocais(prev => prev.filter(item => item.id !== id));
+
   const adicionarPista = (novo: Omit<Pista, 'id'>) => {
     const item: Pista = { ...novo, id: `pis-${Date.now()}` };
     setPistas(prev => [...prev, item]);
@@ -336,6 +340,8 @@ export function useCampaignStorage() {
     removerAdversario,
     locais,
     adicionarLocal,
+    atualizarLocal,
+    removerLocal,
     pistas,
     adicionarPista,
     atualizarPista,

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Cena, ConteudoDeCena, Handout, VisibilidadeConteudo } from '../../types/campaign';
+import { Cena, ConteudoDeCena, Handout, Sessao, VisibilidadeConteudo } from '../../types/campaign';
+import { SessionResourceLinks } from './SessionResourceLinks';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
 import { AssetImage } from '../system/AssetImage';
 
@@ -9,6 +10,8 @@ interface CampaignAssetsPanelProps {
   scenes: Cena[];
   handouts: Handout[];
   canManage: boolean;
+  sessions: Sessao[];
+  onUpdateSession: (id: string, patch: Partial<Sessao>) => Promise<unknown> | unknown;
   onAddScene: (scene: Omit<Cena, 'id'>) => Promise<unknown> | unknown;
   onUpdateScene: (id: string, patch: Partial<Cena>) => Promise<unknown> | unknown;
   onRemoveScene: (id: string) => Promise<unknown> | unknown;
@@ -24,7 +27,7 @@ const visibilityLabel: Record<VisibilidadeConteudo, string> = {
 };
 
 export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
-  campaignId, mode, scenes, handouts, canManage,
+  campaignId, mode, scenes, handouts, canManage, sessions, onUpdateSession,
   onAddScene, onUpdateScene, onRemoveScene,
   onAddHandout, onUpdateHandout, onRemoveHandout
 }) => {
@@ -34,6 +37,8 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
   const [contentType, setContentType] = useState<ConteudoDeCena>('ambientacao');
   const [imageUrl, setImageUrl] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [removeAttached, setRemoveAttached] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -44,6 +49,20 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
     setContentType('ambientacao');
     setImageUrl('');
     setFile(null);
+    setEditingId(null);
+    setRemoveAttached(false);
+  };
+
+  const editScene = (scene: Cena) => {
+    setEditingId(scene.id); setTitle(scene.titulo); setDescription(scene.descricao || '');
+    setContentType(scene.tipoDeConteudo); setVisibility(scene.visibilidade);
+    setImageUrl(campaignAssetService.isStorageRef(scene.imagemUrl || '') ? '' : scene.imagemUrl || '');
+    setFile(null); setRemoveAttached(false); setMessage('');
+  };
+  const editHandout = (handout: Handout) => {
+    setEditingId(handout.id); setTitle(handout.titulo); setDescription(handout.descricao || '');
+    setVisibility(handout.visibilidade); setImageUrl(handout.arquivoUrl || '');
+    setFile(null); setRemoveAttached(false); setMessage('');
   };
 
   const fileToDataUrl = (selected: File) => new Promise<string>((resolve, reject) => {
@@ -58,9 +77,10 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
     if (!title.trim() || busy) return;
     setBusy(true); setMessage('');
     try {
-      let finalImageUrl = imageUrl.trim() || undefined;
+      const original = scenes.find(item => item.id === editingId);
+      let finalImageUrl = removeAttached ? undefined : imageUrl.trim() || original?.imagemUrl;
 
-      if (file && (contentType === 'imagem' || contentType === 'handout')) {
+      if (file) {
         if (campaignAssetService.isRemoteCampaignId(campaignId)) {
           const storagePath = await campaignAssetService.uploadSceneImage(campaignId, file);
           finalImageUrl = campaignAssetService.toStorageRef(storagePath);
@@ -69,14 +89,12 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
         }
       }
 
-      await onAddScene({
-        campanhaId: campaignId,
-        titulo: title.trim(),
-        descricao: description.trim() || undefined,
-        visibilidade: visibility,
-        tipoDeConteudo: contentType,
-        imagemUrl: finalImageUrl
-      });
+      const patch = {
+        titulo: title.trim(), descricao: description.trim() || undefined,
+        visibilidade: visibility, tipoDeConteudo: contentType, imagemUrl: finalImageUrl || ''
+      };
+      if (editingId) await onUpdateScene(editingId, patch);
+      else await onAddScene({ campanhaId: campaignId, ...patch });
       reset();
     } catch (error: any) {
       setMessage(error.message || 'Não foi possível salvar a cena.');
@@ -88,12 +106,14 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
     if (!title.trim() || busy) return;
     setBusy(true); setMessage('');
     try {
-      let arquivoUrl: string | undefined;
-      let storagePath: string | undefined;
+      const original = handouts.find(item => item.id === editingId);
+      let arquivoUrl: string | undefined = removeAttached ? undefined : imageUrl.trim() || original?.arquivoUrl;
+      let storagePath: string | undefined = removeAttached || imageUrl.trim() ? undefined : original?.storagePath;
 
       if (file) {
         if (campaignAssetService.isRemoteCampaignId(campaignId)) {
           storagePath = await campaignAssetService.uploadHandout(campaignId, file);
+          arquivoUrl = undefined;
         } else {
           arquivoUrl = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
@@ -104,14 +124,12 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
         }
       }
 
-      await onAddHandout({
-        campanhaId: campaignId,
-        titulo: title.trim(),
-        descricao: description.trim() || undefined,
-        arquivoUrl,
-        storagePath,
-        visibilidade: visibility
-      });
+      const patch = {
+        titulo: title.trim(), descricao: description.trim() || undefined,
+        arquivoUrl: arquivoUrl || '', storagePath: storagePath || '', visibilidade: visibility
+      };
+      if (editingId) await onUpdateHandout(editingId, patch);
+      else await onAddHandout({ campanhaId: campaignId, ...patch });
       reset();
     } catch (error: any) {
       setMessage(error.message || 'Não foi possível salvar o handout.');
@@ -131,11 +149,12 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
   };
 
   const removeScene = async (scene: Cena) => {
+    if (!window.confirm(`Excluir cena "${scene.titulo}"?`)) return;
     try {
-      if (scene.imagemUrl && campaignAssetService.isStorageRef(scene.imagemUrl)) {
-        await campaignAssetService.remove(campaignAssetService.fromStorageRef(scene.imagemUrl));
-      }
       await onRemoveScene(scene.id);
+      if (scene.imagemUrl && campaignAssetService.isStorageRef(scene.imagemUrl)) {
+        void campaignAssetService.remove(campaignAssetService.fromStorageRef(scene.imagemUrl)).catch(() => undefined);
+      }
     } catch (error: any) {
       setMessage(error.message || 'Não foi possível excluir a cena.');
     }
@@ -162,9 +181,10 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
   };
 
   const removeHandout = async (handout: Handout) => {
+    if (!window.confirm(`Excluir handout "${handout.titulo}"?`)) return;
     try {
-      if (handout.storagePath) await campaignAssetService.remove(handout.storagePath);
       await onRemoveHandout(handout.id);
+      if (handout.storagePath) void campaignAssetService.remove(handout.storagePath).catch(() => undefined);
     } catch (error: any) {
       setMessage(error.message || 'Não foi possível excluir o handout.');
     }
@@ -200,7 +220,7 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
                 {Object.entries(visibilityLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
             </div>
-            {(contentType === 'imagem' || contentType === 'handout') && (
+            {(
               <div className="campaign-assets__visual-inputs">
                 <label className="campaign-assets__file">
                   <span>{file ? file.name : 'Selecionar imagem da cena'}</span>
@@ -208,14 +228,16 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
                   <input
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif"
-                    onChange={e => setFile(e.target.files?.[0] || null)}
+                    onChange={e => { setFile(e.target.files?.[0] || null); setRemoveAttached(false); }}
                   />
                 </label>
                 <span className="campaign-assets__or">ou</span>
-                <input value={imageUrl} onChange={e => { setImageUrl(e.target.value); if (e.target.value) setFile(null); }} placeholder="URL visual opcional" />
+                <input value={imageUrl} onChange={e => { setImageUrl(e.target.value); setRemoveAttached(false); if (e.target.value) setFile(null); }} placeholder="URL visual opcional" />
               </div>
             )}
-            <button className="ro-button" disabled={busy}>{busy ? 'Salvando…' : 'Criar cena'}</button>
+            {editingId && <button type="button" className="ro-button--quiet" onClick={() => { setRemoveAttached(true); setFile(null); setImageUrl(''); }}>Remover imagem</button>}
+            <button className="ro-button" disabled={busy}>{busy ? 'Salvando…' : editingId ? 'Salvar alterações' : 'Criar cena'}</button>
+            {editingId && <button type="button" className="ro-button--quiet" onClick={reset}>Cancelar edição</button>}
           </form>
         )}
 
@@ -232,9 +254,11 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
                 </button>
               )}
               {scene.descricao && <p>{scene.descricao}</p>}
+              <SessionResourceLinks resourceId={scene.id} field="cenaIds" sessions={sessions} canManage={canManage} onUpdateSession={onUpdateSession} />
               {scene.imagemUrl && <button type="button" className="campaign-assets__open" onClick={() => void openSceneImage(scene)}>Abrir imagem ↗</button>}
               {canManage && (
                 <div className="campaign-assets__actions">
+                  <button type="button" onClick={() => editScene(scene)}>Editar / trocar imagem</button>
                   <button type="button" onClick={() => toggleSceneVisibility(scene)}>
                     {scene.visibilidade === 'mestre_privado' ? 'Revelar' : 'Ocultar'}
                   </button>
@@ -264,11 +288,15 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
           <select value={visibility} onChange={e => setVisibility(e.target.value as VisibilidadeConteudo)}>
             {Object.entries(visibilityLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
+          <input type="url" value={imageUrl} placeholder="URL do arquivo (opcional)"
+            onChange={event => { setImageUrl(event.target.value); setFile(null); setRemoveAttached(false); }} />
           <label className="campaign-assets__file">
             <span>{file ? file.name : 'Selecionar arquivo'}</span>
-            <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
+            <input type="file" onChange={e => { setFile(e.target.files?.[0] || null); setRemoveAttached(false); }} />
           </label>
-          <button className="ro-button" disabled={busy}>{busy ? 'Enviando…' : 'Adicionar handout'}</button>
+          {editingId && <button type="button" className="ro-button--quiet" onClick={() => { setRemoveAttached(true); setFile(null); setImageUrl(''); }}>Remover arquivo</button>}
+          <button className="ro-button" disabled={busy}>{busy ? 'Salvando…' : editingId ? 'Salvar alterações' : 'Adicionar handout'}</button>
+          {editingId && <button type="button" className="ro-button--quiet" onClick={reset}>Cancelar edição</button>}
         </form>
       )}
 
@@ -280,9 +308,11 @@ export const CampaignAssetsPanel: React.FC<CampaignAssetsPanelProps> = ({
               <span>{visibilityLabel[handout.visibilidade]}</span>
             </div>
             {handout.descricao && <p>{handout.descricao}</p>}
+            <SessionResourceLinks resourceId={handout.id} field="handoutIds" sessions={sessions} canManage={canManage} onUpdateSession={onUpdateSession} />
             <button type="button" className="campaign-assets__open" onClick={() => void openHandout(handout)}>Abrir arquivo ↗</button>
             {canManage && (
               <div className="campaign-assets__actions">
+                <button type="button" onClick={() => editHandout(handout)}>Editar / trocar arquivo</button>
                 <button type="button" onClick={() => toggleHandoutVisibility(handout)}>
                   {handout.visibilidade === 'mestre_privado' ? 'Revelar' : 'Ocultar'}
                 </button>

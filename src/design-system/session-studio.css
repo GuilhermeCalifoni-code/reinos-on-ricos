@@ -1374,3 +1374,21 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Um recurso pode participar de várias sessões sem ser duplicado. */
+.session-resource-links { display: grid; gap: .45rem; margin: .8rem 0; font-size: .72rem; color: var(--ro-paper-muted); }
+.session-resource-links__label { font-size: .62rem; letter-spacing: .10em; text-transform: uppercase; color: var(--ro-ash); }
+.session-resource-links__chips { display: flex; flex-wrap: wrap; gap: .35rem; }
+.session-resource-links__chips > small { color: var(--ro-ash); }
+.session-resource-links__chip { display: inline-flex; align-items: center; gap: .5rem; max-width: 100%; border: 1px solid var(--ro-line-strong); border-radius: 3px; padding: .28rem .5rem; background: var(--ro-surface-raised); overflow-wrap: anywhere; }
+.session-resource-links__chip button { border: 0; background: transparent; padding: 0 .2rem; color: var(--ro-copper); font-size: 1rem; cursor: pointer; }
+.session-resource-links select { width: 100%; min-height: 2.3rem; border: 1px solid var(--ro-line); border-radius: 3px; background: var(--ro-bg); padding: .35rem .55rem; color: var(--ro-paper); font-size: .72rem; }
+.session-resource-links__error { color: var(--ro-danger); }
+.campaign-resource-manager { display: grid; gap: 1.3rem; }
+.campaign-resource-manager__image { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; padding: .75rem; border: 1px solid var(--ro-line); }
+.campaign-resource-manager__image img { width: 100px; height: 80px; object-fit: cover; }
+.campaign-resource-manager__image input[type=url] { flex: 1 1 180px; min-width: 0; }
+.campaign-resource-manager__image label { display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; }
+.campaign-resource-manager__image label input { max-width: 160px; }
+.campaign-assets__actions button, .campaign-maps__actions button { display: inline-flex; align-items: center; gap: .3rem; }

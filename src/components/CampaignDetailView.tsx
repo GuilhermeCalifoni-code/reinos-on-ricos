@@ -6,6 +6,7 @@ import { CampaignMembersPanel } from './campaign/CampaignMembersPanel';
 import { CampaignAssetsPanel } from './campaign/CampaignAssetsPanel';
 import { CampaignActorsPanel } from './campaign/CampaignActorsPanel';
 import { CampaignMapsPanel } from './campaign/CampaignMapsPanel';
+import { CampaignCluesLocationsPanel } from './campaign/CampaignCluesLocationsPanel';
 import { AssetImage } from './system/AssetImage';
 
 export type CampaignTabType = 
@@ -51,7 +52,11 @@ interface CampaignDetailViewProps {
   onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown> | unknown;
   onRemoverAdversario: (id: string) => Promise<unknown> | unknown;
   onAdicionarLocal: (loc: Omit<Local, 'id'>) => Promise<unknown> | unknown;
+  onAtualizarLocal: (id: string, patch: Partial<Local>) => Promise<unknown> | unknown;
+  onRemoverLocal: (id: string) => Promise<unknown> | unknown;
   onAdicionarPista: (pista: Omit<Pista, 'id'>) => Promise<unknown> | unknown;
+  onAtualizarPista: (id: string, patch: Partial<Pista>) => Promise<unknown> | unknown;
+  onRemoverPista: (id: string) => Promise<unknown> | unknown;
   onAdicionarLore: (lore: Omit<LoreEntry, 'id'>) => void;
   onAdicionarAnotacao: (campanhaId: string, titulo: string, conteudo: string) => void;
   onAdicionarCena: (cena: Omit<Cena, 'id'>) => Promise<unknown> | unknown;
@@ -98,7 +103,11 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   onAtualizarAdversario,
   onRemoverAdversario,
   onAdicionarLocal,
+  onAtualizarLocal,
+  onRemoverLocal,
   onAdicionarPista,
+  onAtualizarPista,
+  onRemoverPista,
   onAdicionarLore,
   onAdicionarAnotacao,
   onAdicionarCena,
@@ -138,6 +147,18 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
     .slice()
     .sort((a, b) => b.numero - a.numero);
   const ultimaSessao = sessoesCampanha[0] || null;
+  type SessionArrayField = 'npcIds' | 'adversarioIds' | 'localIds' | 'pistaIds' | 'cenaIds' | 'mapaIds' | 'handoutIds';
+  // Excluir no arquivo também limpa vínculos das sessões, sem apagar outros recursos.
+  const removerRecurso = async (
+    id: string, field: SessionArrayField, remover: (resourceId: string) => Promise<unknown> | unknown
+  ) => {
+    await remover(id);
+    for (const sessao of sessoesCampanha) {
+      const vinculados = sessao[field] || [];
+      if (!vinculados.includes(id)) continue;
+      await onAtualizarSessao(sessao.id, { [field]: vinculados.filter(item => item !== id) } as Partial<Sessao>);
+    }
+  };
   const npcsCampanha = npcs.filter(n => n.campanhaId === campanha.id);
   const adversariosCampanha = adversarios.filter(a => a.campanhaId === campanha.id);
   const locaisCampanha = locais.filter(l => l.campanhaId === campanha.id);
@@ -468,12 +489,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             scenes={cenasCampanha}
             handouts={handoutsCampanha}
             canManage={canManageMembers}
+            sessions={sessoesCampanha}
+            onUpdateSession={onAtualizarSessao}
             onAddScene={onAdicionarCena}
             onUpdateScene={onAtualizarCena}
-            onRemoveScene={onRemoverCena}
+            onRemoveScene={id => removerRecurso(id, 'cenaIds', onRemoverCena)}
             onAddHandout={onAdicionarHandout}
             onUpdateHandout={onAtualizarHandout}
-            onRemoveHandout={onRemoverHandout}
+            onRemoveHandout={id => removerRecurso(id, 'handoutIds', onRemoverHandout)}
           />
         )}
 
@@ -484,12 +507,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             scenes={cenasCampanha}
             handouts={handoutsCampanha}
             canManage={canManageMembers}
+            sessions={sessoesCampanha}
+            onUpdateSession={onAtualizarSessao}
             onAddScene={onAdicionarCena}
             onUpdateScene={onAtualizarCena}
-            onRemoveScene={onRemoverCena}
+            onRemoveScene={id => removerRecurso(id, 'cenaIds', onRemoverCena)}
             onAddHandout={onAdicionarHandout}
             onUpdateHandout={onAtualizarHandout}
-            onRemoveHandout={onRemoverHandout}
+            onRemoveHandout={id => removerRecurso(id, 'handoutIds', onRemoverHandout)}
           />
         )}
 
@@ -498,9 +523,11 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             campaignId={campanha.id}
             maps={mapas.filter(item => item.campanhaId === campanha.id)}
             canManage={canManageMembers}
+            sessions={sessoesCampanha}
+            onUpdateSession={onAtualizarSessao}
             onAdd={onAdicionarMapa}
             onUpdate={onAtualizarMapa}
-            onRemove={onRemoverMapa}
+            onRemove={id => removerRecurso(id, 'mapaIds', onRemoverMapa)}
           />
         )}
 
@@ -576,12 +603,14 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             npcs={npcsCampanha}
             adversarios={adversariosCampanha}
             canManage={canManageMembers}
+            sessions={sessoesCampanha}
+            onUpdateSession={onAtualizarSessao}
             onAddNpc={onAdicionarNPC}
             onUpdateNpc={onAtualizarNPC}
-            onRemoveNpc={onRemoverNPC}
+            onRemoveNpc={id => removerRecurso(id, 'npcIds', onRemoverNPC)}
             onAddAdversary={onAdicionarAdversario}
             onUpdateAdversary={onAtualizarAdversario}
-            onRemoveAdversary={onRemoverAdversario}
+            onRemoveAdversary={id => removerRecurso(id, 'adversarioIds', onRemoverAdversario)}
           />
         )}
 
@@ -593,88 +622,34 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
             npcs={npcsCampanha}
             adversarios={adversariosCampanha}
             canManage={canManageMembers}
+            sessions={sessoesCampanha}
+            onUpdateSession={onAtualizarSessao}
             onAddNpc={onAdicionarNPC}
             onUpdateNpc={onAtualizarNPC}
-            onRemoveNpc={onRemoverNPC}
+            onRemoveNpc={id => removerRecurso(id, 'npcIds', onRemoverNPC)}
             onAddAdversary={onAdicionarAdversario}
             onUpdateAdversary={onAtualizarAdversario}
-            onRemoveAdversary={onRemoverAdversario}
+            onRemoveAdversary={id => removerRecurso(id, 'adversarioIds', onRemoverAdversario)}
           />
         )}
 
-        {/* ABA: LOCAIS */}
-        {abaAtiva === 'locais' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
-              <div>
-                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Locais & Fronteiras</h2>
-                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Espaços urbanos onde o Sonhar se manifesta.</p>
-              </div>
-              {canManageMembers && (<button
-                onClick={() => setModalNovoItem('locais')}
-                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
-              >
-                + Novo Local
-              </button>)}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {locaisCampanha.map(loc => (
-                <div key={loc.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{loc.nome}</h3>
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[var(--ro-copper)]">
-                      {loc.tipo}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[var(--ro-paper-muted)]/80 leading-relaxed">{loc.descricao}</p>
-                  {loc.anomaliaDetectada && (
-                    <div className="p-3 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-xs font-mono text-[var(--ro-ash)]">
-                      <span className="text-[var(--ro-copper)]">Anomalia: </span>
-                      {loc.anomaliaDetectada}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ABA: PISTAS */}
-        {abaAtiva === 'pistas' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-[var(--ro-line)]">
-              <div>
-                <h2 className="font-serif text-2xl text-[var(--ro-paper)]">Pistas & Evidências</h2>
-                <p className="text-xs text-[var(--ro-ash)] mt-0.5">Documentos, gravações e objetos anômalos.</p>
-              </div>
-              {canManageMembers && (<button
-                onClick={() => setModalNovoItem('pistas')}
-                className="px-4 py-2 bg-[var(--ro-surface-raised)] hover:bg-[var(--ro-accent-soft)] text-[var(--ro-paper)] text-xs font-medium uppercase tracking-wider transition-colors rounded-sm border border-[var(--ro-line-strong)]"
-              >
-                + Nova Pista
-              </button>)}
-            </div>
-
-            <div className="space-y-4">
-              {pistasCampanha.map(pista => (
-                <div key={pista.id} className="bg-[var(--ro-surface)] border border-[var(--ro-line)] p-4 sm:p-5 rounded-sm flex flex-col sm:flex-row justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 bg-[var(--ro-bg)] border border-[var(--ro-line)] text-[var(--ro-copper)]">
-                        {pista.tipo}
-                      </span>
-                      <span className="text-xs font-mono text-[var(--ro-ash)]">
-                        Status: {pista.status}
-                      </span>
-                    </div>
-                    <h3 className="font-serif text-2xl text-[var(--ro-paper)] font-normal">{pista.titulo}</h3>
-                    <p className="text-xs text-[var(--ro-paper-muted)]/80 mt-2 leading-relaxed">{pista.descricao}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* LOCAIS E PISTAS: edições completas e sessões reutilizáveis */}
+        {(abaAtiva === 'locais' || abaAtiva === 'pistas') && (
+          <CampaignCluesLocationsPanel
+            mode={abaAtiva}
+            campaignId={campanha.id}
+            locations={locaisCampanha}
+            clues={pistasCampanha}
+            sessions={sessoesCampanha}
+            canManage={canManageMembers}
+            onUpdateSession={onAtualizarSessao}
+            onAddLocation={onAdicionarLocal}
+            onUpdateLocation={onAtualizarLocal}
+            onRemoveLocation={id => removerRecurso(id, 'localIds', onRemoverLocal)}
+            onAddClue={onAdicionarPista}
+            onUpdateClue={onAtualizarPista}
+            onRemoveClue={id => removerRecurso(id, 'pistaIds', onRemoverPista)}
+          />
         )}
 
         {/* ABA: LORE */}

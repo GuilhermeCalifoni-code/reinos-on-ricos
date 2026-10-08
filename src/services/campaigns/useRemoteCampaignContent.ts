@@ -53,6 +53,8 @@ export function useRemoteCampaignContent(campaignId?: string, enabled = false) {
     atualizarAdversario: (id: string, patch: Partial<Adversario>) => run(() => campaignContentRepository.atualizarAdversario(id, patch)),
     removerAdversario: (id: string) => run(() => campaignContentRepository.removerAdversario(id)),
     adicionarLocal: (item: Omit<Local, 'id'>) => run(() => campaignContentRepository.adicionarLocal(item)),
+    atualizarLocal: (id: string, patch: Partial<Local>) => run(() => campaignContentRepository.atualizarLocal(id, patch)),
+    removerLocal: (id: string) => run(() => campaignContentRepository.removerLocal(id)),
     adicionarPista: (item: Omit<Pista, 'id'>) => run(() => campaignContentRepository.adicionarPista(item)),
     atualizarPista: (id: string, patch: Partial<Pista>) => run(() => campaignContentRepository.atualizarPista(id, patch)),
     removerPista: (id: string) => run(() => campaignContentRepository.removerPista(id)),
