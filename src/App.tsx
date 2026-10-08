@@ -100,8 +100,12 @@ export default function App() {
     removerAdversario,
     locais,
     adicionarLocal,
+    atualizarLocal,
+    removerLocal,
     pistas,
     adicionarPista,
+    atualizarPista,
+    removerPista,
     loreEntries,
     adicionarLore,
     anotacoes,
@@ -748,8 +752,12 @@ export default function App() {
             onAdicionarAdversario={(item) => usandoRemoto ? conteudoRemoto.adicionarAdversario(item) : adicionarAdversario(item)}
             onAtualizarAdversario={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarAdversario(id, patch) : atualizarAdversario(id, patch)}
             onRemoverAdversario={(id) => usandoRemoto ? conteudoRemoto.removerAdversario(id) : removerAdversario(id)}
-            onAdicionarLocal={(item) => usandoRemoto ? void conteudoRemoto.adicionarLocal(item) : adicionarLocal(item)}
-            onAdicionarPista={(item) => usandoRemoto ? void conteudoRemoto.adicionarPista(item) : adicionarPista(item)}
+            onAdicionarLocal={(item) => usandoRemoto ? conteudoRemoto.adicionarLocal(item) : adicionarLocal(item)}
+            onAtualizarLocal={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarLocal(id, patch) : atualizarLocal(id, patch)}
+            onRemoverLocal={(id) => usandoRemoto ? conteudoRemoto.removerLocal(id) : removerLocal(id)}
+            onAdicionarPista={(item) => usandoRemoto ? conteudoRemoto.adicionarPista(item) : adicionarPista(item)}
+            onAtualizarPista={(id, patch) => usandoRemoto ? conteudoRemoto.atualizarPista(id, patch) : atualizarPista(id, patch)}
+            onRemoverPista={(id) => usandoRemoto ? conteudoRemoto.removerPista(id) : removerPista(id)}
             onAdicionarLore={(item) => usandoRemoto ? void conteudoRemoto.adicionarLore(item) : adicionarLore(item)}
             onAdicionarAnotacao={(campaignId, titulo, conteudo) => usandoRemoto ? conteudoRemoto.adicionarAnotacao(campaignId, titulo, conteudo) : adicionarAnotacao(campaignId, titulo, conteudo)}
             onAdicionarCena={(item) => usandoRemoto ? conteudoRemoto.adicionarCena(item) : adicionarCena(item)}
