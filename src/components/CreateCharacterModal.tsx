@@ -304,7 +304,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 <div className="ro-character-create-stats">
                   {[
                     {label:'PV',value:vidaMaxima,info:'Vida máxima',symbol:<Heart size={20}/>},
-                    {label:'Defesa',value:defesa,info:'Atributo principal',symbol:<Shield size={20}/>},
+                    {label:'Defesa',value:defesa,info:'8 + Corpo',symbol:<Shield size={20}/>},
                     {label:'Resistência',value:resistencia,info:'6 + Corpo',symbol:<Shield size={20}/>},
                     {label:'Foco (PF)',value:prog.focoBase,info:'Nível ' + nivel,symbol:<Flame size={20}/>},
                     {label:'Proteção Onírica',value:prog.protecaoOniricaBase,info:'Nível ' + nivel,symbol:<Sparkles size={20}/>},
