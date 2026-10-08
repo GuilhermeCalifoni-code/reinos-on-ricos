@@ -7,7 +7,7 @@ test('Ataque mundano de adversário usa 1d20 sem somar automaticamente NA', () =
   assert.equal(rollActorMundano(30,0,()=>.999).critical,true);
 });
 test('Teste Onírico compara Realidade e Sonhar individualmente e aplica Ruptura', () => {
-  let n=0;const r=rollActorOnirico(13,2,()=>[.5,.75][n++]);
+  let n=0;const r=rollActorOnirico(13,2,()=>[.45,.75][n++]);
   assert.equal(r.kind,'onirico');
   if(r.kind==='onirico'){assert.equal(r.outcome,'Sonhar vence');assert.equal(r.ruptura,1);}
 });
