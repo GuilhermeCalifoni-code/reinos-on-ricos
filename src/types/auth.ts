@@ -30,5 +30,6 @@ export interface UserSession {
   uiPreferences?: UIPreferences;
   mesaCodigo: string;
   personagemVinculadoId?: string;
-  modoConexao: 'supabase' | 'local';
+  /** Somente autenticação Supabase; o modo local de jogo foi descontinuado. */
+  modoConexao: 'supabase';
 }
