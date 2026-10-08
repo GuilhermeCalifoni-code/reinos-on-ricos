@@ -20,8 +20,6 @@ interface LiveActorsPanelProps {
   onAbrirFicha: (personagem: Personagem) => void;
   onAjustar: (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => void;
   onRuptura: (personagem: Personagem) => void;
-  onUpdateNpc: (id: string, nextHp: number) => Promise<unknown>;
-  onUpdateAdversary: (id: string, nextHp: number) => Promise<unknown>;
   onActorRoll: (content: string, details: Record<string, unknown>) => Promise<unknown>;
   onClose: () => void;
 }
