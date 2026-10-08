@@ -23,6 +23,7 @@ import { useTheme } from './design-system/theme';
 import { applyUIPreferences, loadLocalUIPreferences, saveLocalUIPreferences } from './services/preferences/uiPreferences';
 import { accountDataService } from './services/account/accountDataService';
 import { liveTableRepository } from './features/realtime/liveTableRepository';
+import { usePlatformAccess } from './services/admin/usePlatformAccess';
 
 const SESSION_STORAGE_KEY = 'reinos_oniricos_session_v1';
 
@@ -31,6 +32,7 @@ const CampaignDetailView = React.lazy(() => import('./components/CampaignDetailV
 const MesaView = React.lazy(() => import('./components/MesaView').then(module => ({ default: module.MesaView })));
 const CharactersListView = React.lazy(() => import('./components/CharactersListView').then(module => ({ default: module.CharactersListView })));
 const SettingsView = React.lazy(() => import('./components/SettingsView').then(module => ({ default: module.SettingsView })));
+const PlatformAdminView = React.lazy(() => import('./components/PlatformAdminView').then(module => ({ default: module.PlatformAdminView })));
 const CommunityView = React.lazy(() => import('./components/CommunityView').then(module => ({ default: module.CommunityView })));
 const CharacterSheet = React.lazy(() => import('./components/CharacterSheet').then(module => ({ default: module.CharacterSheet })));
 const RulesReference = React.lazy(() => import('./components/RulesReference').then(module => ({ default: module.RulesReference })));
@@ -135,6 +137,8 @@ export default function App() {
   const campanhasRemotas = useRemoteCampaigns(session?.modoConexao === 'supabase' ? session.authUserId : undefined);
   const [campanhaRemotaAtivaId, setCampanhaRemotaAtivaId] = useState<string | null>(null);
   const usandoRemoto = session?.modoConexao === 'supabase' && Boolean(session.authUserId) && isSupabaseConfigured();
+  const platformAccess = usePlatformAccess(usandoRemoto ? session?.authUserId : undefined);
+  const canAccessAdmin = platformAccess.canViewUsers || platformAccess.canManageCampaignRoles;
   const campanhas = usandoRemoto ? campanhasRemotas.campanhas : campanhasLocais;
   const campanhaAtivaId = usandoRemoto ? campanhaRemotaAtivaId : campanhaAtivaIdLocal;
   const campanhaAtiva = usandoRemoto ? campanhas.find(c => c.id === campanhaRemotaAtivaId) || campanhas[0] || null : campanhaAtivaLocal;
@@ -293,6 +297,9 @@ export default function App() {
 
   // Navegação Principal do Produto
   const [viewAtiva, setViewAtiva] = useState<MainViewType>('dashboard');
+  useEffect(() => {
+    if (viewAtiva === 'administracao' && !platformAccess.loading && !canAccessAdmin) setViewAtiva('dashboard');
+  }, [viewAtiva, platformAccess.loading, canAccessAdmin]);
   const [personagemParaFicha, setPersonagemParaFicha] = useState<Personagem | null>(null);
 
   // Modais
@@ -682,6 +689,8 @@ export default function App() {
     }
 
     switch (viewAtiva) {
+      case 'administracao':
+        return canAccessAdmin ? <PlatformAdminView access={{ role: platformAccess.role, permissions: platformAccess.permissions }} /> : null;
       case 'dashboard':
         return (
           <DashboardView
@@ -902,6 +911,7 @@ export default function App() {
         }}
         onNovaCampanha={handleIniciarCriacaoCampanha}
         onSair={handleTrocarSessao}
+        canAccessAdmin={canAccessAdmin}
       />}
 
       {/* Área Principal de Conteúdo */}
@@ -914,6 +924,7 @@ export default function App() {
           }}
           onNovaCampanha={handleIniciarCriacaoCampanha}
           onSair={handleTrocarSessao}
+          canAccessAdmin={canAccessAdmin}
         />}
         {/* 10. HEADER (Minimalista, Fundo #0B0B0B, Borda #292929) */}
         {viewAtiva !== 'modo_mesa' && viewAtiva !== 'dashboard' && viewAtiva !== 'campanhas' && viewAtiva !== 'comunidade' && <Header

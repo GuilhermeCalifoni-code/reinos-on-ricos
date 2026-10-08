@@ -1,0 +1,36 @@
+/* Central de autorização: legível, sóbria e isolada da gestão de campanhas. */
+.platform-admin { max-width: 1100px; width: 100%; margin: 0 auto; padding: clamp(1rem,3vw,2.5rem); display: grid; gap: 1.15rem; color: var(--ro-paper); }
+.platform-admin__hero { border: 1px solid var(--ro-line); background: var(--ro-surface); padding: 1.7rem; }
+.platform-admin__hero h1 { font: 500 clamp(2rem,5vw,3.1rem) 'Cormorant Garamond', Georgia, serif; margin: .3rem 0; }
+.platform-admin__hero p { color: var(--ro-paper-muted); max-width: 690px; font-size: .88rem; line-height: 1.7; }
+.platform-admin__eyebrow, .platform-admin__identity { display: inline-flex; gap: .5rem; align-items: center; color: var(--ro-copper); font-size: .72rem; letter-spacing: .07em; }
+.platform-admin__identity { display: flex; margin-top: 1.1rem; color: var(--ro-paper-muted); }
+.platform-admin__toolbar { display: flex; flex-wrap: wrap; gap: .55rem; }
+.platform-admin__toolbar button, .platform-admin__filters button { display: inline-flex; align-items: center; gap: .5rem; border: 1px solid var(--ro-line); border-radius: 3px; padding: .7rem .85rem; background: var(--ro-surface); color: var(--ro-paper-muted); font-size: .77rem; cursor: pointer; }
+.platform-admin__toolbar button.is-active { border-color: var(--ro-copper); color: var(--ro-paper); }
+.platform-admin__filters { display: flex; align-items: center; gap: .7rem; background: var(--ro-surface); border: 1px solid var(--ro-line); padding: .3rem .65rem; }
+.platform-admin__filters input { flex: 1; min-width: 0; padding: .5rem .2rem; background: transparent; border: 0; outline: none; color: var(--ro-paper); }
+.platform-admin__filters button { padding: .45rem; }
+.platform-admin__list { display: grid; gap: .55rem; }
+.platform-admin__item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; background: var(--ro-surface); border: 1px solid var(--ro-line); border-radius: 3px; }
+.platform-admin__item > div:first-child { min-width: 0; display: grid; gap: .3rem; overflow-wrap: anywhere; }
+.platform-admin__item strong { font-weight: 600; font-size: .92rem; }
+.platform-admin__item span { color: var(--ro-paper-muted); font-size: .76rem; }
+.platform-admin__item small { color: var(--ro-ash); font-size: .69rem; }
+.platform-admin__readonly { color: var(--ro-ash); font-size: .71rem; }
+.platform-admin__role-select { display: grid; gap: .4rem; font-size: .65rem; color: var(--ro-ash); }
+.platform-admin select, .platform-admin__modal select { border: 1px solid var(--ro-line-strong); background: var(--ro-bg); color: var(--ro-paper); min-height: 2.4rem; padding: .5rem; border-radius: 3px; }
+.platform-admin__message { padding: .8rem; border: 1px solid var(--ro-line-strong); color: var(--ro-paper); font-size: .8rem; }
+.platform-admin__message.is-error { color: var(--ro-danger); }
+.platform-admin__modal { display: grid; gap: 1rem; width: min(550px,calc(100vw - 2rem)); max-height: 90vh; overflow-y: auto; background: var(--ro-surface); border: 1px solid var(--ro-line-strong); padding: 1.3rem; }
+.platform-admin__modal h2 { font: 500 2rem 'Cormorant Garamond',Georgia,serif; }
+.platform-admin__modal p, .platform-admin__modal small { color: var(--ro-ash); font-size: .76rem; overflow-wrap: anywhere; }
+.platform-admin__modal > label { display: grid; gap: .5rem; color: var(--ro-paper-muted); font-size: .77rem; }
+.platform-admin__permissions { display: grid; gap: .6rem; }
+.platform-admin__permissions label { display: flex; align-items: center; gap: .75rem; padding: .75rem; border: 1px solid var(--ro-line); }
+.platform-admin__permissions input { accent-color: var(--ro-copper); }
+.platform-admin__permissions label span { display: grid; gap: .2rem; }
+.platform-admin__permissions strong { font-size: .85rem; }
+.platform-admin__modal-actions { display: flex; justify-content: flex-end; gap: .8rem; }
+.platform-admin__modal-actions button { display: inline-flex; align-items: center; gap: .4rem; padding: .6rem .9rem; }
+@media (max-width:600px) { .platform-admin__item { align-items: stretch; flex-direction: column; } .platform-admin__role-select { width: 100%; } }
