@@ -416,7 +416,6 @@ export default function App() {
 
     setCampanhaRemotaAtivaId(nova.id);
     setViewAtiva('detalhe_campanha');
-    r
   };
 
   // Abrir Ficha de Personagem
