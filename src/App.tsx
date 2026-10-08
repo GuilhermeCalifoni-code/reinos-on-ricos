@@ -14,6 +14,7 @@ import { UserSession } from './types/auth';
 import { isSupabaseConfigured } from './lib/supabaseClient';
 import { authService } from './services/auth/authService';
 import { useRemoteCampaigns } from './services/campaigns/useRemoteCampaigns';
+import { canPrepareCampaign as roleCanPrepare, campaignEntryView } from './services/campaigns/campaignNavigationPolicy';
 import { useRemoteCampaignContent } from './services/campaigns/useRemoteCampaignContent';
 import { useRemoteCharacters } from './services/characters/useRemoteCharacters';
 import { campaignRepository } from './services/campaigns/campaignRepository';
@@ -141,9 +142,14 @@ export default function App() {
   const canAccessAdmin = platformAccess.canViewUsers || platformAccess.canManageCampaignRoles;
   const campanhas = usandoRemoto ? campanhasRemotas.campanhas : campanhasLocais;
   const campanhaAtivaId = usandoRemoto ? campanhaRemotaAtivaId : campanhaAtivaIdLocal;
-  const campanhaAtiva = usandoRemoto ? campanhas.find(c => c.id === campanhaRemotaAtivaId) || campanhas[0] || null : campanhaAtivaLocal;
+  const campanhaAtiva = usandoRemoto
+    ? (campanhaRemotaAtivaId ? campanhas.find(c => c.id === campanhaRemotaAtivaId) || null : campanhas[0] || null)
+    : campanhaAtivaLocal;
   const setCampanhaAtivaId = (id: string) => usandoRemoto ? setCampanhaRemotaAtivaId(id) : setCampanhaAtivaIdLocal(id);
   const papelDaCampanha = usandoRemoto ? campanhasRemotas.roleDaCampanha(campanhaAtivaId || undefined) || 'observador' : session?.role || 'observador';
+  const podePrepararCampanha = (camp: Campanha) => roleCanPrepare(
+    usandoRemoto ? campanhasRemotas.roleDaCampanha(camp.id) : session?.role
+  );
   const membroRemotoAtivo = usandoRemoto ? campanhasRemotas.membros.find(membro => membro.campaignId === campanhaAtivaId && membro.userId === session?.authUserId) : undefined;
   const personagemJogadorId = usandoRemoto ? membroRemotoAtivo?.characterId : session?.personagemVinculadoId;
   const personagensRemotos = useRemoteCharacters(
@@ -300,6 +306,12 @@ export default function App() {
   useEffect(() => {
     if (viewAtiva === 'administracao' && !platformAccess.loading && !canAccessAdmin) setViewAtiva('dashboard');
   }, [viewAtiva, platformAccess.loading, canAccessAdmin]);
+  // O estúdio de preparação é exclusivo do Mestre. O Jogador/Observador volta à Mesa.
+  useEffect(() => {
+    if (viewAtiva === 'detalhe_campanha' && campanhaAtiva && !podePrepararCampanha(campanhaAtiva)) {
+      setViewAtiva('modo_mesa');
+    }
+  }, [viewAtiva, campanhaAtiva?.id, papelDaCampanha, session?.role]);
   const [personagemParaFicha, setPersonagemParaFicha] = useState<Personagem | null>(null);
 
   // Modais
@@ -508,7 +520,7 @@ export default function App() {
 
   const handleDetalhesCampanha = (camp: Campanha) => {
     setCampanhaAtivaId(camp.id);
-    setViewAtiva('detalhe_campanha');
+    setViewAtiva(campaignEntryView(usandoRemoto ? campanhasRemotas.roleDaCampanha(camp.id) : session?.role));
   };
 
   const handleIniciarCriacaoCampanha = () => {
@@ -531,7 +543,8 @@ export default function App() {
 
     await campanhasRemotas.recarregar();
     setCampanhaRemotaAtivaId(id);
-    setViewAtiva('detalhe_campanha');
+    // O convite concede acesso à Mesa Ao Vivo, não ao material de preparação.
+    setViewAtiva('modo_mesa');
   };
 
   const handleVincularMinhaFicha = async (campaignId: string, characterId: string | null) => {
@@ -703,6 +716,7 @@ export default function App() {
             onAbrirPersonagem={handleAbrirFichaPersonagem}
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
+            canPrepareCampaign={podePrepararCampanha}
             personagensParaVinculo={usandoRemoto ? personagensRemotos.personal.filter(personagem => !personagem.campaignId) : undefined}
             onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
             avatarUrl={session.avatarUrl}
@@ -722,6 +736,7 @@ export default function App() {
             onNovaCampanha={handleIniciarCriacaoCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
             onContinuarCampanha={handleContinuarCampanha}
+            canPrepareCampaign={podePrepararCampanha}
             onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
           />
         );
@@ -735,7 +750,7 @@ export default function App() {
         );
 
       case 'detalhe_campanha':
-        return campanhaAtiva ? (
+        return campanhaAtiva && podePrepararCampanha(campanhaAtiva) ? (
           <CampaignDetailView
             campanha={campanhaAtiva}
             personagens={personagensCampanha}
@@ -793,6 +808,7 @@ export default function App() {
             onNovaCampanha={handleIniciarCriacaoCampanha}
             onContinuarCampanha={handleContinuarCampanha}
             onDetalhesCampanha={handleDetalhesCampanha}
+            canPrepareCampaign={podePrepararCampanha}
             personagensParaVinculo={usandoRemoto ? personagens : undefined}
             onEntrarComCodigo={usandoRemoto ? handleEntrarComCodigoRemoto : undefined}
           />
@@ -818,7 +834,9 @@ export default function App() {
             handouts={handoutsAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             members={membrosCampanha}
             registroOnline={usandoRemoto}
-            onVoltarParaCampanha={() => setViewAtiva('detalhe_campanha')}
+            onVoltarParaCampanha={() => setViewAtiva(
+              papelDaCampanha === 'mestre' ? 'detalhe_campanha' : 'campanhas'
+            )}
             onAtualizarPersonagem={salvarPersonagemPersistente}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}

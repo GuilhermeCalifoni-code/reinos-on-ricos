@@ -29,6 +29,7 @@ interface DashboardViewProps {
   onAbrirPersonagem?: (personagem: Personagem) => void;
   onContinuarCampanha: (campanha: Campanha) => void;
   onDetalhesCampanha: (campanha: Campanha) => void;
+  canPrepareCampaign?: (campanha: Campanha) => boolean;
   personagensParaVinculo?: Personagem[];
   onEntrarComCodigo?: (codigo: string, personagemId?: string) => Promise<void>;
   onAbrirCampanhas?: () => void;
@@ -57,6 +58,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onAbrirPersonagem,
   onContinuarCampanha,
   onDetalhesCampanha,
+  canPrepareCampaign = () => false,
   onEntrarComCodigo,
   personagensParaVinculo = [],
   onAbrirCampanhas,
@@ -282,7 +284,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="ro-home__campaign-grid">
             {campanhasOrdenadas.slice(0, 2).map((campanha, index) => (
               <article key={campanha.id} className={`ro-home__campaign-card ro-home__campaign-card--${index % 2 === 0 ? 'ink' : 'rift'}`}>
-                <button type="button" className="ro-home__campaign-main" onClick={() => onDetalhesCampanha(campanha)} aria-label={`Abrir ${campanha.nome}`}>
+                <button type="button" className="ro-home__campaign-main" onClick={() => (canPrepareCampaign(campanha) ? onDetalhesCampanha : onContinuarCampanha)(campanha)} aria-label={canPrepareCampaign(campanha) ? `Preparar ${campanha.nome}` : `Entrar na Mesa Ao Vivo de ${campanha.nome}`}>
                   <AssetImage src={campanha.imagemUrl} fallbackSrc="/ro-login-mist-city.webp" alt="" />
                   <span className="ro-home__campaign-shade" />
                   <span className="ro-home__campaign-copy">
@@ -373,7 +375,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <strong>Nenhuma sessão agendada</strong>
                 <p>Abra uma campanha para planejar o próximo encontro da mesa.</p>
               </div>
-              {campanhasOrdenadas[0] && <button type="button" onClick={() => onDetalhesCampanha(campanhasOrdenadas[0])}>Planejar <ArrowRight /></button>}
+              {campanhasOrdenadas.find(canPrepareCampaign) && <button type="button" onClick={() => onDetalhesCampanha(campanhasOrdenadas.find(canPrepareCampaign)!)}>Planejar <ArrowRight /></button>}
             </div>
           )}
         </section>
