@@ -68,7 +68,7 @@ export const COMPENDIUM_ENTRIES: CompendiumEntry[] = [
     eyebrow: 'Testes',
     title: 'Teste Reflexo',
     summary: 'Uma reação rápida a um evento disparador.',
-    answer: 'Teste Reflexo é sempre um Teste Mundano solicitado como reação a um perigo, efeito ambiental ou habilidade. O Mestre escolhe Atributo e DT conforme a ficção.',
+    answer: 'Teste Reflexo é um Teste Mundano solicitado quando uma consequência concreta permite reação imediata e plausível, como desviar de uma viga que começou a cair. O Mestre escolhe Atributo e DT. Não é um segundo teste para negar uma manifestação bem-sucedida do Sonhar.',
     details: [
       'Foco pode ser usado normalmente.',
       'Condições podem impedir a reação quando a causa da Condição tornar aquela resposta impossível.'
@@ -186,7 +186,7 @@ export const COMPENDIUM_ENTRIES: CompendiumEntry[] = [
     summary: 'O contato de um Velado com o impossível.',
     answer: 'Quando um Velado testemunha uma manifestação Onírica perceptível, pode ocorrer Delírio. Quando ocorre, todos os Desvelados presentes recebem +1 Ruptura; o número de testemunhas não multiplica esse aumento.',
     details: [
-      'Coincidente/Leve: sutil, breve ou plausivelmente confundido com algo possível; não gera Delírio.',
+      'Coincidente: manifestação sutil, breve ou plausivelmente confundida com algo possível; não gera Delírio.',
       'Moderado: perceptível e difícil de explicar; gera Delírio.',
       'Intenso: contradiz abertamente as regras conhecidas da Realidade; gera Delírio.',
       'Dispositivos tecnológicos, por si só, não provocam o Delírio intenso da experiência direta.'

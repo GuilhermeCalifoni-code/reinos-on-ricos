@@ -260,7 +260,7 @@ export const RulesReference: React.FC = () => {
             <p className="ro-eyebrow">Potência em estruturas</p>
             <div className="rules-reference__compact-list">
               <p><strong>Resistência de materiais:</strong> cada Passo move uma categoria entre Frágil → Comum → Resistente → Muito Resistente. Os extremos são limites.</p>
-              <p><strong>Tamanho:</strong> cada Passo desloca uma categoria, partindo de Pequeno como referência.</p>
+              <p><strong>Tamanho:</strong> cada Passo desloca uma categoria; a Potência do Sonhar usa Médio como base, conforme Livro Básico VF10 (p. 73 e exemplo da p. 91).</p>
               <p><strong>Não acumula automaticamente:</strong> escolher Tamanho não aumenta ao mesmo tempo a Resistência do material.</p>
               <p><strong>Peso e carga:</strong> use a escala de Tamanho como referência; Pequeno corresponde ao que uma pessoa comum consegue levar normalmente e uma categoria acima pode ser carregada com esforço.</p>
             </div>
