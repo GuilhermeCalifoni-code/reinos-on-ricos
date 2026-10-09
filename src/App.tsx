@@ -6,6 +6,7 @@ import { CampaignsLibraryView } from './components/CampaignsLibraryView';
 import { CreateCharacterModal } from './components/CreateCharacterModal';
 import { RupturaModal } from './components/RupturaModal';
 import { LoginScreen } from './components/LoginScreen';
+import { PublicLanding, type BookSelection, type PublicScreen } from './components/PublicLanding';
 import { readLegacyLocalSnapshot, summarizeLegacyLocalSnapshot } from './data/legacyLocalSnapshot';
 import { Personagem, AtributoNome, DominioNome } from './types/character';
 import { Campanha, Sessao, Contador, TokenMapa } from './types/campaign';
@@ -52,6 +53,10 @@ export default function App() {
   // O Supabase Auth precisa confirmar a identidade antes de abrir a aplicação.
   const [session, setSession] = useState<UserSession | null>(null);
   const [authChecking, setAuthChecking] = useState(isSupabaseConfigured());
+  const [publicScreen, setPublicScreen] = useState<PublicScreen>('landing');
+  const [publicSelection, setPublicSelection] = useState<BookSelection>('combo');
+  const [showLogin, setShowLogin] = useState(false);
+  const [authEntryMode, setAuthEntryMode] = useState<'entrar'|'cadastro'>('entrar');
   const legacySummary = useMemo(() => summarizeLegacyLocalSnapshot(readLegacyLocalSnapshot()), []);
   const sessionRef = useRef<UserSession | null>(session);
 
@@ -473,7 +478,24 @@ export default function App() {
   // Se o usuário ainda não escolheu seu perfil (Mestre vs Jogador), exibe a Tela de Login
   if (authChecking) return <ViewFallback />;
 
-  if (!session) return <LoginScreen onLogin={handleLogin} />;
+  if (!session) {
+    if (showLogin) return <LoginScreen
+      key={authEntryMode}
+      initialMode={authEntryMode}
+      onBack={() => setShowLogin(false)}
+      onLogin={handleLogin}
+    />;
+    return <PublicLanding
+      screen={publicScreen}
+      selection={publicSelection}
+      onScreenChange={(screen, selection) => {
+        setPublicScreen(screen);
+        if (selection) setPublicSelection(selection);
+      }}
+      onEnter={() => { setAuthEntryMode('entrar'); setShowLogin(true); }}
+      onRegister={() => { setAuthEntryMode('cadastro'); setShowLogin(true); }}
+    />;
+  }
 
   // Se uma ficha específica estiver aberta em detalhe:
   const renderConteudoPrincipal = () => {

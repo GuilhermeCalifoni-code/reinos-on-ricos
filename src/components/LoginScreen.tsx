@@ -5,6 +5,8 @@ import { authService } from '../services/auth/authService';
 
 interface LoginScreenProps {
   onLogin: (session: UserSession) => void;
+  initialMode?: 'entrar' | 'cadastro';
+  onBack?: () => void;
 }
 
 type AuthMode = 'entrar' | 'cadastro' | 'nova_senha';
@@ -25,9 +27,9 @@ const DiscordIcon = () => (
   </svg>
 );
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, initialMode = 'entrar', onBack }) => {
   const remoto = isSupabaseConfigured();
-  const [modo, setModo] = useState<AuthMode>('entrar');
+  const [modo, setModo] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
@@ -186,6 +188,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
   return (
     <div className="login-onirico login-onirico--reference">
+      {onBack && <button type="button" className="ro-public-auth-back" onClick={onBack}>← Voltar à apresentação</button>}
       <main className="login-onirico__stage">
         <img className="login-onirico__frame-art" src="/ro-login-frame.webp" alt="" aria-hidden="true" />
 
