@@ -22,7 +22,7 @@ import {
 type Secao = 'testes' | 'sonhar' | 'potencia' | 'estruturas' | 'combate' | 'sobrevivencia' | 'mesa';
 
 const Tab: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
-  <button type="button" onClick={onClick} className={active ? 'rules-reference__tab is-active' : 'rules-reference__tab'}>
+  <button type="button" onClick={onClick} aria-pressed={active} className={active ? 'rules-reference__tab is-active' : 'rules-reference__tab'}>
     {children}
   </button>
 );
