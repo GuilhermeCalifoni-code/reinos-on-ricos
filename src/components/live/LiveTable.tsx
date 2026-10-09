@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Personagem } from '../../types/character';
 import { Adversario, Campanha, Cena, Contador, ConteudoDeCena, Handout, MapaNarrativo, MembroCampanha, NPC, Pista, Sessao, TokenMapa } from '../../types/campaign';
 import { UserRole } from '../../types/auth';
@@ -13,6 +13,7 @@ import { MapStage } from './MapStage';
 import { useSessionEvents } from '../../services/session-events/useSessionEvents';
 import { sessionEventFactories } from '../../services/session-events/sessionEventFactories';
 import { useCampaignRealtime } from '../../features/realtime/useCampaignRealtime';
+import type { CharacterResourceUpdate } from '../../features/realtime/liveTableRepository';
 import { AssetImage } from '../system/AssetImage';
 import { LiveActorsPanel } from './LiveActorsPanel';
 import { LiveDirectorPanel } from './LiveDirectorPanel';
@@ -23,15 +24,18 @@ interface LiveTableProps {
   campanha: Campanha; personagens: Personagem[]; npcs: NPC[]; adversarios: Adversario[]; role: UserRole;
   onAtualizarNPC: (id: string, patch: Partial<NPC>) => Promise<unknown>;
   onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown>; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
-  onAtualizarPersonagem: (personagem: Personagem) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem) => void;
+  onAtualizarPersonagem: (personagem: Personagem) => void;
+  onReceberRecursosPersonagem: (update: CharacterResourceUpdate) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem) => void;
   contadores: Contador[]; onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarContador: (id: string, parcial: Partial<Contador>) => void; onRemoverContador: (id: string) => void; onDuplicarContador: (id: string) => void;
   mapas: MapaNarrativo[]; onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void; onRemoverMapa: (id: string) => void; onAtualizarSessao?: (id: string, patch: Partial<Sessao>) => Promise<unknown> | unknown;
   tokensMapa: TokenMapa[]; onAdicionarTokenMapa: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarTokenMapa: (id: string, parcial: Partial<TokenMapa>) => void; onRemoverTokenMapa: (id: string) => void;
 }
 
 export const LiveTable: React.FC<LiveTableProps> = (props) => {
-  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
+  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onReceberRecursosPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
   const mestre = role === 'mestre';
+  const writesRecursosRef = useRef(new Map<string, Promise<void>>());
+  const [erroRecursos, setErroRecursos] = useState('');
   const personagensVisiveis = useMemo(() => mestre ? personagens : personagens.filter(p => p.id === personagemJogadorId), [mestre, personagemJogadorId, personagens]);
   const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || personagens[0]?.id || '');
   const [ferramenta, setFerramenta] = useState<LiveTool>('nenhuma');
@@ -49,7 +53,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const contadoresDaCampanha = useMemo(() => contadores.filter(item => item.campanhaId === campanha.id), [campanha.id, contadores]);
   const mapasDaCampanha = useMemo(() => mapas.filter(item => item.campanhaId === campanha.id), [campanha.id, mapas]);
   const tokensDaCampanha = useMemo(() => tokensMapa.filter(item => item.campanhaId === campanha.id), [campanha.id, tokensMapa]);
-  const realtime = useCampaignRealtime({ campaignId: campanha.id, userId, userName, role, enabled: registroOnline, fallback: { counters: contadoresDaCampanha, maps: mapasDaCampanha, tokens: tokensDaCampanha }, onCharacterUpdate: update => { const personagem = personagens.find(item => item.id === update.id); if (personagem) onAtualizarPersonagem({ ...personagem, vidaAtual: update.vidaAtual, focoAtual: update.focoAtual, ruptura: update.ruptura, protecaoOniricaAtual: update.protecaoOniricaAtual, atualizadoEm: update.updatedAt }); } });
+  const realtime = useCampaignRealtime({ campaignId: campanha.id, userId, userName, role, enabled: registroOnline, fallback: { counters: contadoresDaCampanha, maps: mapasDaCampanha, tokens: tokensDaCampanha }, onCharacterUpdate: onReceberRecursosPersonagem });
   const compartilhando = registroOnline && realtime.ready;
   const contadoresAtuais = compartilhando ? realtime.counters : contadoresDaCampanha;
   const mapasAtuais = useMemo(() => {
@@ -186,7 +190,48 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     salvarEstado({ metadata: { ...(realtime.state?.metadata || {}), sceneTitle: title, sceneDescription: description } });
     registrarSemFalhar({ type: 'scene_change', content: `Cena atualizada: ${title}.`, metadata: { sceneTitle: title } });
   };
-  const atualizarPersonagemMesa = (personagem: Personagem) => { onAtualizarPersonagem(personagem); if (compartilhando && personagem.campaignId === campanha.id) void realtime.patchCharacterResources(personagem.id, { vidaAtual: personagem.vidaAtual, focoAtual: personagem.focoAtual, ruptura: personagem.ruptura, protecaoOniricaAtual: personagem.protecaoOniricaAtual }).catch(() => undefined); };
+  const atualizarPersonagemMesa = (personagem: Personagem) => {
+    if (!compartilhando || personagem.campaignId !== campanha.id) {
+      onAtualizarPersonagem(personagem);
+      return;
+    }
+
+    // Um único write ao Supabase. A UI atualiza imediatamente sem recarregar
+    // nem salvar a ficha inteira novamente a cada evento recebido.
+    const novoEstado: CharacterResourceUpdate = {
+      id: personagem.id,
+      vidaAtual: personagem.vidaAtual,
+      focoAtual: personagem.focoAtual,
+      ruptura: personagem.ruptura,
+      protecaoOniricaAtual: personagem.protecaoOniricaAtual,
+      updatedAt: personagem.atualizadoEm || new Date().toISOString()
+    };
+    const anterior = personagens.find(item => item.id === personagem.id);
+    onReceberRecursosPersonagem(novoEstado);
+    setErroRecursos('');
+
+    // Serializar alterações rápidas de PV/Foco do mesmo personagem evita
+    // que respostas fora de ordem sobreponham o valor mais recente.
+    const anteriorPendente = writesRecursosRef.current.get(personagem.id) || Promise.resolve();
+    const pendente = anteriorPendente.catch(() => undefined)
+      .then(() => realtime.patchCharacterResources(personagem.id, novoEstado).then(() => undefined));
+    writesRecursosRef.current.set(personagem.id, pendente);
+    void pendente.catch(reason => {
+      // Reverter apenas quando não há outra alteração mais recente na fila.
+      if (writesRecursosRef.current.get(personagem.id) === pendente && anterior) {
+        onReceberRecursosPersonagem({
+          id: anterior.id, vidaAtual: anterior.vidaAtual, focoAtual: anterior.focoAtual,
+          ruptura: anterior.ruptura, protecaoOniricaAtual: anterior.protecaoOniricaAtual,
+          updatedAt: anterior.atualizadoEm || new Date().toISOString()
+        });
+      }
+      setErroRecursos(reason instanceof Error ? reason.message : 'Não foi possível sincronizar os recursos.');
+    }).finally(() => {
+      if (writesRecursosRef.current.get(personagem.id) === pendente) {
+        writesRecursosRef.current.delete(personagem.id);
+      }
+    });
+  };
   const ajustar = (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => { const maximo = campo === 'vidaAtual' ? personagem.vidaMaxima : personagem.focoMaximo; atualizarPersonagemMesa({ ...personagem, [campo]: Math.max(0, Math.min(maximo, personagem[campo] + delta)), atualizadoEm: new Date().toISOString() }); if (campo === 'vidaAtual') registrarSemFalhar(sessionEventFactories.damage(personagem.id, personagem.nome, delta)); };
   const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addCounter(item).catch(() => undefined); };
   const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando) void realtime.patchCounter(id, patch).catch(() => undefined); };
@@ -199,6 +244,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const atualizarToken = (id: string, patch: Partial<TokenMapa>): Promise<unknown> => compartilhando ? realtime.patchToken(id, patch) : Promise.reject(new Error('Mesa não sincronizada.'));
   const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(() => undefined); };
   const statusTexto = realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
+  const avisoRecursos = erroRecursos ? <p role="alert" className="live-vtt__resource-error">Não foi possível atualizar PV/Foco: {erroRecursos}</p> : null;
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
   const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} imageUrl={sceneImageUrl} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
   const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagemJogadorId={personagemJogadorId} personagens={personagens} npcs={npcs} adversarios={adversarios} onActorUsed={(kind, id) => { if (kind === 'npc') void ensureSessionLink('npcIds', id); if (kind === 'adversario') void ensureSessionLink('adversarioIds', id); }} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
