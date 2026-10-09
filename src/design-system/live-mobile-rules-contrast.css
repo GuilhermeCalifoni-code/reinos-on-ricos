@@ -1,0 +1,273 @@
+/* Mesa V5: Regras legíveis e ferramentas confortáveis no celular.
+   Importado por último; não altera as páginas claras da plataforma. */
+
+/* O tema claro global pode tornar .ro-surface branca dentro da Mesa escura.
+   Isola a paleta da consulta de regras mesmo com data-theme="light". */
+.live-table--v5 .live-vtt__tool--rules .rules-reference {
+  --ro-ink: #101720;
+  --ro-bg: #101720;
+  --ro-surface: #1b2632;
+  --ro-surface-raised: #1d2936;
+  --ro-input: #121c27;
+  --ro-paper: #f7f4ed;
+  --ro-paper-muted: #d5d0c6;
+  --ro-ash: #b5ada1;
+  --ro-gold: #e4b777;
+  --ro-copper: #e4b777;
+  --ro-copper-bright: #f1c990;
+  --ro-blue: #8dadd1;
+  --ro-blue-soft: rgba(141,173,209,.15);
+  --ro-line: rgba(240,226,206,.20);
+  --ro-line-strong: rgba(228,183,119,.56);
+  --ro-safe: #acd5ab;
+  --ro-danger: #e3a5ac;
+  --ro-rift: #b16a64;
+  --ro-rupture-soft: rgba(177,106,100,.18);
+  --ro-focus: 0 0 0 3px rgba(228,183,119,.33);
+  color: var(--ro-paper);
+  color-scheme: dark;
+  padding: .4rem;
+  font-size: .91rem;
+  line-height: 1.67;
+  min-width: 0;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__header h2,
+.live-table--v5 .live-vtt__tool--rules .rules-reference .ro-surface :where(h3,h4),
+.live-table--v5 .live-vtt__tool--rules .rules-reference__compact-list strong,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__power-table strong {
+  color: #fff9ed;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__header > p,
+.live-table--v5 .live-vtt__tool--rules .rules-reference .ro-surface > p:not(.ro-eyebrow),
+.live-table--v5 .live-vtt__tool--rules .rules-reference__compact-list p,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__power-table p,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__power-table small,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__domains p,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__levels p,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__outcomes p,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__material-notes p,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__after-grid {
+  color: #d5d0c6;
+}
+/* Prefix with :root[data-theme] to outrank the old .ro-surface light rule. */
+.live-table--v5 .live-vtt__tool--rules .rules-reference .ro-surface,
+:root[data-theme='light'] .live-table--v5 .live-vtt__tool--rules .rules-reference .ro-surface {
+  background: linear-gradient(145deg,#202c39,#18222d);
+  color: #f7f4ed;
+  border: 1px solid rgba(240,226,206,.20);
+  box-shadow: none;
+  border-radius: 8px;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__feature,
+:root[data-theme='light'] .live-table--v5 .live-vtt__tool--rules .rules-reference__feature {
+  background: linear-gradient(135deg,#263645,#1b2632 75%);
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__tab {
+  flex: 0 0 auto;
+  padding: .65rem .8rem;
+  min-height: 44px;
+  font-size: .82rem;
+  color: #d5d0c6;
+  border-radius: 5px 5px 0 0;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__tab.is-active,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__tab:hover {
+  background: rgba(228,183,119,.14);
+  color: #ffdfac;
+  border-bottom-color: #e4b777;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__tabs {
+  position: sticky;
+  top: -1px;
+  z-index: 4;
+  gap: .3rem;
+  margin: .1rem 0 .35rem;
+  padding: .4rem 0 .6rem;
+  background: #111922;
+  border-bottom-color: rgba(228,183,119,.4);
+  scrollbar-width: thin;
+  scrollbar-color: #8f7859 transparent;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__grid span,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__stats span,
+.live-table--v5 .live-vtt__tool--rules .rules-reference__power-levels :where(span,small),
+.live-table--v5 .live-vtt__tool--rules .rules-reference__outcomes :where(span,p),
+.live-table--v5 .live-vtt__tool--rules .rules-reference__domains :where(p,small),
+.live-table--v5 .live-vtt__tool--rules .rules-reference__levels :where(span,p),
+.live-table--v5 .live-vtt__tool--rules .rules-reference__progression :where(span,small) {
+  color: #d5d0c6;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__matrix thead th {
+  color: #fff5e4;
+  background: #2b3b4b;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__matrix :where(td,th) {
+  border-color: rgba(240,226,206,.20);
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__matrix td {
+  color: #f7f4ed;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__table-wrap {
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-color: #9a7b54 #1a2633;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__structure-tool :where(input,select) {
+  color: #fff9ed;
+  background: #121c27;
+  border-color: rgba(240,226,206,.32);
+  min-height: 44px;
+  font-size: 16px;
+}
+.live-table--v5 .live-vtt__tool--rules .rules-reference__structure-tool option {
+  background: #121c27;
+  color: #fff9ed;
+}
+
+/* Modal da ferramenta: z-index e foco visíveis; fechamento por toque. */
+.live-table--v5 .live-vtt__tool {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.live-table--v5 .live-vtt__tool-head {
+  flex: 0 0 auto;
+  gap: 12px;
+}
+.live-table--v5 .live-vtt__tool-head button {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 1.65rem;
+  background: rgba(255,255,255,.04);
+}
+.live-table--v5 .live-vtt__tool-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+@media(max-width:760px) {
+  /* Ferramentas viram folha quase fullscreen com controles sempre acessíveis. */
+  .ro-app-shell--live .live-vtt__tool-backdrop {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding:
+      max(.35rem,env(safe-area-inset-top,0px))
+      max(.25rem,env(safe-area-inset-right,0px))
+      max(.35rem,env(safe-area-inset-bottom,0px))
+      max(.25rem,env(safe-area-inset-left,0px));
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__tool {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+    border-radius: 12px;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__tool-head {
+    min-height: 60px;
+    padding: .55rem .9rem;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__tool-head strong {
+    font-size: 1.5rem;
+    line-height: 1.1;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__tool-body {
+    max-height: none;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: .65rem .75rem calc(.85rem + env(safe-area-inset-bottom,0px));
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference {
+    padding: .15rem 0;
+    font-size: .91rem;
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__header {
+    gap: .4rem;
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__header h2 {
+    font-size: 2rem;
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__content {
+    gap: .75rem;
+    padding-top: .75rem;
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference .ro-surface {
+    padding: .95rem;
+    overflow-wrap: anywhere;
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference .ro-surface h3 {
+    font-size: 1.28rem;
+    line-height: 1.28;
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__grid,
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__outcomes,
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__domains,
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__levels,
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__progression,
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__stats,
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__power-table {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__power-levels {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__power-table :where(p,small),
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__material-notes p,
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__after-grid,
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__compact-list p {
+    font-size: .85rem;
+    line-height: 1.65;
+  }
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__matrix {font-size:.8rem}
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__matrix td {font-size:.91rem}
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__table-wrap::before {
+    content:"Deslize horizontalmente para consultar a tabela →";
+    display:block;
+    position:sticky;
+    left:0;
+    width:max-content;
+    max-width:100%;
+    padding:.4rem .6rem;
+    color:#e4b777;
+    font-size:.71rem;
+  }
+  /* Mostra a vida/foco dos personagens sem perder o scroll da barra. */
+  .ro-app-shell--live .live-vtt__player-strip {
+    overflow-x:auto;
+    overflow-y:hidden;
+    min-width:0;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
+  }
+  .ro-app-shell--live .live-vtt__player {scroll-snap-align:start}
+  .ro-app-shell--live .live-vtt__player-copy small {
+    display:block;
+    white-space:nowrap;
+    font-size:.66rem;
+    line-height:1.3;
+  }
+  .ro-app-shell--live .live-vtt__player {min-width:10.5rem}
+  .ro-app-shell--live .live-vtt__rail button,
+  .ro-app-shell--live .live-vtt__dock button {touch-action:manipulation}
+}
+@media(max-width:390px) {
+  .ro-app-shell--live .live-vtt__brand strong {display:none}
+  .ro-app-shell--live .live-vtt__brand {min-width:2.25rem}
+  .ro-app-shell--live .live-vtt__player {min-width:9.5rem}
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__tab {font-size:.8rem}
+}
+@media(max-height:550px) and (max-width:980px){
+  .ro-app-shell--live .live-table--v5 .live-vtt__tool {max-height:none;height:100%}
+  .ro-app-shell--live .live-vtt__tool--rules .rules-reference__tabs{position:relative;top:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  .live-table--v5 .live-vtt__tool--rules .rules-reference__tab{transition:none}
+}
