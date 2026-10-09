@@ -10,7 +10,7 @@ const index=readFileSync('src/index.css','utf8');
 const styles=readFileSync('src/design-system/desvelado-sheet-light.css','utf8');
 
 test('Toda abertura de Desvelado reutiliza CharacterSheet, não o modal de criação',()=>{
-  assert.match(app,/React\\.lazy\\(\\(\\) => import\\('\.\/components\/CharacterSheet'\\)/);
+  assert.ok(app.includes("React.lazy(() => import('./components/CharacterSheet')"));
   assert.match(app,/<CharacterSheet\s+personagem=\{personagemParaFicha\}/);
   assert.match(mesa,/onAbrirFicha=\{onAbrirFicha\}/);
   assert.match(campaign,/onAbrirFichaPersonagem/);
@@ -36,7 +36,7 @@ test('Ficha mantém controles de recursos, Ruptura, Dano e Descanso',()=>{
 });
 test('Domínios e níveis usam progressão existente e limites oficiais',()=>{
   assert.match(sheet,/TABELA_PROGRESSAO\[personagem\.nivel\]/);
-  assert.match(sheet,/validarDistribuicaoDominios\\(personagem\\.dominios,\\s*personagem\\.nivel\\)/);
+  assert.ok(sheet.includes('validarDistribuicaoDominios(personagem.dominios, personagem.nivel)'));
   assert.match(sheet,/personagem\.nivel===5 && value===5/);
   assert.match(sheet,/n>prog\.dominioMaximo/);
   assert.match(sheet,/atualizadoEm:new Date\(\)\.toISOString\(\)/);
