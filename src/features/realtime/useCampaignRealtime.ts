@@ -30,7 +30,13 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
   onCharacterUpdate?: (update: CharacterResourceUpdate) => void;
 }) {
   const [state, setState] = useState<LiveSessionState>();
-  const [counters, setCounters] = useState<Contador[]>(fallback.counters);
+  const [counters, setCounters] = useState<Contador[]>(role === 'mestre' ? fallback.counters : []);
+  const countersRef = useRef<Contador[]>(role === 'mestre' ? fallback.counters : []);
+  const pendingCounterWritesRef = useRef(new Map<string, Promise<Contador>>());
+  const syncCounters = (items: Contador[]) => {
+    countersRef.current = items;
+    setCounters(items);
+  };
   const [maps, setMaps] = useState<MapaNarrativo[]>(fallback.maps);
   const [tokens, setTokens] = useState<TokenMapa[]>(fallback.tokens);
   const [ready, setReady] = useState(false);
@@ -42,17 +48,20 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
 
   useEffect(() => {
     if (!enabled || !campaignId || !userId) {
-      setState(undefined); setCounters(fallback.counters); setMaps(fallback.maps); setTokens(fallback.tokens); setReady(false); setStatus('offline'); return;
+      setState(undefined); syncCounters(role === 'mestre' ? fallback.counters : []); setMaps(fallback.maps); setTokens(fallback.tokens); setReady(false); setStatus('offline'); return;
     }
     let active = true;
     setReady(false); setStatus('connecting'); setError(undefined);
-    void liveTableRepository.load(campaignId).then(data => {
+    void liveTableRepository.load(campaignId, role === 'mestre').then(data => {
       if (!active) return;
-      setState(data.state); setCounters(data.counters); setMaps(data.maps); setTokens(data.tokens); setReady(true);
+      setState(data.state); syncCounters(role === 'mestre' ? data.counters : []); setMaps(data.maps); setTokens(data.tokens); setReady(true);
     }).catch(reason => { if (active) { setError(reason.message || String(reason)); setStatus('offline'); } });
     const channel = liveTableRepository.subscribe(campaignId, {
       state: item => active && setState(item),
-      counter: (event, item) => active && setCounters(items => applyEvent(items, event, item)),
+      counter: (event, item) => {
+        if (!active || role !== 'mestre' || pendingCounterWritesRef.current.has(item.id)) return;
+        syncCounters(applyEvent(countersRef.current, event, item));
+      },
       map: (event, item) => active && setMaps(items => applyEvent(items, event, item)),
       token: (event,item) => active && setTokens(items => event==='DELETE'
         ? items.filter(t=>t.id!==item.id) : mergeToken(items,item)),
@@ -60,9 +69,9 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
         ? {...t,hpCurrent:item.hpCurrent,hpMax:item.hpMax} : t)),
       character: item => active && onCharacterUpdateRef.current?.(item),
       status: value => { if (active) setStatus(value === 'SUBSCRIBED' ? 'connected' : value === 'CHANNEL_ERROR' || value === 'TIMED_OUT' || value === 'CLOSED' ? 'offline' : 'connecting'); }
-    });
+    }, role === 'mestre');
     return () => { active = false; void channel.unsubscribe(); };
-  }, [campaignId, enabled, fallback.counters, fallback.maps, fallback.tokens, userId]);
+  }, [campaignId, enabled, fallback.counters, fallback.maps, fallback.tokens, role, userId]);
 
   const action = useCallback(async <T,>(operation: () => Promise<T>) => {
     try { setError(undefined); return await operation(); }
@@ -72,9 +81,42 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
   return {
     state, counters, maps, tokens, ready, status, error, presence,
     saveState: (patch: Partial<LiveSessionState>) => userId ? action(async () => { const item = await liveTableRepository.saveState(campaignId, userId, patch); setState(item); return item; }) : Promise.reject(new Error('Sessão indisponível.')),
-    addCounter: (item: DraftCounter) => action(async () => { const created = await liveTableRepository.addCounter(item); setCounters(items => replace(items, created)); return created; }),
-    patchCounter: (id: string, patch: Partial<Contador>) => action(async () => { const updated = await liveTableRepository.patchCounter(id, patch); setCounters(items => replace(items, updated)); return updated; }),
-    removeCounter: (id: string) => action(async () => { await liveTableRepository.removeCounter(id); setCounters(items => items.filter(item => item.id !== id)); }),
+    addCounter: (item: DraftCounter) => action(async () => {
+      if (role !== 'mestre') throw new Error('Contadores são exclusivos do Mestre.');
+      const created = await liveTableRepository.addCounter({...item,visibilidade:'mestre_privado'});
+      syncCounters(replace(countersRef.current, created));
+      return created;
+    }),
+    patchCounter: (id: string, patch: Partial<Contador>) => action(async () => {
+      if (role !== 'mestre') throw new Error('Contadores são exclusivos do Mestre.');
+      const previous = countersRef.current.find(item => item.id === id);
+      if (!previous) throw new Error('Contador não encontrado.');
+      // Alterações rápidas refletem imediatamente e são salvas em sequência.
+      syncCounters(replace(countersRef.current, {...previous,...patch,visibilidade:'mestre_privado'}));
+      const prior = pendingCounterWritesRef.current.get(id);
+      const write = (prior ? prior.catch(() => previous) : Promise.resolve(previous))
+        .then(() => liveTableRepository.patchCounter(id, {...patch,visibilidade:'mestre_privado'}));
+      pendingCounterWritesRef.current.set(id, write);
+      try {
+        const result = await write;
+        if (pendingCounterWritesRef.current.get(id) === write) {
+          pendingCounterWritesRef.current.delete(id);
+          syncCounters(replace(countersRef.current,result));
+        }
+        return result;
+      } catch(error) {
+        if (pendingCounterWritesRef.current.get(id) === write) {
+          pendingCounterWritesRef.current.delete(id);
+          syncCounters(replace(countersRef.current,previous));
+        }
+        throw error;
+      }
+    }),
+    removeCounter: (id: string) => action(async () => {
+      if (role !== 'mestre') throw new Error('Contadores são exclusivos do Mestre.');
+      await liveTableRepository.removeCounter(id);
+      syncCounters(countersRef.current.filter(item => item.id !== id));
+    }),
     addMap: (item: DraftMap) => action(async () => { const created = await liveTableRepository.addMap(item); setMaps(items => replace(items, created)); return created; }),
     patchMap: (id: string, patch: Partial<MapaNarrativo>) => action(async () => { const updated = await liveTableRepository.patchMap(id, patch); setMaps(items => replace(items, updated)); return updated; }),
     removeMap: (id: string) => action(async () => { await liveTableRepository.removeMap(id); setMaps(items => items.filter(item => item.id !== id)); }),
