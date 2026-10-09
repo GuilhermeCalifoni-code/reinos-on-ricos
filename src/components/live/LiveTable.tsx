@@ -103,6 +103,18 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     setFerramenta(atual => atual === proxima ? 'nenhuma' : proxima);
   };
   useEffect(() => { if (!mestre) setFerramenta(atual => atual === 'contadores' ? 'nenhuma' : atual); }, [mestre]);
+  // Escape fecha qualquer ferramenta aberta, inclusive Regras, sem sair da Mesa.
+  useEffect(() => {
+    if (ferramenta === 'nenhuma' || cinematic) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        setFerramenta('nenhuma');
+      }
+    };
+    document.addEventListener('keydown', onEscape);
+    return () => document.removeEventListener('keydown', onEscape);
+  }, [ferramenta, cinematic]);
   const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeSceneId?: string; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
   const mudarConteudo = (proximo: ConteudoDeCena) => { if (!compartilhando) return; setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
   const selecionarMapa = (id: string) => { if (!compartilhando) return; setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
@@ -498,10 +510,16 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
 
       {ferramenta !== 'nenhuma' && !cinematic && (
         <div className="live-vtt__tool-backdrop" onMouseDown={closeTool}>
-          <section className="live-vtt__tool" onMouseDown={event => event.stopPropagation()}>
+          <section
+            className={`live-vtt__tool live-vtt__tool--${ferramenta}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="live-vtt-active-tool"
+            onMouseDown={event => event.stopPropagation()}
+          >
             <header className="live-vtt__tool-head">
-              <div><span>Ferramenta de mesa</span><strong>{ferramenta}</strong></div>
-              <button type="button" onClick={closeTool} aria-label="Fechar ferramenta">×</button>
+              <div><span>Ferramenta de mesa</span><strong id="live-vtt-active-tool">{ferramenta}</strong></div>
+              <button type="button" onClick={closeTool} aria-label={`Fechar ${ferramenta}`} title="Fechar ferramenta">×</button>
             </header>
             <div className="live-vtt__tool-body">
               {ferramenta === 'dados' && <DiceRoller personagemAtivo={selecionado} onSalvarPersonagem={atualizarPersonagemMesa} onAbrirModalRuptura={(delta, motivo) => selecionado && onAbrirRuptura(selecionado, delta, motivo)} onRegistrarRolagem={registrarSemFalhar} />}
