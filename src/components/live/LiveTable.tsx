@@ -320,6 +320,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
       </header>
 
       {realtime.error && <p className="live-vtt__sync-error">Sincronização indisponível: {realtime.error}</p>}
+      {avisoRecursos}
 
       {!cinematic && (
         <div className="live-vtt__player-bar" aria-label="Personagens presentes">
