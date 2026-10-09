@@ -6,6 +6,7 @@ export type LiveTool = 'nenhuma' | 'dados' | 'sonhar' | 'ficha' | 'contadores' |
 interface LiveDockProps {
   ferramenta: LiveTool;
   onSelecionar: (ferramenta: LiveTool) => void;
+  mestre: boolean;
 }
 
 const tools = [
@@ -16,9 +17,9 @@ const tools = [
   ['regras', 'Regras', BookOpen]
 ] as const;
 
-export const LiveDock: React.FC<LiveDockProps> = ({ ferramenta, onSelecionar }) => (
+export const LiveDock: React.FC<LiveDockProps> = ({ ferramenta, onSelecionar, mestre }) => (
   <nav className="live-vtt__dock" aria-label="Ferramentas da mesa">
-    {tools.map(([id, label, Icon]) => (
+    {tools.filter(([id]) => mestre || id !== 'contadores').map(([id, label, Icon]) => (
       <button
         key={id}
         type="button"
