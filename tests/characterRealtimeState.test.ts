@@ -52,3 +52,14 @@ test('evento recebido na Mesa não invoca salvamento completo nem recarregamento
   assert.match(hook,/setCharacters\(current => applyLiveCharacterResources\(current, update\)\)/);
   assert.doesNotMatch(hook,/applyResourceUpdate\s*=.*characterRepository\.salvar/s);
 });
+
+
+test('PV de cópia de NPC/adversário são atualizados de forma otimista sem refresh',()=>{
+  const hook=readFileSync('src/features/realtime/useCampaignRealtime.ts','utf8');
+  assert.match(hook,/const hpPatch = role === 'mestre' && patch\.hpCurrent !== undefined/);
+  assert.match(hook,/setTokens\(items => \{/);
+  assert.match(hook,/item\.id === id \? \{ \.\.\.item, \.\.\.patch \} : item/);
+  assert.match(hook,/catch \(error\) \{/);
+  assert.match(hook,/original\.hpCurrent/);
+  assert.doesNotMatch(hook,/window\.location\.reload/);
+});
