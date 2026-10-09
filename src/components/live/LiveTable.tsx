@@ -50,12 +50,12 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const [directorOpen, setDirectorOpen] = useState(mestre);
   const [activeSceneLocalId, setActiveSceneLocalId] = useState<string | undefined>();
   const [cinematic, setCinematic] = useState(false);
-  const contadoresDaCampanha = useMemo(() => contadores.filter(item => item.campanhaId === campanha.id), [campanha.id, contadores]);
+  const contadoresDaCampanha = useMemo(() => mestre ? contadores.filter(item => item.campanhaId === campanha.id) : [], [campanha.id, contadores, mestre]);
   const mapasDaCampanha = useMemo(() => mapas.filter(item => item.campanhaId === campanha.id), [campanha.id, mapas]);
   const tokensDaCampanha = useMemo(() => tokensMapa.filter(item => item.campanhaId === campanha.id), [campanha.id, tokensMapa]);
   const realtime = useCampaignRealtime({ campaignId: campanha.id, userId, userName, role, enabled: registroOnline, fallback: { counters: contadoresDaCampanha, maps: mapasDaCampanha, tokens: tokensDaCampanha }, onCharacterUpdate: onReceberRecursosPersonagem });
   const compartilhando = registroOnline && realtime.ready;
-  const contadoresAtuais = compartilhando ? realtime.counters : contadoresDaCampanha;
+  const contadoresAtuais = mestre ? (compartilhando ? realtime.counters : contadoresDaCampanha) : [];
   const mapasAtuais = useMemo(() => {
     if (!compartilhando) return mapasDaCampanha;
     const merged = new Map<string, MapaNarrativo>();
@@ -98,7 +98,11 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
       description: sessionDescription || 'Ambientação da cena. O Mestre pode preparar imagem, mapa ou handout para esta área.'
     });
   }, [compartilhando, effectiveSessionId, realtime.state?.sessionId, sessionDescription, sessionTitle]);
-  const selecionarFerramenta = (proxima: LiveTool) => setFerramenta(atual => atual === proxima ? 'nenhuma' : proxima);
+  const selecionarFerramenta = (proxima: LiveTool) => {
+    if (proxima === 'contadores' && !mestre) return;
+    setFerramenta(atual => atual === proxima ? 'nenhuma' : proxima);
+  };
+  useEffect(() => { if (!mestre) setFerramenta(atual => atual === 'contadores' ? 'nenhuma' : atual); }, [mestre]);
   const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeSceneId?: string; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
   const mudarConteudo = (proximo: ConteudoDeCena) => { if (!compartilhando) return; setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
   const selecionarMapa = (id: string) => { if (!compartilhando) return; setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
@@ -233,10 +237,10 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     });
   };
   const ajustar = (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => { const maximo = campo === 'vidaAtual' ? personagem.vidaMaxima : personagem.focoMaximo; atualizarPersonagemMesa({ ...personagem, [campo]: Math.max(0, Math.min(maximo, personagem[campo] + delta)), atualizadoEm: new Date().toISOString() }); if (campo === 'vidaAtual') registrarSemFalhar(sessionEventFactories.damage(personagem.id, personagem.nome, delta)); };
-  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addCounter(item).catch(() => undefined); };
-  const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando) void realtime.patchCounter(id, patch).catch(() => undefined); };
-  const removerContador = (id: string) => { if (compartilhando) void realtime.removeCounter(id).catch(() => undefined); };
-  const duplicarContador = (id: string) => { if (!compartilhando) return; const original = contadoresAtuais.find(item => item.id === id); if (original) { const { id: _id, criadoEm: _criado, atualizadoEm: _atualizado, ...draft } = original; void realtime.addCounter({ ...draft, nome: `${draft.nome} (cópia)` }).catch(() => undefined); } };
+  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando && mestre) void realtime.addCounter({ ...item, visibilidade: 'mestre_privado' }).catch(() => undefined); };
+  const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando && mestre) void realtime.patchCounter(id, patch).catch(() => undefined); };
+  const removerContador = (id: string) => { if (compartilhando && mestre) void realtime.removeCounter(id).catch(() => undefined); };
+  const duplicarContador = (id: string) => { if (!compartilhando || !mestre) return; const original = contadoresAtuais.find(item => item.id === id); if (original) { const { id: _id, criadoEm: _criado, atualizadoEm: _atualizado, ...draft } = original; void realtime.addCounter({ ...draft, nome: `${draft.nome} (cópia)` }).catch(() => undefined); } };
   const adicionarMapa = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (!compartilhando) return; void realtime.addMap(item).then(mapa => { setMapaLocalId(mapa.id); salvarEstado({ activeMapId: mapa.id, contentType: 'mapa' }); registrarSemFalhar(sessionEventFactories.map(`Mapa criado: ${mapa.titulo}.`)); }).catch(() => undefined); };
   const atualizarMapa = (id: string, patch: Partial<MapaNarrativo>) => { if (compartilhando) void realtime.patchMap(id, patch).catch(() => undefined); };
   const removerMapa = (id: string) => { const mapa = mapasAtuais.find(item => item.id === id); if (compartilhando) void realtime.removeMap(id).then(() => { if (mapaAtualId === id) salvarEstado({ activeMapId: undefined }); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); }).catch(() => undefined); };
@@ -490,7 +494,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
         )}
       </div>
 
-      {!cinematic && <LiveDock ferramenta={ferramenta} onSelecionar={selecionarFerramenta} />}
+      {!cinematic && <LiveDock ferramenta={ferramenta} onSelecionar={selecionarFerramenta} mestre={mestre} />}
 
       {ferramenta !== 'nenhuma' && !cinematic && (
         <div className="live-vtt__tool-backdrop" onMouseDown={closeTool}>
@@ -514,7 +518,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
                     <button type="button" onClick={() => onAbrirFicha(selecionado)} className="ro-button mt-4">Abrir ficha completa</button>
                   </div>
                 : <p className="live-table__empty">Selecione um personagem.</p>)}
-              {ferramenta === 'contadores' && <CounterPanel campanhaId={campanha.id} contadores={contadoresAtuais} mestre={mestre} onAdicionar={adicionarContador} onAtualizar={atualizarContador} onRemover={removerContador} onDuplicar={duplicarContador} onRegistrarEvento={registrarSemFalhar} />}
+              {mestre && ferramenta === 'contadores' && <CounterPanel campanhaId={campanha.id} contadores={contadoresAtuais} mestre={mestre} onAdicionar={adicionarContador} onAtualizar={atualizarContador} onRemover={removerContador} onDuplicar={duplicarContador} onRegistrarEvento={registrarSemFalhar} />}
               {ferramenta === 'regras' && <RulesReference />}
             </div>
           </section>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Contador, DirecaoContador, EstadoContador, TipoContador, VisibilidadeConteudo } from '../../types/campaign';
+import { Contador, DirecaoContador, EstadoContador, TipoContador } from '../../types/campaign';
 import { NewSessionEvent } from '../../types/sessionEvent';
 
 interface CounterPanelProps {
@@ -14,7 +14,7 @@ interface CounterPanelProps {
   onRegistrarEvento?: (event: NewSessionEvent) => void;
 }
 
-const visiveisParaJogador = (contador: Contador) => contador.visibilidade !== 'mestre_privado';
+const MAX_ALLOWED = 9999;
 
 export const CounterPanel: React.FC<CounterPanelProps> = ({
   campanhaId, contadores, mestre, onAdicionar, onAtualizar, onRemover, onDuplicar, compacto = false, onRegistrarEvento
@@ -23,46 +23,154 @@ export const CounterPanel: React.FC<CounterPanelProps> = ({
   const [novoMaximo, setNovoMaximo] = useState(6);
   const [novoTipo, setNovoTipo] = useState<TipoContador>('progresso');
   const [novaDirecao, setNovaDirecao] = useState<DirecaoContador>('crescente');
-  const [novaVisibilidade, setNovaVisibilidade] = useState<VisibilidadeConteudo>('mestre_privado');
-  const exibidos = mestre ? contadores : contadores.filter(visiveisParaJogador);
+  const [maximosEditando, setMaximosEditando] = useState<Record<string, string>>({});
+  const [erro, setErro] = useState('');
+
+  // Todas as ações e todas as informações de contador pertencem somente ao Mestre.
+  if (!mestre) return null;
+
+  const registrar = (contador: Contador, valor: number, maximo: number, concluido: boolean) => {
+    onRegistrarEvento?.({
+      type: 'counter_update',
+      visibility: 'mestre',
+      content: `${contador.nome}: ${valor}/${maximo}${concluido ? ' — concluído.' : '.'}`,
+      metadata: { counterId: contador.id, nome: contador.nome, anterior: contador.valorAtual, valor, maximo, concluido }
+    });
+  };
+
+  const estadoPara = (contador: Contador, valor: number, maximo: number): EstadoContador => {
+    if (contador.estado === 'pausado') return 'pausado';
+    return (contador.direcao === 'crescente' ? valor >= maximo : valor <= 0) ? 'concluido' : 'ativo';
+  };
+
+  const atualizarValores = (contador: Contador, valor: number, maximo: number) => {
+    if (!Number.isInteger(maximo) || maximo < 1 || maximo > MAX_ALLOWED) {
+      setErro(`O máximo deve estar entre 1 e ${MAX_ALLOWED}.`);
+      return;
+    }
+    const atual = Math.max(0, Math.min(maximo, Math.trunc(valor)));
+    const estado = estadoPara(contador, atual, maximo);
+    setErro('');
+    onAtualizar(contador.id, { valorAtual: atual, valorMaximo: maximo, estado, visibilidade: 'mestre_privado' });
+    registrar(contador, atual, maximo, estado === 'concluido');
+  };
+
   const criar = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!novoNome.trim()) return;
-    const valorMaximo = Math.max(1, novoMaximo);
-    onAdicionar({ campanhaId, nome: novoNome.trim(), tipo: novoTipo, valorAtual: novaDirecao === 'decrescente' ? valorMaximo : 0, valorMaximo, direcao: novaDirecao, visibilidade: novaVisibilidade, estado: 'ativo' });
+    const nome = novoNome.trim();
+    if (!nome || nome.length > 160 || !Number.isInteger(novoMaximo) || novoMaximo < 1 || novoMaximo > MAX_ALLOWED) {
+      setErro('Informe um nome de até 160 caracteres e um máximo entre 1 e 9999.');
+      return;
+    }
+    setErro('');
+    onAdicionar({
+      campanhaId, nome, tipo: novoTipo,
+      valorAtual: novaDirecao === 'decrescente' ? novoMaximo : 0,
+      valorMaximo: novoMaximo, direcao: novaDirecao, visibilidade: 'mestre_privado', estado: 'ativo'
+    });
     setNovoNome('');
     setNovoMaximo(6);
   };
+
   const ajustar = (contador: Contador, delta: number) => {
-    const valor = Math.max(0, Math.min(contador.valorMaximo, contador.valorAtual + delta));
-    const concluido = contador.direcao === 'crescente' ? valor === contador.valorMaximo : valor === 0;
-    onAtualizar(contador.id, { valorAtual: valor, estado: concluido ? 'concluido' : contador.estado === 'concluido' ? 'ativo' : contador.estado });
-    onRegistrarEvento?.({ type: 'counter_update', content: `${contador.nome}: ${valor}/${contador.valorMaximo}${concluido ? ' — concluído.' : '.'}`, metadata: { counterId: contador.id, nome: contador.nome, anterior: contador.valorAtual, valor, maximo: contador.valorMaximo, concluido } });
+    atualizarValores(contador, contador.valorAtual + delta, contador.valorMaximo);
   };
-  const alternarVisibilidade = (contador: Contador) => {
-    const proxima: VisibilidadeConteudo = contador.visibilidade === 'mestre_privado' ? 'revelado_jogadores' : 'mestre_privado';
-    onAtualizar(contador.id, { visibilidade: proxima });
+
+  const ajustarMaximo = (contador: Contador, delta: number) => {
+    const novo = Math.max(1, Math.min(MAX_ALLOWED, contador.valorMaximo + delta));
+    atualizarValores(contador, contador.valorAtual, novo);
+    setMaximosEditando(items => ({ ...items, [contador.id]: String(novo) }));
   };
+
+  const aplicarMaximo = (contador: Contador) => {
+    const raw = maximosEditando[contador.id];
+    if (raw === undefined || raw.trim() === '') {
+      setErro('Informe o máximo do contador.');
+      return;
+    }
+    atualizarValores(contador, contador.valorAtual, Number(raw));
+  };
+
   const editar = (contador: Contador) => {
     const nome = window.prompt('Nome do contador', contador.nome);
-    if (nome?.trim()) onAtualizar(contador.id, { nome: nome.trim() });
+    if (nome?.trim() && nome.trim().length <= 160) onAtualizar(contador.id, { nome: nome.trim() });
     const descricao = window.prompt('Descrição ou gatilho narrativo', contador.descricao || contador.gatilho || '');
     if (descricao !== null) onAtualizar(contador.id, { descricao: descricao.trim() || undefined });
   };
-  if (compacto) return <div className="live-counter-preview">{exibidos.slice(0, 2).map(contador => <div key={contador.id}><span className="live-counter-preview__dial" style={{ '--counter-progress': `${(contador.valorAtual / contador.valorMaximo) * 100}%` } as React.CSSProperties}>{contador.valorAtual}/{contador.valorMaximo}</span><span><strong>{contador.nome}</strong><small>{contador.estado === 'concluido' ? 'Concluído' : contador.tipo}</small></span></div>)}{exibidos.length === 0 && <p>Nenhum contador revelado.</p>}</div>;
+
+  if (compacto) return (
+    <div className="live-counter-preview">
+      {contadores.slice(0, 2).map(contador => <div key={contador.id}>
+        <span className="live-counter-preview__dial" style={{ '--counter-progress': `${(contador.valorAtual / contador.valorMaximo) * 100}%` } as React.CSSProperties}>{contador.valorAtual}/{contador.valorMaximo}</span>
+        <span><strong>{contador.nome}</strong><small>{contador.estado === 'concluido' ? 'Concluído' : contador.tipo}</small></span>
+      </div>)}
+      {contadores.length === 0 && <p>Nenhum contador criado.</p>}
+    </div>
+  );
 
   return (
-    <section className="counter-panel">
-      <header><div><p className="ro-eyebrow">Ritmo narrativo</p><h2>Contadores</h2></div>{mestre && <span>{contadores.length} ativos</span>}</header>
-      {mestre && <form onSubmit={criar} className="counter-panel__create"><input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} placeholder="Ex.: Porta Selada" aria-label="Nome do contador" /><input type="number" min="1" value={novoMaximo} onChange={(e) => setNovoMaximo(Number(e.target.value))} aria-label="Valor máximo" /><select value={novoTipo} onChange={(e) => setNovoTipo(e.target.value as TipoContador)} aria-label="Tipo de contador"><option value="tempo">Tempo</option><option value="progresso">Progresso</option><option value="problema">Problema</option><option value="conflito">Conflito</option><option value="personalizado">Personalizado</option></select><select value={novaDirecao} onChange={(e) => setNovaDirecao(e.target.value as DirecaoContador)} aria-label="Direção"><option value="crescente">Crescente</option><option value="decrescente">Decrescente</option></select><select value={novaVisibilidade} onChange={(e) => setNovaVisibilidade(e.target.value as VisibilidadeConteudo)} aria-label="Visibilidade"><option value="mestre_privado">Mestre</option><option value="compartilhado">Compartilhado</option><option value="revelado_jogadores">Revelado</option></select><button className="ro-button">Criar</button></form>}
+    <section className="counter-panel counter-panel--master">
+      <header><div><p className="ro-eyebrow">Ferramenta exclusiva do Mestre</p><h2>Contadores da sessão</h2></div><span>{contadores.length} contador(es)</span></header>
+      <p className="counter-panel__hint">Acompanhe a tensão e a progressão dos acontecimentos. Nenhum contador é revelado aos jogadores.</p>
+      <form onSubmit={criar} className="counter-panel__create">
+        <label>Nome do contador
+          <input required maxLength={160} value={novoNome} onChange={e => setNovoNome(e.target.value)} placeholder="Ex.: Portal prestes a abrir" />
+        </label>
+        <label>Máximo
+          <input type="number" min="1" max={MAX_ALLOWED} step="1" value={novoMaximo} onChange={e => setNovoMaximo(Number(e.target.value))} />
+        </label>
+        <label>Tipo
+          <select value={novoTipo} onChange={e => setNovoTipo(e.target.value as TipoContador)}>
+            <option value="tempo">Tempo</option><option value="progresso">Progresso</option>
+            <option value="problema">Problema</option><option value="conflito">Conflito</option>
+            <option value="personalizado">Personalizado</option>
+          </select>
+        </label>
+        <label>Direção
+          <select value={novaDirecao} onChange={e => setNovaDirecao(e.target.value as DirecaoContador)}>
+            <option value="crescente">Crescente</option><option value="decrescente">Decrescente</option>
+          </select>
+        </label>
+        <button type="submit" className="ro-button">Criar contador</button>
+      </form>
+      {erro && <p role="alert" className="counter-panel__error">{erro}</p>}
       <div className="counter-panel__list">
-        {exibidos.map(contador => <article key={contador.id} className={`counter-panel__item ${contador.estado === 'concluido' ? 'is-complete' : ''}`}>
-          <div className="counter-panel__meter" style={{ '--counter-progress': `${(contador.valorAtual / contador.valorMaximo) * 100}%` } as React.CSSProperties}><span>{contador.valorAtual}<small>/{contador.valorMaximo}</small></span></div>
-          <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3>{contador.nome}</h3><span>{contador.tipo}</span>{contador.estado === 'pausado' && <span>Pausado</span>}</div>{contador.descricao && <p>{contador.descricao}</p>}{mestre && <small>{contador.visibilidade === 'mestre_privado' ? 'Privado do Mestre' : contador.visibilidade === 'compartilhado' ? 'Compartilhado' : 'Revelado aos jogadores'}</small>}</div>
-          {mestre && <div className="counter-panel__quick"><button onClick={() => ajustar(contador, -1)} aria-label={`Reduzir ${contador.nome}`}>−</button><button onClick={() => ajustar(contador, 1)} aria-label={`Avançar ${contador.nome}`}>+</button></div>}
-          {mestre && <div className="counter-panel__actions"><button onClick={() => editar(contador)}>Editar</button><button onClick={() => onAtualizar(contador.id, { valorAtual: contador.direcao === 'crescente' ? contador.valorMaximo : 0, estado: 'concluido' })}>Concluir</button><button onClick={() => onAtualizar(contador.id, { valorAtual: contador.direcao === 'crescente' ? 0 : contador.valorMaximo, estado: 'ativo' })}>Resetar</button><button onClick={() => onAtualizar(contador.id, { estado: contador.estado === 'pausado' ? 'ativo' : 'pausado' } as { estado: EstadoContador })}>{contador.estado === 'pausado' ? 'Retomar' : 'Pausar'}</button><button onClick={() => alternarVisibilidade(contador)}>{contador.visibilidade === 'mestre_privado' ? 'Revelar' : 'Ocultar'}</button><button onClick={() => onDuplicar(contador.id)}>Duplicar</button><button onClick={() => onRemover(contador.id)} className="is-danger">Excluir</button></div>}
+        {contadores.map(contador => <article key={contador.id} className={`counter-panel__item ${contador.estado === 'concluido' ? 'is-complete' : ''}`}>
+          <div className="counter-panel__meter" style={{ '--counter-progress': `${(contador.valorAtual / contador.valorMaximo) * 100}%` } as React.CSSProperties}>
+            <span>{contador.valorAtual}<small>/{contador.valorMaximo}</small></span>
+          </div>
+          <div className="counter-panel__details">
+            <h3>{contador.nome}</h3>
+            <small>{contador.tipo} · {contador.estado} · {contador.direcao}</small>
+            {contador.descricao && <p>{contador.descricao}</p>}
+          </div>
+          <div className="counter-panel__value-edit">
+            <span>Valor atual</span>
+            <div className="counter-panel__stepper">
+              <button type="button" onClick={() => ajustar(contador,-1)} disabled={contador.valorAtual <= 0} aria-label={`Diminuir valor de ${contador.nome}`}>−</button>
+              <output aria-label={`Valor atual de ${contador.nome}`}>{contador.valorAtual}</output>
+              <button type="button" onClick={() => ajustar(contador,1)} disabled={contador.valorAtual >= contador.valorMaximo} aria-label={`Aumentar valor de ${contador.nome}`}>+</button>
+            </div>
+          </div>
+          <div className="counter-panel__max-edit">
+            <label htmlFor={`counter-max-${contador.id}`}>Valor máximo</label>
+            <div className="counter-panel__stepper counter-panel__stepper--max">
+              <button type="button" onClick={() => ajustarMaximo(contador,-1)} disabled={contador.valorMaximo <= 1} aria-label={`Diminuir máximo de ${contador.nome}`}>−</button>
+              <input id={`counter-max-${contador.id}`} type="number" inputMode="numeric" min="1" max={MAX_ALLOWED} step="1" value={maximosEditando[contador.id] ?? String(contador.valorMaximo)} onChange={e => setMaximosEditando(items => ({...items,[contador.id]:e.target.value}))} aria-label={`Máximo de ${contador.nome}`}/>
+              <button type="button" onClick={() => ajustarMaximo(contador,1)} disabled={contador.valorMaximo >= MAX_ALLOWED} aria-label={`Aumentar máximo de ${contador.nome}`}>+</button>
+            </div>
+            <button type="button" className="counter-panel__apply" onClick={() => aplicarMaximo(contador)}>Aplicar máximo</button>
+          </div>
+          <div className="counter-panel__actions">
+            <button type="button" onClick={() => editar(contador)}>Editar nome</button>
+            <button type="button" onClick={() => atualizarValores(contador,contador.direcao === 'crescente' ? contador.valorMaximo : 0,contador.valorMaximo)}>Concluir</button>
+            <button type="button" onClick={() => atualizarValores(contador,contador.direcao === 'crescente' ? 0 : contador.valorMaximo,contador.valorMaximo)}>Resetar</button>
+            <button type="button" onClick={() => onAtualizar(contador.id,{estado: contador.estado==='pausado'?'ativo':'pausado'})}>{contador.estado==='pausado'?'Retomar':'Pausar'}</button>
+            <button type="button" onClick={() => onDuplicar(contador.id)}>Duplicar</button>
+            <button type="button" onClick={() => {if(window.confirm(`Excluir o contador ${contador.nome}?`))onRemover(contador.id);}} className="is-danger">Excluir</button>
+          </div>
         </article>)}
-        {exibidos.length === 0 && <p className="live-table__empty">{mestre ? 'Crie um contador para acompanhar a tensão, o tempo ou uma consequência.' : 'Nenhum contador foi revelado à mesa.'}</p>}
+        {contadores.length === 0 && <p className="live-table__empty">Nenhum contador por enquanto. Crie um acima, mesmo com a sessão em andamento.</p>}
       </div>
     </section>
   );

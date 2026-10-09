@@ -1,0 +1,50 @@
+/* Ferramenta exclusiva de contadores do Mestre na Mesa Ao Vivo. */
+.live-table--v5 .counter-panel--master {
+  display:grid;gap:1rem;width:100%;max-width:none;padding:.25rem;
+  color:var(--vtt-text,#f6f0e7);font-family:Inter,system-ui,sans-serif;
+}
+.live-table--v5 .counter-panel--master header {display:flex;align-items:end;justify-content:space-between;gap:12px;padding-bottom:13px;border-bottom:1px solid var(--vtt-line);}
+.live-table--v5 .counter-panel--master header h2 {font:500 2rem/1 "Cormorant Garamond",Georgia,serif;color:var(--vtt-soft);}
+.live-table--v5 .counter-panel--master header>span {color:var(--vtt-accent-bright);font-size:.75rem;}
+.live-table--v5 .counter-panel__hint {color:var(--vtt-muted);font-size:.79rem;line-height:1.6;}
+.live-table--v5 .counter-panel__create {display:grid;grid-template-columns:minmax(0,1.5fr) minmax(85px,.55fr) minmax(120px,.8fr) minmax(120px,.8fr);gap:10px;padding:12px;background:rgba(255,255,255,.028);border:1px solid var(--vtt-line);border-radius:8px;}
+.live-table--v5 .counter-panel__create label {display:grid;align-content:start;gap:6px;color:var(--vtt-muted);font-size:.74rem;min-width:0;}
+.live-table--v5 .counter-panel__create :where(input,select),.live-table--v5 .counter-panel__stepper input {background:#131c27;border:1px solid var(--vtt-line-strong);border-radius:5px;color:var(--vtt-soft);min-height:43px;min-width:0;width:100%;font:500 .85rem Inter,system-ui,sans-serif;padding:.5rem .6rem;}
+.live-table--v5 .counter-panel__create .ro-button {grid-column:1 / -1;justify-self:start;min-height:43px;padding:9px 17px;}
+.live-table--v5 .counter-panel__list {display:grid;gap:14px;}
+.live-table--v5 .counter-panel__item {display:grid;grid-template-columns:65px minmax(0,1fr) minmax(105px,.8fr) minmax(150px,1fr);align-items:center;gap:13px;padding:15px;border:1px solid var(--vtt-line);border-radius:9px;background:rgba(255,255,255,.03);min-width:0;}
+.live-table--v5 .counter-panel__item.is-complete {opacity:1;border-color:rgba(170,137,91,.45);}
+.live-table--v5 .counter-panel__meter {width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#121923 58%,transparent 60%),conic-gradient(#c59a65 var(--counter-progress),#3b4145 0);color:#fff1df;font-weight:700;}
+.live-table--v5 .counter-panel__meter span {font-size:.84rem;}
+.live-table--v5 .counter-panel__meter small {font-size:.65rem;}
+.live-table--v5 .counter-panel__details {min-width:0;}
+.live-table--v5 .counter-panel__details h3 {font:500 1.4rem/1.15 "Cormorant Garamond",Georgia,serif;color:var(--vtt-soft);overflow-wrap:anywhere;}
+.live-table--v5 .counter-panel__details small {display:block;margin-top:5px;color:var(--vtt-accent-bright);font-size:.66rem;text-transform:capitalize;}
+.live-table--v5 .counter-panel__details p {font-size:.76rem;color:var(--vtt-muted);line-height:1.45;overflow-wrap:anywhere;}
+.live-table--v5 .counter-panel__value-edit,.live-table--v5 .counter-panel__max-edit {display:grid;align-content:center;gap:7px;min-width:0;}
+.live-table--v5 .counter-panel__value-edit>span,.live-table--v5 .counter-panel__max-edit>label {color:var(--vtt-muted);font-size:.72rem;}
+.live-table--v5 .counter-panel__stepper {display:grid;grid-template-columns:40px minmax(0,1fr) 40px;gap:5px;align-items:center;}
+.live-table--v5 .counter-panel__stepper button {display:grid;place-items:center;min-height:43px;min-width:40px;padding:0;border:1px solid var(--vtt-line-strong);border-radius:5px;background:#263241;color:#ebc190;font-size:1.35rem;line-height:1;cursor:pointer;}
+.live-table--v5 .counter-panel__stepper button:disabled {opacity:.38;cursor:not-allowed;}
+.live-table--v5 .counter-panel__stepper output {font-weight:700;text-align:center;color:var(--vtt-soft);}
+.live-table--v5 .counter-panel__stepper input {text-align:center;padding:5px 1px;min-width:0;appearance:textfield;}
+.live-table--v5 .counter-panel__apply {justify-self:start;border:0;border-bottom:1px solid #b98a53;color:#deb78c;font-size:.7rem;padding:3px 0;background:transparent;}
+.live-table--v5 .counter-panel__actions {grid-column:1/-1;display:flex;gap:7px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--vtt-line);}
+.live-table--v5 .counter-panel__actions button {min-height:40px;padding:8px 10px;background:rgba(255,255,255,.02);color:var(--vtt-soft);border:1px solid var(--vtt-line);border-radius:5px;font-size:.73rem;}
+.live-table--v5 .counter-panel__error {padding:10px 12px;border-left:3px solid #c47d77;background:#42282a;color:#f5d6d4;font-size:.79rem;}
+@media(max-width:1000px){
+  .live-table--v5 .counter-panel__create {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .live-table--v5 .counter-panel__create label:first-child {grid-column:1/-1;}
+  .live-table--v5 .counter-panel__item {grid-template-columns:65px minmax(0,1fr) minmax(125px,1fr);}
+  .live-table--v5 .counter-panel__max-edit {grid-column:2/-1;}
+}
+@media(max-width:600px){
+  .live-table--v5 .counter-panel__create {grid-template-columns:repeat(2,minmax(0,1fr));padding:9px;}
+  .live-table--v5 .counter-panel__item {grid-template-columns:64px minmax(0,1fr);gap:12px;padding:12px;}
+  .live-table--v5 .counter-panel__value-edit,.live-table--v5 .counter-panel__max-edit {grid-column:1/-1;}
+  .live-table--v5 .counter-panel__stepper {grid-template-columns:48px minmax(0,1fr) 48px;}
+  .live-table--v5 .counter-panel__stepper button {min-height:46px;}
+  .live-table--v5 .counter-panel__actions {grid-column:1/-1;}
+  .live-table--v5 .counter-panel__actions button {min-height:44px;flex:1 1 82px;}
+  .live-table--v5 .counter-panel__create :where(input,select),.live-table--v5 .counter-panel__stepper input {font-size:16px;}
+}
