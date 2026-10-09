@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowDown, ArrowLeft, ArrowRight, BookOpen, Check, ChevronDown, Compass, Layers3, LockKeyhole, Menu, MoonStar, ScrollText, Shield, ShoppingBag, Sparkles, Users, X } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, BookOpen, Check, Compass, Layers3, LockKeyhole, Menu, MoonStar, ScrollText, ShoppingBag, Users, X } from 'lucide-react';
 
 export type PublicScreen = 'landing' | 'store';
 export type BookSelection = 'combo' | 'basico' | 'adversarios';
@@ -53,7 +53,7 @@ export const PublicLanding:React.FC<Props>=({screen,selection,onScreenChange,onE
   const [menuOpen,setMenuOpen]=useState(false);
   const [chosen,setChosen]=useState<BookSelection>(selection);
   useEffect(()=>{setChosen(selection)},[selection]);
-  useEffect(()=>{if(screen==='store'){window.scrollTo({top:0,behavior:'instant'});}},[screen]);
+  useEffect(()=>{if(screen==='store'){window.scrollTo({top:0,behavior:'auto'});}},[screen]);
   const shop=(choice:BookSelection='combo')=>{setMenuOpen(false);setChosen(choice);onScreenChange('store',choice);};
   const home=()=>onScreenChange('landing');
   const logo=<Signature/>;
