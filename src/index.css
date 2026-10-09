@@ -16,6 +16,7 @@
 @import "./design-system/mobile-responsive-enhancements.css";
 @import "./design-system/create-character-light.css";
 @import "./design-system/live-mobile-viewport.css";
+@import "./design-system/live-counters-master.css";
 
 @layer base {
   :root {
