@@ -325,7 +325,7 @@ body:has(.ro-app-shell--live) {
 
   /* Barra dos personagens continua na parte superior, sem flutuar
      sobre o mapa nem competir com a navegação inferior. */
-  .ro-app-shell--live > .live-vtt__player-bar {
+  .ro-app-shell--live .live-table--v5 > .live-vtt__player-bar {
     position: relative;
     inset: auto;
     max-height: none;
@@ -335,32 +335,86 @@ body:has(.ro-app-shell--live) {
   .ro-app-shell--live .live-vtt__player-copy strong { font-size: .84rem; }
   .ro-app-shell--live .live-vtt__player-copy small { font-size: .65rem; }
 
-  /* Modo Mestre e toolbar de mapa: duas faixas DISTINTAS, sem esconder
-     o seletor de mapas, grade, zoom ou botão de revelar. */
+  /* A navegação do Mestre integra o cabeçalho em uma segunda linha:
+     não flutua sobre o player strip ou sobre o controle do mapa. */
+  .ro-app-shell--live .live-vtt__topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 2.5rem 2.5rem;
+    grid-auto-rows: minmax(2.7rem, auto);
+    align-items: center;
+    column-gap: .35rem;
+    row-gap: .3rem;
+    min-height: 0;
+    padding: .45rem max(.5rem, env(safe-area-inset-right, 0px))
+      .45rem max(.5rem, env(safe-area-inset-left, 0px));
+  }
+  .ro-app-shell--live .live-vtt__brand {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    gap: .3rem;
+  }
+  .ro-app-shell--live .live-vtt__brand strong {
+    font-size: .68rem;
+    letter-spacing: .03em;
+  }
+  .ro-app-shell--live .live-vtt__brand small { display: none; }
+  .ro-app-shell--live .live-vtt__campaign {
+    grid-column: 2;
+    grid-row: 1;
+    border-left: 0;
+    padding-left: .15rem;
+  }
+  .ro-app-shell--live .live-vtt__campaign strong {
+    max-width: 100%;
+    font-size: .86rem;
+  }
+  .ro-app-shell--live .live-vtt__top-actions { display: contents; }
+  .ro-app-shell--live .live-vtt__presentation {
+    grid-column: 3;
+    grid-row: 1;
+    width: 2.5rem;
+    min-height: 42px;
+    padding: 0;
+  }
+  .ro-app-shell--live .live-vtt__leave {
+    grid-column: 4;
+    grid-row: 1;
+    width: 2.5rem;
+    min-height: 42px;
+    padding: 0;
+  }
   .ro-app-shell--live .live-vtt__mode-switch {
-    top: calc(100% + .3rem);
-    left: .5rem;
-    right: .5rem;
-    width: auto;
-    max-width: none;
+    position: static;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    z-index: auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: flex;
     overflow-x: auto;
-    justify-content: space-around;
+    justify-content: stretch;
   }
   .ro-app-shell--live .live-vtt__mode-switch button {
-    flex: 1 0 3rem;
-    min-height: 42px;
+    flex: 1 1 0;
+    width: auto;
     min-width: 0;
+    min-height: 42px;
+    font-size: .72rem;
+    padding: 0 .25rem;
+    white-space: nowrap;
   }
   .ro-app-shell--live .live-vtt__stage-shell.is-map .live-vtt__stage-meta {
     display: none;
   }
   .ro-app-shell--live .live-vtt__stage-shell.is-scene .live-vtt__stage-meta {
-    top: 3.7rem;
+    top: .9rem;
     left: .75rem;
     max-width: calc(100% - 1.5rem);
   }
   .ro-app-shell--live .map-stage__library--v4 {
-    top: 3.65rem;
+    top: .65rem;
     left: .5rem;
     right: .5rem;
     width: auto;
@@ -381,7 +435,7 @@ body:has(.ro-app-shell--live) {
     width: min(55vw, 240px);
   }
   .ro-app-shell--live .map-stage__privacy-note {
-    top: 7.4rem;
+    top: 4.6rem;
     left: .6rem;
     right: .6rem;
     max-width: none;
@@ -464,7 +518,7 @@ body:has(.ro-app-shell--live) {
   /* Paisagem: altura calculada pelo viewport, sem mínimo legado de 620px. */
   .ro-app-shell--live .live-table--v5 { min-height: 0 !important; }
   .ro-app-shell--live .live-vtt__topbar { min-height: 46px; }
-  .ro-app-shell--live > .live-vtt__player-bar { min-height: 2.65rem; }
+  .ro-app-shell--live .live-table--v5 > .live-vtt__player-bar { min-height: 2.65rem; }
   .ro-app-shell--live .live-vtt__drawer {
     top: .25rem;
     bottom: .25rem;
