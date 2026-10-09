@@ -80,11 +80,34 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
     removeMap: (id: string) => action(async () => { await liveTableRepository.removeMap(id); setMaps(items => items.filter(item => item.id !== id)); }),
     addToken: (item: DraftToken) => action(async () => { const created = await liveTableRepository.addToken(item); setTokens(items => replace(items, created)); return created; }),
     patchToken: (id: string, patch: Partial<TokenMapa>) => action(async () => {
-      const updated = role === 'mestre'
-        ? await liveTableRepository.patchToken(id, patch)
-        : await liveTableRepository.patchOwnToken(id, patch);
-      setTokens(items => mergeToken(items, updated));
-      return updated;
+      // Ajustes de PV são exibidos imediatamente, sem esperar a resposta da rede.
+      // A RLS continua autorizando o write no Supabase; isto é apenas visual.
+      const hpPatch = role === 'mestre' && patch.hpCurrent !== undefined && patch.hpMax !== undefined;
+      let original: TokenMapa | undefined;
+      if (hpPatch) {
+        setTokens(items => {
+          original = items.find(item => item.id === id);
+          return items.map(item => item.id === id ? { ...item, ...patch } : item);
+        });
+      }
+      try {
+        const updated = role === 'mestre'
+          ? await liveTableRepository.patchToken(id, patch)
+          : await liveTableRepository.patchOwnToken(id, patch);
+        setTokens(items => mergeToken(items, updated));
+        return updated;
+      } catch (error) {
+        if (hpPatch) {
+          // Não substitui uma alteração mais recente feita no mesmo token.
+          setTokens(items => items.map(item =>
+            item.id === id && original &&
+            item.hpCurrent === patch.hpCurrent && item.hpMax === patch.hpMax
+              ? { ...item, hpCurrent: original.hpCurrent, hpMax: original.hpMax }
+              : item
+          ));
+        }
+        throw error;
+      }
     }),
     removeToken: (id: string) => action(async () => { await liveTableRepository.removeToken(id); setTokens(items => items.filter(item => item.id !== id)); })
     , patchCharacterResources: (id: string, patch: Partial<CharacterResourceUpdate>) => action(() => liveTableRepository.patchCharacterResources(id, patch))

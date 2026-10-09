@@ -664,6 +664,7 @@ export default function App() {
               papelDaCampanha === 'mestre' ? 'detalhe_campanha' : 'campanhas'
             )}
             onAtualizarPersonagem={salvarPersonagemPersistente}
+            onReceberRecursosPersonagem={personagensRemotos.applyResourceUpdate}
             onAbrirModalRupturaPara={handleAbrirModalRupturaPara}
             onAbrirFichaPersonagem={handleAbrirFichaPersonagem}
             contadores={EMPTY_COUNTERS}

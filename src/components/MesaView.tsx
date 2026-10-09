@@ -2,6 +2,7 @@ import React from 'react';
 import { Adversario, Campanha, Cena, Contador, Handout, MapaNarrativo, MembroCampanha, NPC, Pista, Sessao, TokenMapa } from '../types/campaign';
 import { UserRole } from '../types/auth';
 import { Personagem } from '../types/character';
+import type { CharacterResourceUpdate } from '../features/realtime/liveTableRepository';
 import { LiveTable } from './live/LiveTable';
 
 interface MesaViewProps {
@@ -26,6 +27,7 @@ interface MesaViewProps {
   registroOnline: boolean;
   onVoltarParaCampanha: () => void;
   onAtualizarPersonagem: (p: Personagem) => void;
+  onReceberRecursosPersonagem: (update: CharacterResourceUpdate) => void;
   onAbrirModalRupturaPara: (p: Personagem, delta: number, motivo: string) => void;
   onAbrirFichaPersonagem: (p: Personagem) => void;
   contadores: Contador[];
@@ -46,7 +48,7 @@ interface MesaViewProps {
 
 export const MesaView: React.FC<MesaViewProps> = ({
   campanha, personagens, npcs, adversarios, onAtualizarNPC, onAtualizarAdversario, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltarParaCampanha,
-  onAtualizarPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
+  onAtualizarPersonagem, onReceberRecursosPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
   contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
   mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
 }) => (
@@ -72,6 +74,7 @@ export const MesaView: React.FC<MesaViewProps> = ({
     registroOnline={registroOnline}
     onVoltar={onVoltarParaCampanha}
     onAtualizarPersonagem={onAtualizarPersonagem}
+    onReceberRecursosPersonagem={onReceberRecursosPersonagem}
     onAbrirRuptura={onAbrirModalRupturaPara}
     onAbrirFicha={onAbrirFichaPersonagem}
     contadores={contadores}
