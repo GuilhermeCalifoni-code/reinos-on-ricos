@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Personagem } from '../../types/character';
 import { characterRepository } from './characterRepository';
+import { CharacterResourceUpdate } from '../../features/realtime/liveTableRepository';
+import { applyLiveCharacterResources } from './characterRealtimeState';
 
 const mergeById = (items: Personagem[]) => {
   const map = new Map<string, Personagem>();
@@ -61,10 +63,15 @@ export function useRemoteCharacters(userId?: string, campaignId?: string, enable
     setCharacters(items => mergeById([...items, ...received]));
   }, []);
 
+  // Eventos de mudança de PV/Foco/Ruptura: atualizar a UI sem reenviar ao banco.
+  const applyResourceUpdate = useCallback((update: CharacterResourceUpdate) => {
+    setCharacters(current => applyLiveCharacterResources(current, update));
+  }, []);
+
   const personal = useMemo(
     () => characters.filter(item => item.ownerUserId === userId),
     [characters, userId]
   );
 
-  return { characters, personal, loading, error, refresh, save, remove, merge };
+  return { characters, personal, loading, error, refresh, save, remove, merge, applyResourceUpdate };
 }
