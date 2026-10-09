@@ -23,7 +23,7 @@ test('Registro Vivo mantém timeline rolável e compositor em área separada', (
 test('Faixa de fichas ocupa área própria acima do palco, e nunca cobre o dock', () => {
   const player = table.indexOf('className="live-vtt__player-bar"');
   const shell = table.indexOf('className="live-vtt__shell"');
-  const stage = table.indexOf('className="live-vtt__stage-shell"');
+  const stage = table.indexOf('className={`live-vtt__stage-shell');
   assert.ok(player > 0 && player < shell && shell < stage,
     'Fichas devem ficar entre o cabeçalho e o shell da Mesa, fora do palco');
   assert.match(styles, /\.live-table--v5 > \.live-vtt__player-bar\s*\{/);

@@ -1,0 +1,535 @@
+/* Mesa Ao Vivo: correção estrutural de viewport e leitura móvel.
+   Importado por último para não herdar os breakpoints legados da Mesa V4. */
+
+/* A Mesa é uma tela imersiva, não uma página que se estende atrás do body claro. */
+.ro-app-shell--live {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0 !important;
+  height: 100dvh !important;
+  max-height: 100dvh;
+  overflow: hidden !important;
+  background: #090c10 !important;
+  overscroll-behavior: none;
+}
+.ro-app-shell--live > div,
+.ro-app-shell--live > div > main {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0 !important;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden !important;
+  background: #090c10;
+}
+.ro-app-shell--live .live-table--v5 {
+  min-height: 0 !important;
+  height: 100%;
+  max-height: 100%;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+/* O teclado e o overscroll nunca devem revelar o fundo claro do tema geral. */
+html:has(.ro-app-shell--live),
+body:has(.ro-app-shell--live) {
+  overscroll-behavior: none;
+  background-color: #090c10 !important;
+}
+.ro-app-shell--live .live-vtt__shell {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (max-width: 980px) {
+  /* Mais espaço para conteúdo de Mestre em tablets e celulares grandes. */
+  .live-table--v5 .live-vtt__drawer {
+    max-width: min(520px, calc(100% - 1rem));
+  }
+  .live-table--v5 .live-vtt__drawer--director {
+    max-width: min(560px, calc(100% - 1rem));
+  }
+  .live-table--v5 .live-vtt__actor-main strong {
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+  .live-table--v5 .live-vtt__actor-main small {
+    font-size: .76rem;
+    line-height: 1.35;
+  }
+  .live-table--v5 .live-vtt__actor-list,
+  .live-table--v5 .live-vtt__director-body {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 760px) {
+  .ro-app-shell--live .live-table--v5 {
+    --mobile-dock-space: calc(4.55rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Reserva o rodapé para o dock: nenhum cartão, mapa ou painel
+     precisa dividir sua área de clique com a navegação fixa. */
+  .ro-app-shell--live .live-vtt__shell {
+    margin-bottom: var(--mobile-dock-space);
+    overflow: hidden;
+  }
+  .ro-app-shell--live .live-vtt__dock {
+    position: absolute;
+    z-index: 65;
+    right: max(.5rem, env(safe-area-inset-right, 0px));
+    bottom: max(.4rem, env(safe-area-inset-bottom, 0px));
+    left: max(.5rem, env(safe-area-inset-left, 0px));
+    width: auto;
+    min-height: 3.55rem;
+    display: flex;
+    transform: none;
+  }
+  .ro-app-shell--live .live-vtt__dock button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 3.55rem;
+    padding: .25rem .1rem;
+    gap: .15rem;
+  }
+  .ro-app-shell--live .live-vtt__dock button span {
+    display: block;
+    font-size: clamp(.57rem, 2.4vw, .71rem);
+    line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Botões de abrir painéis ficam junto à borda inferior do palco,
+     sem cobrir o dock. A lateral do mapa segue livre. */
+  .ro-app-shell--live .live-vtt__rail {
+    top: auto;
+    bottom: .5rem;
+    left: .5rem;
+    z-index: 35;
+    display: flex;
+    flex-direction: row;
+    gap: .25rem;
+    padding: .22rem;
+    transform: none;
+  }
+  .ro-app-shell--live .live-vtt__rail button {
+    min-width: 2.75rem;
+    width: 2.75rem;
+    min-height: 2.75rem;
+  }
+  .ro-app-shell--live .live-vtt__rail button.is-active::before {
+    left: .5rem;
+    right: .5rem;
+    bottom: -.22rem;
+    top: auto;
+    width: auto;
+    height: 2px;
+  }
+
+  /* O painel aberto toma TODA a largura útil do celular, em vez
+     de ser comprimido entre trilho lateral e dock. */
+  .ro-app-shell--live .live-vtt__drawer,
+  .ro-app-shell--live .live-vtt__drawer--left,
+  .ro-app-shell--live .live-vtt__drawer--right,
+  .ro-app-shell--live .live-vtt__drawer--director {
+    position: absolute;
+    z-index: 47;
+    top: .45rem;
+    bottom: .45rem;
+    left: .5rem;
+    right: .5rem;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    min-width: 0;
+    min-height: 0;
+    border-radius: 11px;
+  }
+  .ro-app-shell--live .live-vtt__drawer-head {
+    min-height: 4.1rem;
+    padding: .8rem 1rem;
+  }
+  .ro-app-shell--live .live-vtt__drawer-head strong {
+    font-size: 1.43rem;
+    line-height: 1.05;
+  }
+  .ro-app-shell--live .live-vtt__drawer-head > button {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .ro-app-shell--live .live-vtt__actor-tabs button,
+  .ro-app-shell--live .live-vtt__director-tabs button {
+    min-width: 0;
+    min-height: 3.35rem;
+    padding: .45rem .12rem;
+    flex-wrap: wrap;
+    gap: .22rem;
+    font-size: clamp(.71rem, 2.5vw, .82rem);
+    line-height: 1.25;
+    text-align: center;
+  }
+  .ro-app-shell--live .live-vtt__actor-tabs button span,
+  .ro-app-shell--live .live-vtt__director-tabs button span {
+    font-size: .7rem;
+  }
+  .ro-app-shell--live .live-vtt__actor-list,
+  .ro-app-shell--live .live-vtt__director-body {
+    padding: .75rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+  .ro-app-shell--live .live-vtt__actor-card {
+    margin-bottom: .8rem;
+  }
+  .ro-app-shell--live .live-vtt__actor-main {
+    grid-template-columns: 3.2rem minmax(0,1fr) auto;
+    padding: .8rem;
+    gap: .8rem;
+  }
+  .ro-app-shell--live .live-vtt__actor-main strong {
+    font-size: 1.12rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+  .ro-app-shell--live .live-vtt__actor-main small {
+    font-size: .77rem;
+    white-space: normal;
+    overflow: visible;
+  }
+  .ro-app-shell--live .live-vtt__actor-portrait {
+    width: 3.2rem;
+    height: 3.65rem;
+  }
+  .ro-app-shell--live .live-vtt__actor-resources {
+    flex-wrap: wrap;
+    gap: .55rem;
+    font-size: .83rem;
+  }
+  .ro-app-shell--live .live-vtt__actor-actions {
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+  .ro-app-shell--live .live-vtt__actor-actions button {
+    min-height: 44px;
+    font-size: .78rem;
+  }
+
+  /* PV, dados e testes: botões grandes e blocos com seu próprio espaço. */
+  .ro-app-shell--live .live-vtt__actor-instance {
+    margin: .65rem .6rem .8rem;
+    padding: .8rem;
+    gap: .6rem;
+  }
+  .ro-app-shell--live .live-vtt__actor-instance > strong {
+    font-size: .95rem;
+  }
+  .ro-app-shell--live .live-vtt__actor-instance-location {
+    font-size: .79rem;
+  }
+  .ro-app-shell--live .live-vtt__combat {
+    padding: .6rem 0 .35rem;
+    gap: .85rem;
+    font-size: .85rem;
+    background: transparent;
+  }
+  .ro-app-shell--live .live-vtt__combat > .live-vtt__combat-hp,
+  .ro-app-shell--live .live-vtt__combat > .live-vtt__combat-rolls,
+  .ro-app-shell--live .live-vtt__combat > .live-vtt__combat-damage {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: .55rem;
+    align-items: center;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--vtt-line);
+  }
+  .ro-app-shell--live .live-vtt__combat-hp > svg {
+    display: none;
+  }
+  .ro-app-shell--live .live-vtt__combat-hp > strong,
+  .ro-app-shell--live .live-vtt__combat-hp > label,
+  .ro-app-shell--live .live-vtt__combat-rolls > label,
+  .ro-app-shell--live .live-vtt__combat-damage > button {
+    grid-column: 1 / -1;
+  }
+  .ro-app-shell--live .live-vtt__combat-hp > strong {
+    font-size: .95rem;
+  }
+  .ro-app-shell--live .live-vtt__combat > div > button {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    white-space: normal;
+    font-size: .82rem;
+    line-height: 1.35;
+  }
+  .ro-app-shell--live .live-vtt__combat label {
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: .82rem;
+  }
+  .ro-app-shell--live .live-vtt__combat label input[type="number"],
+  .ro-app-shell--live .live-vtt__combat label select {
+    width: min(7rem,55%);
+    min-height: 44px;
+    font-size: 16px;
+    margin-left: auto;
+  }
+  .ro-app-shell--live .live-vtt__combat :where(input,select,button) {
+    touch-action: manipulation;
+  }
+  .ro-app-shell--live .live-vtt__combat-abilities {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    gap: .55rem;
+  }
+  .ro-app-shell--live .live-vtt__combat-feedback,
+  .ro-app-shell--live .live-vtt__combat-error {
+    font-size: .8rem;
+  }
+
+  /* Registro Vivo: eventos e editor podem rolar separadamente. */
+  .ro-app-shell--live .live-vtt__session-panel,
+  .ro-app-shell--live .live-vtt__drawer > .live-vtt__session-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .ro-app-shell--live .live-vtt__session-panel .session-feed__events {
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .ro-app-shell--live .live-vtt__session-panel .session-feed__composer {
+    flex-shrink: 0;
+    max-height: min(43dvh, 22rem);
+    overflow-y: auto;
+  }
+  .ro-app-shell--live .live-vtt__session-panel .session-feed__composer textarea {
+    font-size: 16px;
+  }
+
+  /* Barra dos personagens continua na parte superior, sem flutuar
+     sobre o mapa nem competir com a navegação inferior. */
+  .ro-app-shell--live .live-table--v5 > .live-vtt__player-bar {
+    position: relative;
+    inset: auto;
+    max-height: none;
+    flex: 0 0 auto;
+    min-height: 3.5rem;
+  }
+  .ro-app-shell--live .live-vtt__player-copy strong { font-size: .84rem; }
+  .ro-app-shell--live .live-vtt__player-copy small { font-size: .65rem; }
+
+  /* A navegação do Mestre integra o cabeçalho em uma segunda linha:
+     não flutua sobre o player strip ou sobre o controle do mapa. */
+  .ro-app-shell--live .live-vtt__topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 2.5rem 2.5rem;
+    grid-auto-rows: minmax(2.7rem, auto);
+    align-items: center;
+    column-gap: .35rem;
+    row-gap: .3rem;
+    min-height: 0;
+    padding: .45rem max(.5rem, env(safe-area-inset-right, 0px))
+      .45rem max(.5rem, env(safe-area-inset-left, 0px));
+  }
+  .ro-app-shell--live .live-vtt__brand {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    gap: .3rem;
+  }
+  .ro-app-shell--live .live-vtt__brand strong {
+    font-size: .68rem;
+    letter-spacing: .03em;
+  }
+  .ro-app-shell--live .live-vtt__brand small { display: none; }
+  .ro-app-shell--live .live-vtt__campaign {
+    grid-column: 2;
+    grid-row: 1;
+    border-left: 0;
+    padding-left: .15rem;
+  }
+  .ro-app-shell--live .live-vtt__campaign strong {
+    max-width: 100%;
+    font-size: .86rem;
+  }
+  .ro-app-shell--live .live-vtt__top-actions { display: contents; }
+  .ro-app-shell--live .live-vtt__presentation {
+    grid-column: 3;
+    grid-row: 1;
+    width: 2.5rem;
+    min-height: 42px;
+    padding: 0;
+  }
+  .ro-app-shell--live .live-vtt__leave {
+    grid-column: 4;
+    grid-row: 1;
+    width: 2.5rem;
+    min-height: 42px;
+    padding: 0;
+  }
+  .ro-app-shell--live .live-vtt__mode-switch {
+    position: static;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    z-index: auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: flex;
+    overflow-x: auto;
+    justify-content: stretch;
+  }
+  .ro-app-shell--live .live-vtt__mode-switch button {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    min-height: 42px;
+    font-size: .72rem;
+    padding: 0 .25rem;
+    white-space: nowrap;
+  }
+  .ro-app-shell--live .live-vtt__stage-shell.is-map .live-vtt__stage-meta {
+    display: none;
+  }
+  .ro-app-shell--live .live-vtt__stage-shell.is-scene .live-vtt__stage-meta {
+    top: .9rem;
+    left: .75rem;
+    max-width: calc(100% - 1.5rem);
+  }
+  .ro-app-shell--live .map-stage__library--v4 {
+    top: .65rem;
+    left: .5rem;
+    right: .5rem;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    padding: .3rem;
+    gap: .35rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ro-app-shell--live .map-stage__library--v4 :where(button,select) {
+    min-height: 44px;
+    font-size: .75rem;
+  }
+  .ro-app-shell--live .map-stage__library--v4 select {
+    flex: 0 0 auto;
+    width: min(55vw, 240px);
+  }
+  .ro-app-shell--live .map-stage__privacy-note {
+    top: 4.6rem;
+    left: .6rem;
+    right: .6rem;
+    max-width: none;
+    font-size: .76rem;
+    line-height: 1.45;
+  }
+  .ro-app-shell--live .map-stage__token-inspector {
+    top: auto;
+    right: .5rem;
+    bottom: .5rem;
+    left: .5rem;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    max-height: min(56dvh, calc(100% - 7.2rem));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ro-app-shell--live .map-stage__token-inspector-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--vtt-panel-strong);
+  }
+  .ro-app-shell--live .map-stage__token-health {
+    font-size: .83rem;
+    gap: .65rem;
+  }
+  .ro-app-shell--live .map-stage__token-health > div {
+    flex-wrap: wrap;
+  }
+  .ro-app-shell--live .map-stage__token-health button,
+  .ro-app-shell--live .map-stage__token-health input {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .ro-app-shell--live .map-stage__token-health label {
+    flex-wrap: wrap;
+  }
+  .ro-app-shell--live .map-stage__token-control > span,
+  .ro-app-shell--live .map-stage__token-inspector-actions button {
+    font-size: .77rem;
+  }
+  .ro-app-shell--live .map-stage__range-presets button {
+    min-height: 42px;
+    font-size: .75rem;
+  }
+  .ro-app-shell--live .map-stage__actor-shelf {
+    left: .5rem;
+    right: .5rem;
+    bottom: .65rem;
+    max-width: none;
+    transform: none;
+  }
+  .ro-app-shell--live .map-stage__setup {
+    left: .5rem;
+    right: .5rem;
+    width: auto;
+    bottom: .65rem;
+    max-height: min(55%, 420px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 390px) {
+  .ro-app-shell--live .live-vtt__actor-tabs button,
+  .ro-app-shell--live .live-vtt__director-tabs button {
+    font-size: .7rem;
+  }
+  .ro-app-shell--live .live-vtt__combat > .live-vtt__combat-rolls {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .ro-app-shell--live .live-vtt__combat-rolls > button,
+  .ro-app-shell--live .live-vtt__combat-rolls > label {
+    grid-column: 1;
+  }
+}
+
+@media (max-height: 550px) and (max-width: 980px) {
+  /* Paisagem: altura calculada pelo viewport, sem mínimo legado de 620px. */
+  .ro-app-shell--live .live-table--v5 { min-height: 0 !important; }
+  .ro-app-shell--live .live-vtt__topbar { min-height: 46px; }
+  .ro-app-shell--live .live-table--v5 > .live-vtt__player-bar { min-height: 2.65rem; }
+  .ro-app-shell--live .live-vtt__drawer {
+    top: .25rem;
+    bottom: .25rem;
+  }
+  .ro-app-shell--live .live-vtt__session-panel .session-feed__composer {
+    max-height: 46dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ro-app-shell--live .live-vtt__actor-card {
+    transition: none;
+  }
+}
