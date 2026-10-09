@@ -16,11 +16,11 @@ const toMap = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) =>
 const toToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => ({ map_id: item.mapaId, campaign_id: item.campanhaId, character_id: item.characterId || null, npc_id: item.npcId || null, adversary_id: item.adversaryId || null, tipo: item.tipo, nome: item.nome, imagem_url: item.imagemUrl || null, token_size: item.tokenSize ?? 1, range_cells: item.rangeCells ?? 0, area_radius_cells: item.areaRadiusCells ?? 0, cor: item.cor, x: item.x, y: item.y, oculto: item.oculto });
 
 export const liveTableRepository = {
-  async load(campaignId: string) {
+  async load(campaignId: string, includePrivateCounters = false) {
     const api=client();
     const [s,c,m,t,hp]=await Promise.all([
       api.from('live_session_states').select('*').eq('campaign_id',campaignId).maybeSingle(),
-      api.from('session_counters').select('*').eq('campaign_id',campaignId).order('criado_em'),
+      includePrivateCounters ? api.from('session_counters').select('*').eq('campaign_id',campaignId).order('criado_em') : Promise.resolve({data:[],error:null}),
       api.from('narrative_maps').select('*').eq('campaign_id',campaignId).order('criado_em'),
       api.from('map_tokens').select('*').eq('campaign_id',campaignId).order('criado_em'),
       api.from('map_token_resources').select('*').eq('campaign_id',campaignId)
@@ -100,8 +100,34 @@ export const liveTableRepository = {
     return token(data);
   },
   async patchCharacterResources(id: string, patch: Partial<CharacterResourceUpdate>) { const values: Row = {}; if (patch.vidaAtual !== undefined) values.vida_atual = patch.vidaAtual; if (patch.focoAtual !== undefined) values.foco_atual = patch.focoAtual; if (patch.ruptura !== undefined) values.ruptura = patch.ruptura; if (patch.protecaoOniricaAtual !== undefined) values.protecao_onirica_atual = patch.protecaoOniricaAtual; const { data, error } = await client().from('personagens').update(values).eq('id', id).select().single(); if (error) throw error; return characterResource(data); },
-  subscribe(campaignId: string, handlers: { state: (item: LiveSessionState) => void; counter: (event: string, item: Contador) => void; map: (event: string, item: MapaNarrativo) => void; token: (event: string, item: TokenMapa) => void; character: (item: CharacterResourceUpdate) => void; resource: (item: {tokenId:string;hpCurrent:number;hpMax:number})=>void; status: (value: string) => void; }): RealtimeChannel { return client().channel(`live-table:${campaignId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'live_session_states', filter: `campaign_id=eq.${campaignId}` }, payload => handlers.state(state(payload.new))).on('postgres_changes', { event: '*', schema: 'public', table: 'session_counters', filter: `campaign_id=eq.${campaignId}` }, payload => handlers.counter(payload.eventType, counter((payload.new || payload.old) as Row))).on('postgres_changes', { event: '*', schema: 'public', table: 'narrative_maps', filter: `campaign_id=eq.${campaignId}` }, payload => handlers.map(payload.eventType, map((payload.new || payload.old) as Row))).on('postgres_changes', { event: '*', schema: 'public', table: 'map_tokens', filter: `campaign_id=eq.${campaignId}` }, payload => handlers.token(payload.eventType, token((payload.new || payload.old) as Row))).on('postgres_changes', { event: '*', schema: 'public', table: 'map_token_resources', filter: `campaign_id=eq.${campaignId}` }, payload => {
-    const row=payload.new as Row;
-    if(row?.token_id) handlers.resource({tokenId:row.token_id,hpCurrent:row.hp_current,hpMax:row.hp_max});
-  }).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'personagens', filter: `campaign_id=eq.${campaignId}` }, payload => handlers.character(characterResource(payload.new as Row))).subscribe(handlers.status); }
+  subscribe(campaignId: string, handlers: {
+    state: (item: LiveSessionState) => void;
+    counter: (event: string, item: Contador) => void;
+    map: (event: string, item: MapaNarrativo) => void;
+    token: (event: string, item: TokenMapa) => void;
+    character: (item: CharacterResourceUpdate) => void;
+    resource: (item: {tokenId:string;hpCurrent:number;hpMax:number}) => void;
+    status: (value: string) => void;
+  }, subscribePrivateCounters = false): RealtimeChannel {
+    const channel = client().channel(`live-table:${campaignId}`);
+    channel.on('postgres_changes', { event:'*', schema:'public', table:'live_session_states', filter:`campaign_id=eq.${campaignId}` },
+      payload => handlers.state(state(payload.new)));
+    // Players do not even subscribe to the counter stream; RLS additionally
+    // enforces that only active masters can SELECT counter rows.
+    if (subscribePrivateCounters) {
+      channel.on('postgres_changes', { event:'*', schema:'public', table:'session_counters', filter:`campaign_id=eq.${campaignId}` },
+        payload => handlers.counter(payload.eventType,counter((payload.new || payload.old) as Row)));
+    }
+    channel.on('postgres_changes', { event:'*', schema:'public', table:'narrative_maps', filter:`campaign_id=eq.${campaignId}` },
+      payload => handlers.map(payload.eventType,map((payload.new || payload.old) as Row)));
+    channel.on('postgres_changes', { event:'*', schema:'public', table:'map_tokens', filter:`campaign_id=eq.${campaignId}` },
+      payload => handlers.token(payload.eventType,token((payload.new || payload.old) as Row)));
+    channel.on('postgres_changes', { event:'*', schema:'public', table:'map_token_resources', filter:`campaign_id=eq.${campaignId}` }, payload => {
+      const row=payload.new as Row;
+      if(row?.token_id) handlers.resource({tokenId:row.token_id,hpCurrent:row.hp_current,hpMax:row.hp_max});
+    });
+    channel.on('postgres_changes', { event:'UPDATE', schema:'public', table:'personagens', filter:`campaign_id=eq.${campaignId}` },
+      payload => handlers.character(characterResource(payload.new as Row)));
+    return channel.subscribe(handlers.status);
+  }
 };
