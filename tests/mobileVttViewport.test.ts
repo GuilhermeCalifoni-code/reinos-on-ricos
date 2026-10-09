@@ -26,7 +26,7 @@ test('mestre tem painel da largura completa e lista interna rolável no celular'
   assert.match(mobile,/right:\s*\.5rem;[\s\S]*?width:\s*auto;[\s\S]*?max-width:\s*none;/);
   assert.match(mobile,/\.ro-app-shell--live \.live-vtt__actor-list,/);
   assert.match(mobile,/overflow-y:\s*auto;/);
-  assert.match(mobile,/\.ro-app-shell--live \.live-vtt__combat-hp,/);
+  assert.match(mobile,/\.ro-app-shell--live \.live-vtt__combat > \.live-vtt__combat-hp,/);
   assert.match(mobile,/grid-template-columns:\s*repeat\(2,\s*minmax\(0,1fr\)\);/);
   assert.match(mobile,/\.ro-app-shell--live \.live-vtt__combat > div > button/);
   assert.match(mobile,/min-height:\s*44px;/);
