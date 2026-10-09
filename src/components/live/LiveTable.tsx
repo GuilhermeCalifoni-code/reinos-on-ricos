@@ -404,7 +404,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
           </nav>
         )}
 
-        <main className="live-vtt__stage-shell">
+        <main className={`live-vtt__stage-shell ${conteudo === 'mapa' ? 'is-map' : 'is-scene'}`}>
           <div className="live-vtt__stage-meta">
             <div>
               <span>{conteudo === 'mapa' ? 'Mapa tático' : 'Cena atual'}</span>
