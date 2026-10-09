@@ -224,3 +224,14 @@
  .ro-public-checkout{padding:20px}
 }
 @media(prefers-reduced-motion:reduce){.ro-public *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Acesso reversível: não prende visitantes em um login obrigatório. */
+.login-onirico .ro-public-auth-back {
+  position:fixed;z-index:300;top:max(15px,env(safe-area-inset-top,0px));
+  left:max(15px,env(safe-area-inset-left,0px));min-height:44px;
+  padding:9px 15px;border:1px solid rgba(160,121,75,.58);border-radius:6px;
+  color:#f5e9d9;background:rgba(13,20,30,.91);
+  box-shadow:0 8px 24px rgba(0,0,0,.24);
+  font-size:.76rem;font-weight:650;
+}
+.login-onirico .ro-public-auth-back:hover {background:#302a24;}
