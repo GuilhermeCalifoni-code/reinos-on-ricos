@@ -52,10 +52,14 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
       setState(undefined); syncCounters(role === 'mestre' ? fallback.counters : []); setMaps(fallback.maps); setTokens(fallback.tokens); setReady(false); setStatus('offline'); return;
     }
     let active = true;
+    let visibilityLoadSequence = 0;
     setReady(false); setStatus('connecting'); setError(undefined);
     void liveTableRepository.load(campaignId, role === 'mestre').then(data => {
       if (!active) return;
-      setState(data.state); syncCounters(role === 'mestre' ? data.counters : []); setMaps(data.maps); setTokens(data.tokens); setReady(true);
+      setState(data.state); syncCounters(role === 'mestre' ? data.counters : []); setMaps(data.maps);
+      // A visibility update may have arrived while initial load was pending.
+      if (visibilityLoadSequence === 0) setTokens(data.tokens);
+      setReady(true);
     }).catch(reason => { if (active) { setError(reason.message || String(reason)); setStatus('offline'); } });
     const channel = liveTableRepository.subscribe(campaignId, {
       state: item => active && setState(item),
@@ -72,6 +76,21 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
         const local = items.find(t=>t.id===item.id);
         return mergeToken(items, pending && local ? {...item,condicoes:local.condicoes} : item);
       }),
+      visibilityChanged: () => {
+        if (!active || role === 'mestre') return;
+        const sequence = ++visibilityLoadSequence;
+        // Fail closed: remove cached tokens immediately, before the RLS-filtered
+        // refresh confirms which tokens remain visible. No full-page reload.
+        setTokens([]);
+        void liveTableRepository.visibleTokens(campaignId).then(visible => {
+          if (active && sequence === visibilityLoadSequence) setTokens(visible);
+        }).catch(reason => {
+          if (active && sequence === visibilityLoadSequence) {
+            setError('Não foi possível sincronizar a visibilidade dos tokens.');
+          }
+        });
+      },
+
       resource: item => active && setTokens(items => items.map(t=>t.id===item.tokenId
         ? {...t,hpCurrent:item.hpCurrent,hpMax:item.hpMax} : t)),
       character: item => active && onCharacterUpdateRef.current?.(item),
