@@ -584,6 +584,7 @@ export const MapStage: React.FC<MapStageProps> = ({
                     event.currentTarget.setPointerCapture(event.pointerId);
                   }}
                   title={`${token.nome}${statuses.length ? ' · ' + statuses.map(x => x.label).join(', ') : ''}${canControl ? ' · selecione para editar' : ''}`}
+                  data-gm-private={mestre && token.oculto ? 'true' : undefined}
                   aria-label={`${token.nome}${statuses.length ? ' — ' + statuses.map(x => x.label).join(', ') : ''}`}
                 >
                   {areaRadiusCells > 0 && <span className="map-stage__area-circle"><em>{areaRadiusCells} casas</em></span>}
@@ -594,6 +595,11 @@ export const MapStage: React.FC<MapStageProps> = ({
                       : token.nome.slice(0, 2).toUpperCase()}
                   </span>
                   <span className="map-stage__token-name">{token.nome}</span>
+                  {mestre && token.oculto && (
+                    <span className="map-stage__private-indicator" title="Oculto dos jogadores" aria-hidden="true">
+                      <EyeOff size={12}/>
+                    </span>
+                  )}
                   {statuses.length > 0 && (
                     <span className="map-stage__token-conditions" aria-hidden="true">
                       {statuses.map(({id,label,Icon}) => (
@@ -655,6 +661,24 @@ export const MapStage: React.FC<MapStageProps> = ({
               <label>Cor <input type="color" value={tokenSelecionado.cor} onChange={e=>ajustarToken({cor:e.target.value})}/></label>
             </div>
           )}
+          {mestre && (
+            <section className={`map-stage__visibility-editor ${tokenSelecionado.oculto ? 'is-private' : 'is-public'}`}
+              aria-label="Visibilidade do token para os jogadores">
+              <div className="map-stage__visibility-heading">
+                {tokenSelecionado.oculto ? <EyeOff size={20}/> : <Eye size={20}/>}
+                <div>
+                  <strong>Visibilidade para os jogadores</strong>
+                  <span role="status">{tokenSelecionado.oculto ? 'Oculto — apenas o Mestre vê este token' : 'Visível — jogadores podem ver este token'}</span>
+                </div>
+              </div>
+              <button type="button" aria-pressed={tokenSelecionado.oculto}
+                onClick={() => ajustarToken({oculto:!tokenSelecionado.oculto})}>
+                {tokenSelecionado.oculto ? <Eye size={17}/> : <EyeOff size={17}/>}
+                {tokenSelecionado.oculto ? 'Revelar aos jogadores' : 'Ocultar dos jogadores'}
+              </button>
+              <small>Esta opção esconde o token inteiro, inclusive seus símbolos. A condição de combate “Oculto” é independente.</small>
+            </section>
+          )}
           {tokenSelecionado.tipo !== 'marcador' && (
             <section className="map-stage__conditions-editor" aria-label="Condições do token">
               <div className="map-stage__conditions-heading">
@@ -714,10 +738,6 @@ export const MapStage: React.FC<MapStageProps> = ({
           {mestre && (
             <div className="map-stage__token-inspector-actions">
               <button type="button" onClick={duplicarToken}><Plus size={13}/> Duplicar cópia</button>
-              <button type="button" onClick={() => ajustarToken({ oculto: !tokenSelecionado.oculto })}>
-                {tokenSelecionado.oculto ? <Eye size={13} /> : <EyeOff size={13} />}
-                {tokenSelecionado.oculto ? 'Revelar' : 'Ocultar'}
-              </button>
               <button type="button" className="is-danger" onClick={() => { onRemoverToken(tokenSelecionado.id); setSelecionadoId(null); }}>
                 <Trash2 size={13} /> Remover
               </button>
