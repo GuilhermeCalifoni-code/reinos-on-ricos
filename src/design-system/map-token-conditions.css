@@ -111,3 +111,87 @@
   .ro-app-shell--live .map-stage__conditions-options {gap:4px;}
   .ro-app-shell--live .map-stage__condition-option {font-size:.66rem;}
 }
+
+
+/* Exclusivo do Mestre: esconder por completo um token da visão dos jogadores,
+   mesmo que ele esteja ou não marcado com a condição "Oculto". */
+.live-table--v5 .map-stage__token[data-gm-private='true'] .map-stage__token-face {
+  outline:2px dashed #d3a66d;
+  outline-offset:3px;
+  filter:saturate(.52);
+  opacity:.7;
+}
+.live-table--v5 .map-stage__private-indicator {
+  position:absolute;
+  right:-12px;
+  bottom:0;
+  z-index:13;
+  display:grid;
+  place-items:center;
+  width:21px;
+  height:21px;
+  border-radius:50%;
+  border:1px solid #f1c58e;
+  background:#20232c;
+  color:#f1c58e;
+  pointer-events:none;
+}
+.live-table--v5 .map-stage__visibility-editor {
+  display:grid;
+  gap:10px;
+  padding:13px 12px;
+  background:rgba(34,64,53,.28);
+  border-bottom:1px solid rgba(170,207,181,.24);
+}
+.live-table--v5 .map-stage__visibility-editor.is-private {
+  background:rgba(124,72,42,.26);
+  border-bottom-color:rgba(241,197,142,.35);
+}
+.live-table--v5 .map-stage__visibility-heading {
+  display:flex;
+  gap:10px;
+  align-items:center;
+  color:#bce7cc;
+}
+.live-table--v5 .map-stage__visibility-editor.is-private .map-stage__visibility-heading {
+  color:#f1c58e;
+}
+.live-table--v5 .map-stage__visibility-heading > svg {flex:0 0 auto}
+.live-table--v5 .map-stage__visibility-heading div {display:grid;gap:2px;min-width:0}
+.live-table--v5 .map-stage__visibility-heading strong {
+  font:700 .82rem/1.3 Inter,system-ui,sans-serif;
+  color:#fff9ec;
+}
+.live-table--v5 .map-stage__visibility-heading span {
+  font:.7rem/1.45 Inter,system-ui,sans-serif;
+  color:inherit;
+}
+.live-table--v5 .map-stage__visibility-editor > button {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  min-height:46px;
+  width:100%;
+  padding:9px 12px;
+  border:1px solid #b6d4c3;
+  border-radius:7px;
+  background:#284b3e;
+  color:#e6ffec;
+  font:700 .8rem/1.3 Inter,system-ui,sans-serif;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.live-table--v5 .map-stage__visibility-editor.is-public > button {
+  background:#62432c;
+  border-color:#d1aa79;
+  color:#ffeed8;
+}
+.live-table--v5 .map-stage__visibility-editor > button:focus-visible {
+  outline:2px solid #fff9e8;
+  outline-offset:2px;
+}
+.live-table--v5 .map-stage__visibility-editor > small {
+  font:.67rem/1.5 Inter,system-ui,sans-serif;
+  color:#d8d0c7;
+}
