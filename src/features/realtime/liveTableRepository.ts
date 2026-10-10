@@ -37,6 +37,20 @@ export const liveTableRepository = {
       })
     };
   },
+  async visibleTokens(campaignId: string): Promise<TokenMapa[]> {
+    const api = client();
+    const [tokensResult, hpResult] = await Promise.all([
+      api.from('map_tokens').select('*').eq('campaign_id',campaignId).order('criado_em'),
+      api.from('map_token_resources').select('*').eq('campaign_id',campaignId)
+    ]);
+    if(tokensResult.error) throw tokensResult.error;
+    if(hpResult.error) throw hpResult.error;
+    const hpByToken=new Map((hpResult.data || []).map(row=>[row.token_id,row]));
+    return (tokensResult.data || []).map(row=>{
+      const hp=hpByToken.get(row.id);
+      return {...token(row),hpCurrent:hp?.hp_current,hpMax:hp?.hp_max};
+    });
+  },
   async saveState(campaignId: string, userId: string, patch: Partial<LiveSessionState>) { const { data, error } = await client().from('live_session_states').upsert({ campaign_id: campaignId, session_id: patch.sessionId || null, updated_by: userId, content_type: patch.contentType || 'ambientacao', active_scene_id: patch.activeSceneId || null, active_map_id: patch.activeMapId || null, rupture_general: patch.ruptureGeneral || 0, metadata: patch.metadata || {} }, { onConflict: 'campaign_id' }).select().single(); if (error) throw error; return state(data); },
   async addCounter(item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) { const { data, error } = await client().from('session_counters').insert(toCounter(item)).select().single(); if (error) throw error; return counter(data); },
   async patchCounter(id: string, patch: Partial<Contador>) { const values: Row = {}; if (patch.nome !== undefined) values.nome = patch.nome; if (patch.descricao !== undefined) values.descricao = patch.descricao; if (patch.valorAtual !== undefined) values.valor_atual = patch.valorAtual; if (patch.valorMaximo !== undefined) values.valor_maximo = patch.valorMaximo; if (patch.visibilidade !== undefined) values.visibilidade = patch.visibilidade; if (patch.estado !== undefined) values.estado = patch.estado; if (patch.gatilho !== undefined) values.gatilho = patch.gatilho; const { data, error } = await client().from('session_counters').update(values).eq('id', id).select().single(); if (error) throw error; return counter(data); },
@@ -118,6 +132,7 @@ export const liveTableRepository = {
     counter: (event: string, item: Contador) => void;
     map: (event: string, item: MapaNarrativo) => void;
     token: (event: string, item: TokenMapa) => void;
+    visibilityChanged: () => void;
     character: (item: CharacterResourceUpdate) => void;
     resource: (item: {tokenId:string;hpCurrent:number;hpMax:number}) => void;
     status: (value: string) => void;
@@ -135,6 +150,8 @@ export const liveTableRepository = {
       payload => handlers.map(payload.eventType,map((payload.new || payload.old) as Row)));
     channel.on('postgres_changes', { event:'*', schema:'public', table:'map_tokens', filter:`campaign_id=eq.${campaignId}` },
       payload => handlers.token(payload.eventType,token((payload.new || payload.old) as Row)));
+    channel.on('postgres_changes', { event:'*', schema:'public', table:'map_token_visibility_versions',
+      filter:`campaign_id=eq.${campaignId}` }, () => handlers.visibilityChanged());
     channel.on('postgres_changes', { event:'*', schema:'public', table:'map_token_resources', filter:`campaign_id=eq.${campaignId}` }, payload => {
       const row=payload.new as Row;
       if(row?.token_id) handlers.resource({tokenId:row.token_id,hpCurrent:row.hp_current,hpMax:row.hp_max});
