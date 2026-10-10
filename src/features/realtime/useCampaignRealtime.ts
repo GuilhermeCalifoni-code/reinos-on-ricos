@@ -39,6 +39,7 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
   };
   const [maps, setMaps] = useState<MapaNarrativo[]>(fallback.maps);
   const [tokens, setTokens] = useState<TokenMapa[]>(fallback.tokens);
+  const pendingConditionWritesRef = useRef(new Map<string, Promise<TokenMapa>>());
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState<ConnectionStatus>('offline');
   const [error, setError] = useState<string>();
@@ -63,8 +64,14 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
         syncCounters(applyEvent(countersRef.current, event, item));
       },
       map: (event, item) => active && setMaps(items => applyEvent(items, event, item)),
-      token: (event,item) => active && setTokens(items => event==='DELETE'
-        ? items.filter(t=>t.id!==item.id) : mergeToken(items,item)),
+      token: (event,item) => active && setTokens(items => {
+        if (event === 'DELETE') return items.filter(t=>t.id!==item.id);
+        // Keep the most recent local condition selection while queued saves
+        // are in flight. Realtime echoes can arrive before the last write.
+        const pending = pendingConditionWritesRef.current.has(item.id);
+        const local = items.find(t=>t.id===item.id);
+        return mergeToken(items, pending && local ? {...item,condicoes:local.condicoes} : item);
+      }),
       resource: item => active && setTokens(items => items.map(t=>t.id===item.tokenId
         ? {...t,hpCurrent:item.hpCurrent,hpMax:item.hpMax} : t)),
       character: item => active && onCharacterUpdateRef.current?.(item),
@@ -122,6 +129,37 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
     removeMap: (id: string) => action(async () => { await liveTableRepository.removeMap(id); setMaps(items => items.filter(item => item.id !== id)); }),
     addToken: (item: DraftToken) => action(async () => { const created = await liveTableRepository.addToken(item); setTokens(items => replace(items, created)); return created; }),
     patchToken: (id: string, patch: Partial<TokenMapa>) => action(async () => {
+      if (patch.condicoes !== undefined) {
+        if (role === 'observador') throw new Error('Observadores não podem alterar condições.');
+        const previous = tokens.find(item=>item.id===id);
+        if (!previous) throw new Error('Token não encontrado.');
+        const next = [...patch.condicoes];
+        // Local feedback first, preserving all unrelated map/token fields.
+        setTokens(items=>items.map(item=>item.id===id?{...item,condicoes:next}:item));
+        const queued = pendingConditionWritesRef.current.get(id);
+        const write = (queued ? queued.catch(()=>previous) : Promise.resolve(previous))
+          .then(()=>role==='mestre'
+            ? liveTableRepository.patchToken(id,{condicoes:next})
+            : liveTableRepository.patchOwnToken(id,{condicoes:next}));
+        pendingConditionWritesRef.current.set(id,write);
+        try {
+          const updated = await write;
+          if (pendingConditionWritesRef.current.get(id)===write) {
+            setTokens(items=>mergeToken(items,updated));
+          }
+          return updated;
+        } catch (error) {
+          // Roll back only the latest attempt. Never clobber a newer click.
+          if (pendingConditionWritesRef.current.get(id)===write) {
+            setTokens(items=>items.map(item=>item.id===id
+              ? {...item,condicoes:previous.condicoes || []} : item));
+          }
+          throw error;
+        } finally {
+          if (pendingConditionWritesRef.current.get(id)===write)
+            pendingConditionWritesRef.current.delete(id);
+        }
+      }
       // Ajustes de PV são exibidos imediatamente, sem esperar a resposta da rede.
       // A RLS continua autorizando o write no Supabase; isto é apenas visual.
       const hpPatch = role === 'mestre' && patch.hpCurrent !== undefined && patch.hpMax !== undefined;

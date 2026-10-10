@@ -100,6 +100,7 @@ export interface MapaNarrativo {
 }
 
 export type TipoTokenMapa = 'personagem' | 'npc' | 'adversario' | 'marcador';
+export type CondicaoCombate = 'oculto' | 'impedido' | 'vulneravel';
 
 export interface TokenMapa {
   id: string;
@@ -120,6 +121,8 @@ export interface TokenMapa {
   x: number;
   y: number;
   oculto: boolean;
+  /** Condições de combate; independentes da visibilidade do token no mapa. */
+  condicoes?: CondicaoCombate[];
   criadoEm: string;
   atualizadoEm: string;
   criadoPor?: string;

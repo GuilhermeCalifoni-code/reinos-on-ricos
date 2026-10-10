@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Crosshair, Eye, EyeOff, Grid3X3, Maximize2, Minus, Plus, Ruler, Trash2, Upload } from 'lucide-react';
-import { Adversario, MapaNarrativo, NPC, TipoTokenMapa, TokenMapa } from '../../types/campaign';
+import { AlertTriangle, Ban, Crosshair, Eye, EyeOff, Grid3X3, Maximize2, Minus, Plus, Ruler, Trash2, Upload } from 'lucide-react';
+import { Adversario, CondicaoCombate, MapaNarrativo, NPC, TipoTokenMapa, TokenMapa } from '../../types/campaign';
 import { Personagem } from '../../types/character';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
 import { AssetImage } from '../system/AssetImage';
@@ -35,6 +35,14 @@ const cores: Record<TipoTokenMapa, string> = {
 };
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+
+// Condição Oculto é um estado de combate, NÃO o booleano token.oculto,
+// que controla a visibilidade do mapa para jogadores.
+const combatConditions: {id:CondicaoCombate;label:string;help:string;Icon:typeof EyeOff}[] = [
+  {id:'oculto',label:'Oculto',help:'Estado de combate: Oculto',Icon:EyeOff},
+  {id:'impedido',label:'Impedido',help:'Estado de combate: Impedido',Icon:Ban},
+  {id:'vulneravel',label:'Vulnerável',help:'Estado de combate: Vulnerável',Icon:AlertTriangle}
+];
 
 export const MapStage: React.FC<MapStageProps> = ({
   campanhaId,
@@ -379,6 +387,15 @@ export const MapStage: React.FC<MapStageProps> = ({
       .catch(err => setTokenError(err instanceof Error ? err.message : 'Não foi possível salvar a alteração.'));
   };
 
+  const alternarCondicao = (condition:CondicaoCombate) => {
+    if (!tokenSelecionado || tokenSelecionado.tipo === 'marcador') return;
+    const condicoes = tokenSelecionado.condicoes || [];
+    const updated = condicoes.includes(condition)
+      ? condicoes.filter(c => c !== condition)
+      : [...condicoes,condition];
+    ajustarToken({condicoes:updated});
+  };
+
   const mudarPvDaCopia = (delta: number) => {
     if (!mestre || !tokenSelecionado || !tokenLife) return;
     ajustarToken({hpCurrent:addTokenHp(tokenLife.current,tokenLife.max,delta),hpMax:tokenLife.max});
@@ -537,6 +554,7 @@ export const MapStage: React.FC<MapStageProps> = ({
               const sizePx = gridSize * tokenSize;
               const canControl = podeControlarToken(token);
               const selected = selecionadoId === token.id;
+              const statuses = token.tipo === 'marcador' ? [] : combatConditions.filter(item => (token.condicoes || []).includes(item.id));
 
               return (
                 <button
@@ -565,7 +583,8 @@ export const MapStage: React.FC<MapStageProps> = ({
                     setArrastando(token.id);
                     event.currentTarget.setPointerCapture(event.pointerId);
                   }}
-                  title={canControl ? `${token.nome} · arraste para mover` : token.nome}
+                  title={`${token.nome}${statuses.length ? ' · ' + statuses.map(x => x.label).join(', ') : ''}${canControl ? ' · selecione para editar' : ''}`}
+                  aria-label={`${token.nome}${statuses.length ? ' — ' + statuses.map(x => x.label).join(', ') : ''}`}
                 >
                   {areaRadiusCells > 0 && <span className="map-stage__area-circle"><em>{areaRadiusCells} casas</em></span>}
                   {selected && rangeCells > 0 && <span className="map-stage__range-ring"><em>{rangeCells} casas</em></span>}
@@ -575,6 +594,15 @@ export const MapStage: React.FC<MapStageProps> = ({
                       : token.nome.slice(0, 2).toUpperCase()}
                   </span>
                   <span className="map-stage__token-name">{token.nome}</span>
+                  {statuses.length > 0 && (
+                    <span className="map-stage__token-conditions" aria-hidden="true">
+                      {statuses.map(({id,label,Icon}) => (
+                        <span key={id} className={`map-stage__condition-badge is-${id}`} title={label}>
+                          <Icon size={13} strokeWidth={2.7}/>
+                        </span>
+                      ))}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -626,6 +654,25 @@ export const MapStage: React.FC<MapStageProps> = ({
                 onChange={e=>ajustarToken({areaRadiusCells:clamp(Math.round(Number(e.target.value)||1),1,30)})}/></label>
               <label>Cor <input type="color" value={tokenSelecionado.cor} onChange={e=>ajustarToken({cor:e.target.value})}/></label>
             </div>
+          )}
+          {tokenSelecionado.tipo !== 'marcador' && (
+            <section className="map-stage__conditions-editor" aria-label="Condições do token">
+              <div className="map-stage__conditions-heading">
+                <strong>Condições de combate</strong>
+                <small>Pode marcar várias ao mesmo tempo</small>
+              </div>
+              <div className="map-stage__conditions-options">
+                {combatConditions.map(({id,label,help,Icon}) => (
+                  <button type="button" key={id} aria-pressed={(tokenSelecionado.condicoes || []).includes(id)}
+                    className={`map-stage__condition-option is-${id} ${(tokenSelecionado.condicoes || []).includes(id) ? 'is-active' : ''}`}
+                    onClick={() => alternarCondicao(id)} title={help}>
+                    <Icon size={18} strokeWidth={2.5}/>
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+              <small className="map-stage__conditions-hint">Oculto (condição) não esconde o token dos jogadores. Para isso, o Mestre utiliza Ocultar.</small>
+            </section>
           )}
           {tokenError && <p className="map-stage__token-error" role="alert">{tokenError}</p>}
           <div className="map-stage__token-control">

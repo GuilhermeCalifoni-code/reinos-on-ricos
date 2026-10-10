@@ -1,6 +1,6 @@
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabaseClient';
-import { Contador, ConteudoDeCena, MapaNarrativo, TokenMapa } from '../../types/campaign';
+import { CondicaoCombate, Contador, ConteudoDeCena, MapaNarrativo, TokenMapa } from '../../types/campaign';
 
 export interface LiveSessionState { campaignId: string; sessionId?: string; activeSceneId?: string; activeMapId?: string; contentType: ConteudoDeCena; ruptureGeneral: number; metadata: Record<string, unknown>; updatedBy: string; updatedAt: string; }
 export interface CharacterResourceUpdate { id: string; vidaAtual: number; focoAtual: number; ruptura: number; protecaoOniricaAtual: number; updatedAt: string; }
@@ -8,12 +8,12 @@ type Row = Record<string, any>;
 const client = () => { if (!supabase) throw new Error('Supabase não está configurado.'); return supabase; };
 const counter = (row: Row): Contador => ({ id: row.id, campanhaId: row.campaign_id, sessaoId: row.session_id || undefined, cenaId: row.scene_id || undefined, nome: row.nome, descricao: row.descricao || undefined, tipo: row.tipo, valorAtual: row.valor_atual, valorMaximo: row.valor_maximo, direcao: row.direcao, visibilidade: row.visibilidade, gatilho: row.gatilho || undefined, estado: row.estado, criadoEm: row.criado_em, atualizadoEm: row.atualizado_em, criadoPor: row.criado_por || undefined });
 const map = (row: Row): MapaNarrativo => ({ id: row.id, campanhaId: row.campaign_id, titulo: row.titulo, imagemUrl: row.imagem_url || undefined, storagePath: row.storage_path || undefined, visibilidade: row.visibilidade, gradeVisivel: row.grade_visivel, gridSize: Number(row.grid_size || 64), criadoEm: row.criado_em, atualizadoEm: row.atualizado_em, criadoPor: row.criado_por || undefined });
-const token = (row: Row): TokenMapa => ({ id: row.id, mapaId: row.map_id, campanhaId: row.campaign_id, tipo: row.tipo, nome: row.nome, imagemUrl: row.imagem_url || undefined, characterId: row.character_id || undefined, npcId: row.npc_id || undefined, adversaryId: row.adversary_id || undefined, tokenSize: Number(row.token_size || 1), rangeCells: Number(row.range_cells || 0), areaRadiusCells: Number(row.area_radius_cells || 0), cor: row.cor, x: Number(row.x), y: Number(row.y), oculto: row.oculto, criadoEm: row.criado_em, atualizadoEm: row.atualizado_em, criadoPor: row.criado_por || undefined });
+const token = (row: Row): TokenMapa => ({ id: row.id, mapaId: row.map_id, campanhaId: row.campaign_id, tipo: row.tipo, nome: row.nome, imagemUrl: row.imagem_url || undefined, characterId: row.character_id || undefined, npcId: row.npc_id || undefined, adversaryId: row.adversary_id || undefined, tokenSize: Number(row.token_size || 1), rangeCells: Number(row.range_cells || 0), areaRadiusCells: Number(row.area_radius_cells || 0), cor: row.cor, x: Number(row.x), y: Number(row.y), oculto: row.oculto, condicoes: (row.condicoes || []) as CondicaoCombate[], criadoEm: row.criado_em, atualizadoEm: row.atualizado_em, criadoPor: row.criado_por || undefined });
 const state = (row: Row): LiveSessionState => ({ campaignId: row.campaign_id, sessionId: row.session_id || undefined, activeSceneId: row.active_scene_id || undefined, activeMapId: row.active_map_id || undefined, contentType: row.content_type, ruptureGeneral: row.rupture_general, metadata: row.metadata || {}, updatedBy: row.updated_by, updatedAt: row.updated_at });
 const characterResource = (row: Row): CharacterResourceUpdate => ({ id: row.id, vidaAtual: row.vida_atual, focoAtual: row.foco_atual, ruptura: row.ruptura, protecaoOniricaAtual: row.protecao_onirica_atual, updatedAt: row.atualizado_em });
 const toCounter = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => ({ campaign_id: item.campanhaId, session_id: item.sessaoId || null, scene_id: item.cenaId || null, nome: item.nome, descricao: item.descricao || null, tipo: item.tipo, valor_atual: item.valorAtual, valor_maximo: item.valorMaximo, direcao: item.direcao, visibilidade: item.visibilidade, gatilho: item.gatilho || null, estado: item.estado });
 const toMap = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => ({ campaign_id: item.campanhaId, titulo: item.titulo, imagem_url: item.imagemUrl || null, storage_path: item.storagePath || null, visibilidade: item.visibilidade, grade_visivel: item.gradeVisivel || false, grid_size: item.gridSize ?? 64 });
-const toToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => ({ map_id: item.mapaId, campaign_id: item.campanhaId, character_id: item.characterId || null, npc_id: item.npcId || null, adversary_id: item.adversaryId || null, tipo: item.tipo, nome: item.nome, imagem_url: item.imagemUrl || null, token_size: item.tokenSize ?? 1, range_cells: item.rangeCells ?? 0, area_radius_cells: item.areaRadiusCells ?? 0, cor: item.cor, x: item.x, y: item.y, oculto: item.oculto });
+const toToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => ({ map_id: item.mapaId, campaign_id: item.campanhaId, character_id: item.characterId || null, npc_id: item.npcId || null, adversary_id: item.adversaryId || null, tipo: item.tipo, nome: item.nome, imagem_url: item.imagemUrl || null, token_size: item.tokenSize ?? 1, range_cells: item.rangeCells ?? 0, area_radius_cells: item.areaRadiusCells ?? 0, cor: item.cor, x: item.x, y: item.y, oculto: item.oculto, condicoes: item.condicoes ?? [] });
 
 export const liveTableRepository = {
   async load(campaignId: string, includePrivateCounters = false) {
@@ -70,6 +70,7 @@ export const liveTableRepository = {
     if(patch.rangeCells!==undefined) values.range_cells=Math.max(0,Math.min(30,patch.rangeCells));
     if(patch.areaRadiusCells!==undefined) values.area_radius_cells=Math.max(0,Math.min(30,Math.round(patch.areaRadiusCells)));
     if(patch.oculto!==undefined) values.oculto=patch.oculto;
+    if(patch.condicoes!==undefined) values.condicoes=patch.condicoes;
     const response=Object.keys(values).length
       ? await client().from('map_tokens').update(values).eq('id',id).select().single()
       : await client().from('map_tokens').select('*').eq('id',id).single();
@@ -89,13 +90,25 @@ export const liveTableRepository = {
   },
   async removeToken(id: string) { const { error } = await client().from('map_tokens').delete().eq('id', id); if (error) throw error; },
   async patchOwnToken(id: string, patch: Partial<TokenMapa>) {
-    const { data, error } = await client().rpc('move_own_map_token', {
-      p_token_id: id,
-      p_x: patch.x ?? null,
-      p_y: patch.y ?? null,
-      p_token_size: patch.tokenSize ?? null,
-      p_range_cells: patch.rangeCells ?? null
-    });
+    const positioning = patch.x !== undefined || patch.y !== undefined ||
+      patch.tokenSize !== undefined || patch.rangeCells !== undefined;
+    const settingConditions = patch.condicoes !== undefined;
+    // Distinct whitelisted RPCs: no player has blanket UPDATE permission.
+    // Both actions are intentionally exclusive so one request cannot smuggle
+    // NPC control, hidden-token visibility or private GM fields.
+    if (positioning && settingConditions) throw new Error('Atualize movimento e condições separadamente.');
+    if (!positioning && !settingConditions) throw new Error('Alteração não autorizada para jogadores.');
+    const { data, error } = settingConditions
+      ? await client().rpc('set_own_map_token_conditions', {
+          p_token_id: id, p_condicoes: patch.condicoes
+        })
+      : await client().rpc('move_own_map_token', {
+          p_token_id: id,
+          p_x: patch.x ?? null,
+          p_y: patch.y ?? null,
+          p_token_size: patch.tokenSize ?? null,
+          p_range_cells: patch.rangeCells ?? null
+        });
     if (error) throw error;
     return token(data);
   },
