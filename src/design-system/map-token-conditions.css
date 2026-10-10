@@ -1,0 +1,113 @@
+/* Condições de combate do token (diferentes de token.oculto: visibilidade). */
+.live-table--v5 .map-stage__token-conditions {
+  position:absolute;
+  z-index:12;
+  top:-13px;
+  left:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  transform:translate(-50%,-100%);
+  width:max-content;
+  max-width:140px;
+  pointer-events:none;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.68));
+}
+.live-table--v5 .map-stage__condition-badge {
+  width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+  border:2px solid #f5eddf;
+  border-radius:7px;
+  background:#161d27;
+  color:#fff;
+}
+.live-table--v5 .map-stage__condition-badge.is-oculto {
+  border-color:#b3b9d8;
+  color:#d9ddff;
+}
+.live-table--v5 .map-stage__condition-badge.is-impedido {
+  border-color:#e7b66f;
+  color:#f3c67d;
+}
+.live-table--v5 .map-stage__condition-badge.is-vulneravel {
+  border-color:#e7828b;
+  color:#ffc4c7;
+}
+.live-table--v5 .map-stage__conditions-editor {
+  display:grid;
+  gap:10px;
+  padding:12px;
+  border-bottom:1px solid var(--vtt-line);
+  background:rgba(255,255,255,.035);
+}
+.live-table--v5 .map-stage__conditions-heading {
+  display:grid;
+  gap:3px;
+}
+.live-table--v5 .map-stage__conditions-heading strong {
+  font:600 .88rem/1.25 Inter,system-ui,sans-serif;
+  color:#f4eadc;
+}
+.live-table--v5 .map-stage__conditions-heading small,
+.live-table--v5 .map-stage__conditions-hint {
+  font:.68rem/1.5 Inter,system-ui,sans-serif;
+  color:#b5aea5;
+}
+.live-table--v5 .map-stage__conditions-options {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+}
+.live-table--v5 .map-stage__condition-option {
+  display:grid;
+  place-items:center;
+  justify-items:center;
+  gap:5px;
+  min-width:0;
+  min-height:55px;
+  padding:8px 2px;
+  border:1px solid rgba(234,215,187,.25);
+  border-radius:7px;
+  background:#19232e;
+  color:#dfd9d0;
+  font:600 .7rem/1.25 Inter,system-ui,sans-serif;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.live-table--v5 .map-stage__condition-option svg {flex-shrink:0;}
+.live-table--v5 .map-stage__condition-option.is-active {
+  background:#263444;
+  box-shadow:inset 0 0 0 1px currentColor;
+}
+.live-table--v5 .map-stage__condition-option.is-oculto.is-active {
+  border-color:#b3b9d8;color:#d9ddff;
+}
+.live-table--v5 .map-stage__condition-option.is-impedido.is-active {
+  border-color:#e7b66f;color:#f3c67d;
+}
+.live-table--v5 .map-stage__condition-option.is-vulneravel.is-active {
+  border-color:#e7828b;color:#ffc4c7;
+}
+.live-table--v5 .map-stage__condition-option:focus-visible {
+  outline:2px solid #e5bd7c;outline-offset:3px;
+}
+/* Mobile: badges stay legible without blocking map dragging. Inspector scrolls. */
+@media(max-width:760px) {
+  .ro-app-shell--live .map-stage__token-conditions {top:-10px;gap:3px;}
+  .ro-app-shell--live .map-stage__condition-badge {width:23px;height:23px;}
+  .ro-app-shell--live .map-stage__conditions-editor {padding:13px;}
+  .ro-app-shell--live .map-stage__condition-option {min-height:52px;font-size:.75rem;}
+  .ro-app-shell--live .map-stage__token-inspector {
+    max-height:min(60dvh,calc(100% - 6.5rem));
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+}
+@media(max-width:350px) {
+  .ro-app-shell--live .map-stage__conditions-options {gap:4px;}
+  .ro-app-shell--live .map-stage__condition-option {font-size:.66rem;}
+}
