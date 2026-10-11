@@ -662,6 +662,8 @@ export default function App() {
           <MesaView
             campanha={campanhaAtiva}
             personagens={personagensCampanha}
+            personagensProprios={personagensRemotos.personal}
+            onVincularMinhaFicha={id => handleVincularMinhaFicha(campanhaAtiva.id, id)}
             npcs={npcsAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             adversarios={adversariosAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             onAtualizarNPC={conteudoRemoto.atualizarNPC}

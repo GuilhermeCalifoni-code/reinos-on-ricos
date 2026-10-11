@@ -21,7 +21,7 @@ import { campaignAssetService } from '../../services/storage/campaignAssetServic
 import { ArrowLeft, FileText, Image as ImageIcon, Layers3, Map as MapIcon, MessageSquareText, Moon, Radio, Users } from 'lucide-react';
 
 interface LiveTableProps {
-  campanha: Campanha; personagens: Personagem[]; npcs: NPC[]; adversarios: Adversario[]; role: UserRole;
+  campanha: Campanha; personagens: Personagem[]; personagensProprios?: Personagem[]; onVincularMinhaFicha?: (id: string | null) => Promise<void>; npcs: NPC[]; adversarios: Adversario[]; role: UserRole;
   onAtualizarNPC: (id: string, patch: Partial<NPC>) => Promise<unknown>;
   onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown>; personagemJogadorId?: string; userId?: string; userName?: string; avatarUrl?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
   onAtualizarPersonagem: (personagem: Personagem) => void;
@@ -32,10 +32,25 @@ interface LiveTableProps {
 }
 
 export const LiveTable: React.FC<LiveTableProps> = (props) => {
-  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, avatarUrl, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onReceberRecursosPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
+  const { campanha, personagens, personagensProprios = [], onVincularMinhaFicha, npcs, adversarios, role, personagemJogadorId, userId, userName, avatarUrl, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onReceberRecursosPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
   const mestre = role === 'mestre';
   const writesRecursosRef = useRef(new Map<string, Promise<void>>());
   const [erroRecursos, setErroRecursos] = useState('');
+  const [salvandoVinculo, setSalvandoVinculo] = useState(false);
+  const [erroVinculo, setErroVinculo] = useState('');
+  const minhasFichasVinculaveis = useMemo(() => personagensProprios.filter(p => !p.campaignId || p.campaignId === campanha.id), [personagensProprios, campanha.id]);
+  const alterarMinhaFicha = async (id: string) => {
+    if (!onVincularMinhaFicha || salvandoVinculo || mestre) return;
+    setSalvandoVinculo(true);
+    setErroVinculo('');
+    try {
+      await onVincularMinhaFicha(id || null);
+    } catch (error) {
+      setErroVinculo(error instanceof Error ? error.message : 'Não foi possível vincular a ficha.');
+    } finally {
+      setSalvandoVinculo(false);
+    }
+  };
   const personagensVisiveis = useMemo(() => mestre ? personagens : personagens.filter(p => p.id === personagemJogadorId), [mestre, personagemJogadorId, personagens]);
   const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || '');
   const [ferramenta, setFerramenta] = useState<LiveTool>('nenhuma');
@@ -345,6 +360,18 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
             <small>{personagensVisiveis.length}</small>
           </div>
 
+          {!mestre && onVincularMinhaFicha && (
+            <label className="live-vtt__sheet-link">
+              <span>Minha ficha</span>
+              <select value={personagemJogadorId || ''} disabled={salvandoVinculo}
+                onChange={event => { void alterarMinhaFicha(event.target.value); }}
+                aria-label="Selecionar minha ficha nesta campanha">
+                <option value="">Sem ficha vinculada</option>
+                {minhasFichasVinculaveis.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+              </select>
+              {erroVinculo && <small role="alert" className="live-vtt__sheet-link-error">{erroVinculo}</small>}
+            </label>
+          )}
           <div className="live-vtt__player-strip">
             {personagensVisiveis.length === 0 && (
               <span className="live-vtt__player-empty">Nenhuma ficha vinculada à mesa.</span>
