@@ -160,7 +160,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="ro-home__popover-wrap">
             <button type="button" className="ro-home__identity" onClick={abrirPerfil} aria-expanded={mostrarPerfil} aria-label="Abrir menu da conta">
               <span className="ro-home__avatar" aria-hidden="true">
-                {avatarUrl ? <img src={avatarUrl} alt="" /> : primeiroNome.slice(0, 2).toUpperCase()}
+                {avatarUrl ? <AssetImage src={avatarUrl} fallbackSrc="/ro-mark.svg" alt="" /> : primeiroNome.slice(0, 2).toUpperCase()}
               </span>
               <span className="ro-home__identity-copy">
                 <strong>{primeiroNome}</strong>
@@ -173,7 +173,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="ro-home__popover ro-home__profile-menu">
                 <div className="ro-home__profile-summary">
                   <span className="ro-home__avatar">
-                    {avatarUrl ? <img src={avatarUrl} alt="" /> : primeiroNome.slice(0, 2).toUpperCase()}
+                    {avatarUrl ? <AssetImage src={avatarUrl} fallbackSrc="/ro-mark.svg" alt="" /> : primeiroNome.slice(0, 2).toUpperCase()}
                   </span>
                   <span><strong>{userName || primeiroNome}</strong><small>Conta Reinos Oníricos</small></span>
                 </div>
@@ -320,8 +320,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="ro-home__characters">
               {personagens.slice(0, 3).map((personagem, index) => (
                 <button type="button" key={personagem.id} onClick={() => onAbrirPersonagem?.(personagem)} className="ro-home__character">
-                  <span className={`ro-home__character-avatar ro-home__character-avatar--${index + 1}`}>
-                    <span>{personagem.nome.slice(0, 2).toUpperCase()}</span>
+                  <span className={`ro-home__character-avatar ro-home__character-avatar--${index + 1} ${personagem.imagemUrl ? "has-photo" : ""}`}>
+                    {personagem.imagemUrl
+                      ? <AssetImage src={personagem.imagemUrl} fallbackSrc="/ro-mark.svg" alt={`Retrato de ${personagem.nome}`} className="ro-home__character-photo" />
+                      : <span>{personagem.nome.slice(0, 2).toUpperCase()}</span>}
                   </span>
                   <span className="ro-home__character-copy">
                     <strong>{personagem.nome}</strong>
