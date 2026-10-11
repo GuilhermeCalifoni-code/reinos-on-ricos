@@ -2460,3 +2460,7 @@
 @media (max-width: 580px) {
   .live-vtt__sheet-link { flex-basis: 125px; min-width: 110px; }
 }
+
+/* Erros de persistência não devem desaparecer silenciosamente no VTT. */
+.live-vtt__recoverable-error { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }
+.live-vtt__recoverable-error button { padding: .25rem .5rem; border: 1px solid currentColor; border-radius: .25rem; flex-shrink: 0; }

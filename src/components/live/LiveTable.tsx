@@ -36,6 +36,10 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const mestre = role === 'mestre';
   const writesRecursosRef = useRef(new Map<string, Promise<void>>());
   const [erroRecursos, setErroRecursos] = useState('');
+  const [erroMesa, setErroMesa] = useState('');
+  const sinalizarErroMesa = (acao: string, error: unknown) => {
+    setErroMesa(`${acao}: ${error instanceof Error ? error.message : 'Tente novamente ou verifique sua conexão.'}`);
+  };
   const [salvandoVinculo, setSalvandoVinculo] = useState(false);
   const [erroVinculo, setErroVinculo] = useState('');
   const minhasFichasVinculaveis = useMemo(() => personagensProprios.filter(p => !p.campaignId || p.campaignId === campanha.id), [personagensProprios, campanha.id]);
@@ -93,7 +97,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const effectiveSessionId = sessionId || realtime.state?.sessionId;
   const selecionado = personagensVisiveis.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
   const registro = useSessionEvents({ campaignId: campanha.id, sessionId: effectiveSessionId, userId, enabled: registroOnline, characterId: personagemJogadorId });
-  const registrarSemFalhar = (event: Parameters<typeof registro.registrar>[0]) => { void registro.registrar(event).catch(() => undefined); };
+  const registrarSemFalhar = (event: Parameters<typeof registro.registrar>[0]) => { void registro.registrar(event).catch(error => sinalizarErroMesa('Registro Vivo', error)); };
 
   useEffect(() => { if (!mapaAtualId && mapasAtuais[0]) setMapaLocalId(mapasAtuais[0].id); }, [mapaAtualId, mapasAtuais]);
   useEffect(() => {
@@ -104,7 +108,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
       contentType: realtime.state?.contentType || conteudoLocal,
       ruptureGeneral: realtime.state?.ruptureGeneral ?? campanha.rupturaGeral,
       metadata: realtime.state?.metadata || {}
-    }).catch(() => undefined);
+    }).catch(error => sinalizarErroMesa('Sessão', error));
   }, [campanha.rupturaGeral, compartilhando, conteudoLocal, mestre, realtime.state, sessionId]);
   useEffect(() => {
     if (compartilhando && realtime.state?.sessionId === effectiveSessionId) return;
@@ -130,7 +134,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     document.addEventListener('keydown', onEscape);
     return () => document.removeEventListener('keydown', onEscape);
   }, [ferramenta, cinematic]);
-  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeSceneId?: string; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
+  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeSceneId?: string; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(error => sinalizarErroMesa('Direção da cena', error)); };
   const mudarConteudo = (proximo: ConteudoDeCena) => { if (!compartilhando) return; setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
   const selecionarMapa = (id: string) => { if (!compartilhando) return; setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
 
@@ -264,16 +268,16 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     });
   };
   const ajustar = (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => { const maximo = campo === 'vidaAtual' ? personagem.vidaMaxima : personagem.focoMaximo; atualizarPersonagemMesa({ ...personagem, [campo]: Math.max(0, Math.min(maximo, personagem[campo] + delta)), atualizadoEm: new Date().toISOString() }); if (campo === 'vidaAtual') registrarSemFalhar(sessionEventFactories.damage(personagem.id, personagem.nome, delta)); };
-  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando && mestre) void realtime.addCounter({ ...item, visibilidade: 'mestre_privado' }).catch(() => undefined); };
-  const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando && mestre) void realtime.patchCounter(id, patch).catch(() => undefined); };
-  const removerContador = (id: string) => { if (compartilhando && mestre) void realtime.removeCounter(id).catch(() => undefined); };
-  const duplicarContador = (id: string) => { if (!compartilhando || !mestre) return; const original = contadoresAtuais.find(item => item.id === id); if (original) { const { id: _id, criadoEm: _criado, atualizadoEm: _atualizado, ...draft } = original; void realtime.addCounter({ ...draft, nome: `${draft.nome} (cópia)` }).catch(() => undefined); } };
-  const adicionarMapa = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (!compartilhando) return; void realtime.addMap(item).then(mapa => { setMapaLocalId(mapa.id); salvarEstado({ activeMapId: mapa.id, contentType: 'mapa' }); registrarSemFalhar(sessionEventFactories.map(`Mapa criado: ${mapa.titulo}.`)); }).catch(() => undefined); };
-  const atualizarMapa = (id: string, patch: Partial<MapaNarrativo>) => { if (compartilhando) void realtime.patchMap(id, patch).catch(() => undefined); };
-  const removerMapa = (id: string) => { const mapa = mapasAtuais.find(item => item.id === id); if (compartilhando) void realtime.removeMap(id).then(() => { if (mapaAtualId === id) salvarEstado({ activeMapId: undefined }); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); }).catch(() => undefined); };
-  const adicionarToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addToken(item).catch(() => undefined); };
+  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando && mestre) void realtime.addCounter({ ...item, visibilidade: 'mestre_privado' }).catch(error => sinalizarErroMesa('Criar contador', error)); };
+  const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando && mestre) void realtime.patchCounter(id, patch).catch(error => sinalizarErroMesa('Atualizar contador', error)); };
+  const removerContador = (id: string) => { if (compartilhando && mestre) void realtime.removeCounter(id).catch(error => sinalizarErroMesa('Remover contador', error)); };
+  const duplicarContador = (id: string) => { if (!compartilhando || !mestre) return; const original = contadoresAtuais.find(item => item.id === id); if (original) { const { id: _id, criadoEm: _criado, atualizadoEm: _atualizado, ...draft } = original; void realtime.addCounter({ ...draft, nome: `${draft.nome} (cópia)` }).catch(error => sinalizarErroMesa('Duplicar contador', error)); } };
+  const adicionarMapa = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (!compartilhando) return; void realtime.addMap(item).then(mapa => { setMapaLocalId(mapa.id); salvarEstado({ activeMapId: mapa.id, contentType: 'mapa' }); registrarSemFalhar(sessionEventFactories.map(`Mapa criado: ${mapa.titulo}.`)); }).catch(error => sinalizarErroMesa('Criar mapa', error)); };
+  const atualizarMapa = (id: string, patch: Partial<MapaNarrativo>) => { if (compartilhando) void realtime.patchMap(id, patch).catch(error => sinalizarErroMesa('Atualizar mapa', error)); };
+  const removerMapa = (id: string) => { const mapa = mapasAtuais.find(item => item.id === id); if (compartilhando) void realtime.removeMap(id).then(() => { if (mapaAtualId === id) salvarEstado({ activeMapId: undefined }); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); }).catch(error => sinalizarErroMesa('Remover mapa', error)); };
+  const adicionarToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addToken(item).catch(error => sinalizarErroMesa('Criar token', error)); };
   const atualizarToken = (id: string, patch: Partial<TokenMapa>): Promise<unknown> => compartilhando ? realtime.patchToken(id, patch) : Promise.reject(new Error('Mesa não sincronizada.'));
-  const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(() => undefined); };
+  const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(error => sinalizarErroMesa('Remover token', error)); };
   const statusTexto = realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
   const avisoRecursos = erroRecursos ? <p role="alert" className="live-vtt__sync-error">Não foi possível atualizar PV/Foco: {erroRecursos}</p> : null;
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
@@ -350,7 +354,11 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
         </div>
       </header>
 
-      {realtime.error && <p className="live-vtt__sync-error">Sincronização indisponível: {realtime.error}</p>}
+      {realtime.error && <p role="alert" className="live-vtt__sync-error">Sincronização indisponível: {realtime.error}</p>}
+      {erroMesa && <div role="alert" className="live-vtt__sync-error live-vtt__recoverable-error">
+        <span>Alteração não confirmada. {erroMesa}</span>
+        <button type="button" onClick={() => setErroMesa('')} aria-label="Dispensar erro da Mesa">Fechar</button>
+      </div>}
       {avisoRecursos}
 
       {!cinematic && (
