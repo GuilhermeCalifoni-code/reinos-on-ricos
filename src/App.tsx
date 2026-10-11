@@ -651,6 +651,7 @@ export default function App() {
             personagemJogadorId={personagemJogadorId}
             userId={session.authUserId}
             userName={session.nome}
+            avatarUrl={session.avatarUrl}
             sessionId={sessaoAtivaId}
             sessionTitle={sessaoAtiva?.titulo}
             sessionDescription={sessaoAtiva?.descricao}
