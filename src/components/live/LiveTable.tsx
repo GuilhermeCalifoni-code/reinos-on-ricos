@@ -23,7 +23,7 @@ import { ArrowLeft, FileText, Image as ImageIcon, Layers3, Map as MapIcon, Messa
 interface LiveTableProps {
   campanha: Campanha; personagens: Personagem[]; npcs: NPC[]; adversarios: Adversario[]; role: UserRole;
   onAtualizarNPC: (id: string, patch: Partial<NPC>) => Promise<unknown>;
-  onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown>; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
+  onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown>; personagemJogadorId?: string; userId?: string; userName?: string; avatarUrl?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
   onAtualizarPersonagem: (personagem: Personagem) => void;
   onReceberRecursosPersonagem: (update: CharacterResourceUpdate) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem) => void;
   contadores: Contador[]; onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarContador: (id: string, parcial: Partial<Contador>) => void; onRemoverContador: (id: string) => void; onDuplicarContador: (id: string) => void;
@@ -32,12 +32,12 @@ interface LiveTableProps {
 }
 
 export const LiveTable: React.FC<LiveTableProps> = (props) => {
-  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onReceberRecursosPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
+  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, avatarUrl, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onReceberRecursosPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
   const mestre = role === 'mestre';
   const writesRecursosRef = useRef(new Map<string, Promise<void>>());
   const [erroRecursos, setErroRecursos] = useState('');
   const personagensVisiveis = useMemo(() => mestre ? personagens : personagens.filter(p => p.id === personagemJogadorId), [mestre, personagemJogadorId, personagens]);
-  const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || personagens[0]?.id || '');
+  const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || '');
   const [ferramenta, setFerramenta] = useState<LiveTool>('nenhuma');
   const [conteudoLocal, setConteudoLocal] = useState<ConteudoDeCena>('ambientacao');
   const [mapaLocalId, setMapaLocalId] = useState<string | undefined>();
@@ -76,7 +76,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     ? realtime.state.metadata.sceneImageUrl
     : '';
   const effectiveSessionId = sessionId || realtime.state?.sessionId;
-  const selecionado = personagens.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
+  const selecionado = personagensVisiveis.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
   const registro = useSessionEvents({ campaignId: campanha.id, sessionId: effectiveSessionId, userId, enabled: registroOnline, characterId: personagemJogadorId });
   const registrarSemFalhar = (event: Parameters<typeof registro.registrar>[0]) => { void registro.registrar(event).catch(() => undefined); };
 
@@ -324,7 +324,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
           </button>
 
           <div className="live-vtt__user">
-            <span>{userName?.slice(0, 2).toUpperCase() || 'RO'}</span>
+            <span>{avatarUrl ? <AssetImage src={avatarUrl} fallbackSrc="/ro-mark.svg" alt="Foto de perfil" /> : (userName?.slice(0, 2).toUpperCase() || 'RO')}</span>
             <div><strong>{userName || 'Participante'}</strong><small>{role}</small></div>
           </div>
 
