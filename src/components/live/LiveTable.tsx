@@ -297,7 +297,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
             <Radio size={12} />
             {statusTexto}
           </span>
-          <span>{campanha.jogadoresCount || personagens.length} na crônica</span>
+          <span>{realtime.presence.length} online · {campanha.jogadoresCount || 0} na campanha</span>
         </div>
 
         <div className="live-vtt__top-actions">
@@ -339,9 +339,9 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
       {avisoRecursos}
 
       {!cinematic && (
-        <div className="live-vtt__player-bar" aria-label="Personagens presentes">
+        <div className="live-vtt__player-bar" aria-label="Desvelados vinculados à campanha">
           <div className="live-vtt__player-bar-label">
-            <span>Presentes</span>
+            <span>Desvelados</span>
             <small>{personagensVisiveis.length}</small>
           </div>
 

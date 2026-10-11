@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Personagem } from '../../types/character';
 import { characterRepository } from './characterRepository';
+import { supabase } from '../../lib/supabaseClient';
 import { CharacterResourceUpdate } from '../../features/realtime/liveTableRepository';
 import { applyLiveCharacterResources } from './characterRealtimeState';
 
@@ -16,8 +17,10 @@ export function useRemoteCharacters(userId?: string, campaignId?: string, enable
   const [characters, setCharacters] = useState<Personagem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const requestSeq = useRef(0);
 
   const refresh = useCallback(async () => {
+    const currentRequest = ++requestSeq.current;
     if (!enabled || !userId) {
       setCharacters([]);
       return;
@@ -29,20 +32,42 @@ export function useRemoteCharacters(userId?: string, campaignId?: string, enable
     try {
       const own = await characterRepository.listarDoUsuario();
       if (!campaignId) {
-        setCharacters(mergeById(own));
+        if (currentRequest === requestSeq.current) setCharacters(mergeById(own));
         return;
       }
 
       const campaign = await characterRepository.listar(campaignId);
-      setCharacters(mergeById([...own, ...campaign]));
+      if (currentRequest === requestSeq.current) setCharacters(mergeById([...own, ...campaign]));
     } catch (cause: any) {
-      setError(cause.message || 'Não foi possível carregar suas fichas da nuvem.');
+      if (currentRequest === requestSeq.current) setError(cause.message || 'Não foi possível carregar suas fichas da nuvem.');
     } finally {
-      setLoading(false);
+      if (currentRequest === requestSeq.current) setLoading(false);
     }
   }, [campaignId, enabled, userId]);
 
   useEffect(() => { void refresh(); }, [refresh]);
+
+  useEffect(() => {
+    if (!enabled || !userId || !supabase) return;
+    const api = supabase;
+    let pending: ReturnType<typeof setTimeout> | undefined;
+    const refreshSoon = () => {
+      if (pending) clearTimeout(pending);
+      pending = setTimeout(() => { void refresh(); }, 200);
+    };
+    const channel = api.channel(`roster:${userId}:${campaignId || 'personal'}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'personagens', filter: `owner_user_id=eq.${userId}` }, refreshSoon);
+    if (campaignId) {
+      channel.on('postgres_changes', { event: '*', schema: 'public', table: 'personagens', filter: `campaign_id=eq.${campaignId}` }, refreshSoon);
+    }
+    channel.subscribe(status => { if (status === 'SUBSCRIBED') refreshSoon(); });
+    window.addEventListener('focus', refreshSoon);
+    return () => {
+      if (pending) clearTimeout(pending);
+      window.removeEventListener('focus', refreshSoon);
+      void api.removeChannel(channel);
+    };
+  }, [campaignId, enabled, userId, refresh]);
 
   const save = useCallback(async (character: Personagem) => {
     if (!userId) throw new Error('Sessão autenticada não encontrada.');
