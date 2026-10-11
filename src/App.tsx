@@ -101,6 +101,12 @@ export default function App() {
   const personagensCampanha = campanhaAtiva?.id
     ? personagens.filter(personagem => personagem.campaignId === campanhaAtiva.id)
     : personagens;
+  const vinculosDaCampanha = membrosCampanha
+    .map(membro => `${membro.userId}:${membro.characterId || ''}:${membro.status}:${membro.role}`)
+    .sort().join('|');
+  useEffect(() => {
+    if (campanhaAtivaId) void personagensRemotos.refresh();
+  }, [campanhaAtivaId, vinculosDaCampanha, personagensRemotos.refresh]);
 
   const salvarPersonagemPersistente = (personagemAtualizado: Personagem) => {
     if (!usandoRemoto) return;
