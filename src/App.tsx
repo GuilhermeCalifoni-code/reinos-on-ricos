@@ -499,6 +499,18 @@ export default function App() {
               salvarPersonagemPersistente(atualizado);
               setPersonagemParaFicha(atualizado);
             }}
+            onAlterarRetrato={personagemParaFicha.ownerUserId === session.authUserId ? async (file) => {
+              // Owner-only action: a Mestre cannot silently overwrite a player's portrait.
+              const atual = personagemParaFicha;
+              if (atual.ownerUserId !== session.authUserId) throw new Error('Apenas o dono da ficha pode trocar o retrato.');
+              const path = await campaignAssetService.uploadCharacterPortrait(atual.id, file);
+              const atualizado = await personagensRemotos.save({
+                ...atual,
+                imagemUrl: campaignAssetService.toStorageRef(path),
+                atualizadoEm: new Date().toISOString()
+              });
+              setPersonagemParaFicha(current => current?.id === atualizado.id ? atualizado : current);
+            } : undefined}
             onDuplicar={(p) => {
               duplicarPersonagemPersistente(p);
               setPersonagemParaFicha(null);
