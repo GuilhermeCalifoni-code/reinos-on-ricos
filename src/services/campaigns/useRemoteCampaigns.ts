@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Campanha, CampanhaTipo, MembroCampanha } from '../../types/campaign';
 import { campaignRepository } from './campaignRepository';
+import { supabase } from '../../lib/supabaseClient';
 import { campaignAssetService } from '../storage/campaignAssetService';
 
 export function useRemoteCampaigns(userId?: string) {
@@ -8,8 +9,10 @@ export function useRemoteCampaigns(userId?: string) {
   const [membros, setMembros] = useState<MembroCampanha[]>([]);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
+  const requestSeq = useRef(0);
 
   const recarregar = useCallback(async () => {
+    const currentRequest = ++requestSeq.current;
     if (!userId) {
       setCampanhas([]);
       setMembros([]);
@@ -27,6 +30,7 @@ export function useRemoteCampaigns(userId?: string) {
         campaignRepository.membros()
       ]);
 
+      if (currentRequest !== requestSeq.current) return;
       const membrosAtivosPorCampanha = novosMembros.reduce((acc, membro) => {
         if (membro.status !== 'ativo') return acc;
         acc.set(membro.campaignId, (acc.get(membro.campaignId) || 0) + 1);
@@ -41,11 +45,13 @@ export function useRemoteCampaigns(userId?: string) {
         }))
       );
     } catch (e: any) {
-      setCampanhas([]);
-      setMembros([]);
-      setErro(e.message || 'Não foi possível carregar as campanhas.');
+      if (currentRequest === requestSeq.current) {
+        setCampanhas([]);
+        setMembros([]);
+        setErro(e.message || 'Não foi possível carregar as campanhas.');
+      }
     } finally {
-      setCarregando(false);
+      if (currentRequest === requestSeq.current) setCarregando(false);
     }
   }, [userId]);
 
@@ -60,6 +66,27 @@ export function useRemoteCampaigns(userId?: string) {
     }
 
     void recarregar();
+  }, [userId, recarregar]);
+
+  // The membership publication is installed by migration 037. Refresh on
+  // changes, reconnect and focus so a live GM sees newly linked sheets.
+  useEffect(() => {
+    if (!userId || !supabase) return;
+    const api = supabase;
+    let pending: ReturnType<typeof setTimeout> | undefined;
+    const refreshSoon = () => {
+      if (pending) clearTimeout(pending);
+      pending = setTimeout(() => { void recarregar(); }, 150);
+    };
+    const channel = api.channel(`campaign-members:${userId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'campaign_members' }, refreshSoon)
+      .subscribe(status => { if (status === 'SUBSCRIBED') refreshSoon(); });
+    window.addEventListener('focus', refreshSoon);
+    return () => {
+      if (pending) clearTimeout(pending);
+      window.removeEventListener('focus', refreshSoon);
+      void api.removeChannel(channel);
+    };
   }, [userId, recarregar]);
 
   const criar = useCallback(async (input: {
