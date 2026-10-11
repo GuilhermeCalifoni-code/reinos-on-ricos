@@ -2424,3 +2424,11 @@
   line-height: 1.5;
   pointer-events: none;
 }
+
+/* Lançamento 31/10: o avatar da conta acompanha o usuário na Mesa. */
+.live-vtt__user > span > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
