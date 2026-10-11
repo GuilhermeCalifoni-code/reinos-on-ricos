@@ -1220,3 +1220,25 @@
     min-height: 98px;
   }
 }
+
+/* Lançamento 31/10: retratos reais sem silhuetas decorativas por cima. */
+.ro-home__character-avatar.has-photo {
+  place-items: stretch;
+}
+.ro-home__character-avatar.has-photo::before,
+.ro-home__character-avatar.has-photo::after {
+  display: none;
+}
+.ro-home__character-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.ro-home__avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
