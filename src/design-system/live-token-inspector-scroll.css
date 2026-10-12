@@ -1,0 +1,87 @@
+/* RO VTT | token inspector should never trap the GM on mobile.
+   Kept after all legacy and mobile rules to avoid overflow conflicts. */
+
+.ro-app-shell--live .live-table--v5 .map-stage__token-inspector {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: min(680px, calc(100% - 5.5rem));
+  overflow: hidden;
+  z-index: 30;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+.ro-app-shell--live .live-table--v5 .map-stage__token-inspector-head {
+  position: relative;
+  flex: 0 0 auto;
+  z-index: 2;
+  background: #0b0f14;
+}
+
+.ro-app-shell--live .live-table--v5 .map-stage__token-inspector-head > button {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.ro-app-shell--live .live-table--v5 .map-stage__token-inspector-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-width: thin;
+}
+
+.ro-app-shell--live .live-table--v5 .map-stage__token-inspector-body:focus-visible {
+  outline: 2px solid var(--vtt-accent-bright);
+  outline-offset: -2px;
+}
+
+.ro-app-shell--live .live-table--v5 .map-stage__token-inspector-actions {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  background: #0b0f14;
+  border-top: 1px solid var(--vtt-line-strong);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.ro-app-shell--live .live-table--v5 .map-stage__token-inspector-actions button {
+  min-width: 0;
+  min-height: 48px;
+  padding: .45rem .35rem;
+  font-size: clamp(.68rem, 2.5vw, .85rem);
+  font-weight: 650;
+  line-height: 1.25;
+  white-space: normal;
+  touch-action: manipulation;
+}
+
+@media (max-width: 760px) {
+  .ro-app-shell--live .live-table--v5 .map-stage__token-inspector {
+    top: auto;
+    right: .5rem;
+    bottom: .5rem;
+    left: .5rem;
+    width: auto;
+    max-width: none;
+    max-height: min(72dvh, calc(100% - 1rem));
+    overflow: hidden;
+  }
+}
+
+@media (max-height: 520px) and (max-width: 980px) {
+  .ro-app-shell--live .live-table--v5 .map-stage__token-inspector {
+    max-height: calc(100% - .5rem);
+    bottom: .25rem;
+  }
+}
