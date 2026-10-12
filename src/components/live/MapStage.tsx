@@ -625,15 +625,29 @@ export const MapStage: React.FC<MapStageProps> = ({
       </div>
 
       {tokenSelecionado && podeControlarToken(tokenSelecionado) && (
-        <aside className="map-stage__token-inspector">
+        <aside className="map-stage__token-inspector" role="dialog"
+          aria-label={`Controles do token ${tokenSelecionado.nome}`}
+          onPointerDown={event => event.stopPropagation()}
+          onPointerMove={event => event.stopPropagation()}
+          onPointerUp={event => event.stopPropagation()}
+          onWheel={event => event.stopPropagation()}
+          onKeyDown={event => {
+            if (event.key === 'Escape') {
+              event.stopPropagation();
+              setSelecionadoId(null);
+            }
+          }}>
           <div className="map-stage__token-inspector-head">
             <div>
               <small>{tokenSelecionado.tipo}</small>
               <strong>{tokenSelecionado.nome}</strong>
             </div>
-            <button type="button" onClick={() => setSelecionadoId(null)}>×</button>
+            <button type="button" aria-label="Fechar controles do token"
+              onClick={() => setSelecionadoId(null)}>×</button>
           </div>
 
+          <div className="map-stage__token-inspector-body" role="region"
+            aria-label={`Ajustes de ${tokenSelecionado.nome}`} tabIndex={0}>
           {mestre && (tokenSelecionado.tipo === 'npc' || tokenSelecionado.tipo === 'adversario') && tokenLife && (
             <div className="map-stage__token-health">
               <strong>PV desta cópia: {tokenLife.current}/{tokenLife.max}</strong>
@@ -735,11 +749,16 @@ export const MapStage: React.FC<MapStageProps> = ({
             </label>
           </div>
 
+          </div>
+
           {mestre && (
-            <div className="map-stage__token-inspector-actions">
+            <div className="map-stage__token-inspector-actions" aria-label="Ações da cópia no mapa">
               <button type="button" onClick={duplicarToken}><Plus size={13}/> Duplicar cópia</button>
-              <button type="button" className="is-danger" onClick={() => { onRemoverToken(tokenSelecionado.id); setSelecionadoId(null); }}>
-                <Trash2 size={13} /> Remover
+              <button type="button" className="is-danger"
+                title="Retira apenas esta cópia do mapa, sem apagar a ficha-base"
+                onClick={() => { onRemoverToken(tokenSelecionado.id); setSelecionadoId(null); }}>
+                <Trash2 size={13} />
+                {tokenSelecionado.tipo === 'adversario' ? 'Encerrar adversário' : 'Remover do mapa'}
               </button>
             </div>
           )}
