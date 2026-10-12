@@ -20,6 +20,7 @@
 @import "./design-system/live-counters-master.css";
 @import "./design-system/live-mobile-rules-contrast.css";
 @import "./design-system/map-token-conditions.css";
+@import "./design-system/live-token-inspector-scroll.css";
 
 @layer base {
   :root {
