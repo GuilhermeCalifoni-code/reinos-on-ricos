@@ -459,12 +459,20 @@ export const MapStage: React.FC<MapStageProps> = ({
   return (
     <section className="map-stage map-stage--v4">
       {mestre && (
-        <div className="map-stage__library map-stage__library--v4">
+        <div className={`map-stage__library map-stage__library--v4 ${ferramentasMapaAbertas ? 'is-expanded' : 'is-collapsed'}`}>
+          <div className="map-stage__toolbar-top">
           <select value={mapaAtual?.id || ''} onChange={event => onSelecionarMapa(event.target.value)} aria-label="Selecionar mapa">
             <option value="">Selecionar mapa</option>
             {mapas.map(mapa => <option key={mapa.id} value={mapa.id}>{mapa.titulo}</option>)}
           </select>
+          <button type="button" className="map-stage__toggle-tools"
+            aria-expanded={ferramentasMapaAbertas} aria-controls="ro-map-tools"
+            onClick={() => setFerramentasMapaAbertas(value => !value)}>
+            <SlidersHorizontal size={15} /> {ferramentasMapaAbertas ? 'Minimizar' : 'Ferramentas'}
+          </button>
+          </div>
 
+          {ferramentasMapaAbertas && <div className="map-stage__library-controls" id="ro-map-tools">
           {mapaAtual && (
             <>
               <button type="button" onClick={() => onAtualizarMapa(mapaAtual.id, { gradeVisivel: !mapaAtual.gradeVisivel })}>
@@ -488,7 +496,8 @@ export const MapStage: React.FC<MapStageProps> = ({
               onClick={()=>setMarcandoArea(v=>!v)}>{marcandoArea?'Concluir áreas':'Marcar círculo'}</button>
           </div>}
           <button type="button" onClick={centralizar}><Crosshair size={13} /> Centralizar</button>
-          <button type="button" onClick={() => viewport.current?.requestFullscreen?.()}><Maximize2 size={13} /></button>
+          <button type="button" aria-label="Mapa em tela cheia" onClick={() => viewport.current?.requestFullscreen?.()}><Maximize2 size={13} /> Tela cheia</button>
+          </div>}
         </div>
       )}
 
