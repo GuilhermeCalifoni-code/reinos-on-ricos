@@ -21,6 +21,7 @@
 @import "./design-system/live-mobile-rules-contrast.css";
 @import "./design-system/map-token-conditions.css";
 @import "./design-system/live-token-inspector-scroll.css";
+@import "./design-system/live-master-workflow.css";
 
 @layer base {
   :root {
