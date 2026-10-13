@@ -282,7 +282,15 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const avisoRecursos = erroRecursos ? <p role="alert" className="live-vtt__sync-error">Não foi possível atualizar PV/Foco: {erroRecursos}</p> : null;
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
   const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} imageUrl={sceneImageUrl} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
-  const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagemJogadorId={personagemJogadorId} personagens={personagens} npcs={npcs} adversarios={adversarios} onActorUsed={(kind, id) => { if (kind === 'npc') void ensureSessionLink('npcIds', id); if (kind === 'adversario') void ensureSessionLink('adversarioIds', id); }} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
+  const registrarRolagemAtor = async (content: string, details: Record<string, unknown>) => {
+    if (!mestre) throw new Error('Somente o Mestre pode rolar por NPCs e adversários.');
+    const { visibility, ...metadata } = details;
+    await registro.registrar({
+      type: 'roll', visibility: visibility === 'todos' ? 'todos' : 'mestre',
+      content, metadata: { ...metadata, kind: 'actor_combat' }
+    });
+  };
+  const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagemJogadorId={personagemJogadorId} personagens={personagens} npcs={npcs} adversarios={adversarios} onActorUsed={(kind, id) => { if (kind === 'npc') void ensureSessionLink('npcIds', id); if (kind === 'adversario') void ensureSessionLink('adversarioIds', id); }} onActorRoll={registrarRolagemAtor} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
   const closeTool = () => setFerramenta('nenhuma');
   const toggleCinematic = () => {
     setCinematic(value => {
@@ -528,13 +536,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               onAbrirFicha={onAbrirFicha}
               onAjustar={ajustar}
               onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')}
-              onActorRoll={async (content,details) => {
-                if (!mestre) throw new Error('Somente o Mestre pode rolar por NPCs e adversários.');
-                await registro.registrar({
-                  type:'roll', visibility:'mestre', content,
-                  metadata:{...details,kind:'actor_combat'}
-                });
-              }}
+              onActorRoll={registrarRolagemAtor}
               onClose={() => setPartyOpen(false)}
             />
           </aside>
