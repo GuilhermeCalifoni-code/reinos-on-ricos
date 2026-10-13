@@ -30,8 +30,28 @@ const labels: Record<SessionEventType, string> = {
   map_event: 'Mapa'
 };
 
-const eventClass = (event: SessionEvent) =>
-  `session-feed__event session-feed__event--${event.type}${event.visibility !== 'todos' ? ' is-private' : ''}${event.metadata.authorRole === 'mestre' ? ' is-master' : ''}${event.metadata.presentation === 'narrative' ? ' is-narrative' : ''}`;
+/** Destaque os dados da rolagem sem presumir acerto contra uma Defesa desconhecida. */
+export const getRollDisplay = (event: SessionEvent): { label: string; isDamage: boolean } | null => {
+  if (event.type !== 'roll') return null;
+  const raw = event.metadata.roll;
+  if (typeof raw !== 'object' || raw === null) return null;
+  const roll = raw as Record<string, unknown>;
+  if (roll.kind === 'dano' && typeof roll.total === 'number') {
+    return { label: `Dano rolado: ${roll.total}`, isDamage: true };
+  }
+  if (roll.kind === 'onirico' && typeof roll.realidade === 'number' && typeof roll.sonhar === 'number') {
+    return { label: `Realidade ${roll.realidade} · Sonhar ${roll.sonhar}`, isDamage: false };
+  }
+  if (typeof roll.total === 'number') {
+    return { label: `Resultado: ${roll.total}`, isDamage: false };
+  }
+  return null;
+};
+
+const eventClass = (event: SessionEvent) => {
+  const role = event.metadata.authorRole;
+  return `session-feed__event session-feed__event--${event.type}${event.visibility !== 'todos' ? ' is-private' : ''}${role === 'mestre' ? ' is-master' : role === 'jogador' ? ' is-player' : ''}${event.metadata.presentation === 'narrative' ? ' is-narrative' : ''}${getRollDisplay(event)?.isDamage ? ' is-damage-roll' : ''}`;
+};
 
 const formatTime = (iso: string) =>
   new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
@@ -143,6 +163,11 @@ export const SessionFeed: React.FC<SessionFeedProps> = ({
                     : formatTime(event.createdAt)}
               </small>
             </div>
+            {getRollDisplay(event) && (
+              <div className={`session-feed__roll-highlight ${getRollDisplay(event)?.isDamage ? 'is-damage' : ''}`}>
+                {getRollDisplay(event)?.label}
+              </div>
+            )}
             <p>{event.content}</p>
           </article>
         ))}
