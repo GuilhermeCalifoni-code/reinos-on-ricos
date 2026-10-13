@@ -7,10 +7,11 @@ interface Props {
   name: string; hp: number; maxHp: number; threatLevel: number; abilities: HabilidadeAtor[];
   onHpChange: (hp: number) => Promise<unknown>;
   onRoll: (description: string, details: Record<string, unknown>) => Promise<unknown>;
+  hideHpControls?: boolean;
 }
 
 /** Controles exclusivos do Mestre: PV persistidos e rolagens registradas com visibilidade Mestre. */
-export const ActorCombatControls: React.FC<Props> = ({ name, hp, maxHp, threatLevel, abilities, onHpChange, onRoll }) => {
+export const ActorCombatControls: React.FC<Props> = ({ name, hp, maxHp, threatLevel, abilities, onHpChange, onRoll, hideHpControls = false }) => {
   const [busy,setBusy] = useState(false);
   const [amount,setAmount] = useState(1);
   const [die,setDie] = useState(8);
@@ -19,6 +20,7 @@ export const ActorCombatControls: React.FC<Props> = ({ name, hp, maxHp, threatLe
   const [dt,setDt] = useState(13);
   const [feedback,setFeedback] = useState('');
   const [error,setError] = useState('');
+  const [compartilharRolagem, setCompartilharRolagem] = useState(false);
 
   const editHp = async (delta: number) => {
     if (busy) return;
@@ -34,7 +36,7 @@ export const ActorCombatControls: React.FC<Props> = ({ name, hp, maxHp, threatLe
   const register = async (description: string, details: Record<string,unknown>) => {
     if (busy) return;
     setBusy(true);setError('');
-    try { await onRoll(description,details);setFeedback(description); }
+    try { await onRoll(description, { ...details, visibility: compartilharRolagem ? 'todos' : 'mestre' });setFeedback(description); }
     catch(reason) {setError(reason instanceof Error ? reason.message : 'A rolagem não foi registrada.');}
     finally {setBusy(false);}
   };
@@ -69,12 +71,16 @@ export const ActorCombatControls: React.FC<Props> = ({ name, hp, maxHp, threatLe
 
   return (
     <div className="live-vtt__combat" onPointerDown={e=>e.stopPropagation()}>
-      <div className="live-vtt__combat-hp">
+      <label className="live-vtt__combat-sharing">
+        <input type="checkbox" checked={compartilharRolagem} onChange={event => setCompartilharRolagem(event.target.checked)} />
+        Mostrar próximas rolagens aos jogadores
+      </label>
+      {!hideHpControls && <div className="live-vtt__combat-hp">
         <Heart size={13}/><strong>PV {hp}/{maxHp}</strong>
         <label>Quantidade <input type="number" min={1} max={99} value={amount} onChange={e=>setAmount(Math.min(99,Math.max(1,Number(e.target.value)||1)))}/></label>
         <button type="button" disabled={busy||hp<=0} onClick={()=>void editHp(-amount)} title="Reduzir PV">− PV</button>
         <button type="button" disabled={busy||hp>=maxHp} onClick={()=>void editHp(amount)} title="Recuperar PV">+ PV</button>
-      </div>
+      </div>}
       <div className="live-vtt__combat-rolls">
         <label>DT <input type="number" min={1} max={40} value={dt} onChange={e=>setDt(Math.min(40,Math.max(1,Number(e.target.value)||13)))}/></label>
         <button type="button" disabled={busy} onClick={()=>rollTest('mundano')}><Dice5 size={13}/> Ataque 1d20</button>
@@ -97,7 +103,7 @@ export const ActorCombatControls: React.FC<Props> = ({ name, hp, maxHp, threatLe
       </div>}
       {feedback&&<p className="live-vtt__combat-feedback" role="status">{feedback}</p>}
       {error&&<p className="live-vtt__combat-error" role="alert">{error}</p>}
-      <small>Rolagens privadas do Mestre. Dano é rolado; a perda de PV deve ser aplicada conforme a Resistência e as regras.</small>
+      <small>{compartilharRolagem ? 'As próximas rolagens serão públicas.' : 'As próximas rolagens serão privadas do Mestre.'} Dano rolado não aplica PV automaticamente.</small>
     </div>
   );
 };
