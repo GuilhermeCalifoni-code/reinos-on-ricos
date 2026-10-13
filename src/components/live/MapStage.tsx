@@ -667,8 +667,19 @@ export const MapStage: React.FC<MapStageProps> = ({
               onClick={() => setSelecionadoId(null)}>×</button>
           </div>
 
+          {mestre && modeloAtorDoToken && (
+            <nav className="map-stage__token-tabs" aria-label="Ferramentas do adversário">
+              <button type="button" aria-pressed={abaToken === 'controle'}
+                className={abaToken === 'controle' ? 'is-active' : ''}
+                onClick={() => setAbaToken('controle')}>Controle</button>
+              <button type="button" aria-pressed={abaToken === 'ficha'}
+                className={abaToken === 'ficha' ? 'is-active' : ''}
+                onClick={() => setAbaToken('ficha')}>Ficha e rolagens</button>
+            </nav>
+          )}
           <div className="map-stage__token-inspector-body" role="region"
             aria-label={`Ajustes de ${tokenSelecionado.nome}`} tabIndex={0}>
+          {abaToken === 'controle' && <>
           {mestre && (tokenSelecionado.tipo === 'npc' || tokenSelecionado.tipo === 'adversario') && tokenLife && (
             <div className="map-stage__token-health">
               <strong>PV desta cópia: {tokenLife.current}/{tokenLife.max}</strong>
@@ -770,6 +781,46 @@ export const MapStage: React.FC<MapStageProps> = ({
             </label>
           </div>
 
+          </>}
+          {mestre && abaToken === 'ficha' && modeloAtorDoToken && tokenLife && (
+            <section className="map-stage__token-sheet" aria-label="Ficha e rolagens do token">
+              <div className="map-stage__token-sheet-profile">
+                {modeloAtorDoToken.imagemUrl && <AssetImage src={modeloAtorDoToken.imagemUrl} alt="" />}
+                <div>
+                  <strong>{modeloAtorDoToken.nome}</strong>
+                  <small>{adversarioDoToken
+                    ? `Nível ${adversarioDoToken.nivel} · ${adversarioDoToken.tipo}`
+                    : `NPC · ${npcDoToken?.papel || 'Personagem'}`}</small>
+                  <p>{modeloAtorDoToken.descricao || 'Sem descrição registrada.'}</p>
+                </div>
+              </div>
+              <div className="map-stage__token-sheet-stats">
+                <span>PV da cópia: <b>{tokenLife.current}/{tokenLife.max}</b></span>
+                <span>Defesa: <b>{modeloAtorDoToken.defesa ?? '—'}</b></span>
+                <span>DT: <b>{modeloAtorDoToken.dificuldade ?? modeloAtorDoToken.defesa ?? '—'}</b></span>
+                <span>Resistência: <b>{modeloAtorDoToken.resistencia ?? '—'}</b></span>
+                <span>Deslocamento: <b>{modeloAtorDoToken.deslocamento || '—'}</b></span>
+                {adversarioDoToken?.ataquePrincipal && <span>Ataque: <b>{adversarioDoToken.ataquePrincipal}</b></span>}
+              </div>
+              {(modeloAtorDoToken.habilidades || []).length > 0 && (
+                <div className="map-stage__token-abilities">
+                  <strong>Habilidades</strong>
+                  {(modeloAtorDoToken.habilidades || []).map(habilidade => (
+                    <p key={habilidade.id}><b>{habilidade.nome}</b> · {habilidade.descricao}</p>
+                  ))}
+                </div>
+              )}
+              {onActorRoll && (
+                <ActorCombatControls key={tokenSelecionado.id} name={tokenSelecionado.nome}
+                  hp={tokenLife.current} maxHp={tokenLife.max}
+                  threatLevel={adversarioDoToken?.nivel ?? npcDoToken?.nivelAmeaca ?? 0}
+                  abilities={modeloAtorDoToken.habilidades || []} hideHpControls
+                  onHpChange={hp => Promise.resolve(onAtualizarToken(tokenSelecionado.id, { hpCurrent: hp, hpMax: tokenLife.max }))}
+                  onRoll={(content, details) => onActorRoll(content, { ...details, tokenId: tokenSelecionado.id })}/>
+              )}
+              <small>As ações deste token não alteram a ficha original.</small>
+            </section>
+          )}
           </div>
 
           {mestre && (
