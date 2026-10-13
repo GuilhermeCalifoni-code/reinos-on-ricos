@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, Ban, Crosshair, Eye, EyeOff, Grid3X3, Maximize2, Minus, Plus, Ruler, Trash2, Upload } from 'lucide-react';
+import { AlertTriangle, Ban, Crosshair, Eye, EyeOff, Grid3X3, Maximize2, Minus, Plus, Ruler, SlidersHorizontal, Trash2, Upload } from 'lucide-react';
 import { Adversario, CondicaoCombate, MapaNarrativo, NPC, TipoTokenMapa, TokenMapa } from '../../types/campaign';
 import { Personagem } from '../../types/character';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
 import { AssetImage } from '../system/AssetImage';
+import { ActorCombatControls } from './ActorCombatControls';
 import { calculatePinchCamera, centerBetween, distanceBetween, Point2D } from '../../features/realtime/mapTouchGeometry';
 import { addTokenHp, nextInstanceName, resolvedTokenHp } from '../../features/realtime/mapTokenInstances';
 
@@ -17,6 +18,7 @@ interface MapStageProps {
   npcs?: NPC[];
   adversarios?: Adversario[];
   onActorUsed?: (kind: 'personagem' | 'npc' | 'adversario', id: string) => void;
+  onActorRoll?: (content: string, details: Record<string, unknown>) => Promise<unknown>;
   mapaAtualId?: string;
   onSelecionarMapa: (id: string) => void;
   onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
@@ -54,6 +56,7 @@ export const MapStage: React.FC<MapStageProps> = ({
   npcs = [],
   adversarios = [],
   onActorUsed,
+  onActorRoll,
   mapaAtualId,
   onSelecionarMapa,
   onAdicionarMapa,
@@ -103,12 +106,19 @@ export const MapStage: React.FC<MapStageProps> = ({
   const [areaRadius, setAreaRadius] = useState(3);
   const [areaColor, setAreaColor] = useState('#dc884c');
   const [tokenError, setTokenError] = useState('');
+  const [abaToken, setAbaToken] = useState<'controle' | 'ficha'>('controle');
+  const [ferramentasMapaAbertas, setFerramentasMapaAbertas] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? !window.matchMedia('(max-width: 980px)').matches
+      : true
+  );
   const pendingNames = useRef(new Set<string>());
 
   const gridSize = clamp(mapaAtual?.gridSize ?? 64, 24, 160);
   const tokenSelecionado = tokensAtuais.find(token => token.id === selecionadoId) || null;
   const npcDoToken = tokenSelecionado?.npcId ? npcs.find(npc => npc.id === tokenSelecionado.npcId) : undefined;
   const adversarioDoToken = tokenSelecionado?.adversaryId ? adversarios.find(a => a.id === tokenSelecionado.adversaryId) : undefined;
+  const modeloAtorDoToken = npcDoToken || adversarioDoToken;
   const tokenLife = tokenSelecionado
     ? resolvedTokenHp(tokenSelecionado,
         npcDoToken?.vida ?? adversarioDoToken?.vida,
@@ -421,6 +431,8 @@ export const MapStage: React.FC<MapStageProps> = ({
     onAdicionarToken({campanhaId,mapaId:mapaAtual.id,tipo:'marcador',nome:name,
       tokenSize:.5,rangeCells:0,areaRadiusCells:areaRadius,cor:areaColor,x,y,oculto:false});
   };
+
+  useEffect(() => { setAbaToken('controle'); }, [selecionadoId]);
 
   useEffect(() => {
     setSelecionadoId(null);
