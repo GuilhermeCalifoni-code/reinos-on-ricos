@@ -26,7 +26,7 @@ interface MapStageProps {
   onRemoverMapa: (id: string) => void;
   onAdicionarToken: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
   onAtualizarToken: (id: string, parcial: Partial<TokenMapa>) => Promise<unknown> | void;
-  onRemoverToken: (id: string) => void;
+  onRemoverToken: (id: string) => Promise<unknown> | void;
 }
 
 const cores: Record<TipoTokenMapa, string> = {
@@ -89,6 +89,8 @@ export const MapStage: React.FC<MapStageProps> = ({
     pan: Point2D;
   } | null>(null);
   const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
+  const [removendoToken, setRemovendoToken] = useState(false);
+  const [erroRemocao, setErroRemocao] = useState('');
 
   const [novoMapa, setNovoMapa] = useState('');
   const [novaImagem, setNovaImagem] = useState('');
@@ -409,6 +411,20 @@ export const MapStage: React.FC<MapStageProps> = ({
   const mudarPvDaCopia = (delta: number) => {
     if (!mestre || !tokenSelecionado || !tokenLife) return;
     ajustarToken({hpCurrent:addTokenHp(tokenLife.current,tokenLife.max,delta),hpMax:tokenLife.max});
+  };
+
+  const confirmarRemocaoToken = async () => {
+    if (!mestre || !tokenSelecionado || removendoToken) return;
+    setRemovendoToken(true);
+    setErroRemocao('');
+    try {
+      await onRemoverToken(tokenSelecionado.id);
+      setSelecionadoId(null);
+    } catch (error) {
+      setErroRemocao(error instanceof Error ? error.message : 'Não foi possível retirar o token. Tente novamente.');
+    } finally {
+      setRemovendoToken(false);
+    }
   };
 
   const duplicarToken = () => {
@@ -824,14 +840,17 @@ export const MapStage: React.FC<MapStageProps> = ({
           </div>
 
           {mestre && (
+            <div className="map-stage__token-inspector-footer">
+              {erroRemocao && <p role="alert" className="map-stage__token-remove-error">{erroRemocao}</p>}
             <div className="map-stage__token-inspector-actions" aria-label="Ações da cópia no mapa">
               <button type="button" onClick={duplicarToken}><Plus size={13}/> Duplicar cópia</button>
-              <button type="button" className="is-danger"
+              <button type="button" className="is-danger" disabled={removendoToken}
                 title="Retira apenas esta cópia do mapa, sem apagar a ficha-base"
-                onClick={() => { onRemoverToken(tokenSelecionado.id); setSelecionadoId(null); }}>
+                onClick={() => { void confirmarRemocaoToken(); }}>
                 <Trash2 size={13} />
-                {tokenSelecionado.tipo === 'adversario' ? 'Encerrar adversário' : 'Remover do mapa'}
+                {removendoToken ? 'Removendo…' : tokenSelecionado.tipo === 'adversario' ? 'Encerrar adversário' : 'Remover do mapa'}
               </button>
+            </div>
             </div>
           )}
         </aside>
