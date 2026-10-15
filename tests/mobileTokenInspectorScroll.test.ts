@@ -22,7 +22,8 @@ test('inspetor separa controles roláveis do cabeçalho e ações sempre dispon�
  assert.match(inspector,/tabIndex=\{0\}/);
  assert.match(inspector,/event\.key === 'Escape'/);
  assert.match(inspector,/Encerrar adversário/);
- assert.match(inspector,/onRemoverToken\(tokenSelecionado\.id\)/);
+ assert.match(inspector,/confirmarRemocaoToken\(\)/);
+ assert.match(map,/await onRemoverToken\(tokenSelecionado\.id\)/);
  assert.match(inspector,/apenas esta cópia do mapa, sem apagar a ficha-base/);
  assert.match(inspector,/\{mestre && \(/);
 });
