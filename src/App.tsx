@@ -393,6 +393,13 @@ export default function App() {
     setViewAtiva('modo_mesa');
   };
 
+  const handleAtribuirFichaPreparada = async (campaignId: string, playerUserId: string, characterId: string) => {
+    const role = campanhasRemotas.roleDaCampanha(campaignId);
+    if (role !== 'mestre') throw new Error('Apenas o Mestre pode entregar fichas prontas.');
+    await campaignRepository.atribuirFichaPreparada(campaignId, playerUserId, characterId);
+    await Promise.all([personagensRemotos.refresh(), campanhasRemotas.recarregar()]);
+  };
+
   const handleVincularMinhaFicha = async (campaignId: string, characterId: string | null) => {
     await campaignRepository.vincularPersonagem(campaignId, characterId);
     await Promise.all([
@@ -642,6 +649,7 @@ export default function App() {
             onRegenerarCodigo={campanhasRemotas.regenerarCodigo}
             onAtualizarMembro={campanhasRemotas.atualizarMembro}
             onVincularMinhaFicha={handleVincularMinhaFicha}
+            onAtribuirFichaPreparada={handleAtribuirFichaPreparada}
             onExcluirCampanha={(id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); }}
           />
         ) : (
