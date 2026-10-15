@@ -15,6 +15,7 @@ interface CampaignMembersPanelProps {
   onRegenerateInvite?: (campaignId: string) => Promise<string>;
   onUpdateMember?: (campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) => Promise<void>;
   onLinkOwnCharacter?: (campaignId: string, characterId: string | null) => Promise<void>;
+  onAssignPreparedCharacter?: (campaignId: string, playerUserId: string, characterId: string) => Promise<void>;
 }
 
 export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
@@ -27,10 +28,12 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
   canManage,
   onRegenerateInvite,
   onUpdateMember,
-  onLinkOwnCharacter
+  onLinkOwnCharacter,
+  onAssignPreparedCharacter
 }) => {
   const [busy, setBusy] = useState('');
   const [message, setMessage] = useState('');
+  const [preparedChoice, setPreparedChoice] = useState<Record<string,string>>({});
   const currentMember = members.find(member => member.userId === currentUserId);
   const linkedCharacter = characters.find(character => character.id === currentMember?.characterId);
 
@@ -41,6 +44,30 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
     ),
     [campaignId, currentUserId, personalCharacters]
   );
+
+  const availablePrepared = useMemo(() => personalCharacters.filter(character =>
+    character.ownerUserId === currentUserId
+    && (!character.campaignId || character.campaignId === campaignId)
+    && !members.some(member => member.characterId === character.id && member.userId !== currentUserId)
+  ), [personalCharacters, currentUserId, campaignId, members]);
+
+  const assignPrepared = async (member: MembroCampanha) => {
+    const selected = preparedChoice[member.userId];
+    const character = availablePrepared.find(item => item.id === selected);
+    if (!onAssignPreparedCharacter || !character || busy || member.role !== 'jogador' || member.status !== 'ativo') return;
+    if (!window.confirm(`Entregar a ficha "${character.nome}" para ${member.nome || 'este jogador'}? A ficha passará a pertencer ao jogador, e sua ficha anterior não será apagada.`)) return;
+    setBusy(member.userId);
+    setMessage('');
+    try {
+      await onAssignPreparedCharacter(campaignId, member.userId, character.id);
+      setPreparedChoice(current => ({ ...current, [member.userId]: '' }));
+      setMessage(`Ficha "${character.nome}" entregue. O jogador já pode reabrir a Mesa.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Não foi possível entregar a ficha.');
+    } finally {
+      setBusy('');
+    }
+  };
 
   const regenerate = async () => {
     if (!onRegenerateInvite) return;
@@ -179,6 +206,21 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
                       <Link2 size={12} />
                       {memberCharacter ? memberCharacter.nome : 'Jogador escolhe a própria ficha'}
                     </span>
+                    {member.role === 'jogador' && member.status === 'ativo' && onAssignPreparedCharacter && (
+                      <div className="campaign-members__assign-prepared">
+                        <label>
+                          <span>Entregar Desvelado pronto</span>
+                          <select value={preparedChoice[member.userId] || ''} disabled={busy === member.userId || !availablePrepared.length}
+                            aria-label={`Selecionar ficha pronta para ${member.nome || 'jogador'}`}
+                            onChange={event => setPreparedChoice(current => ({ ...current, [member.userId]: event.target.value }))}>
+                            <option value="">Selecionar ficha</option>
+                            {availablePrepared.map(item => <option value={item.id} key={item.id}>{item.nome} · Nível {item.nivel}</option>)}
+                          </select>
+                        </label>
+                        <button type="button" disabled={busy === member.userId || !preparedChoice[member.userId]}
+                          onClick={() => { void assignPrepared(member); }}>Entregar ficha</button>
+                      </div>
+                    )}
                     <button
                       type="button"
                       disabled={busy === member.userId}
