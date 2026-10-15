@@ -64,9 +64,14 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     title: sessionTitle || 'A cidade contém a respiração',
     description: sessionDescription || 'Ambientação da cena. O Mestre pode preparar imagem, mapa ou handout para esta área.'
   });
+  const [interfaceCompacta, setInterfaceCompacta] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(pointer: coarse) and (max-width: 1200px)').matches
+      : false
+  );
   const [partyOpen, setPartyOpen] = useState(false);
   const [sessionOpen, setSessionOpen] = useState(false);
-  const [directorOpen, setDirectorOpen] = useState(mestre);
+  const [directorOpen, setDirectorOpen] = useState(mestre && !interfaceCompacta);
   const [activeSceneLocalId, setActiveSceneLocalId] = useState<string | undefined>();
   const [cinematic, setCinematic] = useState(false);
   const contadoresDaCampanha = useMemo(() => mestre ? contadores.filter(item => item.campanhaId === campanha.id) : [], [campanha.id, contadores, mestre]);
@@ -277,7 +282,11 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const removerMapa = (id: string) => { const mapa = mapasAtuais.find(item => item.id === id); if (compartilhando) void realtime.removeMap(id).then(() => { if (mapaAtualId === id) salvarEstado({ activeMapId: undefined }); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); }).catch(error => sinalizarErroMesa('Remover mapa', error)); };
   const adicionarToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addToken(item).catch(error => sinalizarErroMesa('Criar token', error)); };
   const atualizarToken = (id: string, patch: Partial<TokenMapa>): Promise<unknown> => compartilhando ? realtime.patchToken(id, patch) : Promise.reject(new Error('Mesa não sincronizada.'));
-  const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(error => sinalizarErroMesa('Remover token', error)); };
+  const removerToken = async (id: string) => {
+    if (!mestre || !compartilhando) throw new Error('A remoção exige conexão como Mestre.');
+    try { await realtime.removeToken(id); }
+    catch (error) { sinalizarErroMesa('Remover token', error); throw error; }
+  };
   const statusTexto = realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
   const avisoRecursos = erroRecursos ? <p role="alert" className="live-vtt__sync-error">Não foi possível atualizar PV/Foco: {erroRecursos}</p> : null;
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
@@ -302,7 +311,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   };
 
   return (
-    <section className={`live-table live-table--v5 ${sessionOpen || directorOpen ? 'has-left-drawer' : ''} ${partyOpen ? 'has-right-drawer' : ''} ${cinematic ? 'is-cinematic' : ''}`}>
+    <section className={`live-table live-table--v5 ${sessionOpen || directorOpen ? 'has-left-drawer' : ''} ${partyOpen ? 'has-right-drawer' : ''} ${cinematic ? 'is-cinematic' : ''} ${interfaceCompacta ? 'is-compact-mobile' : ''}`}>
       <header className="live-vtt__topbar">
         <div className="live-vtt__brand">
           <img src="/ro-mark.svg" alt="" />
@@ -328,6 +337,10 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
         </div>
 
         <div className="live-vtt__top-actions">
+          <button type="button" className="live-vtt__compact-toggle" aria-pressed={interfaceCompacta}
+            onClick={() => { setInterfaceCompacta(v => !v); setDirectorOpen(false); setSessionOpen(false); setPartyOpen(false); }}>
+            {interfaceCompacta ? 'Exibir interface' : 'Foco no mapa'}
+          </button>
           {mestre && (
             <div className="live-vtt__mode-switch" aria-label="Conteúdo apresentado à mesa">
               <button type="button" className={conteudo === 'ambientacao' ? 'is-active' : ''} onClick={() => mudarConteudo('ambientacao')} title="Cena">
