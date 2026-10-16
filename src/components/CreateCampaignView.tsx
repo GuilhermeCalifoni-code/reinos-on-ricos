@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { ImagePlus, Link2, Upload } from 'lucide-react';
 import { CampanhaTipo } from '../types/campaign';
+import type { Personagem } from '../types/character';
 
 interface CreateCampaignViewProps {
+  personagensDisponiveis?: Personagem[];
   onCriar: (dados: {
     nome: string;
     descricao: string;
     imagemUrl: string;
     imagemArquivo?: File;
     tipo: CampanhaTipo;
+    personagensIds?: string[];
   }) => Promise<void> | void;
   onCancelar: () => void;
 }
 
-export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar, onCancelar }) => {
+export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar, onCancelar, personagensDisponiveis = [] }) => {
   const [nome, setNome] = useState('');
+  const [personagensIds, setPersonagensIds] = useState<string[]>([]);
   const [descricao, setDescricao] = useState('');
   const [imagemUrl, setImagemUrl] = useState('');
   const [imagemArquivo, setImagemArquivo] = useState<File | null>(null);
@@ -59,7 +63,8 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
         descricao: descricao.trim(),
         imagemUrl: modoImagem === 'url' ? imagemUrl.trim() : '',
         imagemArquivo: modoImagem === 'upload' ? imagemArquivo || undefined : undefined,
-        tipo
+        tipo,
+        personagensIds
       });
     } catch (error: any) {
       setErro(error.message || 'Não foi possível criar a campanha.');
@@ -92,6 +97,24 @@ export const CreateCampaignView: React.FC<CreateCampaignViewProps> = ({ onCriar,
             <span>Descrição</span>
             <textarea rows={4} maxLength={2000} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="O que os Desvelados encontrarão nesta história?" />
           </label>
+
+          <fieldset className="ro-create-campaign__roster">
+            <legend>Desvelados preparados (opcional)</legend>
+            <p>Adicione quantas fichas suas quiser. Elas aparecerão no elenco da campanha, sem serem associadas à conta do Mestre como jogador.</p>
+            {personagensDisponiveis.length ? (
+              <div className="ro-create-campaign__roster-grid">
+                {personagensDisponiveis.map(pj => (
+                  <label key={pj.id} className="ro-create-campaign__roster-item">
+                    <input type="checkbox" checked={personagensIds.includes(pj.id)}
+                      onChange={event => setPersonagensIds(current => event.target.checked
+                        ? [...current, pj.id] : current.filter(id => id !== pj.id))}/>
+                    <span><strong>{pj.nome}</strong><small>Nível {pj.nivel} · {pj.conceito}</small></span>
+                  </label>
+                ))}
+              </div>
+            ) : <p>Você ainda não tem fichas livres na sua biblioteca. Poderá adicioná-las depois na aba Personagens.</p>}
+            <small>{personagensIds.length} fichas selecionadas</small>
+          </fieldset>
 
           <div className="ro-create-campaign__type">
             <span>Formato</span>
