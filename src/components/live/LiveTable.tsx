@@ -583,7 +583,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
                       <label>Selecionar Desvelado
                         <select aria-label="Selecionar ficha para os dados" value={selecionado?.id || ''}
                           onChange={event => setSelecionadoId(event.target.value)}>
-                          <option value="">Sem ficha associada</option>
+                          {personagensVisiveis.length === 0 && <option value="">Nenhuma ficha vinculada à campanha</option>}
                           {personagensVisiveis.map(personagem => (
                             <option key={personagem.id} value={personagem.id}>{personagem.nome}</option>
                           ))}
