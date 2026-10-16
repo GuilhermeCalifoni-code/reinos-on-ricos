@@ -393,10 +393,10 @@ export default function App() {
     setViewAtiva('modo_mesa');
   };
 
-  const handleAtribuirFichaPreparada = async (campaignId: string, playerUserId: string, characterId: string) => {
+  const handleAtribuirFichaPreparada = async (campaignId: string, playerEmail: string, characterId: string) => {
     const role = campanhasRemotas.roleDaCampanha(campaignId);
     if (role !== 'mestre') throw new Error('Apenas o Mestre pode entregar fichas prontas.');
-    await campaignRepository.atribuirFichaPreparada(campaignId, playerUserId, characterId);
+    await campaignRepository.atribuirFichaPreparadaPorEmail(campaignId, playerEmail, characterId);
     await Promise.all([personagensRemotos.refresh(), campanhasRemotas.recarregar()]);
   };
 
