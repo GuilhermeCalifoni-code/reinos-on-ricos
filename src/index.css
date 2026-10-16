@@ -23,6 +23,7 @@
 @import "./design-system/live-token-inspector-scroll.css";
 @import "./design-system/live-master-workflow.css";
 @import "./design-system/live-master-focus-oct15.css";
+@import "./design-system/live-dice-character-association.css";
 
 @layer base {
   :root {
