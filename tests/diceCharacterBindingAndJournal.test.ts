@@ -9,21 +9,20 @@ const dice = read('src/components/DiceRoller.tsx');
 const feed = read('src/components/live/SessionFeed.tsx');
 const css = read('src/design-system/live-dice-character-association.css');
 
-test('GM selects only campaign characters in dice workspace and player links only own eligible sheet',()=>{
-  assert.match(live,/Ficha usada nos dados/);
-  assert.match(live,/role="group" aria-label="Ficha associada às rolagens"/);
-  assert.match(live,/Selecionar ficha para os dados/);
-  assert.match(live,/personagensVisiveis\.map\(personagem/);
-  assert.match(live,/Associar minha ficha à campanha e aos dados/);
+test('player links only own eligible sheet; GM uses independent dice context',()=>{
+  assert.match(live,/role="group" aria-label="Ficha do Jogador para rolagens"/);
+  assert.match(live,/Dados do Jogador/);
   assert.match(live,/minhasFichasVinculaveis\.map\(personagem/);
   assert.match(live,/void alterarMinhaFicha\(event\.target\.value\)/);
   assert.match(live,/personagens\.filter\(p => p\.id === personagemJogadorId\)/);
-  assert.match(live,/key=\{selecionado\?\.id \|\| 'rolagem-avulsa'\}/);
+  assert.match(live,/key=\{selecionado\.id\}/);
+  assert.match(live,/<MasterDiceRoller onRegistrarRolagem/);
   assert.match(css,/min-height: 44px/);
 });
 
-test('roll events include linked character and await real Registro Vivo confirmation',()=>{
-  assert.match(live,/await registro\.registrar\(\{ \.\.\.event, characterId: selecionado\?\.id \}\)/);
+test('player roll events include own sheet and await real Registro Vivo confirmation',()=>{
+  assert.match(live,/await registro\.registrar\(\{ \.\.\.event, visibility: 'todos'/);
+  assert.match(live,/characterId: selecionado\.id/);
   assert.match(dice,/onRegistrarRolagem\(\{ \.\.\.event, characterId: personagemAtivo\?\.id \}\)/);
   assert.match(dice,/estadoRegistro === 'pending'/);
   assert.match(dice,/estadoRegistro === 'saved'/);
