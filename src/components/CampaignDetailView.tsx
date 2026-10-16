@@ -74,6 +74,7 @@ interface CampaignDetailViewProps {
   onRegenerarCodigo?: (campaignId: string) => Promise<string>;
   onAtualizarMembro?: (campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) => Promise<void>;
   onVincularMinhaFicha?: (campaignId: string, characterId: string | null) => Promise<void>;
+  onAtribuirFichaPreparada?: (campaignId: string, playerEmail: string, characterId: string) => Promise<void>;
   onExcluirCampanha?: (id: string) => void;
 }
 
@@ -125,6 +126,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   onRegenerarCodigo,
   onAtualizarMembro,
   onVincularMinhaFicha,
+  onAtribuirFichaPreparada,
   onExcluirCampanha
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<CampaignTabType>('visao_geral');
@@ -540,6 +542,20 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 <p className="text-xs text-[var(--ro-ash)] mt-0.5">Membros do grupo nesta crônica.</p>
               </div>
             </div>
+
+            {canManageMembers && membros.length > 0 && (
+              <CampaignMembersPanel
+                campaignId={campanha.id}
+                members={membros}
+                inviteCode={campanha.codigo}
+                currentUserId={currentUserId}
+                characters={personagens}
+                personalCharacters={personagensPessoais}
+                canManage
+                onUpdateMember={onAtualizarMembro}
+                onAssignPreparedCharacter={onAtribuirFichaPreparada}
+              />
+            )}
 
             {!canManageMembers && membros.length > 0 && (
               <CampaignMembersPanel
