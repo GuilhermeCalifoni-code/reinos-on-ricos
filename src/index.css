@@ -24,6 +24,7 @@
 @import "./design-system/live-master-workflow.css";
 @import "./design-system/live-master-focus-oct15.css";
 @import "./design-system/live-dice-character-association.css";
+@import "./design-system/live-master-dice.css";
 
 @layer base {
   :root {
