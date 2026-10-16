@@ -18,5 +18,6 @@ test('each roll gives immediate accessible feedback near execute',()=>{
   assert.match(roller,/role="status" aria-live="polite" aria-atomic="true"/);
   assert.match(roller,/Rolagem #\{rolagensMundanas\}/);
   assert.match(roller,/resultadoMundano\.totalModificadores/);
-  assert.match(roller,/onRegistrarRolagem\?\.\(\{ type: 'roll'/);
+  assert.match(roller,/registrarResultado\(\{ type: 'roll'/);
+  assert.match(roller,/onRegistrarRolagem\(\{ \.\.\.event, characterId: personagemAtivo\?\.id \}\)/);
 });
