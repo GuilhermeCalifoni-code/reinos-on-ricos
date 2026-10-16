@@ -1,0 +1,78 @@
+/* Associação explícita de ficha para Dados na Mesa ao Vivo. */
+.ro-app-shell--live .live-table--v5 .live-vtt__dice-workspace {
+  display: grid;
+  gap: .9rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__dice-character {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .45rem;
+  background: rgba(196, 143, 73, .09);
+  padding: .8rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__dice-character-heading {
+  display: grid;
+  gap: .25rem;
+  min-width: min(220px, 100%);
+  flex: 1 1 220px;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__dice-character-heading strong {
+  color: var(--vtt-text);
+  font-size: .88rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__dice-character-heading small {
+  color: var(--vtt-soft);
+  font-size: .76rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__dice-character label {
+  display: grid;
+  gap: .35rem;
+  flex: 1 1 220px;
+  min-width: min(210px, 100%);
+  color: var(--vtt-soft);
+  font-size: .73rem;
+  font-weight: 650;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__dice-character select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .3rem;
+  background: #151b22;
+  color: var(--vtt-text);
+  padding: .45rem .6rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__dice-character-error {
+  flex: 1 1 100%;
+  color: #ffb1aa;
+  margin: 0;
+  font-size: .8rem;
+}
+.ro-app-shell--live .live-table--v5 .dice-roller__record-status {
+  border-radius: .35rem;
+  background: rgba(7,12,18,.78);
+  color: var(--vtt-soft);
+  font-size: .8rem;
+}
+.ro-app-shell--live .live-table--v5 .dice-roller__record-status:not(:empty) {
+  border: 1px solid var(--vtt-line);
+  padding: .65rem .8rem;
+}
+@media (max-width: 760px) {
+  .ro-app-shell--live .live-table--v5 .live-vtt__dice-workspace {
+    gap: .6rem;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__dice-character {
+    padding: .6rem;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__dice-character select {
+    font-size: 16px; /* iOS: no unwanted auto zoom when selecting a sheet */
+  }
+}
