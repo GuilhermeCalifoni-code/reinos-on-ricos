@@ -74,7 +74,7 @@ interface CampaignDetailViewProps {
   onRegenerarCodigo?: (campaignId: string) => Promise<string>;
   onAtualizarMembro?: (campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) => Promise<void>;
   onVincularMinhaFicha?: (campaignId: string, characterId: string | null) => Promise<void>;
-  onAtribuirFichaPreparada?: (campaignId: string, playerUserId: string, characterId: string) => Promise<void>;
+  onAtribuirFichaPreparada?: (campaignId: string, playerEmail: string, characterId: string) => Promise<void>;
   onExcluirCampanha?: (id: string) => void;
 }
 
