@@ -21,7 +21,7 @@ export interface SessionEvent {
 
 export interface NewSessionEvent {
   sessionId?: string;
-  characterId?: string;
+  characterId?: string | null;
   type: SessionEventType;
   visibility?: SessionEventVisibility;
   recipientUserId?: string;
