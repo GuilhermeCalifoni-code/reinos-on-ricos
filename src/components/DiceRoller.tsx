@@ -61,6 +61,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   const [modificadorExtra, setModificadorExtra] = useState<number>(0);
   const [nomeModificador, setNomeModificador] = useState<string>('');
   const [resultadoMundano, setResultadoMundano] = useState<ResultadoTesteMundano | null>(null);
+  const [rolagensMundanas, setRolagensMundanas] = useState(0);
 
   // Estado do Teste Onírico
   const [atribOnirico, setAtribOnirico] = useState<AtributoNome>(atributoInicial || 'vontade');
@@ -97,6 +98,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     });
 
     setResultadoMundano(res);
+    setRolagensMundanas(count => count + 1);
     onRegistrarRolagem?.({ type: 'roll', content: `${personagemAtivo?.nome || 'Mesa'} · ${res.atributo}: d20 ${res.dadoBruto} + ${res.valorAtributo >= 0 ? '+' : ''}${res.valorAtributo} = ${res.totalFinal} vs DT ${res.dt} — ${res.sucesso ? 'sucesso' : 'fracasso'}.`, metadata: { kind: 'mundano', dados: res.dadosRolados, total: res.totalFinal, dt: res.dt, sucesso: res.sucesso, atributo: res.atributo } });
 
     // Se usou Foco e há personagem ativo com foco, gasta 1 PF
@@ -234,10 +236,10 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
 
       {/* ABA 1: TESTE MUNDANO */}
       {abaAtiva === 'mundano' && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className={`grid grid-cols-1 ${resultadoMundano ? 'md:grid-cols-12' : 'md:grid-cols-1 md:max-w-3xl md:mx-auto'} gap-6`}>
           
           {/* Controles de Entrada */}
-          <div className="md:col-span-6 bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4 font-mono text-xs">
+          <div className={`${resultadoMundano ? 'md:col-span-6' : 'w-full'} bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg space-y-4 font-mono text-xs`}>
             <div className="border-b border-slate-800 pb-2">
               <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-amber-400" />
@@ -284,7 +286,11 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="text-slate-300 font-semibold">Dificuldade do Teste (DT):</label>
-                <span className="text-amber-400 font-bold text-sm">DT {dtMundano}</span>
+                <label className="text-amber-400 font-bold text-sm flex gap-2 items-center">DT
+                  <input type="number" aria-label="Dificuldade exata do Teste Mundano" min={8} max={25}
+                    value={dtMundano} onChange={event => setDtMundano(Math.max(8, Math.min(25, Math.round(Number(event.target.value) || 8))))}
+                    className="w-16 rounded border border-slate-700 bg-slate-950 px-1.5 py-1 text-center text-amber-200 text-sm" />
+                </label>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 mb-2">
                 {[
@@ -393,16 +399,28 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
 
             {/* Botão de Rolagem */}
             <button
+              type="button"
               onClick={handleRolarMundano}
               className="w-full py-3 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold uppercase tracking-wider text-sm shadow-[0_0_15px_rgba(245,158,11,0.3)] flex items-center justify-center gap-2 transition"
             >
               <Dice5 className="w-5 h-5" />
               Executar Teste Mundano
             </button>
+            {resultadoMundano && (
+              <div role="status" aria-live="polite" aria-atomic="true"
+                className={`rounded-lg border p-3 text-sm ${resultadoMundano.sucesso ? 'border-emerald-500/70 bg-emerald-950/30 text-emerald-100' : 'border-rose-500/70 bg-rose-950/30 text-rose-100'}`}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <strong>{resultadoMundano.dadoBruto === 20 ? 'Crítico natural' : resultadoMundano.sucesso ? 'Sucesso' : 'Fracasso'}</strong>
+                  <strong className="text-xl tabular-nums">{resultadoMundano.totalFinal} <span className="text-xs font-normal">vs DT {resultadoMundano.dt}</span></strong>
+                </div>
+                <p className="mt-1 text-xs opacity-80">Rolagem #{rolagensMundanas} · Dado {resultadoMundano.dadoBruto} · Atributo {resultadoMundano.valorAtributo >= 0 ? '+' : ''}{resultadoMundano.valorAtributo} · Ajustes {resultadoMundano.totalModificadores >= 0 ? '+' : ''}{resultadoMundano.totalModificadores}</p>
+                <p className="mt-1 text-xs opacity-80">Detalhamento completo em Resolução e Transparência.</p>
+              </div>
+            )}
           </div>
 
           {/* Painel de Resolução */}
-          <div className="md:col-span-6 bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg font-mono flex flex-col justify-between">
+          {resultadoMundano && <div className="md:col-span-6 bg-[var(--ro-surface)] border border-slate-800 rounded-lg p-5 shadow-lg font-mono flex flex-col justify-between" role="region" aria-label="Detalhamento do Teste Mundano">
             <div>
               <div className="border-b border-slate-800 pb-2 mb-4">
                 <h3 className="text-sm font-bold font-['Chakra_Petch'] text-slate-100 uppercase tracking-wider">
@@ -496,7 +514,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
             <div className="text-[10px] text-slate-500 border-t border-slate-800/80 pt-2 mt-4 text-right">
               Reinos Oníricos RPG · Livro Básico pág. 28
             </div>
-          </div>
+          </div>}
 
         </div>
       )}
