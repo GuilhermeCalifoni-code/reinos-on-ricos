@@ -3,6 +3,7 @@ import { Personagem } from '../../types/character';
 import { Adversario, Campanha, Cena, Contador, ConteudoDeCena, Handout, MapaNarrativo, MembroCampanha, NPC, Pista, Sessao, TokenMapa } from '../../types/campaign';
 import { UserRole } from '../../types/auth';
 import { DiceRoller } from '../DiceRoller';
+import { MasterDiceRoller } from './MasterDiceRoller';
 import { DreamGuide } from '../DreamGuide';
 import { RulesReference } from '../RulesReference';
 import { CounterPanel } from './CounterPanel';
@@ -572,25 +573,22 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               <button type="button" onClick={closeTool} aria-label={`Fechar ${ferramenta}`} title="Fechar ferramenta">×</button>
             </header>
             <div className="live-vtt__tool-body">
-              {ferramenta === 'dados' && (
+              {ferramenta === 'dados' && (mestre ? (
+                <MasterDiceRoller onRegistrarRolagem={async event => {
+                  await registro.registrar({...event, characterId: null,
+                    metadata: {...event.metadata, authorRole: 'mestre'}});
+                }} />
+              ) : (
                 <div className="live-vtt__dice-workspace">
-                  <div className="live-vtt__dice-character" role="group" aria-label="Ficha associada às rolagens">
+                  <div className="live-vtt__dice-character" role="group" aria-label="Ficha do Jogador para rolagens">
                     <div className="live-vtt__dice-character-heading">
-                      <strong>Ficha usada nos dados</strong>
-                      <small>{selecionado ? `${selecionado.nome} · Foco ${selecionado.focoAtual}/${selecionado.focoMaximo}` : 'Rolagem avulsa · sem bônus de atributo ou Foco'}</small>
+                      <strong>Dados do Jogador</strong>
+                      <small>{selecionado
+                        ? `${selecionado.nome} · Foco ${selecionado.focoAtual}/${selecionado.focoMaximo}`
+                        : 'Associe sua ficha para rolar usando seus atributos e Foco.'}</small>
                     </div>
-                    {mestre ? (
-                      <label>Selecionar Desvelado
-                        <select aria-label="Selecionar ficha para os dados" value={selecionado?.id || ''}
-                          onChange={event => setSelecionadoId(event.target.value)}>
-                          {personagensVisiveis.length === 0 && <option value="">Nenhuma ficha vinculada à campanha</option>}
-                          {personagensVisiveis.map(personagem => (
-                            <option key={personagem.id} value={personagem.id}>{personagem.nome}</option>
-                          ))}
-                        </select>
-                      </label>
-                    ) : onVincularMinhaFicha ? (
-                      <label>Associar minha ficha à campanha e aos dados
+                    {onVincularMinhaFicha && (
+                      <label>Minha ficha na campanha
                         <select aria-label="Associar minha ficha aos dados"
                           value={personagemJogadorId || ''} disabled={salvandoVinculo}
                           onChange={event => { void alterarMinhaFicha(event.target.value); }}>
@@ -600,19 +598,27 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
                           ))}
                         </select>
                       </label>
-                    ) : null}
+                    )}
                     {erroVinculo && <p role="alert" className="live-vtt__dice-character-error">{erroVinculo}</p>}
                   </div>
-                  <DiceRoller key={selecionado?.id || 'rolagem-avulsa'}
-                    personagemAtivo={selecionado}
-                    onSalvarPersonagem={atualizarPersonagemMesa}
-                    onAbrirModalRuptura={(delta, motivo) => selecionado && onAbrirRuptura(selecionado, delta, motivo)}
-                    onRegistrarRolagem={async event => {
-                      await registro.registrar({ ...event, characterId: selecionado?.id });
-                    }}
-                  />
+                  {selecionado && personagemJogadorId === selecionado.id ? (
+                    <DiceRoller key={selecionado.id}
+                      personagemAtivo={selecionado}
+                      onSalvarPersonagem={atualizarPersonagemMesa}
+                      onAbrirModalRuptura={(delta, motivo) => onAbrirRuptura(selecionado, delta, motivo)}
+                      onRegistrarRolagem={async event => {
+                        await registro.registrar({ ...event, visibility: 'todos',
+                          characterId: selecionado.id,
+                          metadata: {...event.metadata, authorRole: 'jogador'} });
+                      }}
+                    />
+                  ) : (
+                    <p className="live-vtt__dice-character-error" role="status">
+                      Nenhuma ficha associada. Vincule seu Desvelado acima para usar Dados; o Mestre possui um rolador separado.
+                    </p>
+                  )}
                 </div>
-              )}
+              ))}
               {ferramenta === 'sonhar' && <DreamGuide personagemAtivo={selecionado} onIrParaRoladorOnirico={() => setFerramenta('dados')} />}
               {ferramenta === 'ficha' && (selecionado
                 ? <div className="live-vtt__quick-sheet">
