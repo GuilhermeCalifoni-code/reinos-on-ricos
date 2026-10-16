@@ -572,7 +572,47 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               <button type="button" onClick={closeTool} aria-label={`Fechar ${ferramenta}`} title="Fechar ferramenta">×</button>
             </header>
             <div className="live-vtt__tool-body">
-              {ferramenta === 'dados' && <DiceRoller personagemAtivo={selecionado} onSalvarPersonagem={atualizarPersonagemMesa} onAbrirModalRuptura={(delta, motivo) => selecionado && onAbrirRuptura(selecionado, delta, motivo)} onRegistrarRolagem={registrarSemFalhar} />}
+              {ferramenta === 'dados' && (
+                <div className="live-vtt__dice-workspace">
+                  <div className="live-vtt__dice-character" role="group" aria-label="Ficha associada às rolagens">
+                    <div className="live-vtt__dice-character-heading">
+                      <strong>Ficha usada nos dados</strong>
+                      <small>{selecionado ? `${selecionado.nome} · Foco ${selecionado.focoAtual}/${selecionado.focoMaximo}` : 'Rolagem avulsa · sem bônus de atributo ou Foco'}</small>
+                    </div>
+                    {mestre ? (
+                      <label>Selecionar Desvelado
+                        <select aria-label="Selecionar ficha para os dados" value={selecionado?.id || ''}
+                          onChange={event => setSelecionadoId(event.target.value)}>
+                          <option value="">Sem ficha associada</option>
+                          {personagensVisiveis.map(personagem => (
+                            <option key={personagem.id} value={personagem.id}>{personagem.nome}</option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : onVincularMinhaFicha ? (
+                      <label>Associar minha ficha à campanha e aos dados
+                        <select aria-label="Associar minha ficha aos dados"
+                          value={personagemJogadorId || ''} disabled={salvandoVinculo}
+                          onChange={event => { void alterarMinhaFicha(event.target.value); }}>
+                          <option value="">Sem ficha vinculada</option>
+                          {minhasFichasVinculaveis.map(personagem => (
+                            <option key={personagem.id} value={personagem.id}>{personagem.nome}</option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : null}
+                    {erroVinculo && <p role="alert" className="live-vtt__dice-character-error">{erroVinculo}</p>}
+                  </div>
+                  <DiceRoller key={selecionado?.id || 'rolagem-avulsa'}
+                    personagemAtivo={selecionado}
+                    onSalvarPersonagem={atualizarPersonagemMesa}
+                    onAbrirModalRuptura={(delta, motivo) => selecionado && onAbrirRuptura(selecionado, delta, motivo)}
+                    onRegistrarRolagem={async event => {
+                      await registro.registrar({ ...event, characterId: selecionado?.id });
+                    }}
+                  />
+                </div>
+              )}
               {ferramenta === 'sonhar' && <DreamGuide personagemAtivo={selecionado} onIrParaRoladorOnirico={() => setFerramenta('dados')} />}
               {ferramenta === 'ficha' && (selecionado
                 ? <div className="live-vtt__quick-sheet">
