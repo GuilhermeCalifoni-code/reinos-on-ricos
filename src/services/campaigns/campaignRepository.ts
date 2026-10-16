@@ -91,6 +91,13 @@ export const campaignRepository = {
     return data as string;
   },
   async regenerarCodigo(campaignId: string) { const { data, error } = await client().rpc('regenerate_campaign_invite', { p_campaign_id: campaignId }); if (error) throw error; return data as string; },
+  async gerenciarFichaPreparada(campaignId: string, characterId: string, attach: boolean) {
+    await requireAuthenticatedUser();
+    const { error } = await client().rpc('manage_master_character_roster', {
+      p_campaign_id: campaignId, p_character_id: characterId, p_attach: attach
+    });
+    if (error) throw friendlyCampaignError(error);
+  },
   async atribuirFichaPreparadaPorEmail(campaignId: string, playerEmail: string, characterId: string) {
     await requireAuthenticatedUser();
     const email = playerEmail.trim().toLowerCase();
