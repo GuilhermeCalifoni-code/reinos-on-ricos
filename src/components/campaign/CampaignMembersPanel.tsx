@@ -55,7 +55,7 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
   const assignPrepared = async () => {
     const character = availablePrepared.find(item => item.id === preparedCharacterId);
     const email = preparedPlayerEmail.trim().toLowerCase();
-    if (!onAssignPreparedCharacter || !character || busy || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return;
+    if (!onAssignPreparedCharacter || !character || busy || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
     const confirmed = window.confirm(
       `Entregar definitivamente a ficha "${character.nome}" para a conta ${email}? A ficha passará a pertencer ao jogador e não será apagada nenhuma ficha anterior.`
     );
