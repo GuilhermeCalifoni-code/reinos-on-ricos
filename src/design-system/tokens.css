@@ -2564,3 +2564,37 @@
   .campaign-members__assign-by-email > div:first-child,
   .campaign-members__assign-by-email button { grid-column: auto; }
 }
+
+
+/* Uma campanha pode ter vários Desvelados do Mestre sem vínculo ao membership. */
+.campaign-members__roster { display: grid; gap: .75rem; margin-top: 1.15rem;
+  padding: 1rem; border: 1px solid var(--ro-line-strong); border-radius: .5rem;
+  background: var(--ro-surface); }
+.campaign-members__roster > strong { color: var(--ro-paper); font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.24rem; font-weight: 500; }
+.campaign-members__roster > p:not(.ro-eyebrow) { font-size: .77rem; color: var(--ro-ash); line-height: 1.5; }
+.campaign-members__roster-add { display: flex; align-items: end; gap: .6rem; flex-wrap: wrap; }
+.campaign-members__roster-add label { flex: 1 1 220px; display: grid; gap: .3rem; font-size: .72rem; }
+.campaign-members__roster-add select, .campaign-members__roster-add button,
+.campaign-members__roster-row button { min-height: 44px; padding: .5rem .7rem;
+  border: 1px solid var(--ro-line-strong); border-radius: .3rem;
+  background: var(--ro-bg); color: var(--ro-paper); font-size: .82rem; }
+.campaign-members__roster-add select { width: 100%; font-size: 16px; }
+.campaign-members__roster-add button { border-color: var(--ro-copper); color: var(--ro-copper); }
+.campaign-members__roster button:disabled { cursor: not-allowed; opacity: .55; }
+.campaign-members__roster-list { display: grid; gap: .4rem; }
+.campaign-members__roster-list > small { font-size: .68rem; color: var(--ro-ash); }
+.campaign-members__roster-row { display: flex; justify-content: space-between; align-items: center; gap: .5rem;
+  padding-block: .35rem; border-top: 1px solid var(--ro-line); font-size: .79rem; }
+.ro-create-campaign__roster { display: grid; gap: .75rem; border: 1px solid var(--ro-line-strong);
+  border-radius: .5rem; padding: .9rem; }
+.ro-create-campaign__roster legend { padding: 0 .3rem; color: var(--ro-paper); font-weight: 650; }
+.ro-create-campaign__roster p, .ro-create-campaign__roster small { color: var(--ro-ash); font-size: .75rem; line-height: 1.5; }
+.ro-create-campaign__roster-grid { display: grid; max-height: 260px; overflow-y: auto; gap: .3rem; }
+.ro-create-campaign__roster-item { display: flex; align-items: center; gap: .65rem;
+  border: 1px solid var(--ro-line); padding: .55rem; border-radius: .25rem; cursor: pointer; }
+.ro-create-campaign__roster-item input { width: 18px; height: 18px; accent-color: var(--ro-copper); }
+.ro-create-campaign__roster-item span { display: grid; gap: .2rem; }
+.ro-create-campaign__roster-item strong { font-size: .8rem; font-weight: 600; }
+@media (max-width: 650px) { .campaign-members__roster, .ro-create-campaign__roster {padding: .65rem;}
+.campaign-members__roster-row {align-items:flex-start;} }
