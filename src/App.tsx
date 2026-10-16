@@ -393,6 +393,14 @@ export default function App() {
     setViewAtiva('modo_mesa');
   };
 
+  const handleGerenciarFichaCampanha = async (campaignId: string, characterId: string, attach: boolean) => {
+    if (campanhasRemotas.roleDaCampanha(campaignId) !== 'mestre') {
+      throw new Error('Somente o Mestre pode preparar fichas na campanha.');
+    }
+    await campaignRepository.gerenciarFichaPreparada(campaignId, characterId, attach);
+    await personagensRemotos.refresh();
+  };
+
   const handleAtribuirFichaPreparada = async (campaignId: string, playerEmail: string, characterId: string) => {
     const role = campanhasRemotas.roleDaCampanha(campaignId);
     if (role !== 'mestre') throw new Error('Apenas o Mestre pode entregar fichas prontas.');
@@ -414,6 +422,7 @@ export default function App() {
     imagemUrl: string;
     imagemArquivo?: File;
     tipo: 'campanha' | 'oneshot' | 'playtest';
+    personagensIds?: string[];
   }) => {
     const nova = await campanhasRemotas.criar({
       nome: dados.nome,
@@ -432,8 +441,21 @@ export default function App() {
       }
     }
 
+    const falhas: string[] = [];
+    for (const id of dados.personagensIds || []) {
+      try {
+        await campaignRepository.gerenciarFichaPreparada(nova.id, id, true);
+      } catch (error) {
+        const pj = personagensRemotos.personal.find(item => item.id === id);
+        falhas.push(`${pj?.nome || 'Ficha'}: ${error instanceof Error ? error.message : 'erro desconhecido'}`);
+      }
+    }
+    await personagensRemotos.refresh();
     setCampanhaRemotaAtivaId(nova.id);
     setViewAtiva('detalhe_campanha');
+    if (falhas.length) {
+      alert(`A campanha foi criada, mas algumas fichas não puderam ser adicionadas. Abra Personagens para tentar novamente.\n${falhas.join('\n')}`);
+    }
   };
 
   // Abrir Ficha de Personagem
@@ -594,6 +616,7 @@ export default function App() {
       case 'criar_campanha':
         return (
           <CreateCampaignView
+            personagensDisponiveis={personagensRemotos.personal.filter(p => !p.campaignId)}
             onCriar={handleExecutarCriacaoCampanha}
             onCancelar={() => setViewAtiva('campanhas')}
           />
@@ -650,6 +673,7 @@ export default function App() {
             onAtualizarMembro={campanhasRemotas.atualizarMembro}
             onVincularMinhaFicha={handleVincularMinhaFicha}
             onAtribuirFichaPreparada={handleAtribuirFichaPreparada}
+            onGerenciarFichaCampanha={handleGerenciarFichaCampanha}
             onExcluirCampanha={(id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); }}
           />
         ) : (
