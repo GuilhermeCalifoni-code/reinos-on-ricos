@@ -38,7 +38,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   onAbrirModalRuptura, onRegistrarRolagem
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<'mundano' | 'onirico' | 'morte' | 'dano'>('mundano');
-  const [estadoRegistro, setEstadoRegistro] = useState<'local' | 'pending' | 'saved' | 'error'>('local');
+  const [estadoRegistro, setEstadoRegistro] = useState<'idle' | 'local' | 'pending' | 'saved' | 'error'>('idle');
   const [erroRegistro, setErroRegistro] = useState('');
   const ultimoEnvio = useRef(0);
   const registrarResultado = (event: NewSessionEvent) => {
@@ -261,7 +261,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
         {estadoRegistro === 'pending' && <span>Registrando a rolagem na Mesa…</span>}
         {estadoRegistro === 'saved' && <span className="text-emerald-300">Rolagem registrada no Registro Vivo.</span>}
         {estadoRegistro === 'error' && <span role="alert" className="text-rose-300">Rolagem feita, mas não registrada: {erroRegistro}</span>}
-        {estadoRegistro === 'local' && <span className="text-slate-400">Rolagem local. Associe uma ficha e uma sessão autenticada para registrar na Mesa.</span>}
+        {estadoRegistro === 'local' && <span className="text-slate-400">Rolagem realizada localmente, sem conexão com o Registro Vivo.</span>}
       </div>
 
       {/* ABA 1: TESTE MUNDANO */}
