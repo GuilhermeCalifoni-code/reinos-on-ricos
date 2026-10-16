@@ -1,0 +1,109 @@
+/* A ferramenta Dados do Mestre é intencionalmente independente de Desvelados. */
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 760px);
+  margin: 0 auto;
+  border: 1px solid var(--vtt-line);
+  border-radius: .65rem;
+  background: var(--vtt-panel);
+  padding: clamp(.8rem, 2.5vw, 1.5rem);
+  color: var(--vtt-text);
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-title {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  color: var(--vtt-accent-bright);
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-title h2 {
+  font-size: 1.25rem;
+  font-weight: 750;
+  margin: 0;
+  color: var(--vtt-text);
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-title p {
+  margin: .3rem 0 0;
+  font-size: .78rem;
+  line-height: 1.5;
+  color: var(--vtt-soft);
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-fields {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: .75rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-fields label,
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-reason {
+  display: grid;
+  gap: .35rem;
+  font-size: .76rem;
+  font-weight: 650;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice :is(input[type='number'],input[type='text'],select),
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-reason input {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  background: #121923;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .3rem;
+  color: var(--vtt-text);
+  padding: .55rem;
+  font-size: 16px;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-visibility {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .55rem;
+  padding: .7rem;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .4rem;
+  color: var(--vtt-soft);
+  font-size: .77rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-visibility input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--vtt-accent-bright);
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-roll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .65rem;
+  min-height: 48px;
+  border-radius: .4rem;
+  background: #c39453;
+  color: #111418;
+  font-size: .95rem;
+  font-weight: 750;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-roll:disabled { opacity: .55; }
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-result {
+  display: grid;
+  gap: .3rem;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .45rem;
+  padding: 1rem;
+  color: var(--vtt-text);
+  font-variant-numeric: tabular-nums;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-result strong {
+  font-size: clamp(1.3rem,4vw,1.9rem);
+  color: var(--vtt-accent-bright);
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-error {
+  color: #ffb9b0;
+  border: 1px solid #94463d;
+  border-radius: .35rem;
+  padding: .7rem;
+  font-size: .82rem;
+}
+@media (max-width: 580px) {
+  .ro-app-shell--live .live-table--v5 .live-vtt__master-dice-fields {
+    grid-template-columns: minmax(0,1fr);
+  }
+}
