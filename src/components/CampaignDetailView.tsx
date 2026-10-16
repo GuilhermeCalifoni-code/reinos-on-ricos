@@ -75,6 +75,7 @@ interface CampaignDetailViewProps {
   onAtualizarMembro?: (campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) => Promise<void>;
   onVincularMinhaFicha?: (campaignId: string, characterId: string | null) => Promise<void>;
   onAtribuirFichaPreparada?: (campaignId: string, playerEmail: string, characterId: string) => Promise<void>;
+  onGerenciarFichaCampanha?: (campaignId: string, characterId: string, attach: boolean) => Promise<void>;
   onExcluirCampanha?: (id: string) => void;
 }
 
@@ -127,6 +128,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   onAtualizarMembro,
   onVincularMinhaFicha,
   onAtribuirFichaPreparada,
+  onGerenciarFichaCampanha,
   onExcluirCampanha
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<CampaignTabType>('visao_geral');
@@ -543,7 +545,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
               </div>
             </div>
 
-            {canManageMembers && membros.length > 0 && (
+            {canManageMembers && (
               <CampaignMembersPanel
                 campaignId={campanha.id}
                 members={membros}
@@ -554,6 +556,7 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                 canManage
                 onUpdateMember={onAtualizarMembro}
                 onAssignPreparedCharacter={onAtribuirFichaPreparada}
+                onManagePreparedCharacter={onGerenciarFichaCampanha}
               />
             )}
 
