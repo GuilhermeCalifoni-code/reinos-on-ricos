@@ -1,0 +1,157 @@
+/* VTT focused gameplay: the map stays the primary surface on touch devices.
+   This stylesheet is last to override conflicting earlier mobile rules. */
+.ro-app-shell--live .live-vtt__compact-toggle {
+  min-height: 38px;
+  padding: .35rem .65rem;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .35rem;
+  color: var(--vtt-accent-bright);
+  background: var(--vtt-control-bg);
+  font-size: .7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ro-app-shell--live .live-vtt__compact-toggle[aria-pressed='true'] {
+  border-color: var(--vtt-accent-bright);
+  background: rgba(194,148,85,.17);
+}
+.ro-app-shell--live .live-table--v5.is-compact-mobile > .live-vtt__player-bar {
+  display: none !important;
+}
+.ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__stage-meta {
+  display: none !important;
+}
+.ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__status {
+  display: none !important;
+}
+.ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__brand {
+  display: none;
+}
+.ro-app-shell--live .live-table--v5 .live-table__stage-copy {
+  max-height: calc(100% - 7rem);
+  overflow-y: auto;
+}
+.ro-app-shell--live .live-table--v5 .live-table__dismiss-scene {
+  position: absolute;
+  top: .45rem;
+  right: .55rem;
+  display: grid;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .35rem;
+  color: var(--vtt-text);
+  background: rgba(10,14,18,.75);
+  font-size: 1.5rem;
+}
+.ro-app-shell--live .live-table--v5 .live-table__scene-edit-float {
+  position: absolute;
+  z-index: 7;
+  right: .75rem;
+  top: .75rem;
+  min-height: 38px;
+  padding: .35rem .65rem;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .35rem;
+  background: rgba(10,14,18,.83);
+  color: var(--vtt-accent-bright);
+  font-size: .7rem;
+}
+.ro-app-shell--live .live-table--v5 .map-stage__token-inspector-footer {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--vtt-line);
+  background: #0b0f14;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.ro-app-shell--live .live-table--v5 .map-stage__token-inspector-footer .map-stage__token-inspector-actions {
+  border-top: 0;
+  padding-bottom: 0;
+}
+.ro-app-shell--live .live-table--v5 .map-stage__token-remove-error {
+  margin: 0;
+  padding: .45rem .65rem;
+  color: #ffd1c7;
+  background: #502526;
+  font: 600 .75rem/1.4 Inter, sans-serif;
+}
+.ro-app-shell--live .live-table--v5 .map-stage__setup[open] {
+  overscroll-behavior: contain;
+}
+.ro-app-shell--live .live-table--v5 .map-stage__setup[open] summary {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  background: #0d1219;
+  border-bottom: 1px solid var(--vtt-line);
+  cursor: pointer;
+}
+@media (max-width: 1200px) and (pointer: coarse) {
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__topbar {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto auto auto;
+    grid-auto-rows: minmax(38px, auto);
+    column-gap: .32rem;
+    padding: .25rem .4rem;
+  }
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__campaign {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__compact-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 40px;
+    padding-inline: .45rem;
+  }
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__presentation {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__leave {
+    grid-column: 4;
+    grid-row: 1;
+  }
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__mode-switch {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    min-height: 36px;
+    margin: 0;
+  }
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__mode-switch button {
+    min-height: 38px;
+  }
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__dock {
+    max-width: min(375px,calc(100% - 7.8rem));
+  }
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__dock button span {
+    display: none;
+  }
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__rail button span {
+    display: none;
+  }
+  .ro-app-shell--live .live-table--v5 .map-stage__setup {
+    max-height: min(50dvh,calc(100% - 6rem));
+    overflow-y: auto;
+    bottom: 3.85rem;
+  }
+  .ro-app-shell--live .live-table--v5 .map-stage__token-inspector {
+    max-height: min(73dvh,calc(100% - 1rem));
+    overflow: hidden;
+  }
+}
+@media (max-height: 620px) and (pointer: coarse) {
+  .ro-app-shell--live .live-table--v5.is-compact-mobile .live-vtt__topbar {
+    grid-auto-rows: minmax(32px,auto);
+    padding-block: .15rem;
+  }
+  .ro-app-shell--live .live-table--v5 .map-stage__setup[open] {
+    max-height: min(58dvh,calc(100% - 3.5rem));
+  }
+  .ro-app-shell--live .live-table--v5 .map-stage__token-inspector {
+    max-height: calc(100% - .5rem);
+  }
+}

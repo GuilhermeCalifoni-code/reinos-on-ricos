@@ -8,6 +8,8 @@ import { LiveTable } from './live/LiveTable';
 interface MesaViewProps {
   campanha: Campanha;
   personagens: Personagem[];
+  personagensProprios?: Personagem[];
+  onVincularMinhaFicha?: (id: string | null) => Promise<void>;
   npcs: NPC[];
   adversarios: Adversario[];
   onAtualizarNPC: (id:string,patch:Partial<NPC>) => Promise<unknown>;
@@ -16,6 +18,7 @@ interface MesaViewProps {
   personagemJogadorId?: string;
   userId?: string;
   userName?: string;
+  avatarUrl?: string;
   sessionId?: string;
   sessionTitle?: string;
   sessionDescription?: string;
@@ -47,7 +50,7 @@ interface MesaViewProps {
 }
 
 export const MesaView: React.FC<MesaViewProps> = ({
-  campanha, personagens, npcs, adversarios, onAtualizarNPC, onAtualizarAdversario, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltarParaCampanha,
+  campanha, personagens, personagensProprios, onVincularMinhaFicha, npcs, adversarios, onAtualizarNPC, onAtualizarAdversario, role, personagemJogadorId, userId, userName, avatarUrl, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltarParaCampanha,
   onAtualizarPersonagem, onReceberRecursosPersonagem, onAbrirModalRupturaPara, onAbrirFichaPersonagem,
   contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador,
   mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa
@@ -55,6 +58,8 @@ export const MesaView: React.FC<MesaViewProps> = ({
   <LiveTable
     campanha={campanha}
     personagens={personagens}
+    personagensProprios={personagensProprios}
+    onVincularMinhaFicha={onVincularMinhaFicha}
     npcs={npcs}
     adversarios={adversarios}
     onAtualizarNPC={onAtualizarNPC}
@@ -63,6 +68,7 @@ export const MesaView: React.FC<MesaViewProps> = ({
     personagemJogadorId={personagemJogadorId}
     userId={userId}
     userName={userName}
+    avatarUrl={avatarUrl}
     sessionId={sessionId}
     sessionTitle={sessionTitle}
     sessionDescription={sessionDescription}

@@ -21,9 +21,9 @@ import { campaignAssetService } from '../../services/storage/campaignAssetServic
 import { ArrowLeft, FileText, Image as ImageIcon, Layers3, Map as MapIcon, MessageSquareText, Moon, Radio, Users } from 'lucide-react';
 
 interface LiveTableProps {
-  campanha: Campanha; personagens: Personagem[]; npcs: NPC[]; adversarios: Adversario[]; role: UserRole;
+  campanha: Campanha; personagens: Personagem[]; personagensProprios?: Personagem[]; onVincularMinhaFicha?: (id: string | null) => Promise<void>; npcs: NPC[]; adversarios: Adversario[]; role: UserRole;
   onAtualizarNPC: (id: string, patch: Partial<NPC>) => Promise<unknown>;
-  onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown>; personagemJogadorId?: string; userId?: string; userName?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
+  onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown>; personagemJogadorId?: string; userId?: string; userName?: string; avatarUrl?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
   onAtualizarPersonagem: (personagem: Personagem) => void;
   onReceberRecursosPersonagem: (update: CharacterResourceUpdate) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem) => void;
   contadores: Contador[]; onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarContador: (id: string, parcial: Partial<Contador>) => void; onRemoverContador: (id: string) => void; onDuplicarContador: (id: string) => void;
@@ -32,12 +32,31 @@ interface LiveTableProps {
 }
 
 export const LiveTable: React.FC<LiveTableProps> = (props) => {
-  const { campanha, personagens, npcs, adversarios, role, personagemJogadorId, userId, userName, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onReceberRecursosPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
+  const { campanha, personagens, personagensProprios = [], onVincularMinhaFicha, npcs, adversarios, role, personagemJogadorId, userId, userName, avatarUrl, sessionId, sessionTitle, sessionDescription, sessao, cenas, pistas, handouts, members = [], registroOnline, onVoltar, onAtualizarPersonagem, onReceberRecursosPersonagem, onAbrirRuptura, onAbrirFicha, contadores, onAdicionarContador, onAtualizarContador, onRemoverContador, onDuplicarContador, mapas, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAtualizarSessao, tokensMapa, onAdicionarTokenMapa, onAtualizarTokenMapa, onRemoverTokenMapa } = props;
   const mestre = role === 'mestre';
   const writesRecursosRef = useRef(new Map<string, Promise<void>>());
   const [erroRecursos, setErroRecursos] = useState('');
+  const [erroMesa, setErroMesa] = useState('');
+  const sinalizarErroMesa = (acao: string, error: unknown) => {
+    setErroMesa(`${acao}: ${error instanceof Error ? error.message : 'Tente novamente ou verifique sua conexão.'}`);
+  };
+  const [salvandoVinculo, setSalvandoVinculo] = useState(false);
+  const [erroVinculo, setErroVinculo] = useState('');
+  const minhasFichasVinculaveis = useMemo(() => personagensProprios.filter(p => !p.campaignId || p.campaignId === campanha.id), [personagensProprios, campanha.id]);
+  const alterarMinhaFicha = async (id: string) => {
+    if (!onVincularMinhaFicha || salvandoVinculo || mestre) return;
+    setSalvandoVinculo(true);
+    setErroVinculo('');
+    try {
+      await onVincularMinhaFicha(id || null);
+    } catch (error) {
+      setErroVinculo(error instanceof Error ? error.message : 'Não foi possível vincular a ficha.');
+    } finally {
+      setSalvandoVinculo(false);
+    }
+  };
   const personagensVisiveis = useMemo(() => mestre ? personagens : personagens.filter(p => p.id === personagemJogadorId), [mestre, personagemJogadorId, personagens]);
-  const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || personagens[0]?.id || '');
+  const [selecionadoId, setSelecionadoId] = useState(personagensVisiveis[0]?.id || '');
   const [ferramenta, setFerramenta] = useState<LiveTool>('nenhuma');
   const [conteudoLocal, setConteudoLocal] = useState<ConteudoDeCena>('ambientacao');
   const [mapaLocalId, setMapaLocalId] = useState<string | undefined>();
@@ -45,9 +64,14 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     title: sessionTitle || 'A cidade contém a respiração',
     description: sessionDescription || 'Ambientação da cena. O Mestre pode preparar imagem, mapa ou handout para esta área.'
   });
+  const [interfaceCompacta, setInterfaceCompacta] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(pointer: coarse) and (max-width: 1200px)').matches
+      : false
+  );
   const [partyOpen, setPartyOpen] = useState(false);
   const [sessionOpen, setSessionOpen] = useState(false);
-  const [directorOpen, setDirectorOpen] = useState(mestre);
+  const [directorOpen, setDirectorOpen] = useState(mestre && !interfaceCompacta);
   const [activeSceneLocalId, setActiveSceneLocalId] = useState<string | undefined>();
   const [cinematic, setCinematic] = useState(false);
   const contadoresDaCampanha = useMemo(() => mestre ? contadores.filter(item => item.campanhaId === campanha.id) : [], [campanha.id, contadores, mestre]);
@@ -76,9 +100,9 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     ? realtime.state.metadata.sceneImageUrl
     : '';
   const effectiveSessionId = sessionId || realtime.state?.sessionId;
-  const selecionado = personagens.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
+  const selecionado = personagensVisiveis.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
   const registro = useSessionEvents({ campaignId: campanha.id, sessionId: effectiveSessionId, userId, enabled: registroOnline, characterId: personagemJogadorId });
-  const registrarSemFalhar = (event: Parameters<typeof registro.registrar>[0]) => { void registro.registrar(event).catch(() => undefined); };
+  const registrarSemFalhar = (event: Parameters<typeof registro.registrar>[0]) => { void registro.registrar(event).catch(error => sinalizarErroMesa('Registro Vivo', error)); };
 
   useEffect(() => { if (!mapaAtualId && mapasAtuais[0]) setMapaLocalId(mapasAtuais[0].id); }, [mapaAtualId, mapasAtuais]);
   useEffect(() => {
@@ -89,7 +113,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
       contentType: realtime.state?.contentType || conteudoLocal,
       ruptureGeneral: realtime.state?.ruptureGeneral ?? campanha.rupturaGeral,
       metadata: realtime.state?.metadata || {}
-    }).catch(() => undefined);
+    }).catch(error => sinalizarErroMesa('Sessão', error));
   }, [campanha.rupturaGeral, compartilhando, conteudoLocal, mestre, realtime.state, sessionId]);
   useEffect(() => {
     if (compartilhando && realtime.state?.sessionId === effectiveSessionId) return;
@@ -115,7 +139,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     document.addEventListener('keydown', onEscape);
     return () => document.removeEventListener('keydown', onEscape);
   }, [ferramenta, cinematic]);
-  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeSceneId?: string; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(() => undefined); };
+  const salvarEstado = (patch: { contentType?: ConteudoDeCena; activeSceneId?: string; activeMapId?: string; metadata?: Record<string, unknown> }) => { if (compartilhando && mestre) void realtime.saveState({ ...realtime.state, ...patch, sessionId: effectiveSessionId, ruptureGeneral: campanha.rupturaGeral }).catch(error => sinalizarErroMesa('Direção da cena', error)); };
   const mudarConteudo = (proximo: ConteudoDeCena) => { if (!compartilhando) return; setConteudoLocal(proximo); salvarEstado({ contentType: proximo }); };
   const selecionarMapa = (id: string) => { if (!compartilhando) return; setMapaLocalId(id); salvarEstado({ activeMapId: id, contentType: 'mapa' }); };
 
@@ -249,21 +273,33 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     });
   };
   const ajustar = (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => { const maximo = campo === 'vidaAtual' ? personagem.vidaMaxima : personagem.focoMaximo; atualizarPersonagemMesa({ ...personagem, [campo]: Math.max(0, Math.min(maximo, personagem[campo] + delta)), atualizadoEm: new Date().toISOString() }); if (campo === 'vidaAtual') registrarSemFalhar(sessionEventFactories.damage(personagem.id, personagem.nome, delta)); };
-  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando && mestre) void realtime.addCounter({ ...item, visibilidade: 'mestre_privado' }).catch(() => undefined); };
-  const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando && mestre) void realtime.patchCounter(id, patch).catch(() => undefined); };
-  const removerContador = (id: string) => { if (compartilhando && mestre) void realtime.removeCounter(id).catch(() => undefined); };
-  const duplicarContador = (id: string) => { if (!compartilhando || !mestre) return; const original = contadoresAtuais.find(item => item.id === id); if (original) { const { id: _id, criadoEm: _criado, atualizadoEm: _atualizado, ...draft } = original; void realtime.addCounter({ ...draft, nome: `${draft.nome} (cópia)` }).catch(() => undefined); } };
-  const adicionarMapa = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (!compartilhando) return; void realtime.addMap(item).then(mapa => { setMapaLocalId(mapa.id); salvarEstado({ activeMapId: mapa.id, contentType: 'mapa' }); registrarSemFalhar(sessionEventFactories.map(`Mapa criado: ${mapa.titulo}.`)); }).catch(() => undefined); };
-  const atualizarMapa = (id: string, patch: Partial<MapaNarrativo>) => { if (compartilhando) void realtime.patchMap(id, patch).catch(() => undefined); };
-  const removerMapa = (id: string) => { const mapa = mapasAtuais.find(item => item.id === id); if (compartilhando) void realtime.removeMap(id).then(() => { if (mapaAtualId === id) salvarEstado({ activeMapId: undefined }); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); }).catch(() => undefined); };
-  const adicionarToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addToken(item).catch(() => undefined); };
+  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando && mestre) void realtime.addCounter({ ...item, visibilidade: 'mestre_privado' }).catch(error => sinalizarErroMesa('Criar contador', error)); };
+  const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando && mestre) void realtime.patchCounter(id, patch).catch(error => sinalizarErroMesa('Atualizar contador', error)); };
+  const removerContador = (id: string) => { if (compartilhando && mestre) void realtime.removeCounter(id).catch(error => sinalizarErroMesa('Remover contador', error)); };
+  const duplicarContador = (id: string) => { if (!compartilhando || !mestre) return; const original = contadoresAtuais.find(item => item.id === id); if (original) { const { id: _id, criadoEm: _criado, atualizadoEm: _atualizado, ...draft } = original; void realtime.addCounter({ ...draft, nome: `${draft.nome} (cópia)` }).catch(error => sinalizarErroMesa('Duplicar contador', error)); } };
+  const adicionarMapa = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (!compartilhando) return; void realtime.addMap(item).then(mapa => { setMapaLocalId(mapa.id); salvarEstado({ activeMapId: mapa.id, contentType: 'mapa' }); registrarSemFalhar(sessionEventFactories.map(`Mapa criado: ${mapa.titulo}.`)); }).catch(error => sinalizarErroMesa('Criar mapa', error)); };
+  const atualizarMapa = (id: string, patch: Partial<MapaNarrativo>) => { if (compartilhando) void realtime.patchMap(id, patch).catch(error => sinalizarErroMesa('Atualizar mapa', error)); };
+  const removerMapa = (id: string) => { const mapa = mapasAtuais.find(item => item.id === id); if (compartilhando) void realtime.removeMap(id).then(() => { if (mapaAtualId === id) salvarEstado({ activeMapId: undefined }); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); }).catch(error => sinalizarErroMesa('Remover mapa', error)); };
+  const adicionarToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addToken(item).catch(error => sinalizarErroMesa('Criar token', error)); };
   const atualizarToken = (id: string, patch: Partial<TokenMapa>): Promise<unknown> => compartilhando ? realtime.patchToken(id, patch) : Promise.reject(new Error('Mesa não sincronizada.'));
-  const removerToken = (id: string) => { if (compartilhando) void realtime.removeToken(id).catch(() => undefined); };
+  const removerToken = async (id: string) => {
+    if (!mestre || !compartilhando) throw new Error('A remoção exige conexão como Mestre.');
+    try { await realtime.removeToken(id); }
+    catch (error) { sinalizarErroMesa('Remover token', error); throw error; }
+  };
   const statusTexto = realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
   const avisoRecursos = erroRecursos ? <p role="alert" className="live-vtt__sync-error">Não foi possível atualizar PV/Foco: {erroRecursos}</p> : null;
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
   const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} imageUrl={sceneImageUrl} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
-  const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagemJogadorId={personagemJogadorId} personagens={personagens} npcs={npcs} adversarios={adversarios} onActorUsed={(kind, id) => { if (kind === 'npc') void ensureSessionLink('npcIds', id); if (kind === 'adversario') void ensureSessionLink('adversarioIds', id); }} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
+  const registrarRolagemAtor = async (content: string, details: Record<string, unknown>) => {
+    if (!mestre) throw new Error('Somente o Mestre pode rolar por NPCs e adversários.');
+    const { visibility, ...metadata } = details;
+    await registro.registrar({
+      type: 'roll', visibility: visibility === 'todos' ? 'todos' : 'mestre',
+      content, metadata: { ...metadata, kind: 'actor_combat' }
+    });
+  };
+  const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagemJogadorId={personagemJogadorId} personagens={personagens} npcs={npcs} adversarios={adversarios} onActorUsed={(kind, id) => { if (kind === 'npc') void ensureSessionLink('npcIds', id); if (kind === 'adversario') void ensureSessionLink('adversarioIds', id); }} onActorRoll={registrarRolagemAtor} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
   const closeTool = () => setFerramenta('nenhuma');
   const toggleCinematic = () => {
     setCinematic(value => {
@@ -275,7 +311,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   };
 
   return (
-    <section className={`live-table live-table--v5 ${sessionOpen || directorOpen ? 'has-left-drawer' : ''} ${partyOpen ? 'has-right-drawer' : ''} ${cinematic ? 'is-cinematic' : ''}`}>
+    <section className={`live-table live-table--v5 ${sessionOpen || directorOpen ? 'has-left-drawer' : ''} ${partyOpen ? 'has-right-drawer' : ''} ${cinematic ? 'is-cinematic' : ''} ${interfaceCompacta ? 'is-compact-mobile' : ''}`}>
       <header className="live-vtt__topbar">
         <div className="live-vtt__brand">
           <img src="/ro-mark.svg" alt="" />
@@ -297,10 +333,14 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
             <Radio size={12} />
             {statusTexto}
           </span>
-          <span>{campanha.jogadoresCount || personagens.length} na crônica</span>
+          <span>{realtime.presence.length} online · {campanha.jogadoresCount || 0} na campanha</span>
         </div>
 
         <div className="live-vtt__top-actions">
+          <button type="button" className="live-vtt__compact-toggle" aria-pressed={interfaceCompacta}
+            onClick={() => { setInterfaceCompacta(v => !v); setDirectorOpen(false); setSessionOpen(false); setPartyOpen(false); }}>
+            {interfaceCompacta ? 'Exibir interface' : 'Foco no mapa'}
+          </button>
           {mestre && (
             <div className="live-vtt__mode-switch" aria-label="Conteúdo apresentado à mesa">
               <button type="button" className={conteudo === 'ambientacao' ? 'is-active' : ''} onClick={() => mudarConteudo('ambientacao')} title="Cena">
@@ -324,7 +364,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
           </button>
 
           <div className="live-vtt__user">
-            <span>{userName?.slice(0, 2).toUpperCase() || 'RO'}</span>
+            <span>{avatarUrl ? <AssetImage src={avatarUrl} fallbackSrc="/ro-mark.svg" alt="Foto de perfil" /> : (userName?.slice(0, 2).toUpperCase() || 'RO')}</span>
             <div><strong>{userName || 'Participante'}</strong><small>{role}</small></div>
           </div>
 
@@ -335,16 +375,32 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
         </div>
       </header>
 
-      {realtime.error && <p className="live-vtt__sync-error">Sincronização indisponível: {realtime.error}</p>}
+      {realtime.error && <p role="alert" className="live-vtt__sync-error">Sincronização indisponível: {realtime.error}</p>}
+      {erroMesa && <div role="alert" className="live-vtt__sync-error live-vtt__recoverable-error">
+        <span>Alteração não confirmada. {erroMesa}</span>
+        <button type="button" onClick={() => setErroMesa('')} aria-label="Dispensar erro da Mesa">Fechar</button>
+      </div>}
       {avisoRecursos}
 
       {!cinematic && (
-        <div className="live-vtt__player-bar" aria-label="Personagens presentes">
+        <div className="live-vtt__player-bar" aria-label="Desvelados vinculados à campanha">
           <div className="live-vtt__player-bar-label">
-            <span>Presentes</span>
+            <span>Desvelados</span>
             <small>{personagensVisiveis.length}</small>
           </div>
 
+          {!mestre && onVincularMinhaFicha && (
+            <label className="live-vtt__sheet-link">
+              <span>Minha ficha</span>
+              <select value={personagemJogadorId || ''} disabled={salvandoVinculo}
+                onChange={event => { void alterarMinhaFicha(event.target.value); }}
+                aria-label="Selecionar minha ficha nesta campanha">
+                <option value="">Sem ficha vinculada</option>
+                {minhasFichasVinculaveis.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+              </select>
+              {erroVinculo && <small role="alert" className="live-vtt__sheet-link-error">{erroVinculo}</small>}
+            </label>
+          )}
           <div className="live-vtt__player-strip">
             {personagensVisiveis.length === 0 && (
               <span className="live-vtt__player-empty">Nenhuma ficha vinculada à mesa.</span>
@@ -493,13 +549,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               onAbrirFicha={onAbrirFicha}
               onAjustar={ajustar}
               onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')}
-              onActorRoll={async (content,details) => {
-                if (!mestre) throw new Error('Somente o Mestre pode rolar por NPCs e adversários.');
-                await registro.registrar({
-                  type:'roll', visibility:'mestre', content,
-                  metadata:{...details,kind:'actor_combat'}
-                });
-              }}
+              onActorRoll={registrarRolagemAtor}
               onClose={() => setPartyOpen(false)}
             />
           </aside>

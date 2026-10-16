@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, Ban, Crosshair, Eye, EyeOff, Grid3X3, Maximize2, Minus, Plus, Ruler, Trash2, Upload } from 'lucide-react';
+import { AlertTriangle, Ban, Crosshair, Eye, EyeOff, Grid3X3, Maximize2, Minus, Plus, Ruler, SlidersHorizontal, Trash2, Upload } from 'lucide-react';
 import { Adversario, CondicaoCombate, MapaNarrativo, NPC, TipoTokenMapa, TokenMapa } from '../../types/campaign';
 import { Personagem } from '../../types/character';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
 import { AssetImage } from '../system/AssetImage';
+import { ActorCombatControls } from './ActorCombatControls';
 import { calculatePinchCamera, centerBetween, distanceBetween, Point2D } from '../../features/realtime/mapTouchGeometry';
 import { addTokenHp, nextInstanceName, resolvedTokenHp } from '../../features/realtime/mapTokenInstances';
 
@@ -17,6 +18,7 @@ interface MapStageProps {
   npcs?: NPC[];
   adversarios?: Adversario[];
   onActorUsed?: (kind: 'personagem' | 'npc' | 'adversario', id: string) => void;
+  onActorRoll?: (content: string, details: Record<string, unknown>) => Promise<unknown>;
   mapaAtualId?: string;
   onSelecionarMapa: (id: string) => void;
   onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
@@ -24,7 +26,7 @@ interface MapStageProps {
   onRemoverMapa: (id: string) => void;
   onAdicionarToken: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
   onAtualizarToken: (id: string, parcial: Partial<TokenMapa>) => Promise<unknown> | void;
-  onRemoverToken: (id: string) => void;
+  onRemoverToken: (id: string) => Promise<unknown> | void;
 }
 
 const cores: Record<TipoTokenMapa, string> = {
@@ -54,6 +56,7 @@ export const MapStage: React.FC<MapStageProps> = ({
   npcs = [],
   adversarios = [],
   onActorUsed,
+  onActorRoll,
   mapaAtualId,
   onSelecionarMapa,
   onAdicionarMapa,
@@ -86,6 +89,8 @@ export const MapStage: React.FC<MapStageProps> = ({
     pan: Point2D;
   } | null>(null);
   const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
+  const [removendoToken, setRemovendoToken] = useState(false);
+  const [erroRemocao, setErroRemocao] = useState('');
 
   const [novoMapa, setNovoMapa] = useState('');
   const [novaImagem, setNovaImagem] = useState('');
@@ -103,12 +108,19 @@ export const MapStage: React.FC<MapStageProps> = ({
   const [areaRadius, setAreaRadius] = useState(3);
   const [areaColor, setAreaColor] = useState('#dc884c');
   const [tokenError, setTokenError] = useState('');
+  const [abaToken, setAbaToken] = useState<'controle' | 'ficha'>('controle');
+  const [ferramentasMapaAbertas, setFerramentasMapaAbertas] = useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? !window.matchMedia('(max-width: 980px)').matches
+      : true
+  );
   const pendingNames = useRef(new Set<string>());
 
   const gridSize = clamp(mapaAtual?.gridSize ?? 64, 24, 160);
   const tokenSelecionado = tokensAtuais.find(token => token.id === selecionadoId) || null;
   const npcDoToken = tokenSelecionado?.npcId ? npcs.find(npc => npc.id === tokenSelecionado.npcId) : undefined;
   const adversarioDoToken = tokenSelecionado?.adversaryId ? adversarios.find(a => a.id === tokenSelecionado.adversaryId) : undefined;
+  const modeloAtorDoToken = npcDoToken || adversarioDoToken;
   const tokenLife = tokenSelecionado
     ? resolvedTokenHp(tokenSelecionado,
         npcDoToken?.vida ?? adversarioDoToken?.vida,
@@ -401,6 +413,20 @@ export const MapStage: React.FC<MapStageProps> = ({
     ajustarToken({hpCurrent:addTokenHp(tokenLife.current,tokenLife.max,delta),hpMax:tokenLife.max});
   };
 
+  const confirmarRemocaoToken = async () => {
+    if (!mestre || !tokenSelecionado || removendoToken) return;
+    setRemovendoToken(true);
+    setErroRemocao('');
+    try {
+      await onRemoverToken(tokenSelecionado.id);
+      setSelecionadoId(null);
+    } catch (error) {
+      setErroRemocao(error instanceof Error ? error.message : 'Não foi possível retirar o token. Tente novamente.');
+    } finally {
+      setRemovendoToken(false);
+    }
+  };
+
   const duplicarToken = () => {
     if (!mestre || !tokenSelecionado) return;
     const {id: _id, criadoEm: _created, atualizadoEm: _updated, criadoPor: _author, ...draft} = tokenSelecionado;
@@ -421,6 +447,8 @@ export const MapStage: React.FC<MapStageProps> = ({
     onAdicionarToken({campanhaId,mapaId:mapaAtual.id,tipo:'marcador',nome:name,
       tokenSize:.5,rangeCells:0,areaRadiusCells:areaRadius,cor:areaColor,x,y,oculto:false});
   };
+
+  useEffect(() => { setAbaToken('controle'); }, [selecionadoId]);
 
   useEffect(() => {
     setSelecionadoId(null);
@@ -447,12 +475,20 @@ export const MapStage: React.FC<MapStageProps> = ({
   return (
     <section className="map-stage map-stage--v4">
       {mestre && (
-        <div className="map-stage__library map-stage__library--v4">
+        <div className={`map-stage__library map-stage__library--v4 ${ferramentasMapaAbertas ? 'is-expanded' : 'is-collapsed'}`}>
+          <div className="map-stage__toolbar-top">
           <select value={mapaAtual?.id || ''} onChange={event => onSelecionarMapa(event.target.value)} aria-label="Selecionar mapa">
             <option value="">Selecionar mapa</option>
             {mapas.map(mapa => <option key={mapa.id} value={mapa.id}>{mapa.titulo}</option>)}
           </select>
+          <button type="button" className="map-stage__toggle-tools"
+            aria-expanded={ferramentasMapaAbertas} aria-controls="ro-map-tools"
+            onClick={() => setFerramentasMapaAbertas(value => !value)}>
+            <SlidersHorizontal size={15} /> {ferramentasMapaAbertas ? 'Minimizar' : 'Ferramentas'}
+          </button>
+          </div>
 
+          {ferramentasMapaAbertas && <div className="map-stage__library-controls" id="ro-map-tools">
           {mapaAtual && (
             <>
               <button type="button" onClick={() => onAtualizarMapa(mapaAtual.id, { gradeVisivel: !mapaAtual.gradeVisivel })}>
@@ -476,7 +512,8 @@ export const MapStage: React.FC<MapStageProps> = ({
               onClick={()=>setMarcandoArea(v=>!v)}>{marcandoArea?'Concluir áreas':'Marcar círculo'}</button>
           </div>}
           <button type="button" onClick={centralizar}><Crosshair size={13} /> Centralizar</button>
-          <button type="button" onClick={() => viewport.current?.requestFullscreen?.()}><Maximize2 size={13} /></button>
+          <button type="button" aria-label="Mapa em tela cheia" onClick={() => viewport.current?.requestFullscreen?.()}><Maximize2 size={13} /> Tela cheia</button>
+          </div>}
         </div>
       )}
 
@@ -625,15 +662,40 @@ export const MapStage: React.FC<MapStageProps> = ({
       </div>
 
       {tokenSelecionado && podeControlarToken(tokenSelecionado) && (
-        <aside className="map-stage__token-inspector">
+        <aside className="map-stage__token-inspector" role="dialog"
+          aria-label={`Controles do token ${tokenSelecionado.nome}`}
+          onPointerDown={event => event.stopPropagation()}
+          onPointerMove={event => event.stopPropagation()}
+          onPointerUp={event => event.stopPropagation()}
+          onWheel={event => event.stopPropagation()}
+          onKeyDown={event => {
+            if (event.key === 'Escape') {
+              event.stopPropagation();
+              setSelecionadoId(null);
+            }
+          }}>
           <div className="map-stage__token-inspector-head">
             <div>
               <small>{tokenSelecionado.tipo}</small>
               <strong>{tokenSelecionado.nome}</strong>
             </div>
-            <button type="button" onClick={() => setSelecionadoId(null)}>×</button>
+            <button type="button" aria-label="Fechar controles do token"
+              onClick={() => setSelecionadoId(null)}>×</button>
           </div>
 
+          {mestre && modeloAtorDoToken && (
+            <nav className="map-stage__token-tabs" aria-label="Ferramentas do adversário">
+              <button type="button" aria-pressed={abaToken === 'controle'}
+                className={abaToken === 'controle' ? 'is-active' : ''}
+                onClick={() => setAbaToken('controle')}>Controle</button>
+              <button type="button" aria-pressed={abaToken === 'ficha'}
+                className={abaToken === 'ficha' ? 'is-active' : ''}
+                onClick={() => setAbaToken('ficha')}>Ficha e rolagens</button>
+            </nav>
+          )}
+          <div className="map-stage__token-inspector-body" role="region"
+            aria-label={`Ajustes de ${tokenSelecionado.nome}`} tabIndex={0}>
+          {abaToken === 'controle' && <>
           {mestre && (tokenSelecionado.tipo === 'npc' || tokenSelecionado.tipo === 'adversario') && tokenLife && (
             <div className="map-stage__token-health">
               <strong>PV desta cópia: {tokenLife.current}/{tokenLife.max}</strong>
@@ -735,12 +797,60 @@ export const MapStage: React.FC<MapStageProps> = ({
             </label>
           </div>
 
+          </>}
+          {mestre && abaToken === 'ficha' && modeloAtorDoToken && tokenLife && (
+            <section className="map-stage__token-sheet" aria-label="Ficha e rolagens do token">
+              <div className="map-stage__token-sheet-profile">
+                {modeloAtorDoToken.imagemUrl && <AssetImage src={modeloAtorDoToken.imagemUrl} alt="" />}
+                <div>
+                  <strong>{modeloAtorDoToken.nome}</strong>
+                  <small>{adversarioDoToken
+                    ? `Nível ${adversarioDoToken.nivel} · ${adversarioDoToken.tipo}`
+                    : `NPC · ${npcDoToken?.papel || 'Personagem'}`}</small>
+                  <p>{modeloAtorDoToken.descricao || 'Sem descrição registrada.'}</p>
+                </div>
+              </div>
+              <div className="map-stage__token-sheet-stats">
+                <span>PV da cópia: <b>{tokenLife.current}/{tokenLife.max}</b></span>
+                <span>Defesa: <b>{modeloAtorDoToken.defesa ?? '—'}</b></span>
+                <span>DT: <b>{modeloAtorDoToken.dificuldade ?? modeloAtorDoToken.defesa ?? '—'}</b></span>
+                <span>Resistência: <b>{modeloAtorDoToken.resistencia ?? '—'}</b></span>
+                <span>Deslocamento: <b>{modeloAtorDoToken.deslocamento || '—'}</b></span>
+                {adversarioDoToken?.ataquePrincipal && <span>Ataque: <b>{adversarioDoToken.ataquePrincipal}</b></span>}
+              </div>
+              {(modeloAtorDoToken.habilidades || []).length > 0 && (
+                <div className="map-stage__token-abilities">
+                  <strong>Habilidades</strong>
+                  {(modeloAtorDoToken.habilidades || []).map(habilidade => (
+                    <p key={habilidade.id}><b>{habilidade.nome}</b> · {habilidade.descricao}</p>
+                  ))}
+                </div>
+              )}
+              {onActorRoll && (
+                <ActorCombatControls key={tokenSelecionado.id} name={tokenSelecionado.nome}
+                  hp={tokenLife.current} maxHp={tokenLife.max}
+                  threatLevel={adversarioDoToken?.nivel ?? npcDoToken?.nivelAmeaca ?? 0}
+                  abilities={modeloAtorDoToken.habilidades || []} hideHpControls
+                  onHpChange={hp => Promise.resolve(onAtualizarToken(tokenSelecionado.id, { hpCurrent: hp, hpMax: tokenLife.max }))}
+                  onRoll={(content, details) => onActorRoll(content, { ...details, tokenId: tokenSelecionado.id })}/>
+              )}
+              <small>As ações deste token não alteram a ficha original.</small>
+            </section>
+          )}
+          </div>
+
           {mestre && (
-            <div className="map-stage__token-inspector-actions">
+            <div className="map-stage__token-inspector-footer">
+              {erroRemocao && <p role="alert" className="map-stage__token-remove-error">{erroRemocao}</p>}
+            <div className="map-stage__token-inspector-actions" aria-label="Ações da cópia no mapa">
               <button type="button" onClick={duplicarToken}><Plus size={13}/> Duplicar cópia</button>
-              <button type="button" className="is-danger" onClick={() => { onRemoverToken(tokenSelecionado.id); setSelecionadoId(null); }}>
-                <Trash2 size={13} /> Remover
+              <button type="button" className="is-danger" disabled={removendoToken}
+                title="Retira apenas esta cópia do mapa, sem apagar a ficha-base"
+                onClick={() => { void confirmarRemocaoToken(); }}>
+                <Trash2 size={13} />
+                {removendoToken ? 'Removendo…' : tokenSelecionado.tipo === 'adversario' ? 'Encerrar adversário' : 'Remover do mapa'}
               </button>
+            </div>
             </div>
           )}
         </aside>

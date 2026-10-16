@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Anchor, AlertTriangle, Archive, BookOpen, Brain, CheckCircle2, Copy, Dice5,
   Download, Eye, Flame, Heart, Moon, Plus, Shield, Sparkles, Trash2, Waves,
-  X, Zap
+  X, Zap, Camera
 } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome, VinculoItem, EquipamentoItem } from '../types/character';
 import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS } from '../rules/rulesData';
@@ -15,6 +15,7 @@ import { AssetImage } from './system/AssetImage';
 interface CharacterSheetProps {
   personagem: Personagem;
   onSalvar: (personagemAtualizado: Personagem) => void;
+  onAlterarRetrato?: (file: File) => Promise<void>;
   onDuplicar: (id: string) => void;
   onExcluir: (id: string) => void;
   onExportar: (personagem: Personagem) => void;
@@ -47,9 +48,11 @@ const damageReference = [
 ] as const;
 
 export const CharacterSheet: React.FC<CharacterSheetProps> = ({
-  personagem, onSalvar, onDuplicar, onExcluir, onExportar, onIrParaRolador,
+  personagem, onSalvar, onAlterarRetrato, onDuplicar, onExcluir, onExportar, onIrParaRolador,
   onIrParaGuiaSonhar, onDispararMovimentoMorte
 }) => {
+  const [enviandoRetrato, setEnviandoRetrato] = useState(false);
+  const [erroRetrato, setErroRetrato] = useState('');
   const [modalRupturaAberto,setModalRupturaAberto] = useState(false);
   const [modalDanoAberto,setModalDanoAberto] = useState(false);
   const [modalDescansoAberto,setModalDescansoAberto] = useState(false);
@@ -59,6 +62,25 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const validacao = validarDistribuicaoDominios(personagem.dominios, personagem.nivel);
   const somaAtributos = Object.values(personagem.atributos).reduce((sum,value)=>sum+value,0);
   const totalAtributos = personagem.nivel + 1;
+
+  const alterarRetrato = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file || !onAlterarRetrato || enviandoRetrato) return;
+    if (!['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type) || file.size > 15 * 1024 * 1024) {
+      setErroRetrato('Escolha PNG, JPG, WEBP ou GIF de até 15 MB.');
+      return;
+    }
+    setErroRetrato('');
+    setEnviandoRetrato(true);
+    try {
+      await onAlterarRetrato(file);
+    } catch (error) {
+      setErroRetrato(error instanceof Error ? error.message : 'Falha ao atualizar o retrato.');
+    } finally {
+      setEnviandoRetrato(false);
+    }
+  };
 
   const salvar = (patch: Partial<Personagem>) =>
     onSalvar({...personagem,...patch,atualizadoEm:new Date().toISOString()});
@@ -134,6 +156,16 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       </div>
       <div className="ro-sheet__identity">
         <span className="ro-sheet__eyebrow">REINOS ONÍRICOS · REGISTRO DO DESVELADO</span>
+        {onAlterarRetrato && (
+          <div className="ro-sheet__portrait-controls">
+            <label className="ro-sheet__portrait-upload" aria-disabled={enviandoRetrato}>
+              <Camera size={14} /> {enviandoRetrato ? 'Enviando retrato…' : (personagem.imagemUrl ? 'Trocar retrato' : 'Adicionar retrato')}
+              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={enviandoRetrato}
+                onChange={event => { void alterarRetrato(event); }} />
+            </label>
+            {erroRetrato && <small role="alert" className="ro-sheet__portrait-error">{erroRetrato}</small>}
+          </div>
+        )}
         <label className="ro-sheet__name-label">
           <span>Nome do personagem</span>
           <input type="text" maxLength={120} aria-label="Nome do Desvelado" value={personagem.nome} onChange={e=>salvar({nome:e.target.value})}/>

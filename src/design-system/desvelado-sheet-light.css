@@ -208,3 +208,43 @@
   .ro-sheet__identity-fields input,.ro-sheet__identity-fields select,.ro-sheet__collection-item input,.ro-sheet textarea{font-size:16px!important}
 }
 @media(prefers-reduced-motion:reduce){.ro-sheet *{transition:none!important}}
+
+/* Retrato editável sem interferir nos controles mecânicos da ficha. */
+.ro-sheet__portrait-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .65rem;
+  margin: .5rem 0 .75rem;
+}
+.ro-sheet__portrait-upload {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .45rem .75rem;
+  border: 1px solid var(--sh-ink-soft, #918673);
+  border-radius: .35rem;
+  cursor: pointer;
+  font-size: .8rem;
+  font-weight: 600;
+}
+.ro-sheet__portrait-upload:focus-within {
+  outline: 2px solid var(--sh-accent, #a77d4a);
+  outline-offset: 2px;
+}
+.ro-sheet__portrait-upload[aria-disabled='true'] {
+  opacity: .6;
+  cursor: wait;
+}
+.ro-sheet__portrait-upload input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+.ro-sheet__portrait-error {
+  color: #9e2f35;
+  font-size: .8rem;
+}

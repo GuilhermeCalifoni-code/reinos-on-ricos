@@ -2424,3 +2424,43 @@
   line-height: 1.5;
   pointer-events: none;
 }
+
+/* Lançamento 31/10: o avatar da conta acompanha o usuário na Mesa. */
+.live-vtt__user > span > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Seleção segura da ficha do Jogador dentro da Mesa Ao Vivo. */
+.live-vtt__sheet-link {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 205px;
+  min-width: 140px;
+  gap: .22rem;
+  padding: .35rem .55rem;
+  color: var(--vtt-soft);
+  font-size: .62rem;
+  font-weight: 600;
+}
+.live-vtt__sheet-link select {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  background: var(--vtt-panel);
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .35rem;
+  color: var(--vtt-text);
+  padding: .35rem;
+  font-size: .72rem;
+}
+.live-vtt__sheet-link-error { color: #ffaaa9; }
+@media (max-width: 580px) {
+  .live-vtt__sheet-link { flex-basis: 125px; min-width: 110px; }
+}
+
+/* Erros de persistência não devem desaparecer silenciosamente no VTT. */
+.live-vtt__recoverable-error { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }
+.live-vtt__recoverable-error button { padding: .25rem .5rem; border: 1px solid currentColor; border-radius: .25rem; flex-shrink: 0; }

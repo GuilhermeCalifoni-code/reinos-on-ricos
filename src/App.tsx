@@ -102,6 +102,13 @@ export default function App() {
     ? personagens.filter(personagem => personagem.campaignId === campanhaAtiva.id)
     : personagens;
 
+  const vinculosDaCampanha = membrosCampanha
+    .map(membro => `${membro.userId}:${membro.characterId || ''}:${membro.status}:${membro.role}`)
+    .sort().join('|');
+  useEffect(() => {
+    if (campanhaAtivaId) void personagensRemotos.refresh();
+  }, [campanhaAtivaId, vinculosDaCampanha, personagensRemotos.refresh]);
+
   const salvarPersonagemPersistente = (personagemAtualizado: Personagem) => {
     if (!usandoRemoto) return;
     const remoto: Personagem = {
@@ -386,6 +393,13 @@ export default function App() {
     setViewAtiva('modo_mesa');
   };
 
+  const handleAtribuirFichaPreparada = async (campaignId: string, playerEmail: string, characterId: string) => {
+    const role = campanhasRemotas.roleDaCampanha(campaignId);
+    if (role !== 'mestre') throw new Error('Apenas o Mestre pode entregar fichas prontas.');
+    await campaignRepository.atribuirFichaPreparadaPorEmail(campaignId, playerEmail, characterId);
+    await Promise.all([personagensRemotos.refresh(), campanhasRemotas.recarregar()]);
+  };
+
   const handleVincularMinhaFicha = async (campaignId: string, characterId: string | null) => {
     await campaignRepository.vincularPersonagem(campaignId, characterId);
     await Promise.all([
@@ -499,6 +513,18 @@ export default function App() {
               salvarPersonagemPersistente(atualizado);
               setPersonagemParaFicha(atualizado);
             }}
+            onAlterarRetrato={personagemParaFicha.ownerUserId === session.authUserId ? async (file) => {
+              // Owner-only action: a Mestre cannot silently overwrite a player's portrait.
+              const atual = personagemParaFicha;
+              if (atual.ownerUserId !== session.authUserId) throw new Error('Apenas o dono da ficha pode trocar o retrato.');
+              const path = await campaignAssetService.uploadCharacterPortrait(atual.id, file);
+              const atualizado = await personagensRemotos.save({
+                ...atual,
+                imagemUrl: campaignAssetService.toStorageRef(path),
+                atualizadoEm: new Date().toISOString()
+              });
+              setPersonagemParaFicha(current => current?.id === atualizado.id ? atualizado : current);
+            } : undefined}
             onDuplicar={(p) => {
               duplicarPersonagemPersistente(p);
               setPersonagemParaFicha(null);
@@ -623,6 +649,7 @@ export default function App() {
             onRegenerarCodigo={campanhasRemotas.regenerarCodigo}
             onAtualizarMembro={campanhasRemotas.atualizarMembro}
             onVincularMinhaFicha={handleVincularMinhaFicha}
+            onAtribuirFichaPreparada={handleAtribuirFichaPreparada}
             onExcluirCampanha={(id) => { void campanhasRemotas.remover(id).then(() => { setCampanhaRemotaAtivaId(null); setViewAtiva('dashboard'); }).catch(error => alert(error.message || 'Não foi possível excluir a campanha.')); }}
           />
         ) : (
@@ -643,6 +670,8 @@ export default function App() {
           <MesaView
             campanha={campanhaAtiva}
             personagens={personagensCampanha}
+            personagensProprios={personagensRemotos.personal}
+            onVincularMinhaFicha={id => handleVincularMinhaFicha(campanhaAtiva.id, id)}
             npcs={npcsAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             adversarios={adversariosAtuais.filter(item => item.campanhaId === campanhaAtiva.id)}
             onAtualizarNPC={conteudoRemoto.atualizarNPC}
@@ -651,6 +680,7 @@ export default function App() {
             personagemJogadorId={personagemJogadorId}
             userId={session.authUserId}
             userName={session.nome}
+            avatarUrl={session.avatarUrl}
             sessionId={sessaoAtivaId}
             sessionTitle={sessaoAtiva?.titulo}
             sessionDescription={sessaoAtiva?.descricao}

@@ -35,9 +35,15 @@ const copy: Record<Exclude<ConteudoDeCena, 'mapa'>, { title: string; hint: strin
 export const SceneStage: React.FC<SceneStageProps> = (props) => {
   const { campanha, mestre, conteudo, title, description, imageUrl, onAtualizarTexto, onMudarConteudo, mapas, tokensMapa, mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken, onRegistrarEvento } = props;
   const [editing, setEditing] = React.useState(false);
+  const [showIntro, setShowIntro] = React.useState(true);
   const [draftTitle, setDraftTitle] = React.useState(title || '');
   const [draftDescription, setDraftDescription] = React.useState(description || '');
   React.useEffect(() => { if (!editing) { setDraftTitle(title || ''); setDraftDescription(description || ''); } }, [description, editing, title]);
+  React.useEffect(() => {
+    setShowIntro(true);
+    const timer = window.setTimeout(() => setShowIntro(false), 4500);
+    return () => window.clearTimeout(timer);
+  }, [conteudo, title, description, imageUrl]);
   const mudarConteudo = (proximo: ConteudoDeCena) => { onMudarConteudo(proximo); if (proximo !== conteudo) onRegistrarEvento?.({ type: 'scene_change', content: `A cena mudou para ${proximo}.`, metadata: { conteudo: proximo } }); };
   if (conteudo === 'mapa') return <MapStage campanhaId={campanha.id} mapas={mapas} tokens={tokensMapa} mestre={mestre} mapaAtualId={mapaAtualId} onSelecionarMapa={onSelecionarMapa} onAdicionarMapa={onAdicionarMapa} onAtualizarMapa={onAtualizarMapa} onRemoverMapa={onRemoverMapa} onAdicionarToken={onAdicionarToken} onAtualizarToken={onAtualizarToken} onRemoverToken={onRemoverToken} />;
   const texto = copy[conteudo];
@@ -56,8 +62,9 @@ export const SceneStage: React.FC<SceneStageProps> = (props) => {
         <a href={imageUrl} target="_blank" rel="noreferrer">Abrir handout em nova aba</a>
       </div>
     )}
-    <div className="live-table__stage-copy">
+    {(showIntro || editing) && <div className="live-table__stage-copy">
       <p className="ro-eyebrow">Cena atual</p>
+      {!editing && <button type="button" className="live-table__dismiss-scene" aria-label="Ocultar apresentação da cena" onClick={() => setShowIntro(false)}>×</button>}
       {editing ? <div className="live-table__scene-editor">
         <input value={draftTitle} onChange={event => setDraftTitle(event.target.value)} placeholder="Título da cena" />
         <textarea value={draftDescription} onChange={event => setDraftDescription(event.target.value)} rows={3} placeholder="Descrição / ambientação" />
@@ -67,7 +74,8 @@ export const SceneStage: React.FC<SceneStageProps> = (props) => {
         <p>{sceneDescription}</p>
         {mestre && <button type="button" className="live-table__edit-scene" onClick={() => setEditing(true)}>Editar cena</button>}
       </>}
-    </div>
+    </div>}
+    {mestre && !showIntro && !editing && <button type="button" className="live-table__scene-edit-float" onClick={() => setEditing(true)}>Editar cena</button>}
     {mestre && <div className="live-table__scene-controls"><span>Conteúdo da cena</span>{(['ambientacao', 'imagem', 'mapa', 'handout'] as ConteudoDeCena[]).map(tipo => <button key={tipo} onClick={() => mudarConteudo(tipo)} className={conteudo === tipo ? 'is-active' : ''}>{tipo}</button>)}</div>}
   </main>;
 };
