@@ -24,7 +24,7 @@ export function useSessionEvents({ campaignId, sessionId, userId, enabled, chara
   const registrar = useCallback(async (input: NewSessionEvent) => {
     if (!enabled || !campaignId || !userId) throw new Error('O Registro Vivo exige uma campanha remota e uma sessão autenticada.');
     setError('');
-    const saved = await sessionEventRepository.criar(campaignId, userId, { ...input, sessionId: input.sessionId || sessionId, characterId: input.characterId || characterId, metadata: input.metadata });
+    const saved = await sessionEventRepository.criar(campaignId, userId, { ...input, sessionId: input.sessionId || sessionId, characterId: input.characterId !== undefined ? input.characterId : characterId, metadata: input.metadata });
     setEvents(current => current.some(item => item.id === saved.id) ? current : [...current, saved]);
     return saved;
   }, [campaignId, characterId, enabled, sessionId, userId]);
