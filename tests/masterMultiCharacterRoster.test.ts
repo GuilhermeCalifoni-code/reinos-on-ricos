@@ -26,7 +26,7 @@ test('Mestre attaches multiple owned sheets to campaign, never their single char
 
 test('Campanha creation shows multi-select and updates all requested personal sheets',()=>{
  assert.match(create,/personagensDisponiveis\?: Personagem\[\]/);
- assert.match(create,/personagensIds: string\[\]/);
+ assert.match(create,/personagensIds\?: string\[\]/);
  assert.match(create,/type="checkbox" checked=\{personagensIds\.includes\(pj\.id\)\}/);
  assert.match(create,/personagensIds\s*\n\s*\}\);/);
  assert.match(app,/personagensDisponiveis=\{personagensRemotos\.personal\.filter\(p => !p\.campaignId\)\}/);
