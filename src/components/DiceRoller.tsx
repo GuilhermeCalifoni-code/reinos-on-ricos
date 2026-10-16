@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
   Dice5, 
   Sparkles, 
@@ -28,7 +28,7 @@ interface DiceRollerProps {
   atributoInicial?: AtributoNome;
   onSalvarPersonagem?: (p: Personagem) => void;
   onAbrirModalRuptura?: (delta: number, motivo: string) => void;
-  onRegistrarRolagem?: (event: NewSessionEvent) => void;
+  onRegistrarRolagem?: (event: NewSessionEvent) => Promise<unknown> | void;
 }
 
 export const DiceRoller: React.FC<DiceRollerProps> = ({
@@ -38,18 +38,35 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   onAbrirModalRuptura, onRegistrarRolagem
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<'mundano' | 'onirico' | 'morte' | 'dano'>('mundano');
+  const [estadoRegistro, setEstadoRegistro] = useState<'local' | 'pending' | 'saved' | 'error'>('local');
+  const [erroRegistro, setErroRegistro] = useState('');
+  const ultimoEnvio = useRef(0);
+  const registrarResultado = (event: NewSessionEvent) => {
+    if (!onRegistrarRolagem) { setEstadoRegistro('local'); return; }
+    const envio = ++ultimoEnvio.current;
+    setEstadoRegistro('pending');
+    setErroRegistro('');
+    void Promise.resolve()
+      .then(() => onRegistrarRolagem({ ...event, characterId: personagemAtivo?.id }))
+      .then(() => { if (ultimoEnvio.current === envio) setEstadoRegistro('saved'); })
+      .catch(error => {
+        if (ultimoEnvio.current !== envio) return;
+        setEstadoRegistro('error');
+        setErroRegistro(error instanceof Error ? error.message : 'O Registro Vivo não confirmou a rolagem.');
+      });
+  };
 
   const [dadoDano,setDadoDano] = useState(8);
   const [danoDoSonhar,setDanoDoSonhar] = useState(true);
   const [resultadoDano,setResultadoDano] = useState<{dado:number;bonus:number;total:number}|null>(null);
   const rolarDanoDoPersonagem = () => {
-    const bonus = danoDoSonhar ? Math.min(5,Math.max(1,personagemAtivo?.nivel ?? 1)) : 0;
+    const bonus = danoDoSonhar && personagemAtivo ? Math.min(5, Math.max(1, personagemAtivo.nivel)) : 0;
     const rolled = rollActorDamage(dadoDano,bonus,danoDoSonhar);
     setResultadoDano({dado:rolled.die,bonus,total:rolled.total});
-    onRegistrarRolagem?.({
+    registrarResultado({
       type:'roll',
       content:`${personagemAtivo?.nome || 'Mesa'} · Dano ${danoDoSonhar?'do Sonhar':'mundano'}: 1d${dadoDano} (${rolled.die}) + ${bonus} = ${rolled.total}.`,
-      metadata:{kind:'player_damage',dice:dadoDano,die:rolled.die,bonus,total:rolled.total,onirico:danoDoSonhar}
+      metadata:{kind:'player_damage',dice:dadoDano,die:rolled.die,bonus,total:rolled.total,onirico:danoDoSonhar,roll:{kind:'dano',die:rolled.die,sides:dadoDano,bonus,total:rolled.total}}
     });
   };
 
@@ -86,6 +103,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   // Executar Teste Mundano
   const handleRolarMundano = () => {
     const valorAtrib = personagemAtivo ? personagemAtivo.atributos[atribMundano] : 0;
+    const focoDisponivelMundano = Boolean(usarFoco && personagemAtivo && personagemAtivo.focoAtual > 0 && onSalvarPersonagem);
     const mods = modificadorExtra !== 0 ? [{ nome: nomeModificador || 'Mod Extra', valor: modificadorExtra }] : [];
 
     const res = executarTesteMundano({
@@ -94,15 +112,15 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
       dt: dtMundano,
       modificadores: mods,
       modoRolagem,
-      usarFoco
+      usarFoco: focoDisponivelMundano
     });
 
     setResultadoMundano(res);
     setRolagensMundanas(count => count + 1);
-    onRegistrarRolagem?.({ type: 'roll', content: `${personagemAtivo?.nome || 'Mesa'} · ${res.atributo}: d20 ${res.dadoBruto} + ${res.valorAtributo >= 0 ? '+' : ''}${res.valorAtributo} = ${res.totalFinal} vs DT ${res.dt} — ${res.sucesso ? 'sucesso' : 'fracasso'}.`, metadata: { kind: 'mundano', dados: res.dadosRolados, total: res.totalFinal, dt: res.dt, sucesso: res.sucesso, atributo: res.atributo } });
+    registrarResultado({ type: 'roll', content: `${personagemAtivo?.nome || 'Mesa'} · ${res.atributo}: d20 ${res.dadoBruto} + ${res.valorAtributo >= 0 ? '+' : ''}${res.valorAtributo} = ${res.totalFinal} vs DT ${res.dt} — ${res.sucesso ? 'sucesso' : 'fracasso'}.`, metadata: { kind: 'mundano', dados: res.dadosRolados, total: res.totalFinal, dt: res.dt, sucesso: res.sucesso, atributo: res.atributo, roll: { kind: 'mundano', dados: res.dadosRolados, escolhido: res.dadoBruto, atributo: res.atributo, modificadores: res.totalModificadores, total: res.totalFinal, dt: res.dt, sucesso: res.sucesso, foco: res.focoUtilizado } } });
 
     // Se usou Foco e há personagem ativo com foco, gasta 1 PF
-    if (usarFoco && personagemAtivo && personagemAtivo.focoAtual > 0 && onSalvarPersonagem) {
+    if (focoDisponivelMundano && personagemAtivo && onSalvarPersonagem) {
       onSalvarPersonagem({
         ...personagemAtivo,
         focoAtual: Math.max(0, personagemAtivo.focoAtual - 1),
@@ -116,7 +134,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     const valorAtrib = personagemAtivo ? personagemAtivo.atributos[atribOnirico] : 0;
     const dtFinal = dtOnirico + (condicaoAumentaDT ? 2 : 0);
 
-    const focoDisponivel = Boolean(usarFocoOnirico && personagemAtivo && personagemAtivo.focoAtual > 0);
+    const focoDisponivel = Boolean(usarFocoOnirico && personagemAtivo && personagemAtivo.focoAtual > 0 && onSalvarPersonagem);
     const res = executarTesteOnirico({
       atributo: atribOnirico,
       valorAtributo: valorAtrib,
@@ -125,7 +143,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     });
 
     setResultadoOnirico(res);
-    onRegistrarRolagem?.({ type: 'roll', content: `${personagemAtivo?.nome || 'Mesa'} · ${res.atributo}: Realidade ${res.dadoRealidade} (${res.totalRealidade}) · Sonhar ${res.dadoSonhar} (${res.totalSonhar}) vs DT ${res.dt} — ${res.resultado}.`, metadata: { kind: 'onirico', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura, foco: focoDisponivel } });
+    registrarResultado({ type: 'roll', content: `${personagemAtivo?.nome || 'Mesa'} · ${res.atributo}: Realidade ${res.dadoRealidade} (${res.totalRealidade}) · Sonhar ${res.dadoSonhar} (${res.totalSonhar}) vs DT ${res.dt} — ${res.resultado}.`, metadata: { kind: 'onirico', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura, foco: focoDisponivel, roll: { kind: 'onirico', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, totalRealidade: res.totalRealidade, totalSonhar: res.totalSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura } } });
 
     if (focoDisponivel && personagemAtivo && onSalvarPersonagem) {
       onSalvarPersonagem({
@@ -139,6 +157,11 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   // Executar Movimento de Morte (Livro Básico VF10, pág. 42)
   const handleRolarMovimentoMorte = () => {
     const res = resolverMovimentoMorte();
+    registrarResultado({
+      type: 'roll',
+      content: `${personagemAtivo?.nome || 'Mesa'} · Movimento de Morte: Realidade ${res.dadoRealidade}, Sonhar ${res.dadoSonhar} — ${res.titulo}.`,
+      metadata: { kind: 'morte', roll: { kind: 'morte', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, resultado: res.tipo } }
+    });
     setResultadoMorte({
       dadoRealidade: res.dadoRealidade,
       dadoSonhar: res.dadoSonhar,
@@ -227,12 +250,19 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
           <label className="flex gap-2 items-center text-slate-200">
             <input type="checkbox" checked={danoDoSonhar} onChange={e=>setDanoDoSonhar(e.target.checked)}/> Fonte onírica
           </label>
-          <p className="text-slate-400 text-sm">{danoDoSonhar?`Bônus de nível do Desvelado: +${Math.min(5,Math.max(1,personagemAtivo?.nivel??1))}`:'Dano mundano: sem bônus automático de nível'} · d20 somente em casos excepcionais.</p>
+          <p className="text-slate-400 text-sm">{danoDoSonhar?`Bônus de nível do Desvelado: +${(personagemAtivo ? Math.min(5,Math.max(1,personagemAtivo.nivel)) : 0)}`:'Dano mundano: sem bônus automático de nível'} · d20 somente em casos excepcionais.</p>
           <button type="button" className="ro-button" onClick={rolarDanoDoPersonagem}>Rolar dano</button>
           {resultadoDano && <p className="text-slate-100" role="status">Dado: {resultadoDano.dado} + {resultadoDano.bonus} = <strong>{resultadoDano.total}</strong></p>}
           <p className="text-slate-400 text-xs">O resultado do dado não retira PV automaticamente. Compare-o à Resistência do alvo ou utilize a regra específica de Vida: Cura e Ferimento.</p>
         </section>
       )}
+
+      <div className="dice-roller__record-status" role="status" aria-live="polite">
+        {estadoRegistro === 'pending' && <span>Registrando a rolagem na Mesa…</span>}
+        {estadoRegistro === 'saved' && <span className="text-emerald-300">Rolagem registrada no Registro Vivo.</span>}
+        {estadoRegistro === 'error' && <span role="alert" className="text-rose-300">Rolagem feita, mas não registrada: {erroRegistro}</span>}
+        {estadoRegistro === 'local' && <span className="text-slate-400">Rolagem local. Associe uma ficha e uma sessão autenticada para registrar na Mesa.</span>}
+      </div>
 
       {/* ABA 1: TESTE MUNDANO */}
       {abaAtiva === 'mundano' && (
@@ -355,8 +385,8 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={usarFoco}
-                    disabled={personagemAtivo ? personagemAtivo.focoAtual <= 0 : false}
+                    checked={usarFoco && Boolean(personagemAtivo?.focoAtual)}
+                    disabled={!personagemAtivo || personagemAtivo.focoAtual <= 0 || !onSalvarPersonagem}
                     onChange={(e) => setUsarFoco(e.target.checked)}
                     className="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500/40"
                   />
@@ -366,7 +396,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                       Gastar 1 Ponto de Foco (+2 no Teste)
                     </span>
                     <span className="text-[10px] text-slate-500 block">
-                      Livro Básico pág. 10 · Disponível: {personagemAtivo?.focoAtual ?? 4} PF
+                      Livro Básico pág. 10 · Disponível: {personagemAtivo?.focoAtual ?? 0} PF
                     </span>
                   </div>
                 </div>
@@ -600,8 +630,8 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    checked={usarFocoOnirico}
-                    disabled={personagemAtivo ? personagemAtivo.focoAtual <= 0 : false}
+                    checked={usarFocoOnirico && Boolean(personagemAtivo?.focoAtual)}
+                    disabled={!personagemAtivo || personagemAtivo.focoAtual <= 0 || !onSalvarPersonagem}
                     onChange={(e) => setUsarFocoOnirico(e.target.checked)}
                     className="rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-cyan-500/40"
                   />
@@ -611,7 +641,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                       Gastar 1 Ponto de Foco (+2 no Teste)
                     </span>
                     <span className="text-[10px] text-slate-500 block">
-                      O +2 se aplica aos dois resultados do Teste Onírico · Disponível: {personagemAtivo?.focoAtual ?? 4} PF
+                      O +2 se aplica aos dois resultados do Teste Onírico · Disponível: {personagemAtivo?.focoAtual ?? 0} PF
                     </span>
                   </div>
                 </div>
