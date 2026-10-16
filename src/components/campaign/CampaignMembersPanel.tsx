@@ -15,7 +15,7 @@ interface CampaignMembersPanelProps {
   onRegenerateInvite?: (campaignId: string) => Promise<string>;
   onUpdateMember?: (campaignId: string, userId: string, patch: { role?: MembroCampanha['role']; status?: MembroCampanha['status']; characterId?: string | null }) => Promise<void>;
   onLinkOwnCharacter?: (campaignId: string, characterId: string | null) => Promise<void>;
-  onAssignPreparedCharacter?: (campaignId: string, playerUserId: string, characterId: string) => Promise<void>;
+  onAssignPreparedCharacter?: (campaignId: string, playerEmail: string, characterId: string) => Promise<void>;
 }
 
 export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
@@ -33,7 +33,8 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
 }) => {
   const [busy, setBusy] = useState('');
   const [message, setMessage] = useState('');
-  const [preparedChoice, setPreparedChoice] = useState<Record<string,string>>({});
+  const [preparedCharacterId, setPreparedCharacterId] = useState('');
+  const [preparedPlayerEmail, setPreparedPlayerEmail] = useState('');
   const currentMember = members.find(member => member.userId === currentUserId);
   const linkedCharacter = characters.find(character => character.id === currentMember?.characterId);
 
@@ -51,17 +52,21 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
     && !members.some(member => member.characterId === character.id && member.userId !== currentUserId)
   ), [personalCharacters, currentUserId, campaignId, members]);
 
-  const assignPrepared = async (member: MembroCampanha) => {
-    const selected = preparedChoice[member.userId];
-    const character = availablePrepared.find(item => item.id === selected);
-    if (!onAssignPreparedCharacter || !character || busy || member.role !== 'jogador' || member.status !== 'ativo') return;
-    if (!window.confirm(`Entregar a ficha "${character.nome}" para ${member.nome || 'este jogador'}? A ficha passará a pertencer ao jogador, e sua ficha anterior não será apagada.`)) return;
-    setBusy(member.userId);
+  const assignPrepared = async () => {
+    const character = availablePrepared.find(item => item.id === preparedCharacterId);
+    const email = preparedPlayerEmail.trim().toLowerCase();
+    if (!onAssignPreparedCharacter || !character || busy || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return;
+    const confirmed = window.confirm(
+      `Entregar definitivamente a ficha "${character.nome}" para a conta ${email}? A ficha passará a pertencer ao jogador e não será apagada nenhuma ficha anterior.`
+    );
+    if (!confirmed) return;
+    setBusy('prepared-character');
     setMessage('');
     try {
-      await onAssignPreparedCharacter(campaignId, member.userId, character.id);
-      setPreparedChoice(current => ({ ...current, [member.userId]: '' }));
-      setMessage(`Ficha "${character.nome}" entregue. O jogador já pode reabrir a Mesa.`);
+      await onAssignPreparedCharacter(campaignId, email, character.id);
+      setPreparedCharacterId('');
+      setPreparedPlayerEmail('');
+      setMessage(`Ficha "${character.nome}" entregue ao e-mail informado. O jogador pode reabrir a Mesa para acessá-la.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Não foi possível entregar a ficha.');
     } finally {
@@ -120,7 +125,7 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
         <div>
           <p className="ro-eyebrow">Participantes</p>
           <h3>Membros da campanha</h3>
-          <p>O jogador entra pelo convite e escolhe uma ficha que já pertence à própria conta.</p>
+          <p>O jogador pode vincular a própria ficha, ou o Mestre pode entregar um Desvelado pronto pelo e-mail de login.</p>
         </div>
         <div className="campaign-members__invite">
           <code>{inviteCode}</code>
@@ -166,6 +171,37 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
         </article>
       )}
 
+      {canManage && onAssignPreparedCharacter && (
+        <form className="campaign-members__assign-by-email"
+          onSubmit={event => { event.preventDefault(); void assignPrepared(); }}>
+          <div>
+            <p className="ro-eyebrow">Personagens prontos</p>
+            <strong>Entregar Desvelado por e-mail</strong>
+            <small>O jogador deve possuir conta e já ter entrado nesta campanha pelo convite. A entrega transfere a ficha para a conta dele.</small>
+          </div>
+          <label>
+            <span>Ficha preparada pelo Mestre</span>
+            <select required value={preparedCharacterId} disabled={busy === 'prepared-character'}
+              onChange={event => setPreparedCharacterId(event.target.value)}>
+              <option value="">Selecione a ficha</option>
+              {availablePrepared.map(character => (
+                <option key={character.id} value={character.id}>{character.nome} · Nível {character.nivel}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>E-mail de login do jogador</span>
+            <input type="email" required autoComplete="email" maxLength={254}
+              placeholder="jogador@exemplo.com"
+              value={preparedPlayerEmail} disabled={busy === 'prepared-character'}
+              onChange={event => setPreparedPlayerEmail(event.target.value)} />
+          </label>
+          <button type="submit" disabled={Boolean(busy) || !preparedCharacterId || !preparedPlayerEmail.trim()}>
+            {busy === 'prepared-character' ? 'Entregando…' : 'Entregar ficha ao e-mail'}
+          </button>
+        </form>
+      )}
+
       <div className="campaign-members__list">
         {members.map(member => {
           const self = member.userId === currentUserId;
@@ -206,21 +242,6 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
                       <Link2 size={12} />
                       {memberCharacter ? memberCharacter.nome : 'Jogador escolhe a própria ficha'}
                     </span>
-                    {member.role === 'jogador' && member.status === 'ativo' && onAssignPreparedCharacter && (
-                      <div className="campaign-members__assign-prepared">
-                        <label>
-                          <span>Entregar Desvelado pronto</span>
-                          <select value={preparedChoice[member.userId] || ''} disabled={busy === member.userId || !availablePrepared.length}
-                            aria-label={`Selecionar ficha pronta para ${member.nome || 'jogador'}`}
-                            onChange={event => setPreparedChoice(current => ({ ...current, [member.userId]: event.target.value }))}>
-                            <option value="">Selecionar ficha</option>
-                            {availablePrepared.map(item => <option value={item.id} key={item.id}>{item.nome} · Nível {item.nivel}</option>)}
-                          </select>
-                        </label>
-                        <button type="button" disabled={busy === member.userId || !preparedChoice[member.userId]}
-                          onClick={() => { void assignPrepared(member); }}>Entregar ficha</button>
-                      </div>
-                    )}
                     <button
                       type="button"
                       disabled={busy === member.userId}
