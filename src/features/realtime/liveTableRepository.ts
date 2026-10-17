@@ -114,6 +114,18 @@ export const liveTableRepository = {
     }
     return token(data);
   },
+  async removeOwnCharacterToken(id: string) {
+    const { error } = await client().rpc('remove_own_character_token', { p_token_id: id });
+    if (error) {
+      if (error.message.includes('TOKEN_NOT_OWNED')) {
+        throw new Error('Você só pode remover o token visível do seu próprio Desvelado vinculado à campanha.');
+      }
+      if (error.message.includes('TOKEN_NOT_FOUND')) {
+        throw new Error('O token não existe mais no mapa. Atualize a Mesa.');
+      }
+      throw error;
+    }
+  },
   async patchOwnToken(id: string, patch: Partial<TokenMapa>) {
     const positioning = patch.x !== undefined || patch.y !== undefined ||
       patch.tokenSize !== undefined || patch.rangeCells !== undefined;
