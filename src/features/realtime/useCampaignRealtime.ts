@@ -3,6 +3,7 @@ import { Contador, MapaNarrativo, TokenMapa } from '../../types/campaign';
 import { UserRole } from '../../types/auth';
 import { CharacterResourceUpdate, LiveSessionState, liveTableRepository } from './liveTableRepository';
 import { useSessionPresence } from './useSessionPresence';
+import { explainRealtimeError } from './explainRealtimeError';
 
 type ConnectionStatus = 'offline' | 'connecting' | 'connected';
 type DraftCounter = Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>;
@@ -43,12 +44,14 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState<ConnectionStatus>('offline');
   const [error, setError] = useState<string>();
+  const [operationError, setOperationError] = useState<string>();
   const onCharacterUpdateRef = useRef(onCharacterUpdate);
   useEffect(() => { onCharacterUpdateRef.current = onCharacterUpdate; }, [onCharacterUpdate]);
   const presence = useSessionPresence(campaignId, userId, userName, role, enabled);
 
   useEffect(() => {
     if (!enabled || !campaignId || !userId) {
+      setError(undefined); setOperationError(undefined);
       setState(undefined); syncCounters(role === 'mestre' ? fallback.counters : []); setMaps(fallback.maps); setTokens(fallback.tokens); setReady(false); setStatus('offline'); return;
     }
     let active = true;
@@ -60,7 +63,7 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
       // A visibility update may have arrived while initial load was pending.
       if (visibilityLoadSequence === 0) setTokens(data.tokens);
       setReady(true);
-    }).catch(reason => { if (active) { setError(reason.message || String(reason)); setStatus('offline'); } });
+    }).catch(reason => { if (active) { setError(explainRealtimeError(reason)); setStatus('offline'); } });
     const channel = liveTableRepository.subscribe(campaignId, {
       state: item => active && setState(item),
       counter: (event, item) => {
@@ -100,12 +103,19 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
   }, [campaignId, enabled, fallback.counters, fallback.maps, fallback.tokens, role, userId]);
 
   const action = useCallback(async <T,>(operation: () => Promise<T>) => {
-    try { setError(undefined); return await operation(); }
-    catch (reason) { const message = reason instanceof Error ? reason.message : String(reason); setError(message); throw reason; }
+    // Failed writes are not Realtime connection failures. Keep the connection
+    // indicator accurate and report the operation error separately.
+    setOperationError(undefined);
+    try { return await operation(); }
+    catch (reason) {
+      const message = explainRealtimeError(reason);
+      setOperationError(message);
+      throw reason instanceof Error ? reason : new Error(message);
+    }
   }, []);
 
   return {
-    state, counters, maps, tokens, ready, status, error, presence,
+    state, counters, maps, tokens, ready, status, error, operationError, presence,
     saveState: (patch: Partial<LiveSessionState>) => userId ? action(async () => { const item = await liveTableRepository.saveState(campaignId, userId, patch); setState(item); return item; }) : Promise.reject(new Error('Sessão indisponível.')),
     addCounter: (item: DraftCounter) => action(async () => {
       if (role !== 'mestre') throw new Error('Contadores são exclusivos do Mestre.');
