@@ -41,7 +41,9 @@ test('In existing campaign GM adds/removes multiple prepared sheets without a pa
  assert.match(panel,/onManagePreparedCharacter\(campaignId, characterId, attach\)/);
  assert.match(panel,/freeCharacters\.map\(character/);
  assert.match(panel,/stagedCharacters\.map\(character/);
- assert.match(panel,/members\.some\(m => m\.characterId === character\.id\)/);
+ assert.match(panel,/members\.find\(m => m\.characterId === character\.id\)/);
+ assert.match(panel,/belongsToMasterSlot/);
+ assert.match(panel,/Liberar vínculo do Mestre/);
  assert.match(repo,/\.rpc\('manage_master_character_roster'/);
  assert.match(repo,/p_attach: attach/);
 });
