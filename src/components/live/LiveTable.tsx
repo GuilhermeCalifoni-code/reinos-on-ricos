@@ -392,6 +392,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
       </header>
 
       {realtime.error && <p role="alert" className="live-vtt__sync-error">Sincronização indisponível: {realtime.error}</p>}
+      {realtime.operationError && <p role="alert" className="live-vtt__sync-error live-vtt__recoverable-error">Alteração não confirmada: {realtime.operationError}</p>}
       {erroMesa && <div role="alert" className="live-vtt__sync-error live-vtt__recoverable-error">
         <span>Alteração não confirmada. {erroMesa}</span>
         <button type="button" onClick={() => setErroMesa('')} aria-label="Dispensar erro da Mesa">Fechar</button>
