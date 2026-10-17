@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Dice5, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import type { NewSessionEvent } from '../../types/sessionEvent';
 
+/** d20 advantage/disadvantage selects one die; normal pools sum all dice. */
+export type MasterRollMode = 'normal' | 'vantagem' | 'desvantagem';
+
 export type MasterRollResult = {
   faces: number;
   quantity: number;
@@ -9,6 +12,9 @@ export type MasterRollResult = {
   modifier: number;
   total: number;
   difficulty?: number;
+  mode?: Exclude<MasterRollMode, 'normal'>;
+  selectedRoll?: number;
+  discardedRoll?: number;
 };
 
 export function rollMasterDice(
@@ -16,17 +22,32 @@ export function rollMasterDice(
   quantity: number,
   modifier: number,
   difficulty?: number,
-  random: () => number = Math.random
+  random: () => number = Math.random,
+  mode: MasterRollMode = 'normal'
 ): MasterRollResult {
   if (![4, 6, 8, 10, 12, 20, 100].includes(faces) ||
       !Number.isInteger(quantity) || quantity < 1 || quantity > 10 ||
       !Number.isInteger(modifier) || Math.abs(modifier) > 99 ||
-      (difficulty !== undefined && (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 100))) {
+      (difficulty !== undefined && (!Number.isInteger(difficulty) || difficulty < 1 || difficulty > 100)) ||
+      !['normal', 'vantagem', 'desvantagem'].includes(mode) ||
+      (mode !== 'normal' && (faces !== 20 || quantity !== 2))) {
     throw new Error('Configure dados, quantidade, modificador e DT válidos.');
   }
   const rolls = Array.from({length: quantity}, () =>
     Math.min(faces, Math.max(1, Math.floor(random() * faces) + 1))
   );
+  if (mode === 'vantagem' || mode === 'desvantagem') {
+    const selectedRoll = mode === 'vantagem' ? Math.max(...rolls) : Math.min(...rolls);
+    // Both dice are shown in the log; only the selected d20 receives the modifier.
+    const selectedIndex = rolls.indexOf(selectedRoll);
+    return {
+      faces, quantity, rolls, modifier, mode,
+      selectedRoll,
+      discardedRoll: rolls[1 - selectedIndex],
+      total: selectedRoll + modifier,
+      ...(difficulty === undefined ? {} : {difficulty})
+    };
+  }
   return {faces, quantity, rolls, modifier,
     total: rolls.reduce((sum, die) => sum + die, modifier),
     ...(difficulty === undefined ? {} : {difficulty})};
@@ -40,6 +61,7 @@ interface Props {
 export const MasterDiceRoller: React.FC<Props> = ({onRegistrarRolagem}) => {
   const [faces, setFaces] = useState(20);
   const [quantity, setQuantity] = useState(1);
+  const [mode, setMode] = useState<MasterRollMode>('normal');
   const [modifier, setModifier] = useState(0);
   const [difficulty, setDifficulty] = useState('');
   const [shareWithPlayers, setShareWithPlayers] = useState(false);
@@ -49,30 +71,39 @@ export const MasterDiceRoller: React.FC<Props> = ({onRegistrarRolagem}) => {
   const [saved, setSaved] = useState(false);
   const [reason, setReason] = useState('');
 
+  const effectiveQuantity = mode === 'normal' ? quantity : 2;
+  const rollLabel = mode === 'vantagem' ? 'Vantagem' : mode === 'desvantagem' ? 'Desvantagem' : 'Soma dos dados';
+
   const roll = async () => {
     if (sending) return;
     setError('');
     setSaved(false);
     let rolled: MasterRollResult;
     try {
-      rolled = rollMasterDice(faces, quantity, modifier, difficulty === '' ? undefined : Number(difficulty));
+      rolled = rollMasterDice(faces, effectiveQuantity, modifier,
+        difficulty === '' ? undefined : Number(difficulty), Math.random, mode);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Dados inválidos.');
       return;
     }
     setResult(rolled);
     setSending(true);
+    const detail = rolled.mode
+      ? `${rollLabel}: ${rolled.quantity}d20 [${rolled.rolls.join(', ')}] → escolhido ${rolled.selectedRoll} (descartado ${rolled.discardedRoll})`
+      : `Soma: ${rolled.quantity}d${rolled.faces} [${rolled.rolls.join(', ')}]`;
     try {
       await onRegistrarRolagem({
         type: 'roll',
         visibility: shareWithPlayers ? 'todos' : 'mestre',
         characterId: null,
-        content: `Mestre · ${reason.trim() || 'Rolagem livre'}: ${quantity}d${faces} [${rolled.rolls.join(', ')}] ${modifier >= 0 ? '+' : '−'} ${Math.abs(modifier)} = ${rolled.total}${rolled.difficulty === undefined ? '' : ` (DT ${rolled.difficulty})`}.`,
+        content: `Mestre · ${reason.trim() || 'Rolagem livre'}: ${detail} ${modifier >= 0 ? '+' : '−'} ${Math.abs(modifier)} = ${rolled.total}${rolled.difficulty === undefined ? '' : ` (DT ${rolled.difficulty})`}.`,
         metadata: {
           authorRole: 'mestre',
           kind: 'master_free_roll',
-          roll: {kind: 'mestre_livre', faces, quantity, rolls: rolled.rolls, total: rolled.total,
-            modifier, ...(rolled.difficulty === undefined ? {} : {difficulty: rolled.difficulty})}
+          roll: {kind: 'mestre_livre', faces, quantity: effectiveQuantity, rolls: rolled.rolls, total: rolled.total,
+            mode, modifier,
+            ...(rolled.mode ? {selectedRoll: rolled.selectedRoll, discardedRoll: rolled.discardedRoll} : {}),
+            ...(rolled.difficulty === undefined ? {} : {difficulty: rolled.difficulty})}
         }
       });
       setSaved(true);
@@ -94,7 +125,11 @@ export const MasterDiceRoller: React.FC<Props> = ({onRegistrarRolagem}) => {
       </div>
       <div className="live-vtt__master-dice-fields">
         <label>Tipo de dado
-          <select value={faces} onChange={e => setFaces(Number(e.target.value))}>
+          <select value={faces} onChange={e => {
+            const next = Number(e.target.value);
+            setFaces(next);
+            if (next !== 20) setMode('normal');
+          }}>
             {[4, 6, 8, 10, 12, 20, 100].map(value => (
               <option key={value} value={value}>d{value}</option>
             ))}
@@ -102,7 +137,8 @@ export const MasterDiceRoller: React.FC<Props> = ({onRegistrarRolagem}) => {
         </label>
         <label>Quantidade
           <input aria-label="Quantidade de dados" type="number" min={1} max={10}
-            value={quantity} onChange={e => setQuantity(Number(e.target.value))} />
+            disabled={mode !== 'normal'}
+            value={effectiveQuantity} onChange={e => setQuantity(Number(e.target.value))} />
         </label>
         <label>Modificador
           <input aria-label="Modificador do Mestre" type="number" min={-99} max={99}
@@ -114,6 +150,27 @@ export const MasterDiceRoller: React.FC<Props> = ({onRegistrarRolagem}) => {
             onChange={e => setDifficulty(e.target.value)} />
         </label>
       </div>
+      <fieldset className="live-vtt__master-dice-mode">
+        <legend>Como rolar?</legend>
+        <div className="live-vtt__master-dice-mode-options">
+          {([
+            {id: 'normal', label: 'Normal (somar dados)', help: 'Soma os valores de todos os dados, mais o modificador.'},
+            {id: 'vantagem', label: 'Vantagem', help: 'Rola 2d20 e usa apenas o maior resultado.'},
+            {id: 'desvantagem', label: 'Desvantagem', help: 'Rola 2d20 e usa apenas o menor resultado.'}
+          ] as const).map(option => (
+            <label key={option.id} title={option.help}>
+              <input type="radio" name="master-roll-mode" value={option.id}
+                checked={mode === option.id}
+                disabled={faces !== 20 && option.id !== 'normal'}
+                onChange={() => setMode(option.id)} />
+              <span>{option.label}</span>
+            </label>
+          ))}
+        </div>
+        <small>{mode === 'normal'
+          ? 'Rolagem normal: os dados são somados. Para Vantagem ou Desvantagem, escolha d20.'
+          : `${rollLabel}: são rolados exatamente 2d20; somente o ${mode === 'vantagem' ? 'maior' : 'menor'} conta. O modificador entra uma única vez.`}</small>
+      </fieldset>
       <label className="live-vtt__master-dice-reason">Descrição da rolagem (opcional)
         <input value={reason} maxLength={100} onChange={e => setReason(e.target.value)}
           placeholder="Ex.: percepção do inimigo, evento, sorte..." />
@@ -130,8 +187,10 @@ export const MasterDiceRoller: React.FC<Props> = ({onRegistrarRolagem}) => {
         {sending ? 'Registrando...' : 'Rolar dados'}
       </button>
       {result && <div className="live-vtt__master-dice-result" role="status" aria-live="polite">
-        <span>{result.quantity}d{result.faces}: [{result.rolls.join(', ')}] {result.modifier >= 0 ? '+' : '−'} {Math.abs(result.modifier)}</span>
-        <strong>Total: {result.total}</strong>
+        <span>{result.mode === 'vantagem' ? 'Vantagem' : result.mode === 'desvantagem' ? 'Desvantagem' : 'Rolagem normal'} · {result.quantity}d{result.faces}: [{result.rolls.join(', ')}]</span>
+        {result.mode && <span>Usado: <b>{result.selectedRoll}</b> · Descartado: {result.discardedRoll}</span>}
+        <strong>Resultado: {result.total}</strong>
+        <span>Modificador: {result.modifier >= 0 ? '+' : '−'} {Math.abs(result.modifier)}{result.mode ? ' (aplicado ao dado escolhido)' : ''}</span>
         {result.difficulty !== undefined &&
           <span>{result.total >= result.difficulty ? 'Alcançou' : 'Não alcançou'} DT {result.difficulty}</span>}
         {saved && <span>Rolagem salva no Registro Vivo.</span>}
