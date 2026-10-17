@@ -254,7 +254,7 @@ export const CharactersListView: React.FC<CharactersListViewProps> = ({
                     Abrir ficha <ArrowRight />
                   </button>
                   {Boolean(onAtribuirPersonagem) && personagem.ownerUserId === currentUserId
-                    && campanhasDoMestre.some(campaign => !personagem.campaignId || campanha.id === personagem.campaignId) && (
+                    && campanhasDoMestre.some(campaign => !personagem.campaignId || campaign.id === personagem.campaignId) && (
                     <button type="button" className="ro-character-card__assign" onClick={() => {
                       setAssignmentNotice('');
                       setCharacterToAssign(personagem);
