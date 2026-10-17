@@ -282,6 +282,11 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const atualizarMapa = (id: string, patch: Partial<MapaNarrativo>) => { if (compartilhando) void realtime.patchMap(id, patch).catch(error => sinalizarErroMesa('Atualizar mapa', error)); };
   const removerMapa = (id: string) => { const mapa = mapasAtuais.find(item => item.id === id); if (compartilhando) void realtime.removeMap(id).then(() => { if (mapaAtualId === id) salvarEstado({ activeMapId: undefined }); if (mapa) registrarSemFalhar(sessionEventFactories.map(`Mapa removido: ${mapa.titulo}.`)); }).catch(error => sinalizarErroMesa('Remover mapa', error)); };
   const adicionarToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando) void realtime.addToken(item).catch(error => sinalizarErroMesa('Criar token', error)); };
+  const colocarMeuToken = async (mapId: string) => {
+    if (mestre || !personagemJogadorId) throw new Error('Vincule sua ficha de Jogador à campanha.');
+    if (!compartilhando) throw new Error('Aguarde a sincronização da Mesa.');
+    return realtime.placeOwnCharacterToken(mapId);
+  };
   const atualizarToken = (id: string, patch: Partial<TokenMapa>): Promise<unknown> => compartilhando ? realtime.patchToken(id, patch) : Promise.reject(new Error('Mesa não sincronizada.'));
   const removerToken = async (id: string) => {
     if (!mestre || !compartilhando) throw new Error('A remoção exige conexão como Mestre.');
@@ -291,7 +296,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const statusTexto = realtime.status === 'connected' ? 'Sincronizado' : realtime.status === 'connecting' ? 'Conectando' : 'Offline';
   const avisoRecursos = erroRecursos ? <p role="alert" className="live-vtt__sync-error">Não foi possível atualizar PV/Foco: {erroRecursos}</p> : null;
   const stageConteudo: ConteudoDeCena = conteudo === 'mapa' ? 'ambientacao' : conteudo;
-  const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} imageUrl={sceneImageUrl} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
+  const cena = <SceneStage campanha={campanha} mestre={mestre} conteudo={stageConteudo} title={sceneTitle} description={sceneDescription} imageUrl={sceneImageUrl} onAtualizarTexto={atualizarTextoCena} onMudarConteudo={mudarConteudo} mapas={mapasAtuais} tokensMapa={tokensAtuais} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAdicionarTokenProprio={colocarMeuToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} onRegistrarEvento={registrarSemFalhar} />;
   const registrarRolagemAtor = async (content: string, details: Record<string, unknown>) => {
     if (!mestre) throw new Error('Somente o Mestre pode rolar por NPCs e adversários.');
     const { visibility, ...metadata } = details;
@@ -300,7 +305,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
       content, metadata: { ...metadata, kind: 'actor_combat' }
     });
   };
-  const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagemJogadorId={personagemJogadorId} personagens={personagens} npcs={npcs} adversarios={adversarios} onActorUsed={(kind, id) => { if (kind === 'npc') void ensureSessionLink('npcIds', id); if (kind === 'adversario') void ensureSessionLink('adversarioIds', id); }} onActorRoll={registrarRolagemAtor} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
+  const mapaCena = <MapStage campanhaId={campanha.id} mapas={mapasAtuais} tokens={tokensAtuais} mestre={mestre} personagemJogadorId={personagemJogadorId} personagens={personagens} npcs={npcs} adversarios={adversarios} onActorUsed={(kind, id) => { if (kind === 'npc') void ensureSessionLink('npcIds', id); if (kind === 'adversario') void ensureSessionLink('adversarioIds', id); }} onActorRoll={registrarRolagemAtor} mapaAtualId={mapaAtualId} onSelecionarMapa={selecionarMapa} onAdicionarMapa={adicionarMapa} onAtualizarMapa={atualizarMapa} onRemoverMapa={removerMapa} onAdicionarToken={adicionarToken} onAdicionarTokenProprio={colocarMeuToken} onAtualizarToken={atualizarToken} onRemoverToken={removerToken} />;
   const closeTool = () => setFerramenta('nenhuma');
   const toggleCinematic = () => {
     setCinematic(value => {
