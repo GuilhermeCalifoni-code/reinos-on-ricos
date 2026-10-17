@@ -107,3 +107,63 @@
     grid-template-columns: minmax(0,1fr);
   }
 }
+
+
+/* d20 selection modes: normal pools stay additive, advantage keeps highest,
+   disadvantage keeps lowest. No sheet resources are touched. */
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-mode {
+  display: grid;
+  gap: .65rem;
+  padding: .75rem;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .4rem;
+  min-width: 0;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-mode legend {
+  padding-inline: .3rem;
+  color: var(--vtt-text);
+  font-size: .78rem;
+  font-weight: 750;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-mode-options {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: .5rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-mode-options label {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .55rem;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: .35rem;
+  font-size: .76rem;
+  line-height: 1.35;
+  font-weight: 650;
+  cursor: pointer;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-mode-options label:has(input:checked) {
+  border-color: var(--vtt-accent-bright);
+  background: rgba(195,148,83,.12);
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-mode-options label:has(input:disabled) {
+  opacity: .5;
+  cursor: not-allowed;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-mode-options input {
+  accent-color: var(--vtt-accent-bright);
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__master-dice-mode small {
+  color: var(--vtt-soft);
+  font-size: .75rem;
+  line-height: 1.5;
+}
+@media (max-width: 580px) {
+  .ro-app-shell--live .live-table--v5 .live-vtt__master-dice-mode-options {
+    grid-template-columns: 1fr;
+  }
+}
