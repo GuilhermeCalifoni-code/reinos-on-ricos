@@ -103,6 +103,17 @@ export const liveTableRepository = {
     return updated;
   },
   async removeToken(id: string) { const { error } = await client().from('map_tokens').delete().eq('id', id); if (error) throw error; },
+  async placeOwnCharacterToken(mapId: string) {
+    const { data, error } = await client().rpc('place_own_character_token', { p_map_id: mapId });
+    if (error) {
+      if (error.message.includes('LINK_YOUR_CHARACTER_FIRST')) throw new Error('Vincule seu Desvelado à campanha antes de colocar o token.');
+      if (error.message.includes('MAP_NOT_VISIBLE')) throw new Error('O Mestre precisa revelar o mapa antes de você colocar seu token.');
+      if (error.message.includes('TOKEN_HIDDEN_BY_MASTER')) throw new Error('Seu token já foi colocado, mas está oculto pelo Mestre. Peça que ele o revele.');
+      if (error.message.includes('CHARACTER_NOT_OWNED_OR_LINKED')) throw new Error('A ficha não está associada à sua conta nesta campanha. Atualize a Mesa.');
+      throw error;
+    }
+    return token(data);
+  },
   async patchOwnToken(id: string, patch: Partial<TokenMapa>) {
     const positioning = patch.x !== undefined || patch.y !== undefined ||
       patch.tokenSize !== undefined || patch.rangeCells !== undefined;
@@ -123,7 +134,11 @@ export const liveTableRepository = {
           p_token_size: patch.tokenSize ?? null,
           p_range_cells: patch.rangeCells ?? null
         });
-    if (error) throw error;
+    if (error) {
+      if (error.message.includes('TOKEN_NOT_OWNED')) throw new Error('Você só pode controlar o token do seu próprio Desvelado, associado à campanha.');
+      if (error.message.includes('TOKEN_NOT_FOUND')) throw new Error('O token não existe mais no mapa. Atualize a Mesa.');
+      throw error;
+    }
     return token(data);
   },
   async patchCharacterResources(id: string, patch: Partial<CharacterResourceUpdate>) { const values: Row = {}; if (patch.vidaAtual !== undefined) values.vida_atual = patch.vidaAtual; if (patch.focoAtual !== undefined) values.foco_atual = patch.focoAtual; if (patch.ruptura !== undefined) values.ruptura = patch.ruptura; if (patch.protecaoOniricaAtual !== undefined) values.protecao_onirica_atual = patch.protecaoOniricaAtual; const { data, error } = await client().from('personagens').update(values).eq('id', id).select().single(); if (error) throw error; return characterResource(data); },
