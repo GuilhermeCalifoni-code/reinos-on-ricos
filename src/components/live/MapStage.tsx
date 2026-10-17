@@ -28,6 +28,7 @@ interface MapStageProps {
   onAdicionarTokenProprio?: (mapId: string) => Promise<unknown>;
   onAtualizarToken: (id: string, parcial: Partial<TokenMapa>) => Promise<unknown> | void;
   onRemoverToken: (id: string) => Promise<unknown> | void;
+  onRemoverTokenProprio?: (id: string) => Promise<unknown>;
 }
 
 const cores: Record<TipoTokenMapa, string> = {
@@ -66,7 +67,8 @@ export const MapStage: React.FC<MapStageProps> = ({
   onAdicionarToken,
   onAdicionarTokenProprio,
   onAtualizarToken,
-  onRemoverToken
+  onRemoverToken,
+  onRemoverTokenProprio
 }) => {
   // Nunca exiba outro mapa como substituto quando o mapa ativo não é visível ao jogador.
   const mapaAtual = mapaAtualId ? mapas.find(mapa => mapa.id === mapaAtualId) : mapas[0];
@@ -438,6 +440,27 @@ export const MapStage: React.FC<MapStageProps> = ({
   const mudarPvDaCopia = (delta: number) => {
     if (!mestre || !tokenSelecionado || !tokenLife) return;
     ajustarToken({hpCurrent:addTokenHp(tokenLife.current,tokenLife.max,delta),hpMax:tokenLife.max});
+  };
+
+  const confirmarRemocaoMeuToken = async () => {
+    if (mestre || !onRemoverTokenProprio || !tokenSelecionado || removendoToken
+      || tokenSelecionado.tipo !== 'personagem'
+      || !personagemJogadorId || tokenSelecionado.characterId !== personagemJogadorId) return;
+    const tokenId = tokenSelecionado.id;
+    const confirmed = window.confirm(
+      `Remover apenas o token "${tokenSelecionado.nome}" do mapa? A ficha do seu Desvelado não será apagada.`
+    );
+    if (!confirmed) return;
+    setRemovendoToken(true);
+    setErroRemocao('');
+    try {
+      await onRemoverTokenProprio(tokenId);
+      setSelecionadoId(null);
+    } catch (error) {
+      setErroRemocao(error instanceof Error ? error.message : 'Não foi possível remover seu token.');
+    } finally {
+      setRemovendoToken(false);
+    }
   };
 
   const confirmarRemocaoToken = async () => {
@@ -886,6 +909,23 @@ export const MapStage: React.FC<MapStageProps> = ({
           )}
           </div>
 
+          {!mestre && onRemoverTokenProprio
+            && tokenSelecionado.tipo === 'personagem'
+            && Boolean(personagemJogadorId)
+            && tokenSelecionado.characterId === personagemJogadorId && (
+            <div className="map-stage__token-inspector-footer">
+              {erroRemocao && <p role="alert" className="map-stage__token-remove-error">{erroRemocao}</p>}
+              <div className="map-stage__token-inspector-actions" aria-label="Ações do meu token">
+                <button type="button" className="is-danger" disabled={removendoToken}
+                  title="Remove só esta peça do mapa, não apaga a ficha de personagem"
+                  onClick={() => { void confirmarRemocaoMeuToken(); }}>
+                  <Trash2 size={13} />
+                  {removendoToken ? 'Removendo…' : 'Remover meu token'}
+                </button>
+              </div>
+              <small>Seu Desvelado continuará salvo. Você poderá colocá-lo no mapa novamente.</small>
+            </div>
+          )}
           {mestre && (
             <div className="map-stage__token-inspector-footer">
               {erroRemocao && <p role="alert" className="map-stage__token-remove-error">{erroRemocao}</p>}
