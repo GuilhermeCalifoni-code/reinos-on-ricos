@@ -147,6 +147,12 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
     patchMap: (id: string, patch: Partial<MapaNarrativo>) => action(async () => { const updated = await liveTableRepository.patchMap(id, patch); setMaps(items => replace(items, updated)); return updated; }),
     removeMap: (id: string) => action(async () => { await liveTableRepository.removeMap(id); setMaps(items => items.filter(item => item.id !== id)); }),
     addToken: (item: DraftToken) => action(async () => { const created = await liveTableRepository.addToken(item); setTokens(items => replace(items, created)); return created; }),
+    placeOwnCharacterToken: (mapId: string) => action(async () => {
+      if (role !== 'jogador') throw new Error('Somente o Jogador pode colocar seu próprio Desvelado.');
+      const created = await liveTableRepository.placeOwnCharacterToken(mapId);
+      setTokens(items => replace(items, created));
+      return created;
+    }),
     patchToken: (id: string, patch: Partial<TokenMapa>) => action(async () => {
       if (patch.condicoes !== undefined) {
         if (role === 'observador') throw new Error('Observadores não podem alterar condições.');
