@@ -221,7 +221,7 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
               <small>{stagedCharacters.length} fichas suas nesta campanha</small>
               {stagedCharacters.map(character => {
                 const linkedMember = members.find(m => m.characterId === character.id);
-                const belongsToMasterSlot = linkedMember?.userId === currentUserId && linkedMember.role === 'mestre';
+                const belongsToMasterSlot = Boolean(linkedMember && linkedMember.userId === currentUserId && linkedMember.role === 'mestre');
                 const assignedToOtherMember = Boolean(linkedMember && !belongsToMasterSlot);
                 return <div key={character.id} className="campaign-members__roster-row">
                   <span>{character.nome} · Nível {character.nivel}</span>
