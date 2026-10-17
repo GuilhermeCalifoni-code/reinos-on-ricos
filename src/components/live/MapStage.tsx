@@ -25,6 +25,7 @@ interface MapStageProps {
   onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void;
   onRemoverMapa: (id: string) => void;
   onAdicionarToken: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
+  onAdicionarTokenProprio?: (mapId: string) => Promise<unknown>;
   onAtualizarToken: (id: string, parcial: Partial<TokenMapa>) => Promise<unknown> | void;
   onRemoverToken: (id: string) => Promise<unknown> | void;
 }
@@ -63,6 +64,7 @@ export const MapStage: React.FC<MapStageProps> = ({
   onAtualizarMapa,
   onRemoverMapa,
   onAdicionarToken,
+  onAdicionarTokenProprio,
   onAtualizarToken,
   onRemoverToken
 }) => {
@@ -108,6 +110,8 @@ export const MapStage: React.FC<MapStageProps> = ({
   const [areaRadius, setAreaRadius] = useState(3);
   const [areaColor, setAreaColor] = useState('#dc884c');
   const [tokenError, setTokenError] = useState('');
+  const [playerTokenError, setPlayerTokenError] = useState('');
+  const [placingOwnToken, setPlacingOwnToken] = useState(false);
   const [abaToken, setAbaToken] = useState<'controle' | 'ficha'>('controle');
   const [ferramentasMapaAbertas, setFerramentasMapaAbertas] = useState(() =>
     typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -118,6 +122,12 @@ export const MapStage: React.FC<MapStageProps> = ({
 
   const gridSize = clamp(mapaAtual?.gridSize ?? 64, 24, 160);
   const tokenSelecionado = tokensAtuais.find(token => token.id === selecionadoId) || null;
+  const meuToken = !mestre && personagemJogadorId
+    ? tokensAtuais.find(token => token.tipo === 'personagem' && token.characterId === personagemJogadorId)
+    : undefined;
+  const minhaFichaNoMapa = !mestre && personagemJogadorId
+    ? personagens.find(character => character.id === personagemJogadorId)
+    : undefined;
   const npcDoToken = tokenSelecionado?.npcId ? npcs.find(npc => npc.id === tokenSelecionado.npcId) : undefined;
   const adversarioDoToken = tokenSelecionado?.adversaryId ? adversarios.find(a => a.id === tokenSelecionado.adversaryId) : undefined;
   const modeloAtorDoToken = npcDoToken || adversarioDoToken;
@@ -147,6 +157,20 @@ export const MapStage: React.FC<MapStageProps> = ({
     setNovoStoragePath('');
     setArquivoNome('');
     setAssetError('');
+  };
+
+  const colocarMeuToken = async () => {
+    if (!onAdicionarTokenProprio || !mapaAtual || !mapaVisivel || !personagemJogadorId || placingOwnToken) return;
+    setPlayerTokenError('');
+    setPlacingOwnToken(true);
+    try {
+      const token = await onAdicionarTokenProprio(mapaAtual.id) as TokenMapa;
+      if (token?.id) setSelecionadoId(token.id);
+    } catch (cause) {
+      setPlayerTokenError(cause instanceof Error ? cause.message : 'Não foi possível colocar seu token.');
+    } finally {
+      setPlacingOwnToken(false);
+    }
   };
 
   const criarToken = (event: React.FormEvent) => {
@@ -272,7 +296,10 @@ export const MapStage: React.FC<MapStageProps> = ({
 
   const finalizarArrasto = () => {
     if (arrastando && posicoesLocais[arrastando]) {
-      onAtualizarToken(arrastando, posicoesLocais[arrastando]);
+      setTokenError('');
+      void Promise.resolve()
+        .then(() => onAtualizarToken(arrastando, posicoesLocais[arrastando]))
+        .catch(cause => setTokenError(cause instanceof Error ? cause.message : 'Não foi possível salvar a posição.'));
     }
     if (arrastando) {
       setPosicoesLocais(atual => {
@@ -395,7 +422,7 @@ export const MapStage: React.FC<MapStageProps> = ({
   const ajustarToken = (patch: Partial<TokenMapa>) => {
     if (!tokenSelecionado || !podeControlarToken(tokenSelecionado)) return;
     setTokenError('');
-    void Promise.resolve(onAtualizarToken(tokenSelecionado.id, patch))
+    void Promise.resolve().then(() => onAtualizarToken(tokenSelecionado.id, patch))
       .catch(err => setTokenError(err instanceof Error ? err.message : 'Não foi possível salvar a alteração.'));
   };
 
@@ -523,6 +550,26 @@ export const MapStage: React.FC<MapStageProps> = ({
         </p>
       )}
 
+      {!mestre && mapaVisivel && mapaAtual && onAdicionarTokenProprio && (
+        <div className="map-stage__player-placement" aria-label="Controle do meu Desvelado">
+          {meuToken ? (
+            <button type="button" onClick={() => {
+              setPlayerTokenError('');
+              setSelecionadoId(meuToken.id);
+            }}>
+              Controlar meu token · ajustar tamanho
+            </button>
+          ) : personagemJogadorId ? (
+            <button type="button" disabled={placingOwnToken} onClick={() => { void colocarMeuToken(); }}>
+              {placingOwnToken ? 'Colocando token…' : 'Colocar meu Desvelado no mapa'}
+            </button>
+          ) : (
+            <p>Associe sua ficha no campo “Minha ficha” da Mesa antes de colocar seu token.</p>
+          )}
+          {minhaFichaNoMapa && <small>Personagem: {minhaFichaNoMapa.nome}. Você controla somente seus próprios tokens.</small>}
+          {playerTokenError && <p role="alert" className="map-stage__token-error">{playerTokenError}</p>}
+        </div>
+      )}
       {marcandoArea && mestre && <div className="map-stage__area-hint" role="status">
         Clique ou toque no mapa para marcar círculos de área de efeito. Use “Concluir áreas” para voltar a mover tokens.
       </div>}
@@ -947,7 +994,7 @@ export const MapStage: React.FC<MapStageProps> = ({
                       <input value={novoToken} onChange={event => setNovoToken(event.target.value)} placeholder="Nome do marcador" />
                       <select value={tipoToken} onChange={event => setTipoToken(event.target.value as TipoTokenMapa)}>
                         <option value="marcador">Marcador</option>
-                        <option value="personagem">Personagem manual</option>
+                        <option value="personagem">Personagem sem ficha vinculada (não controlável pelo Jogador)</option>
                         <option value="npc">NPC manual</option>
                         <option value="adversario">Adversário manual</option>
                       </select>
