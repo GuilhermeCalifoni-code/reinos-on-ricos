@@ -43,6 +43,14 @@ export const getRollDisplay = (event: SessionEvent): { label: string; isDamage: 
     return { label: `Realidade ${roll.realidade} · Sonhar ${roll.sonhar}`, isDamage: false };
   }
   if (typeof roll.total === 'number') {
+    if (roll.kind === 'mestre_livre' && (roll.mode === 'vantagem' || roll.mode === 'desvantagem')
+      && typeof roll.selectedRoll === 'number' && typeof roll.discardedRoll === 'number') {
+      const modeLabel = roll.mode === 'vantagem' ? 'Vantagem' : 'Desvantagem';
+      return {
+        label: `${modeLabel}: ${roll.total} · d20 usado ${roll.selectedRoll} (descartado ${roll.discardedRoll})`,
+        isDamage: false
+      };
+    }
     return { label: `Resultado: ${roll.total}`, isDamage: false };
   }
   return null;
