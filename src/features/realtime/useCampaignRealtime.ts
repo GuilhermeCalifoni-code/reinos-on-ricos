@@ -214,6 +214,11 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
         throw error;
       }
     }),
+    removeOwnToken: (id: string) => action(async () => {
+      if (role !== 'jogador') throw new Error('Somente o Jogador pode remover seu próprio token.');
+      await liveTableRepository.removeOwnCharacterToken(id);
+      setTokens(items => items.filter(item => item.id !== id));
+    }),
     removeToken: (id: string) => action(async () => { await liveTableRepository.removeToken(id); setTokens(items => items.filter(item => item.id !== id)); })
     , patchCharacterResources: (id: string, patch: Partial<CharacterResourceUpdate>) => action(() => liveTableRepository.patchCharacterResources(id, patch))
   };
