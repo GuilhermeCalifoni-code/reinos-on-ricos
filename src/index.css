@@ -26,6 +26,7 @@
 @import "./design-system/live-dice-character-association.css";
 @import "./design-system/live-master-dice.css";
 @import "./design-system/character-assignment.css";
+@import "./design-system/live-player-token-placement.css";
 
 @layer base {
   :root {
