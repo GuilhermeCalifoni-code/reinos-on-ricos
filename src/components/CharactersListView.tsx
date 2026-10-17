@@ -10,10 +10,12 @@ import {
   Sparkles,
   Sun,
   TriangleAlert,
-  Users
+  Users,
+  Send
 } from 'lucide-react';
 import { Personagem } from '../types/character';
 import { AssetImage } from './system/AssetImage';
+import { AssignCharacterModal, type CharacterAssignmentCampaign } from './campaign/AssignCharacterModal';
 
 interface CharactersListViewProps {
   personagens: Personagem[];
@@ -21,6 +23,8 @@ interface CharactersListViewProps {
   onSelecionarPersonagem: (p: Personagem) => void;
   onNovoPersonagem: () => void;
   onImportarJSON: () => void;
+  campanhasDoMestre?: CharacterAssignmentCampaign[];
+  onAtribuirPersonagem?: (campaignId: string, email: string, characterId: string) => Promise<void>;
 }
 
 type Filter = 'todos' | 'meus' | 'em_campanha' | 'sem_campanha';
@@ -33,11 +37,15 @@ export const CharactersListView: React.FC<CharactersListViewProps> = ({
   currentUserId,
   onSelecionarPersonagem,
   onNovoPersonagem,
-  onImportarJSON
+  onImportarJSON,
+  campanhasDoMestre = [],
+  onAtribuirPersonagem
 }) => {
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState<Filter>('todos');
   const [layout, setLayout] = useState<LayoutMode>('grid');
+  const [characterToAssign, setCharacterToAssign] = useState<Personagem | null>(null);
+  const [assignmentNotice, setAssignmentNotice] = useState('');
 
   const isMine = (personagem: Personagem) => {
     if (!currentUserId) return true;
@@ -92,6 +100,17 @@ export const CharactersListView: React.FC<CharactersListViewProps> = ({
 
   return (
     <section className="ro-characters">
+      {characterToAssign && onAtribuirPersonagem && (
+        <AssignCharacterModal key={characterToAssign.id}
+          character={characterToAssign}
+          campaigns={campanhasDoMestre}
+          onClose={() => setCharacterToAssign(null)}
+          onAssign={async (campaignId, email, characterId) => {
+            await onAtribuirPersonagem(campaignId, email, characterId);
+            setAssignmentNotice('Desvelado entregue ao jogador e associado à campanha.');
+          }}
+        />
+      )}
       <img className="ro-characters__frame" src="/ro-login-frame.webp" alt="" aria-hidden="true" />
 
       <header className="ro-characters__hero">
@@ -111,6 +130,7 @@ export const CharactersListView: React.FC<CharactersListViewProps> = ({
         </div>
       </header>
 
+      {assignmentNotice && <p role="status" className="text-sm text-emerald-400">{assignmentNotice}</p>}
       <div className="ro-characters__toolbar">
         <label className="ro-characters__search">
           <Search />
@@ -233,6 +253,15 @@ export const CharactersListView: React.FC<CharactersListViewProps> = ({
                   <button type="button" className="ro-character-card__open" onClick={() => onSelecionarPersonagem(personagem)}>
                     Abrir ficha <ArrowRight />
                   </button>
+                  {Boolean(onAtribuirPersonagem) && personagem.ownerUserId === currentUserId
+                    && campanhasDoMestre.some(campaign => !personagem.campaignId || campanha.id === personagem.campaignId) && (
+                    <button type="button" className="ro-character-card__assign" onClick={() => {
+                      setAssignmentNotice('');
+                      setCharacterToAssign(personagem);
+                    }}>
+                      <Send size={17} aria-hidden="true"/> Associar jogador
+                    </button>
+                  )}
                 </div>
               </article>
             );
