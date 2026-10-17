@@ -25,6 +25,7 @@
 @import "./design-system/live-master-focus-oct15.css";
 @import "./design-system/live-dice-character-association.css";
 @import "./design-system/live-master-dice.css";
+@import "./design-system/character-assignment.css";
 
 @layer base {
   :root {
