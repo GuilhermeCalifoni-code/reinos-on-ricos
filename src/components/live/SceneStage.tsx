@@ -21,6 +21,7 @@ interface SceneStageProps {
   onAtualizarMapa: React.ComponentProps<typeof MapStage>['onAtualizarMapa'];
   onRemoverMapa: React.ComponentProps<typeof MapStage>['onRemoverMapa'];
   onAdicionarToken: React.ComponentProps<typeof MapStage>['onAdicionarToken'];
+  onAdicionarTokenProprio?: React.ComponentProps<typeof MapStage>['onAdicionarTokenProprio'];
   onAtualizarToken: React.ComponentProps<typeof MapStage>['onAtualizarToken'];
   onRemoverToken: React.ComponentProps<typeof MapStage>['onRemoverToken'];
   onRegistrarEvento?: (event: NewSessionEvent) => void;
@@ -33,7 +34,7 @@ const copy: Record<Exclude<ConteudoDeCena, 'mapa'>, { title: string; hint: strin
 };
 
 export const SceneStage: React.FC<SceneStageProps> = (props) => {
-  const { campanha, mestre, conteudo, title, description, imageUrl, onAtualizarTexto, onMudarConteudo, mapas, tokensMapa, mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAtualizarToken, onRemoverToken, onRegistrarEvento } = props;
+  const { campanha, mestre, conteudo, title, description, imageUrl, onAtualizarTexto, onMudarConteudo, mapas, tokensMapa, mapaAtualId, onSelecionarMapa, onAdicionarMapa, onAtualizarMapa, onRemoverMapa, onAdicionarToken, onAdicionarTokenProprio, onAtualizarToken, onRemoverToken, onRegistrarEvento } = props;
   const [editing, setEditing] = React.useState(false);
   const [showIntro, setShowIntro] = React.useState(true);
   const [draftTitle, setDraftTitle] = React.useState(title || '');
@@ -45,7 +46,7 @@ export const SceneStage: React.FC<SceneStageProps> = (props) => {
     return () => window.clearTimeout(timer);
   }, [conteudo, title, description, imageUrl]);
   const mudarConteudo = (proximo: ConteudoDeCena) => { onMudarConteudo(proximo); if (proximo !== conteudo) onRegistrarEvento?.({ type: 'scene_change', content: `A cena mudou para ${proximo}.`, metadata: { conteudo: proximo } }); };
-  if (conteudo === 'mapa') return <MapStage campanhaId={campanha.id} mapas={mapas} tokens={tokensMapa} mestre={mestre} mapaAtualId={mapaAtualId} onSelecionarMapa={onSelecionarMapa} onAdicionarMapa={onAdicionarMapa} onAtualizarMapa={onAtualizarMapa} onRemoverMapa={onRemoverMapa} onAdicionarToken={onAdicionarToken} onAtualizarToken={onAtualizarToken} onRemoverToken={onRemoverToken} />;
+  if (conteudo === 'mapa') return <MapStage campanhaId={campanha.id} mapas={mapas} tokens={tokensMapa} mestre={mestre} mapaAtualId={mapaAtualId} onSelecionarMapa={onSelecionarMapa} onAdicionarMapa={onAdicionarMapa} onAtualizarMapa={onAtualizarMapa} onRemoverMapa={onRemoverMapa} onAdicionarToken={onAdicionarToken} onAdicionarTokenProprio={onAdicionarTokenProprio} onAtualizarToken={onAtualizarToken} onRemoverToken={onRemoverToken} />;
   const texto = copy[conteudo];
   const sceneTitle = title?.trim() || texto.title;
   const sceneDescription = description?.trim() || texto.hint;
