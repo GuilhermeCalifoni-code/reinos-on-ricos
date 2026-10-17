@@ -1,0 +1,61 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=(file:string)=>readFileSync(file,'utf8');
+const sql=read('supabase/migrations/043_player_personal_token_placement_and_control.sql');
+const repo=read('src/features/realtime/liveTableRepository.ts');
+const realtime=read('src/features/realtime/useCampaignRealtime.ts');
+const table=read('src/components/live/LiveTable.tsx');
+const map=read('src/components/live/MapStage.tsx');
+const scene=read('src/components/live/SceneStage.tsx');
+const css=read('src/design-system/live-player-token-placement.css');
+
+test('Players place only own linked Desvelado into visible campaign map',()=>{
+  assert.match(sql,/create or replace function public\.place_own_character_token/);
+  assert.match(sql,/security definer/);
+  assert.match(sql,/m\.visibilidade <> 'mestre_privado'/);
+  assert.match(sql,/cm\.role = 'jogador'/);
+  assert.match(sql,/cm\.status = 'ativo'/);
+  assert.match(sql,/cm\.character_id into v_character_id/);
+  assert.match(sql,/p\.owner_user_id = v_user_id/);
+  assert.match(sql,/p\.campaign_id = v_campaign_id/);
+  assert.match(sql,/t\.character_id = v_character_id/);
+  assert.match(sql,/v_existing\.oculto/);
+  assert.match(sql,/public\.can_read_map_token/);
+  assert.match(sql,/grant execute on function public\.place_own_character_token\(uuid\) to authenticated/);
+  assert.doesNotMatch(sql,/grant execute on function public\.place_own_character_token\(uuid\) to anon/i);
+});
+test('Movement, size and range are restricted to visible token of real active Player',()=>{
+  assert.match(sql,/create or replace function public\.move_own_map_token/);
+  assert.match(sql,/v_token\.tipo <> 'personagem'/);
+  assert.match(sql,/p\.owner_user_id=cm\.user_id/);
+  assert.match(sql,/cm\.character_id=v_token\.character_id/);
+  assert.match(sql,/cm\.role='jogador'/);
+  assert.match(sql,/token_size = coalesce\(pg_catalog\.greatest\(0\.5, pg_catalog\.least\(4, p_token_size\)\)/);
+  assert.match(sql,/grant execute on function public\.move_own_map_token\(uuid,numeric,numeric,numeric,numeric\)/);
+});
+test('Player placement action is separate from Master map token insertion',()=>{
+  assert.match(repo,/async placeOwnCharacterToken\(mapId: string\)/);
+  assert.match(repo,/\.rpc\('place_own_character_token', \{ p_map_id: mapId \}\)/);
+  assert.match(realtime,/placeOwnCharacterToken: \(mapId: string\)/);
+  assert.match(realtime,/role !== 'jogador'/);
+  assert.match(realtime,/liveTableRepository\.placeOwnCharacterToken\(mapId\)/);
+  assert.match(table,/const colocarMeuToken = async \(mapId: string\)/);
+  assert.match(table,/role === 'jogador' \? colocarMeuToken : undefined/);
+  assert.match(map,/onAdicionarTokenProprio\?: \(mapId: string\) => Promise<unknown>/);
+  assert.match(scene,/onAdicionarTokenProprio=\{onAdicionarTokenProprio\}/);
+});
+test('Player can put/select token and can resize via inspector with visible errors',()=>{
+  assert.match(map,/Colocar meu Desvelado no mapa/);
+  assert.match(map,/Controlar meu token · ajustar tamanho/);
+  assert.match(map,/setSelecionadoId\(token\.id\)/);
+  assert.match(map,/meuToken\.id/);
+  assert.match(map,/Associe sua ficha no campo/);
+  assert.match(map,/setPlayerTokenError\(/);
+  assert.match(map,/role="alert" className="map-stage__token-error"/);
+  assert.match(map,/onAtualizarToken\(arrastando, posicoesLocais\[arrastando\]\)/);
+  assert.match(map,/\.catch\(cause => setTokenError\(/);
+  assert.match(map,/tokenSize: clamp\(\(tokenSelecionado\.tokenSize \?\? 1\) \+ \.25, \.5, 4\)/);
+  assert.match(map,/tokenSize: clamp\(\(tokenSelecionado\.tokenSize \?\? 1\) - \.25, \.5, 4\)/);
+  assert.match(css,/map-stage__player-placement/);
+});
