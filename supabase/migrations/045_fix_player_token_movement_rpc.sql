@@ -1,6 +1,6 @@
 -- Hotfix for player movement RPC failure observed in Supabase edge logs (HTTP 404).
 -- Remove invalid pg_catalog qualification of SQL greatest/least expressions:
--- PostgreSQL calls to pg_catalog.least(...) fail with SQLSTATE 42883.
+-- SQL expressions LEAST/GREATEST must not be schema-qualified (SQLSTATE 42883).
 -- Preserve the exact existing ownership, campaign and map-visibility checks.
 create or replace function public.move_own_map_token(
   p_token_id uuid,
