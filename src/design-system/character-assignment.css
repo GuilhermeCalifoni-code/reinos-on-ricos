@@ -1,0 +1,43 @@
+/* Ação contextual para entrega de fichas prontas pelo Mestre. */
+.ro-assign-character-overlay {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top, 0px)) 1rem max(1rem, env(safe-area-inset-bottom, 0px));
+  background: rgba(8, 11, 17, .78);
+  backdrop-filter: blur(5px);
+}
+.ro-assign-character-modal {
+  width: min(100%, 520px);
+  max-height: min(90dvh, 750px);
+  overflow-y: auto;
+  padding: clamp(1rem, 3vw, 1.6rem);
+  border: 1px solid var(--ro-line-strong);
+  border-radius: .6rem;
+  background: var(--ro-surface);
+  color: var(--ro-paper);
+  box-shadow: 0 24px 90px rgba(0, 0, 0, .38);
+}
+.ro-assign-character-modal__header { display: flex; justify-content: space-between; align-items: start; gap: 1rem; }
+.ro-assign-character-modal__header h2 { margin: .2rem 0 .65rem; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2rem; }
+.ro-assign-character-modal__header > button { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border: 1px solid var(--ro-line); border-radius: .4rem; }
+.ro-assign-character-modal > p { color: var(--ro-paper-muted); line-height: 1.6; font-size: .9rem; }
+.ro-assign-character-modal form { display: grid; gap: .9rem; margin-top: 1rem; }
+.ro-assign-character-modal form label { display: grid; gap: .35rem; font-weight: 650; font-size: .78rem; }
+.ro-assign-character-modal form :is(input, select) { width: 100%; min-height: 46px; padding: .55rem; background: var(--ro-bg); color: var(--ro-paper); border: 1px solid var(--ro-line-strong); border-radius: .4rem; font-size: 16px; }
+.ro-assign-character-modal__notice { font-size: .78rem; line-height: 1.5; color: var(--ro-ash); }
+.ro-assign-character-modal__error { font-size: .82rem; color: #ffc2bf; border: 1px solid #985458; padding: .65rem; border-radius: .4rem; }
+.ro-assign-character-modal__actions { display: flex; justify-content: flex-end; gap: .5rem; flex-wrap: wrap; }
+.ro-assign-character-modal__actions button { min-height: 44px; padding: .65rem 1rem; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: 1px solid var(--ro-copper); border-radius: .3rem; font-size: .8rem; font-weight: 700; background: var(--ro-copper); color: #16100b; }
+.ro-assign-character-modal__actions button.is-secondary { border-color: var(--ro-line-strong); background: transparent; color: var(--ro-paper); }
+.ro-assign-character-modal__actions button:disabled { opacity: .5; cursor: not-allowed; }
+.ro-characters .ro-character-card__assign { min-height: 43px; margin-top: .5rem; width: 100%; padding: .65rem 1rem; display: flex; align-items: center; justify-content: center; gap: .45rem; border: 1px solid var(--ro-copper); border-radius: .3rem; color: var(--ro-copper); font-weight: 700; font-size: .77rem; }
+.campaign-v4 .ro-character-card__assign-compact { display: block; min-height: 42px; padding: .5rem .7rem; margin-top: .75rem; width: 100%; color: var(--ro-copper); border: 1px solid var(--ro-copper); border-radius: .3rem; text-align: center; font-size: .79rem; font-weight: 700; }
+.campaign-v4 .ro-character-card__assigned-status { display: block; margin-top: .75rem; color: var(--ro-ash); font-size: .73rem; line-height: 1.4; }
+@media (max-width: 560px) {
+  .ro-assign-character-overlay { align-items: end; padding: .35rem; padding-bottom: max(.35rem, env(safe-area-inset-bottom, 0px)); }
+  .ro-assign-character-modal { border-radius: .65rem .65rem .2rem .2rem; max-height: 89dvh; }
+  .ro-assign-character-modal__actions button { flex: 1; }
+}
