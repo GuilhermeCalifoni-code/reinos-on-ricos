@@ -220,13 +220,16 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
             <div className="campaign-members__roster-list">
               <small>{stagedCharacters.length} fichas suas nesta campanha</small>
               {stagedCharacters.map(character => {
-                const assigned = members.some(m => m.characterId === character.id);
+                const linkedMember = members.find(m => m.characterId === character.id);
+                const belongsToMasterSlot = linkedMember?.userId === currentUserId && linkedMember.role === 'mestre';
+                const assignedToOtherMember = Boolean(linkedMember && !belongsToMasterSlot);
                 return <div key={character.id} className="campaign-members__roster-row">
                   <span>{character.nome} · Nível {character.nivel}</span>
-                  <button type="button" disabled={Boolean(busy) || assigned}
-                    title={assigned ? 'Personagem atribuído: não é possível retirar antes de desvincular.' : 'Retirar do elenco sem apagar a ficha'}
-                    onClick={() => { void managePrepared(character.id, false); }}>
-                    {assigned ? 'Já atribuído' : 'Retirar'}
+                  <button type="button" disabled={Boolean(busy) || assignedToOtherMember}
+                    title={assignedToOtherMember ? 'Personagem atribuído a um participante.' : belongsToMasterSlot
+                      ? 'Libera o antigo vínculo único do Mestre, mantendo a ficha no elenco.' : 'Retira a ficha do elenco sem apagá-la'}
+                    onClick={() => { void managePrepared(character.id, belongsToMasterSlot); }}>
+                    {assignedToOtherMember ? 'Já atribuído' : belongsToMasterSlot ? 'Liberar vínculo do Mestre' : 'Retirar'}
                   </button>
                 </div>;
               })}
