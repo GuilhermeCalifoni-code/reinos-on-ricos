@@ -3,6 +3,7 @@ import { Campanha, Sessao, NPC, Adversario, Local, Pista, LoreEntry, Anotacao, N
 import { Personagem } from '../types/character';
 import { SessionPlanner } from './campaign/SessionPlanner';
 import { CampaignMembersPanel } from './campaign/CampaignMembersPanel';
+import { AssignCharacterModal } from './campaign/AssignCharacterModal';
 import { CampaignAssetsPanel } from './campaign/CampaignAssetsPanel';
 import { CampaignActorsPanel } from './campaign/CampaignActorsPanel';
 import { CampaignMapsPanel } from './campaign/CampaignMapsPanel';
@@ -132,6 +133,8 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
   onExcluirCampanha
 }) => {
   const [abaAtiva, setAbaAtiva] = useState<CampaignTabType>('visao_geral');
+  const [characterToAssign, setCharacterToAssign] = useState<Personagem | null>(null);
+  const [assignmentNotice, setAssignmentNotice] = useState('');
   
   // Estados para modais simples de adição rápida
   const [modalNovaSessao, setModalNovaSessao] = useState(false);
@@ -274,6 +277,17 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
 
   return (
     <div className="campaign-v4 w-full flex flex-col pb-20">
+      {characterToAssign && onAtribuirFichaPreparada && (
+        <AssignCharacterModal key={characterToAssign.id}
+          character={characterToAssign}
+          campaigns={[{id: campanha.id, nome: campanha.nome}]}
+          onClose={() => setCharacterToAssign(null)}
+          onAssign={async (campaignId, email, characterId) => {
+            await onAtribuirFichaPreparada(campaignId, email, characterId);
+            setAssignmentNotice('Ficha entregue ao jogador. Ela continuará visível no elenco da campanha.');
+          }}
+        />
+      )}
       {/* Hero editorial da campanha */}
       <section className="ro-campaign-hero ro-campaign-hero--v4">
         <div className="ro-campaign-hero__copy">
@@ -573,8 +587,13 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
               />
             )}
 
+            {assignmentNotice && <p role="status" className="text-sm text-emerald-400">{assignmentNotice}</p>}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {personagens.map(pj => (
+              {personagens.map(pj => {
+                const linkedPlayer = membros.find(member => member.characterId === pj.id && member.role === 'jogador' && member.status === 'ativo');
+                const canAssign = canManageMembers && Boolean(onAtribuirFichaPreparada)
+                  && Boolean(currentUserId) && pj.ownerUserId === currentUserId && !linkedPlayer;
+                return (
                 <div
                   key={pj.id}
                   onClick={() => onAbrirFichaPersonagem(pj)}
@@ -608,8 +627,15 @@ export const CampaignDetailView: React.FC<CampaignDetailViewProps> = ({
                       </span>
                     </div>
                   </div>
+                  {canAssign && (
+                    <button type="button" className="ro-character-card__assign-compact"
+                      onClick={event => { event.stopPropagation(); setAssignmentNotice(''); setCharacterToAssign(pj); }}>
+                      Associar jogador
+                    </button>
+                  )}
+                  {linkedPlayer && <span className="ro-character-card__assigned-status">Associado a: {linkedPlayer.nome || 'Jogador da campanha'}</span>}
                 </div>
-              ))}
+              );})}
             </div>
           </div>
         )}
