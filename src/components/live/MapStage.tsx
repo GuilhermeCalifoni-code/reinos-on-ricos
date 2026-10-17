@@ -138,7 +138,7 @@ export const MapStage: React.FC<MapStageProps> = ({
     : null;
 
   const podeControlarToken = (token: TokenMapa) =>
-    mestre || Boolean(personagemJogadorId && token.characterId === personagemJogadorId);
+    mestre || Boolean(onAdicionarTokenProprio && personagemJogadorId && token.characterId === personagemJogadorId);
 
   const criarMapa = (event: React.FormEvent) => {
     event.preventDefault();
