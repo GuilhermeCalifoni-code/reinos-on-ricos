@@ -408,6 +408,35 @@ export default function App() {
     await Promise.all([personagensRemotos.refresh(), campanhasRemotas.recarregar()]);
   };
 
+  const handleAssociarPersonagemDaBiblioteca = async (campaignId: string, email: string, characterId: string) => {
+    if (campanhasRemotas.roleDaCampanha(campaignId) !== 'mestre') {
+      throw new Error('Você precisa ser Mestre dessa campanha para entregar fichas.');
+    }
+    const character = personagensRemotos.personal.find(item =>
+      item.id === characterId && item.ownerUserId === session?.authUserId
+    );
+    if (!character) throw new Error('Você só pode entregar fichas que pertencem à sua conta.');
+    if (character.campaignId && character.campaignId !== campaignId) {
+      throw new Error('Esta ficha já pertence a outra campanha.');
+    }
+    let attachedHere = false;
+    if (!character.campaignId) {
+      await campaignRepository.gerenciarFichaPreparada(campaignId, characterId, true);
+      attachedHere = true;
+    }
+    try {
+      await campaignRepository.atribuirFichaPreparadaPorEmail(campaignId, email, characterId);
+      await Promise.all([personagensRemotos.refresh(), campanhasRemotas.recarregar()]);
+    } catch (error) {
+      if (attachedHere) {
+        await personagensRemotos.refresh();
+        const detail = error instanceof Error ? error.message : 'Falha desconhecida.';
+        throw new Error(`A ficha foi adicionada à campanha, mas não entregue ao jogador: ${detail}`);
+      }
+      throw error;
+    }
+  };
+
   const handleVincularMinhaFicha = async (campaignId: string, characterId: string | null) => {
     await campaignRepository.vincularPersonagem(campaignId, characterId);
     await Promise.all([
@@ -752,6 +781,10 @@ export default function App() {
             onSelecionarPersonagem={handleAbrirFichaPersonagem}
             onNovoPersonagem={() => setModalCriarPersonagem(true)}
             onImportarJSON={() => fileInputRef.current?.click()}
+            campanhasDoMestre={campanhas.filter(campaign =>
+              campanhasRemotas.roleDaCampanha(campaign.id) === 'mestre'
+            ).map(campaign => ({id: campaign.id, nome: campaign.nome}))}
+            onAtribuirPersonagem={handleAssociarPersonagemDaBiblioteca}
           />
         );
 
