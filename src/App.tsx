@@ -398,7 +398,7 @@ export default function App() {
       throw new Error('Somente o Mestre pode preparar fichas na campanha.');
     }
     await campaignRepository.gerenciarFichaPreparada(campaignId, characterId, attach);
-    await personagensRemotos.refresh();
+    await Promise.all([personagensRemotos.refresh(), campanhasRemotas.recarregar()]);
   };
 
   const handleAtribuirFichaPreparada = async (campaignId: string, playerEmail: string, characterId: string) => {
