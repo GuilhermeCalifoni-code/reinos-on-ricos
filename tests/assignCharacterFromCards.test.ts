@@ -25,7 +25,7 @@ test('global Personagens cards offer direct handoff only to owned sheets for GM 
  assert.match(global,/ro-character-card__assign/);
  assert.match(global,/Associar jogador/);
  assert.match(global,/personagem\.ownerUserId === currentUserId/);
- assert.match(global,/campanhasDoMestre\.some\(campaign => !personagem\.campaignId \|\| campanha\.id === personagem\.campaignId\)/);
+ assert.match(global,/campanhasDoMestre\.some\(campaign => !personagem\.campaignId \|\| campaign\.id === personagem\.campaignId\)/);
  assert.match(app,/campanhasRemotas\.roleDaCampanha\(campaign\.id\) === 'mestre'/);
  assert.match(app,/onAtribuirPersonagem=\{handleAssociarPersonagemDaBiblioteca\}/);
  assert.match(app,/campaignRepository\.gerenciarFichaPreparada\(campaignId, characterId, true\)/);
