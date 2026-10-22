@@ -1,5 +1,4 @@
 export type CaracteristicaPotencia =
-  | 'area'
   | 'contador'
   | 'dano'
   | 'deslocamento'
@@ -25,14 +24,10 @@ export const REGRAS_PASSOS_POTENCIA: Array<{
   observacao?: string;
 }> = [
   {
-    id: 'area',
-    nome: 'Área',
-    regra: 'Base = Alvo. ±1 faixa por Passo.'
-  },
-  {
     id: 'contador',
     nome: 'Contador',
-    regra: '±1 no Contador por Passo.'
+    regra: '±1 unidade no limite por Passo.',
+    observacao: 'Altera o limite do Contador crescente ou unidades restantes do decrescente; não avança o progresso já registrado.'
   },
   {
     id: 'dano',
@@ -43,7 +38,7 @@ export const REGRAS_PASSOS_POTENCIA: Array<{
   {
     id: 'deslocamento',
     nome: 'Deslocamento',
-    regra: '1 Passo: Longe; 2 Passos: Muito Longe; 3 Passos: Além.'
+    regra: '±1 categoria de Deslocamento por Passo. Base: Próximo.'
   },
   {
     id: 'defesa',
@@ -53,12 +48,13 @@ export const REGRAS_PASSOS_POTENCIA: Array<{
   {
     id: 'quantidade',
     nome: 'Quantidade',
-    regra: '±1 unidade por Passo.'
+    regra: '±1 unidade por Passo.',
+    observacao: 'Não aumenta a Área nem substitui Espaço para atingir múltiplos alvos individuais.'
   },
   {
     id: 'resistencia',
     nome: 'Resistência',
-    regra: '±1 categoria por Passo.'
+    regra: '±1 ponto por Passo.'
   },
   {
     id: 'resistencia_materiais',
