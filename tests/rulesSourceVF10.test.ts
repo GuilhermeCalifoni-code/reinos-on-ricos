@@ -23,10 +23,12 @@ test('Distâncias do livro: muito próximo 1,5–3m, próximo 3–9m e longe 9�
   assert.match(DISTANCIAS_REINOS_ONIRICOS.longe.descricao, /9 a 15 m/);
 });
 
-test('O Compêndio não impõe dano contínuo automático a cada rodada', () => {
+test('Guia vf4: dano contínuo ocorre ao final de cada Rodada apenas com exposição persistente', () => {
   const text = getFullCompendiumRule('dano')?.sections.flatMap(s=>s.paragraphs||[]).join(' ') || '';
-  assert.match(text, /não repita automaticamente/i);
-  assert.doesNotMatch(text, /repetem o mesmo dado ao fim de cada Rodada/i);
+  assert.match(text, /ao final de cada Rodada/i);
+  assert.match(text, /exposição ao perigo continuar/i);
+  assert.match(text, /sair da Área/i);
+  assert.match(text, /sem perigo perigoso persistente|sem perigo persistente/i);
 });
 
 test('Teste Reflexo não é defesa universal contra manifestação Onírica realizada', () => {
