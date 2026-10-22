@@ -28,7 +28,7 @@ test('Guia vf4: dano contínuo ocorre ao final de cada Rodada apenas com exposi�
   assert.match(text, /ao final de cada Rodada/i);
   assert.match(text, /exposição ao perigo continuar/i);
   assert.match(text, /sair da Área/i);
-  assert.match(text, /sem perigo perigoso persistente|sem perigo persistente/i);
+  assert.match(text, /sem perigo persistente|não deixou fonte perigosa persistente/i);
 });
 
 test('Teste Reflexo não é defesa universal contra manifestação Onírica realizada', () => {
