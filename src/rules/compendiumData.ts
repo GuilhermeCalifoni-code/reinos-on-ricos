@@ -243,7 +243,7 @@ export const COMPENDIUM_ENTRIES: CompendiumEntry[] = [
       'Nível 3: 2 Passos.',
       'Nível 4: 2 Passos.',
       'Nível 5: 3 Passos.',
-      'Os Passos não podem ser divididos entre Dano, Defesa, Área, Resistência ou outras características diferentes.'
+      'Área de múltiplos alvos individuais exige Espaço; não é comprada diretamente por Passos.', 'Contadores recebem ±1 unidade no limite por Passo, não no progresso já preenchido.'
     ],
     keywords: ['potência', 'passos', 'dano', 'alcance', 'área', 'defesa', 'resistência', 'tamanho'],
     art: 'vortex'
@@ -399,6 +399,21 @@ export const COMPENDIUM_ENTRIES: CompendiumEntry[] = [
       'Proteção Onírica pode reduzir a perda de PV em 1 depois da comparação, no máximo 1 PO por ocorrência de dano.'
     ],
     keywords: ['dano', 'resistência', 'pv', 'dano massivo', 'crítico', 'proteção onírica'],
+    art: 'rupture'
+  },
+  {
+    id: 'dano-continuo',
+    category: 'referencia',
+    eyebrow: 'Perigos persistentes · Guia vf4',
+    title: 'Dano Contínuo',
+    summary: 'Enquanto houver exposição, role dano ao final de cada Rodada.',
+    answer: 'Resolva o dano inicial normalmente; se o alvo permanecer exposto a fogo, eletricidade, ácido ou outro perigo persistente, role novamente o mesmo dado ao final de cada Rodada.',
+    details: [
+      'O perigo precisa continuar presente e afetando o alvo.',
+      'A repetição cessa quando o alvo sai da Área, interrompe a fonte ou deixa de estar exposto.',
+      'Um efeito instantâneo sem fonte persistente não causa dano contínuo.'
+    ],
+    keywords: ['dano contínuo','rodada','fogo','ácido','eletricidade','exposição','perigo persistente','dano por rodada'],
     art: 'rupture'
   },
   {
