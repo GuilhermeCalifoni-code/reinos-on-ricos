@@ -44,7 +44,7 @@ export const RulesReference: React.FC = () => {
           <p className="ro-eyebrow">Referência de mesa</p>
           <h2>Regras essenciais</h2>
         </div>
-        <p>Consulta rápida do Livro Básico para usar durante a sessão sem quebrar o ritmo da mesa.</p>
+        <p>Consulta de mesa alinhada ao Guia de Regras vf4 (playtest). Mecânicas adicionais do Livro Básico permanecem disponíveis no Compêndio.</p>
       </header>
 
       <nav className="rules-reference__tabs" aria-label="Seções de regras">
@@ -119,6 +119,20 @@ export const RulesReference: React.FC = () => {
           </article>
 
           <article className="ro-surface">
+            <p className="ro-eyebrow">Alcance, Área e Duração — Guia vf4, p. 14</p>
+            <h3>O nível efetivamente utilizado define os limites</h3>
+            <p>Alcance base: Muito Próximo. Para alcançar Próximo, Longe, Muito Longe e Além, é necessário Espaço 2, 3, 4 e 5, respectivamente. Área base: um Alvo; múltiplos alvos individuais exigem Espaço e o nível de Área correspondente.</p>
+            <div className="rules-reference__grid rules-reference__grid--dt">
+              <span><strong>N1</strong>Instantâneo</span>
+              <span><strong>N2</strong>1 Rodada</span>
+              <span><strong>N3</strong>1 Rodada</span>
+              <span><strong>N4</strong>1 Cena</span>
+              <span><strong>N5</strong>1 Cena</span>
+            </div>
+            <p>O fim da duração encerra a alteração sustentada, mas não desfaz automaticamente consequências já ocorridas.</p>
+          </article>
+
+          <article className="ro-surface">
             <p className="ro-eyebrow">Efeitos do Sonhar</p>
             <h3>DT para agir contra o que já foi manifestado</h3>
             <p>A manifestação acontece primeiro. Só peça um novo teste quando alguém tentar agir diretamente contra, resistir ou superar aquilo que o Sonhar tornou real. Superar a DT permite realizar aquela tentativa; não desfaz automaticamente a manifestação.</p>
@@ -137,7 +151,7 @@ export const RulesReference: React.FC = () => {
           <article className="ro-surface rules-reference__feature">
             <p className="ro-eyebrow">Potência do Sonhar</p>
             <h3>Nível diz o que pode ser feito. Potência diz quanto aquilo é afetado.</h3>
-            <p>Passos representam intensidade. Em cada manifestação, escolha uma única característica mecânica e aplique nela todos os Passos disponíveis. Os Passos não são uma moeda para dividir entre Dano, Defesa, Área, Resistência ou outras características.</p>
+            <p>Passos representam intensidade. Em cada manifestação, escolha uma única característica mecânica e aplique nela todos os Passos disponíveis. Área não é uma característica comprada com Passos: para múltiplos alvos individuais, use os limites do Domínio Espaço.</p>
             <div className="rules-reference__power-levels">
               {PASSOS_POTENCIA_POR_NIVEL.map(item => (
                 <div key={item.nivel}>
@@ -170,6 +184,7 @@ export const RulesReference: React.FC = () => {
               <p><strong>Consequências naturais:</strong> uma manifestação pode causar dano, queda ou deslocamento como consequências da mesma alteração sem transformar cada consequência em um “benefício” comprado por Passo.</p>
               <p><strong>Dano:</strong> a progressão usual é d4 → d6 → d8 → d10 → d12. Potência não avança automaticamente para d20; d20 é reservado aos casos excepcionais indicados pelo livro.</p>
               <p><strong>Tamanho:</strong> o Livro Básico atualizado usa <em>Médio</em> como referência para Passos de Potência que alteram Tamanho.</p>
+              <p><strong>Contadores:</strong> Passos modificam o limite ou unidades restantes, jamais o progresso já registrado.</p>
             </div>
           </article>
         </div>
@@ -347,7 +362,7 @@ export const RulesReference: React.FC = () => {
 
           <article className="ro-surface">
             <p className="ro-eyebrow">Dano Contínuo</p>
-            <p>Perigos como fogo, eletricidade e ácido causam o dano inicial normalmente. Se a fonte persistir, o Mestre resolve novas ocorrências conforme a duração e as circunstâncias narrativas. Uma manifestação instantânea não passa a causar dano a cada Rodada sem regra aplicável.</p>
+            <p>Resolva o dano inicial normalmente. Enquanto o alvo continuar exposto a fogo, eletricidade, ácido ou outro perigo persistente, role novamente o mesmo dado de dano <strong>ao final de cada Rodada</strong>. Encerre quando o alvo sair da Área, neutralizar a fonte ou deixar de estar exposto. Um efeito instantâneo sem perigo persistente não se repete.</p>
           </article>
 
           <article className="ro-surface">
