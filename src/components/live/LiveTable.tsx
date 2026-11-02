@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Personagem } from '../../types/character';
+import type {NewSessionEvent} from '../../types/sessionEvent';
 import { Adversario, Campanha, Cena, Contador, ConteudoDeCena, Handout, MapaNarrativo, MembroCampanha, NPC, Pista, Sessao, TokenMapa } from '../../types/campaign';
 import { UserRole } from '../../types/auth';
 import { DiceRoller } from '../DiceRoller';
@@ -27,7 +28,7 @@ interface LiveTableProps {
   onAtualizarNPC: (id: string, patch: Partial<NPC>) => Promise<unknown>;
   onAtualizarAdversario: (id: string, patch: Partial<Adversario>) => Promise<unknown>; personagemJogadorId?: string; userId?: string; userName?: string; avatarUrl?: string; sessionId?: string; sessionTitle?: string; sessionDescription?: string; sessao?: Sessao; cenas: Cena[]; pistas: Pista[]; handouts: Handout[]; members?: MembroCampanha[]; registroOnline: boolean; onVoltar: () => void;
   onAtualizarPersonagem: (personagem: Personagem) => void;
-  onReceberRecursosPersonagem: (update: CharacterResourceUpdate) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem) => void;
+  onReceberRecursosPersonagem: (update: CharacterResourceUpdate) => void; onAbrirRuptura: (personagem: Personagem, delta: number, motivo: string) => void; onAbrirFicha: (personagem: Personagem, onRegistrarRolagem?: (event: NewSessionEvent)=>Promise<unknown>|void) => void;
   contadores: Contador[]; onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarContador: (id: string, parcial: Partial<Contador>) => void; onRemoverContador: (id: string) => void; onDuplicarContador: (id: string) => void;
   mapas: MapaNarrativo[]; onAdicionarMapa: (mapa: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarMapa: (id: string, parcial: Partial<MapaNarrativo>) => void; onRemoverMapa: (id: string) => void; onAtualizarSessao?: (id: string, patch: Partial<Sessao>) => Promise<unknown> | unknown;
   tokensMapa: TokenMapa[]; onAdicionarTokenMapa: (token: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => void; onAtualizarTokenMapa: (id: string, parcial: Partial<TokenMapa>) => void; onRemoverTokenMapa: (id: string) => void;
@@ -114,6 +115,15 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const selecionado = personagensVisiveis.find(p => p.id === selecionadoId) || personagensVisiveis[0] || null;
   const registro = useSessionEvents({ campaignId: campanha.id, sessionId: effectiveSessionId, userId, enabled: registroOnline, characterId: personagemJogadorId });
   const registrarSemFalhar = (event: Parameters<typeof registro.registrar>[0]) => { void registro.registrar(event).catch(error => sinalizarErroMesa('Registro Vivo', error)); };
+  const abrirFichaComRolagem = (personagem:Personagem) => {
+    const registroDaFicha = !mestre && personagem.id === personagemJogadorId
+      ? async (event:NewSessionEvent) => registro.registrar({
+          ...event, characterId: personagem.id, visibility: 'todos',
+          metadata: {...event.metadata,authorRole:'jogador'}
+        })
+      : undefined;
+    onAbrirFicha(personagem,registroDaFicha);
+  };
 
   useEffect(() => { if (!mapaAtualId && mapasAtuais[0]) setMapaLocalId(mapasAtuais[0].id); }, [mapaAtualId, mapasAtuais]);
   useEffect(() => {
@@ -609,7 +619,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               selecionadoId={selecionado?.id || ''}
               mestre={mestre}
               onSelecionar={setSelecionadoId}
-              onAbrirFicha={onAbrirFicha}
+              onAbrirFicha={abrirFichaComRolagem}
               onAjustar={ajustar}
               onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')}
               onActorRoll={registrarRolagemAtor}
@@ -701,7 +711,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
                       <div><span>Ficha rápida</span><h2>{selecionado.nome}</h2></div>
                     </div>
                     <p>Defesa {selecionado.defesa} · Resistência {selecionado.resistencia}</p>
-                    <button type="button" onClick={() => onAbrirFicha(selecionado)} className="ro-button mt-4">Abrir ficha completa</button>
+                    <button type="button" onClick={() => abrirFichaComRolagem(selecionado)} className="ro-button mt-4">Abrir ficha completa</button>
                   </div>
                 : <p className="live-table__empty">Selecione um personagem.</p>)}
               {ferramenta === 'contadores' && <CounterPanel campanhaId={campanha.id} contadores={contadoresAtuais} mestre={mestre} onAdicionar={adicionarContador} onAtualizar={atualizarContador} onRemover={removerContador} onDuplicar={duplicarContador} onRegistrarEvento={registrarSemFalhar} />}
