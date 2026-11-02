@@ -60,7 +60,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [rolagemNaFicha, setRolagemNaFicha] = useState<'mundano' | 'onirico' | null>(null);
   const [atributoNaFicha, setAtributoNaFicha] = useState<AtributoNome>('corpo');
   // As condições eram (e continuam sendo) marcadores temporários da interface.
-  const [condicoes,setCondicoes] = useState({oculto:false,impedido:false,vulneravel:false});
+  const [condicoes,setCondicoes] = useState({oculto:false,impedido:false,vulneravel:false,morte:personagem.vidaAtual===0});
   const prog = TABELA_PROGRESSAO[personagem.nivel] || TABELA_PROGRESSAO[1];
   const validacao = validarDistribuicaoDominios(personagem.dominios, personagem.nivel);
   const somaAtributos = Object.values(personagem.atributos).reduce((sum,value)=>sum+value,0);
@@ -267,7 +267,8 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
             <div>{([
               ['oculto','Oculto','Afeta tentativas de percepção ou localização'],
               ['impedido','Impedido','Limitação física ou sensorial'],
-              ['vulneravel','Vulnerável','Ações limitadas e vantagem contra o alvo']
+              ['vulneravel','Vulnerável','Ações limitadas e vantagem contra o alvo'],
+              ['morte','Morte','Marcador de Movimento de Morte; não muda PV automaticamente']
             ] as const).map(([key,title,description])=><button key={key} type="button" aria-pressed={condicoes[key]}
               className={condicoes[key]?'is-active':''} onClick={()=>setCondicoes(current=>({...current,[key]:!current[key]}))}>
               <strong>{title} {condicoes[key]?'· ativo':''}</strong><small>{description}</small>
