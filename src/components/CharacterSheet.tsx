@@ -219,7 +219,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           onRegistrarRolagem={onRegistrarRolagem}
           onAbrirModalRuptura={() => setModalRupturaAberto(true)} />
         <div className="ro-sheet__inline-roller-actions">
-          <small>Os resultados aparecem aqui, sem sair da ficha. Para registrar a rolagem para toda a mesa, utilize Dados na Mesa Ao Vivo.</small>
+          <small>{onRegistrarRolagem ? 'As rolagens são registradas na Mesa Ao Vivo para todos os jogadores.' : 'Rolagem local: para compartilhar o resultado, abra sua ficha a partir da Mesa Ao Vivo.'}</small>
           <button type="button" onClick={()=>onIrParaRolador(personagem,atributoNaFicha)}>Abrir rolador completo</button>
         </div>
       </section>
