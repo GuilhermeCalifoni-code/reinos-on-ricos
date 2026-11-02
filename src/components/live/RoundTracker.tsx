@@ -80,9 +80,17 @@ export const RoundTracker: React.FC<Props> = ({members,mestre,ready,value,onChan
         }>{p.nome || 'Jogador'}{value.actedPlayerIds.includes(p.userId)?' ✓':''}</span>)}
       </div>}
       {mestre && <div className="live-round-tracker__controls">
-        {!value?.active ? (
+        {!value ? (
           <button type="button" disabled={!ready||busy||!players.length}
             onClick={()=>void submit(firstRound(playerIds))}>Iniciar Rodada 1</button>
+        ) : !value.active ? (
+          <>
+            <button type="button" disabled={!ready||busy||!players.length}
+              onClick={()=>void submit({...value,active:true})}>Retomar Rodada {value.round}</button>
+            <button type="button" disabled={!ready||busy||!players.length}
+              onClick={() => {if(window.confirm('Reiniciar o controle a partir da Rodada 1?'))
+                void submit(firstRound(playerIds));}}>Reiniciar</button>
+          </>
         ) : <>
           {value.phase==='jogador' && <label>Próximo jogador
             <select value={value.currentPlayerId || ''} disabled={!ready||busy}
