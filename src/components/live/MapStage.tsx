@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, Ban, Crosshair, Eye, EyeOff, Grid3X3, Maximize2, Minus, Plus, Ruler, SlidersHorizontal, Trash2, Upload } from 'lucide-react';
+import { AlertTriangle, Ban, Skull, Crosshair, Eye, EyeOff, Grid3X3, Maximize2, Minus, Plus, Ruler, SlidersHorizontal, Trash2, Upload } from 'lucide-react';
 import { Adversario, CondicaoCombate, MapaNarrativo, NPC, TipoTokenMapa, TokenMapa } from '../../types/campaign';
 import { Personagem } from '../../types/character';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
@@ -45,7 +45,8 @@ const clamp = (value: number, min: number, max: number) => Math.max(min, Math.mi
 const combatConditions: {id:CondicaoCombate;label:string;help:string;Icon:typeof EyeOff}[] = [
   {id:'oculto',label:'Oculto',help:'Estado de combate: Oculto',Icon:EyeOff},
   {id:'impedido',label:'Impedido',help:'Estado de combate: Impedido',Icon:Ban},
-  {id:'vulneravel',label:'Vulnerável',help:'Estado de combate: Vulnerável',Icon:AlertTriangle}
+  {id:'vulneravel',label:'Vulnerável',help:'Estado de combate: Vulnerável',Icon:AlertTriangle},
+  {id:'morte',label:'Morte',help:'Marcador de morte ou Movimento de Morte; não altera PV automaticamente',Icon:Skull}
 ];
 
 export const MapStage: React.FC<MapStageProps> = ({
@@ -815,7 +816,7 @@ export const MapStage: React.FC<MapStageProps> = ({
             <section className="map-stage__conditions-editor" aria-label="Condições do token">
               <div className="map-stage__conditions-heading">
                 <strong>Condições de combate</strong>
-                <small>Pode marcar várias ao mesmo tempo</small>
+                <small>Pode marcar várias ao mesmo tempo. Morte é um marcador; não altera os PV.</small>
               </div>
               <div className="map-stage__conditions-options">
                 {combatConditions.map(({id,label,help,Icon}) => (
