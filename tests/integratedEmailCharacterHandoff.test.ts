@@ -39,7 +39,7 @@ test('Backend verifies exact email only inside active campaign and ownership on 
  assert.doesNotMatch(byEmail,/returns table|returns setof|select \* from auth\.users/i);
 });
 test('GM remains sheet-independent while players roll with their assigned campaign sheet',()=>{
- assert.match(live,/ferramenta === 'dados' && \(mestre \?/);
+ assert.match(live,/ferramenta === 'dados' \|\| ferramenta === 'onirico'/);
  assert.match(live,/<MasterDiceRoller onRegistrarRolagem/);
  assert.match(gm,/characterId: null/);
  assert.match(live,/personagemJogadorId === selecionado\.id/);
