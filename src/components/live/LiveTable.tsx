@@ -635,7 +635,16 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               <button type="button" onClick={closeTool} aria-label={`Fechar ${ferramenta}`} title="Fechar ferramenta">×</button>
             </header>
             <div className="live-vtt__tool-body">
-              {(ferramenta === 'dados' || ferramenta === 'onirico') && (mestre ? (
+              {(ferramenta === 'dados' || ferramenta === 'onirico') && (mestre && ferramenta === 'onirico' ? (
+                <div className="live-vtt__dice-workspace">
+                  <p>Teste Onírico livre do Mestre: 2d20 (Realidade e Sonhar), sem ficha associada ou gasto de recursos. Resultado privado por padrão.</p>
+                  <DiceRoller personagemAtivo={null} initialTab="onirico"
+                    onRegistrarRolagem={async event => {
+                      await registro.registrar({...event, characterId: null, visibility: 'mestre',
+                        metadata: {...event.metadata,authorRole:'mestre',kind:'onirico_livre'}});
+                    }} />
+                </div>
+              ) : mestre ? (
                 <MasterDiceRoller onRegistrarRolagem={async event => {
                   await registro.registrar({...event, characterId: null,
                     metadata: {...event.metadata, authorRole: 'mestre'}});
