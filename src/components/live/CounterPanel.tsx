@@ -20,14 +20,27 @@ export const CounterPanel: React.FC<CounterPanelProps> = ({
   campanhaId, contadores, mestre, onAdicionar, onAtualizar, onRemover, onDuplicar, compacto = false, onRegistrarEvento
 }) => {
   const [novoNome, setNovoNome] = useState('');
+  const [compartilharNovo, setCompartilharNovo] = useState(false);
   const [novoMaximo, setNovoMaximo] = useState(6);
   const [novoTipo, setNovoTipo] = useState<TipoContador>('progresso');
   const [novaDirecao, setNovaDirecao] = useState<DirecaoContador>('crescente');
   const [maximosEditando, setMaximosEditando] = useState<Record<string, string>>({});
   const [erro, setErro] = useState('');
 
-  // Todas as ações e todas as informações de contador pertencem somente ao Mestre.
-  if (!mestre) return null;
+  // Jogadores só recebem contadores explicitamente compartilhados pelo Mestre.
+  if (!mestre) return (
+    <section className="counter-panel counter-panel--player" aria-label="Contadores visíveis da Mesa">
+      <header><div><p className="ro-eyebrow">Para todos</p><h2>Contadores da Mesa</h2></div></header>
+      {contadores.filter(c=>c.visibilidade==='compartilhado').map(c=>(
+        <article key={c.id} className="counter-panel__shared-item">
+          <strong>{c.nome}</strong>
+          <span>{c.valorAtual} / {c.valorMaximo}</span>
+          <progress value={c.valorAtual} max={c.valorMaximo} aria-label={`Progresso de ${c.nome}`}/>
+        </article>
+      ))}
+      {!contadores.some(c=>c.visibilidade==='compartilhado') && <p>O Mestre ainda não revelou contadores.</p>}
+    </section>
+  );
 
   const registrar = (contador: Contador, valor: number, maximo: number, concluido: boolean) => {
     onRegistrarEvento?.({
@@ -51,7 +64,7 @@ export const CounterPanel: React.FC<CounterPanelProps> = ({
     const atual = Math.max(0, Math.min(maximo, Math.trunc(valor)));
     const estado = estadoPara(contador, atual, maximo);
     setErro('');
-    onAtualizar(contador.id, { valorAtual: atual, valorMaximo: maximo, estado, visibilidade: 'mestre_privado' });
+    onAtualizar(contador.id, { valorAtual: atual, valorMaximo: maximo, estado });
     registrar(contador, atual, maximo, estado === 'concluido');
   };
 
@@ -66,7 +79,7 @@ export const CounterPanel: React.FC<CounterPanelProps> = ({
     onAdicionar({
       campanhaId, nome, tipo: novoTipo,
       valorAtual: novaDirecao === 'decrescente' ? novoMaximo : 0,
-      valorMaximo: novoMaximo, direcao: novaDirecao, visibilidade: 'mestre_privado', estado: 'ativo'
+      valorMaximo: novoMaximo, direcao: novaDirecao, visibilidade: compartilharNovo ? 'compartilhado' : 'mestre_privado', estado: 'ativo'
     });
     setNovoNome('');
     setNovoMaximo(6);
@@ -111,7 +124,7 @@ export const CounterPanel: React.FC<CounterPanelProps> = ({
   return (
     <section className="counter-panel counter-panel--master">
       <header><div><p className="ro-eyebrow">Ferramenta exclusiva do Mestre</p><h2>Contadores da sessão</h2></div><span>{contadores.length} contador(es)</span></header>
-      <p className="counter-panel__hint">Acompanhe a tensão e a progressão dos acontecimentos. Nenhum contador é revelado aos jogadores.</p>
+      <p className="counter-panel__hint">Acompanhe a tensão e a progressão dos acontecimentos. Os contadores são privados até você escolher Compartilhar com jogadores.</p>
       <form onSubmit={criar} className="counter-panel__create">
         <label>Nome do contador
           <input required maxLength={160} value={novoNome} onChange={e => setNovoNome(e.target.value)} placeholder="Ex.: Portal prestes a abrir" />
@@ -131,6 +144,7 @@ export const CounterPanel: React.FC<CounterPanelProps> = ({
             <option value="crescente">Crescente</option><option value="decrescente">Decrescente</option>
           </select>
         </label>
+        <label className="counter-panel__share-new"><input type="checkbox" checked={compartilharNovo} onChange={e=>setCompartilharNovo(e.target.checked)}/> Compartilhar com os jogadores</label>
         <button type="submit" className="ro-button">Criar contador</button>
       </form>
       {erro && <p role="alert" className="counter-panel__error">{erro}</p>}
@@ -141,7 +155,7 @@ export const CounterPanel: React.FC<CounterPanelProps> = ({
           </div>
           <div className="counter-panel__details">
             <h3>{contador.nome}</h3>
-            <small>{contador.tipo} · {contador.estado} · {contador.direcao}</small>
+            <small>{contador.tipo} · {contador.estado} · {contador.direcao} · {contador.visibilidade === 'compartilhado' ? 'visível para todos' : 'privado do Mestre'}</small>
             {contador.descricao && <p>{contador.descricao}</p>}
           </div>
           <div className="counter-panel__value-edit">
@@ -162,6 +176,9 @@ export const CounterPanel: React.FC<CounterPanelProps> = ({
             <button type="button" className="counter-panel__apply" onClick={() => aplicarMaximo(contador)}>Aplicar máximo</button>
           </div>
           <div className="counter-panel__actions">
+            <button type="button" onClick={() => onAtualizar(contador.id,{visibilidade: contador.visibilidade === 'compartilhado' ? 'mestre_privado' : 'compartilhado'})}>
+              {contador.visibilidade === 'compartilhado' ? 'Tornar privado' : 'Exibir para todos'}
+            </button>
             <button type="button" onClick={() => editar(contador)}>Editar nome</button>
             <button type="button" onClick={() => atualizarValores(contador,contador.direcao === 'crescente' ? contador.valorMaximo : 0,contador.valorMaximo)}>Concluir</button>
             <button type="button" onClick={() => atualizarValores(contador,contador.direcao === 'crescente' ? 0 : contador.valorMaximo,contador.valorMaximo)}>Resetar</button>
