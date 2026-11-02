@@ -1,7 +1,7 @@
 import React from 'react';
 import { BookOpen, Dices, Gauge, ScrollText, Sparkles } from 'lucide-react';
 
-export type LiveTool = 'nenhuma' | 'dados' | 'sonhar' | 'ficha' | 'contadores' | 'regras';
+export type LiveTool = 'nenhuma' | 'dados' | 'onirico' | 'sonhar' | 'ficha' | 'contadores' | 'regras';
 
 interface LiveDockProps {
   ferramenta: LiveTool;
@@ -11,6 +11,7 @@ interface LiveDockProps {
 
 const tools = [
   ['dados', 'Dados', Dices],
+  ['onirico', 'Onírico', Sparkles],
   ['sonhar', 'Sonhar', Sparkles],
   ['ficha', 'Ficha', ScrollText],
   ['contadores', 'Contadores', Gauge],
