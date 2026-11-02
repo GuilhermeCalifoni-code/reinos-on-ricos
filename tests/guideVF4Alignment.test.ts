@@ -20,7 +20,7 @@ test('Guia vf4: all guide-derived Compendium entries cite 19-page playtest docum
 });
 
 test('Guia vf4 page 15: Area is not bought with Potência and Contador affects limit, not progress', () => {
-  assert.equal(REGRAS_PASSOS_POTENCIA.some(item=>item.id==='area'),false);
+  assert.equal(REGRAS_PASSOS_POTENCIA.some(item=>String(item.id)==='area'),false);
   const contador=REGRAS_PASSOS_POTENCIA.find(item=>item.id==='contador');
   assert.match(contador?.regra||'', /limite/);
   assert.match(contador?.observacao||'', /não avança o progresso/);
