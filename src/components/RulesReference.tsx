@@ -69,6 +69,12 @@ export const RulesReference: React.FC = () => {
           </article>
 
           <article className="ro-surface">
+            <p className="ro-eyebrow">Vantagem e Desvantagem · Guia vf4, p. 10</p>
+            <h3>Dois d20, escolha um só</h3>
+            <p>Vantagem: role 2d20 e use o maior. Desvantagem: role 2d20 e use o menor. Várias fontes iguais não acumulam; Vantagem e Desvantagem se anulam. Essas regras se aplicam somente a Testes Mundanos e Reflexos, nunca aos Oníricos.</p>
+          </article>
+
+          <article className="ro-surface">
             <p className="ro-eyebrow">Teste Reflexo</p>
             <h3>Um Teste Mundano em resposta a perigo, habilidade ou evento disparador</h3>
             <p>O Mestre pede 1d20 + Atributo apropriado como resposta ao gatilho narrativo e determina a DT. Foco, Vantagem e Desvantagem aplicam-se normalmente. Não é uma rolagem extra automática em todos os ataques.</p>
@@ -288,7 +294,8 @@ export const RulesReference: React.FC = () => {
           <article className="ro-surface">
             <p className="ro-eyebrow">Cena de Tensão</p>
             <h3>Não há iniciativa</h3>
-            <p>Os Jogadores escolhem sua ordem e os Turnos alternam Jogador e Mestre. A Rodada termina quando todos os Jogadores tiveram um Turno. Mais Adversários não concedem automaticamente mais Ações ao Mestre.</p>
+            <p>Não há rolagem de iniciativa. Os Jogadores escolhem sua ordem. Em Cena de Tensão, cada ativação de Jogador (uma Ação e um Movimento integrado à Ação) alterna com um Turno do Mestre. A Rodada termina quando todos os Jogadores tiveram sua ativação. Mais Adversários não concedem mais Ações automaticamente ao Mestre.</p>
+            <p>Use o organizador de Rodadas da Mesa Ao Vivo para acompanhar a alternância; ele não altera os testes ou impõe iniciativa.</p>
           </article>
 
           <article className="ro-surface">
@@ -302,7 +309,7 @@ export const RulesReference: React.FC = () => {
             <div className="rules-reference__compact-list">
               <p><strong>Ataque:</strong> Teste Mundano contra Dificuldade do Adversário ou Defesa de Personagem.</p>
               <p><strong>Agarrar/Derrubar/Imobilizar:</strong> Teste Mundano de Corpo; sucesso pode impor uma Condição apropriada.</p>
-              <p><strong>Sonhar:</strong> Teste Onírico.</p>
+              <p><strong>Sonhar:</strong> Teste Onírico com os dados de Realidade e Sonhar comparados separadamente à DT, normalmente 13; nunca use Vantagem/Desvantagem nesse teste.</p>
               <p><strong>Ataque + Sonhar:</strong> uma única Ação e um único Teste Onírico; DT = maior entre 13 e a Dificuldade do alvo.</p>
               <p><strong>Ajudar:</strong> Vantagem no próximo Teste Mundano; para ajudar Sonhar, gaste a Ação e reduza a DT Onírica do aliado em 2.</p>
             </div>
@@ -424,13 +431,15 @@ export const RulesReference: React.FC = () => {
               <p><strong>Restaurar Ruptura:</strong> a trilha volta a 0.</p>
               <p><strong>Recuperar Foco:</strong> recupere todos os PF gastos.</p>
               <p><strong>Projeto Pessoal:</strong> investigue, aprenda, construa ou crie algo ligado aos seus objetivos.</p>
+              <p><strong>Marcador de Morte:</strong> uma indicação visual para acompanhar o Movimento de Morte; não aplica perda de PV ou morte automaticamente. Com 0 PV, role 2d20 contra DT 13 no próximo Turno, sem Atributo.</p>
             </div>
           </article>
 
           <article className="ro-surface">
             <p className="ro-eyebrow">Contadores</p>
             <h3>Processos, pressão, perseguições e conflitos em etapas</h3>
-            <p>Defina valor inicial, objetivo, direção e gatilhos. Quando o Sonhar participa: Convergência progride 2 e −1 Ruptura; Realidade vence recua 1; Sonhar vence progride 1 e +1 Ruptura; Divergência recua 2 e +2 Ruptura, quando recuar fizer sentido.</p>
+            <p>Defina valor inicial, objetivo, direção e gatilhos. Quando o Sonhar contribui para solucionar o problema: Convergência avança 2 e −1 Ruptura; Realidade vence recua 1; Sonhar vence avança 1 e +1 Ruptura; Divergência recua 2 e +2 Ruptura.</p>
+            <p>Se o Sonhar modifica diretamente a duração ou extensão do processo, use Passos de Potência no limite (crescente) ou nas unidades restantes (decrescente), sem conceder também avanço da tabela. O Mestre decide se revela o contador aos jogadores.</p>
           </article>
 
           <article className="ro-surface">
