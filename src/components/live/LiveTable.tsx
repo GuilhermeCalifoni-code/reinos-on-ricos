@@ -80,7 +80,8 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const tokensDaCampanha = useMemo(() => tokensMapa.filter(item => item.campanhaId === campanha.id), [campanha.id, tokensMapa]);
   const realtime = useCampaignRealtime({ campaignId: campanha.id, userId, userName, role, enabled: registroOnline, fallback: { counters: contadoresDaCampanha, maps: mapasDaCampanha, tokens: tokensDaCampanha }, onCharacterUpdate: onReceberRecursosPersonagem });
   const compartilhando = registroOnline && realtime.ready;
-  const contadoresAtuais = mestre ? (compartilhando ? realtime.counters : contadoresDaCampanha) : [];
+  const contadoresAtuais = compartilhando ? realtime.counters : (mestre ? contadoresDaCampanha : []);
+  const contadoresPublicos = contadoresAtuais.filter(item => item.visibilidade === 'compartilhado');
   const mapasAtuais = useMemo(() => {
     if (!compartilhando) return mapasDaCampanha;
     const merged = new Map<string, MapaNarrativo>();
@@ -274,8 +275,24 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     });
   };
   const ajustar = (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => { const maximo = campo === 'vidaAtual' ? personagem.vidaMaxima : personagem.focoMaximo; atualizarPersonagemMesa({ ...personagem, [campo]: Math.max(0, Math.min(maximo, personagem[campo] + delta)), atualizadoEm: new Date().toISOString() }); if (campo === 'vidaAtual') registrarSemFalhar(sessionEventFactories.damage(personagem.id, personagem.nome, delta)); };
-  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (compartilhando && mestre) void realtime.addCounter({ ...item, visibilidade: 'mestre_privado' }).catch(error => sinalizarErroMesa('Criar contador', error)); };
-  const atualizarContador = (id: string, patch: Partial<Contador>) => { if (compartilhando && mestre) void realtime.patchCounter(id, patch).catch(error => sinalizarErroMesa('Atualizar contador', error)); };
+  const avisarMudancaContadores = async () => {
+    if (!realtime.state) return;
+    await realtime.saveState({
+      ...realtime.state,
+      metadata: {...realtime.state.metadata, countersVisibilityVersion: Date.now()}
+    });
+  };
+  const adicionarContador = (item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
+    if (!compartilhando || !mestre) return;
+    void realtime.addCounter(item).then(() => { if (item.visibilidade === 'compartilhado') return avisarMudancaContadores(); })
+      .catch(error => sinalizarErroMesa('Criar contador', error));
+  };
+  const atualizarContador = (id: string, patch: Partial<Contador>) => {
+    if (!compartilhando || !mestre) return;
+    void realtime.patchCounter(id, patch).then(() => {
+      if (patch.visibilidade !== undefined) return avisarMudancaContadores();
+    }).catch(error => sinalizarErroMesa('Atualizar contador', error));
+  };
   const removerContador = (id: string) => { if (compartilhando && mestre) void realtime.removeCounter(id).catch(error => sinalizarErroMesa('Remover contador', error)); };
   const duplicarContador = (id: string) => { if (!compartilhando || !mestre) return; const original = contadoresAtuais.find(item => item.id === id); if (original) { const { id: _id, criadoEm: _criado, atualizadoEm: _atualizado, ...draft } = original; void realtime.addCounter({ ...draft, nome: `${draft.nome} (cópia)` }).catch(error => sinalizarErroMesa('Duplicar contador', error)); } };
   const adicionarMapa = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) => { if (!compartilhando) return; void realtime.addMap(item).then(mapa => { setMapaLocalId(mapa.id); salvarEstado({ activeMapId: mapa.id, contentType: 'mapa' }); registrarSemFalhar(sessionEventFactories.map(`Mapa criado: ${mapa.titulo}.`)); }).catch(error => sinalizarErroMesa('Criar mapa', error)); };
@@ -464,6 +481,16 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
             ))}
           </div>
         </div>
+      )}
+      {!cinematic && contadoresPublicos.length > 0 && (
+        <aside className="live-vtt__shared-counters" aria-label="Contadores revelados para todos">
+          {contadoresPublicos.map(c => (
+            <div key={c.id} className="live-vtt__shared-counter">
+              <strong>{c.nome}</strong><span>{c.valorAtual}/{c.valorMaximo}</span>
+              <progress value={c.valorAtual} max={c.valorMaximo} aria-label={`Progresso de ${c.nome}`}/>
+            </div>
+          ))}
+        </aside>
       )}
       <div className="live-vtt__shell">
         {!cinematic && (
@@ -659,7 +686,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
                     <button type="button" onClick={() => onAbrirFicha(selecionado)} className="ro-button mt-4">Abrir ficha completa</button>
                   </div>
                 : <p className="live-table__empty">Selecione um personagem.</p>)}
-              {mestre && ferramenta === 'contadores' && <CounterPanel campanhaId={campanha.id} contadores={contadoresAtuais} mestre={mestre} onAdicionar={adicionarContador} onAtualizar={atualizarContador} onRemover={removerContador} onDuplicar={duplicarContador} onRegistrarEvento={registrarSemFalhar} />}
+              {ferramenta === 'contadores' && <CounterPanel campanhaId={campanha.id} contadores={contadoresAtuais} mestre={mestre} onAdicionar={adicionarContador} onAtualizar={atualizarContador} onRemover={removerContador} onDuplicar={duplicarContador} onRegistrarEvento={registrarSemFalhar} />}
               {ferramenta === 'regras' && <RulesReference />}
             </div>
           </section>
