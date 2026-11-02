@@ -192,7 +192,19 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
               ))}
             </select>
           </label>
-          {currentMember.characterId && <span className="campaign-members__linked"><Check size={13} /> Ficha conectada</span>}
+          {currentMember.characterId && (
+            <div className="campaign-members__unlink-action">
+              <span className="campaign-members__linked"><Check size={13} /> Ficha conectada</span>
+              <button type="button" disabled={Boolean(busy)}
+                onClick={() => {
+                  if (window.confirm('Desvincular sua ficha desta campanha? O Desvelado NÃO será excluído.')) {
+                    void linkOwnCharacter(null);
+                  }
+                }}>
+                <Link2 size={14}/> Desvincular ficha (sem excluir)
+              </button>
+            </div>
+          )}
         </article>
       )}
 
@@ -309,6 +321,16 @@ export const CampaignMembersPanel: React.FC<CampaignMembersPanelProps> = ({
                       <Link2 size={12} />
                       {memberCharacter ? memberCharacter.nome : 'Jogador escolhe a própria ficha'}
                     </span>
+                    {member.characterId && onUpdateMember && (
+                      <button type="button" disabled={Boolean(busy)}
+                        onClick={() => {
+                          if (window.confirm(`Desvincular ${memberCharacter?.nome || 'a ficha'} de ${member.nome || 'este jogador'}? A ficha e o participante permanecerão salvos.`)) {
+                            void update(member, {characterId: null});
+                          }
+                        }}>
+                        Desvincular ficha
+                      </button>
+                    )}
                     <button
                       type="button"
                       disabled={busy === member.userId}
