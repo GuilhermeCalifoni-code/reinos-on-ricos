@@ -451,12 +451,13 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               </select>
               {personagemJogadorId && (
                 <button type="button" className="live-vtt__unlink-character" disabled={salvandoVinculo}
+                  title="Desvincular sem excluir o Desvelado" aria-label="Desvincular personagem sem excluir a ficha"
                   onClick={() => {
                     if (window.confirm('Desvincular sua ficha da Mesa? Ela continuará salva na biblioteca.')) {
                       void alterarMinhaFicha('');
                     }
                   }}>
-                  Desvincular sem excluir
+                  Desvincular
                 </button>
               )}
               {erroVinculo && <small role="alert" className="live-vtt__sheet-link-error">{erroVinculo}</small>}
