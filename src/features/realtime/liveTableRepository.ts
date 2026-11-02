@@ -20,7 +20,7 @@ export const liveTableRepository = {
     const api=client();
     const [s,c,m,t,hp]=await Promise.all([
       api.from('live_session_states').select('*').eq('campaign_id',campaignId).maybeSingle(),
-      includePrivateCounters ? api.from('session_counters').select('*').eq('campaign_id',campaignId).order('criado_em') : Promise.resolve({data:[],error:null}),
+      api.from('session_counters').select('*').eq('campaign_id',campaignId).order('criado_em'),
       api.from('narrative_maps').select('*').eq('campaign_id',campaignId).order('criado_em'),
       api.from('map_tokens').select('*').eq('campaign_id',campaignId).order('criado_em'),
       api.from('map_token_resources').select('*').eq('campaign_id',campaignId)
@@ -50,6 +50,12 @@ export const liveTableRepository = {
       const hp=hpByToken.get(row.id);
       return {...token(row),hpCurrent:hp?.hp_current,hpMax:hp?.hp_max};
     });
+  },
+  async visibleCounters(campaignId: string): Promise<Contador[]> {
+    // RLS filters private counters from Players; never trust a client-side filter.
+    const {data,error}=await client().from('session_counters').select('*').eq('campaign_id',campaignId).order('criado_em');
+    if(error)throw error;
+    return (data || []).map(counter);
   },
   async saveState(campaignId: string, userId: string, patch: Partial<LiveSessionState>) { const { data, error } = await client().from('live_session_states').upsert({ campaign_id: campaignId, session_id: patch.sessionId || null, updated_by: userId, content_type: patch.contentType || 'ambientacao', active_scene_id: patch.activeSceneId || null, active_map_id: patch.activeMapId || null, rupture_general: patch.ruptureGeneral || 0, metadata: patch.metadata || {} }, { onConflict: 'campaign_id' }).select().single(); if (error) throw error; return state(data); },
   async addCounter(item: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) { const { data, error } = await client().from('session_counters').insert(toCounter(item)).select().single(); if (error) throw error; return counter(data); },
@@ -163,16 +169,14 @@ export const liveTableRepository = {
     character: (item: CharacterResourceUpdate) => void;
     resource: (item: {tokenId:string;hpCurrent:number;hpMax:number}) => void;
     status: (value: string) => void;
-  }, subscribePrivateCounters = false): RealtimeChannel {
+  }): RealtimeChannel {
     const channel = client().channel(`live-table:${campaignId}`);
     channel.on('postgres_changes', { event:'*', schema:'public', table:'live_session_states', filter:`campaign_id=eq.${campaignId}` },
       payload => handlers.state(state(payload.new)));
-    // Players do not even subscribe to the counter stream; RLS additionally
-    // enforces that only active masters can SELECT counter rows.
-    if (subscribePrivateCounters) {
-      channel.on('postgres_changes', { event:'*', schema:'public', table:'session_counters', filter:`campaign_id=eq.${campaignId}` },
-        payload => handlers.counter(payload.eventType,counter((payload.new || payload.old) as Row)));
-    }
+    // Subscribe for everyone: DB RLS delivers only shared counter rows to Players.
+    // A state-version notification separately forces a fresh RLS-filtered load on unshare.
+    channel.on('postgres_changes', { event:'*', schema:'public', table:'session_counters', filter:`campaign_id=eq.${campaignId}` },
+      payload => handlers.counter(payload.eventType,counter((payload.new || payload.old) as Row)));
     channel.on('postgres_changes', { event:'*', schema:'public', table:'narrative_maps', filter:`campaign_id=eq.${campaignId}` },
       payload => handlers.map(payload.eventType,map((payload.new || payload.old) as Row)));
     channel.on('postgres_changes', { event:'*', schema:'public', table:'map_tokens', filter:`campaign_id=eq.${campaignId}` },
