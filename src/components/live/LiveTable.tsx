@@ -415,6 +415,16 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
                 <option value="">Sem ficha vinculada</option>
                 {minhasFichasVinculaveis.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
               </select>
+              {personagemJogadorId && (
+                <button type="button" className="live-vtt__unlink-character" disabled={salvandoVinculo}
+                  onClick={() => {
+                    if (window.confirm('Desvincular sua ficha da Mesa? Ela continuará salva na biblioteca.')) {
+                      void alterarMinhaFicha('');
+                    }
+                  }}>
+                  Desvincular sem excluir
+                </button>
+              )}
               {erroVinculo && <small role="alert" className="live-vtt__sheet-link-error">{erroVinculo}</small>}
             </label>
           )}
