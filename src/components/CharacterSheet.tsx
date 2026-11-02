@@ -215,7 +215,10 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           personagemAtivo={personagem} atributoInicial={atributoNaFicha} initialTab={rolagemNaFicha}
           onSalvarPersonagem={onSalvar}
           onAbrirModalRuptura={() => setModalRupturaAberto(true)} />
-        <small>Os resultados aparecem aqui, sem sair da ficha. Para registrar a rolagem para toda a mesa, utilize Dados na Mesa Ao Vivo.</small>
+        <div className="ro-sheet__inline-roller-actions">
+          <small>Os resultados aparecem aqui, sem sair da ficha. Para registrar a rolagem para toda a mesa, utilize Dados na Mesa Ao Vivo.</small>
+          <button type="button" onClick={()=>onIrParaRolador(personagem,atributoNaFicha)}>Abrir rolador completo</button>
+        </div>
       </section>
     )}
     <div className="ro-sheet__body">
