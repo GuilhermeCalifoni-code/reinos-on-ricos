@@ -42,7 +42,7 @@ test('Domínios e níveis usam progressão existente e limites oficiais',()=>{
   assert.match(sheet,/atualizadoEm:new Date\(\)\.toISOString\(\)/);
 });
 test('Ações de ficha e dados existentes são preservados sem novas tabelas',()=>{
-  for(const marker of ['onExportar(personagem)','onDuplicar(personagem.id)','onExcluir(personagem.id)','onIrParaRolador(personagem,key)','onIrParaGuiaSonhar(personagem)','personagem.ancoragem','personagem.vinculos','personagem.recursos','personagem.equipamentos','anotacoesGerais','percepcaoOniricaNotas']) {
+  for(const marker of ['onExportar(personagem)','onDuplicar(personagem.id)','onExcluir(personagem.id)','setRolagemNaFicha(\'mundano\')','onIrParaGuiaSonhar(personagem)','personagem.ancoragem','personagem.vinculos','personagem.recursos','personagem.equipamentos','anotacoesGerais','percepcaoOniricaNotas']) {
     assert.ok(sheet.includes(marker),marker);
   }
 });
