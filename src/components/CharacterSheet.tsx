@@ -11,6 +11,7 @@ import { RupturaModal } from './RupturaModal';
 import { DamageModal } from './DamageModal';
 import { RestModal } from './RestModal';
 import { DiceRoller } from './DiceRoller';
+import type {NewSessionEvent} from '../types/sessionEvent';
 import { AssetImage } from './system/AssetImage';
 
 interface CharacterSheetProps {
@@ -23,6 +24,7 @@ interface CharacterSheetProps {
   onIrParaRolador: (personagem: Personagem, atributo?: AtributoNome) => void;
   onIrParaGuiaSonhar: (personagem: Personagem) => void;
   onDispararMovimentoMorte: () => void;
+  onRegistrarRolagem?: (event:NewSessionEvent)=>Promise<unknown>|void;
 }
 
 const attributes: { key: AtributoNome; label: string; symbol: React.ReactNode; description: string }[] = [
@@ -50,7 +52,7 @@ const damageReference = [
 
 export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   personagem, onSalvar, onAlterarRetrato, onDuplicar, onExcluir, onExportar, onIrParaRolador,
-  onIrParaGuiaSonhar, onDispararMovimentoMorte
+  onIrParaGuiaSonhar, onDispararMovimentoMorte, onRegistrarRolagem
 }) => {
   const [enviandoRetrato, setEnviandoRetrato] = useState(false);
   const [erroRetrato, setErroRetrato] = useState('');
@@ -214,6 +216,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
         <DiceRoller key={`${personagem.id}-${rolagemNaFicha}-${atributoNaFicha}`}
           personagemAtivo={personagem} atributoInicial={atributoNaFicha} initialTab={rolagemNaFicha}
           onSalvarPersonagem={onSalvar}
+          onRegistrarRolagem={onRegistrarRolagem}
           onAbrirModalRuptura={() => setModalRupturaAberto(true)} />
         <div className="ro-sheet__inline-roller-actions">
           <small>Os resultados aparecem aqui, sem sair da ficha. Para registrar a rolagem para toda a mesa, utilize Dados na Mesa Ao Vivo.</small>
