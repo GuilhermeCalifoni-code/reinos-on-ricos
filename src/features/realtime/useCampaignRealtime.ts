@@ -59,16 +59,30 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
     setReady(false); setStatus('connecting'); setError(undefined);
     void liveTableRepository.load(campaignId, role === 'mestre').then(data => {
       if (!active) return;
-      setState(data.state); syncCounters(role === 'mestre' ? data.counters : []); setMaps(data.maps);
+      setState(data.state); syncCounters(data.counters.filter(item => role === 'mestre' || item.visibilidade === 'compartilhado')); setMaps(data.maps);
       // A visibility update may have arrived while initial load was pending.
       if (visibilityLoadSequence === 0) setTokens(data.tokens);
       setReady(true);
     }).catch(reason => { if (active) { setError(explainRealtimeError(reason)); setStatus('offline'); } });
     const channel = liveTableRepository.subscribe(campaignId, {
-      state: item => active && setState(item),
+      state: item => {
+        if (!active) return;
+        setState(item);
+        if (role !== 'mestre') {
+          // RLS reload removes a formerly shared counter immediately when
+          // the Mestre switches it back to private.
+          void liveTableRepository.visibleCounters(campaignId)
+            .then(items => { if (active) syncCounters(items.filter(c => c.visibilidade === 'compartilhado')); })
+            .catch(reason => { if (active) setError(explainRealtimeError(reason)); });
+        }
+      },
       counter: (event, item) => {
-        if (!active || role !== 'mestre' || pendingCounterWritesRef.current.has(item.id)) return;
-        syncCounters(applyEvent(countersRef.current, event, item));
+        if (!active || pendingCounterWritesRef.current.has(item.id)) return;
+        if (role !== 'mestre' && item.visibilidade !== 'compartilhado') {
+          syncCounters(countersRef.current.filter(current => current.id !== item.id));
+          return;
+        }
+        syncCounters(applyEvent(countersRef.current,event,item));
       },
       map: (event, item) => active && setMaps(items => applyEvent(items, event, item)),
       token: (event,item) => active && setTokens(items => {
@@ -98,7 +112,7 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
         ? {...t,hpCurrent:item.hpCurrent,hpMax:item.hpMax} : t)),
       character: item => active && onCharacterUpdateRef.current?.(item),
       status: value => { if (active) setStatus(value === 'SUBSCRIBED' ? 'connected' : value === 'CHANNEL_ERROR' || value === 'TIMED_OUT' || value === 'CLOSED' ? 'offline' : 'connecting'); }
-    }, role === 'mestre');
+    });
     return () => { active = false; void channel.unsubscribe(); };
   }, [campaignId, enabled, fallback.counters, fallback.maps, fallback.tokens, role, userId]);
 
@@ -119,7 +133,7 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
     saveState: (patch: Partial<LiveSessionState>) => userId ? action(async () => { const item = await liveTableRepository.saveState(campaignId, userId, patch); setState(item); return item; }) : Promise.reject(new Error('Sessão indisponível.')),
     addCounter: (item: DraftCounter) => action(async () => {
       if (role !== 'mestre') throw new Error('Contadores são exclusivos do Mestre.');
-      const created = await liveTableRepository.addCounter({...item,visibilidade:'mestre_privado'});
+      const created = await liveTableRepository.addCounter(item);
       syncCounters(replace(countersRef.current, created));
       return created;
     }),
@@ -128,10 +142,10 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
       const previous = countersRef.current.find(item => item.id === id);
       if (!previous) throw new Error('Contador não encontrado.');
       // Alterações rápidas refletem imediatamente e são salvas em sequência.
-      syncCounters(replace(countersRef.current, {...previous,...patch,visibilidade:'mestre_privado'}));
+      syncCounters(replace(countersRef.current, {...previous,...patch}));
       const prior = pendingCounterWritesRef.current.get(id);
       const write = (prior ? prior.catch(() => previous) : Promise.resolve(previous))
-        .then(() => liveTableRepository.patchCounter(id, {...patch,visibilidade:'mestre_privado'}));
+        .then(() => liveTableRepository.patchCounter(id, patch));
       pendingCounterWritesRef.current.set(id, write);
       try {
         const result = await write;
