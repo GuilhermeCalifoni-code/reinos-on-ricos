@@ -31,7 +31,7 @@ export function nextRoundTurn(current: RoundState, playerIds: string[]): RoundSt
 export function parseRoundState(input: unknown): RoundState | null {
   if (!input || typeof input !== 'object') return null;
   const v = input as Record<string,unknown>;
-  if (typeof v.active !== 'boolean' || !Number.isInteger(v.round) || Number(v.round)<1 ||
+  if (typeof v.active !== 'boolean' || typeof v.round !== 'number' || !Number.isInteger(v.round) || v.round<1 ||
     (v.phase !== 'jogador' && v.phase !== 'mestre') ||
     (v.currentPlayerId !== null && typeof v.currentPlayerId !== 'string') ||
     !Array.isArray(v.actedPlayerIds) ||
