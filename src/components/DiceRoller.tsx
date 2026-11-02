@@ -26,6 +26,7 @@ import { NewSessionEvent } from '../types/sessionEvent';
 interface DiceRollerProps {
   personagemAtivo: Personagem | null;
   atributoInicial?: AtributoNome;
+  initialTab?: 'mundano' | 'onirico' | 'morte' | 'dano';
   onSalvarPersonagem?: (p: Personagem) => void;
   onAbrirModalRuptura?: (delta: number, motivo: string) => void;
   onRegistrarRolagem?: (event: NewSessionEvent) => Promise<unknown> | void;
@@ -33,11 +34,11 @@ interface DiceRollerProps {
 
 export const DiceRoller: React.FC<DiceRollerProps> = ({
   personagemAtivo,
-  atributoInicial,
+  atributoInicial, initialTab = 'mundano',
   onSalvarPersonagem,
   onAbrirModalRuptura, onRegistrarRolagem
 }) => {
-  const [abaAtiva, setAbaAtiva] = useState<'mundano' | 'onirico' | 'morte' | 'dano'>('mundano');
+  const [abaAtiva, setAbaAtiva] = useState<'mundano' | 'onirico' | 'morte' | 'dano'>(initialTab);
   const [estadoRegistro, setEstadoRegistro] = useState<'idle' | 'local' | 'pending' | 'saved' | 'error'>('idle');
   const [erroRegistro, setErroRegistro] = useState('');
   const ultimoEnvio = useRef(0);
