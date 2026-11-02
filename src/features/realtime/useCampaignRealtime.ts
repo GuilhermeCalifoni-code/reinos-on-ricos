@@ -57,7 +57,7 @@ export function useCampaignRealtime({ campaignId, userId, userName, role, enable
     let active = true;
     let visibilityLoadSequence = 0;
     setReady(false); setStatus('connecting'); setError(undefined);
-    void liveTableRepository.load(campaignId, role === 'mestre').then(data => {
+    void liveTableRepository.load(campaignId).then(data => {
       if (!active) return;
       setState(data.state); syncCounters(data.counters.filter(item => role === 'mestre' || item.visibilidade === 'compartilhado')); setMaps(data.maps);
       // A visibility update may have arrived while initial load was pending.
