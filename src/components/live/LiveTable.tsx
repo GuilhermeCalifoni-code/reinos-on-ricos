@@ -7,6 +7,7 @@ import { MasterDiceRoller } from './MasterDiceRoller';
 import { DreamGuide } from '../DreamGuide';
 import { RulesReference } from '../RulesReference';
 import { CounterPanel } from './CounterPanel';
+import { RoundTracker, parseRoundState, type RoundState } from './RoundTracker';
 import { LiveDock, LiveTool } from './LiveDock';
 import { SceneStage } from './SceneStage';
 import { SessionPanel } from './SessionPanel';
@@ -82,6 +83,14 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
   const compartilhando = registroOnline && realtime.ready;
   const contadoresAtuais = compartilhando ? realtime.counters : (mestre ? contadoresDaCampanha : []);
   const contadoresPublicos = contadoresAtuais.filter(item => item.visibilidade === 'compartilhado');
+  const roundState = parseRoundState(realtime.state?.metadata?.roundTracker);
+  const atualizarRodada = async (newState:RoundState) => {
+    if (!mestre || !compartilhando || !realtime.state) throw new Error('Sincronização da rodada indisponível.');
+    await realtime.saveState({
+      ...realtime.state,
+      metadata: {...realtime.state.metadata, roundTracker:newState}
+    });
+  };
   const mapasAtuais = useMemo(() => {
     if (!compartilhando) return mapasDaCampanha;
     const merged = new Map<string, MapaNarrativo>();
@@ -480,6 +489,8 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
           </div>
         </div>
       )}
+      {!cinematic && <RoundTracker members={members} mestre={mestre} ready={compartilhando}
+        value={roundState} onChange={atualizarRodada}/>}
       {!cinematic && contadoresPublicos.length > 0 && (
         <aside className="live-vtt__shared-counters" aria-label="Contadores revelados para todos">
           {contadoresPublicos.map(c => (
