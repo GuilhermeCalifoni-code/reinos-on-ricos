@@ -10,6 +10,7 @@ import { readLegacyLocalSnapshot, summarizeLegacyLocalSnapshot } from './data/le
 import { Personagem, AtributoNome, DominioNome } from './types/character';
 import { Campanha, Sessao, Contador, TokenMapa } from './types/campaign';
 import { UserSession } from './types/auth';
+import type { NewSessionEvent } from './types/sessionEvent';
 import { isSupabaseConfigured } from './lib/supabaseClient';
 import { authService } from './services/auth/authService';
 import { useRemoteCampaigns } from './services/campaigns/useRemoteCampaigns';
@@ -224,6 +225,7 @@ export default function App() {
     }
   }, [viewAtiva, campanhaAtiva?.id, papelDaCampanha, session?.role]);
   const [personagemParaFicha, setPersonagemParaFicha] = useState<Personagem | null>(null);
+  const registrarRolagemFichaRef = useRef<((event: NewSessionEvent)=>Promise<unknown>|void) | undefined>(undefined);
 
   // Modais
   const [modalCriarPersonagem, setModalCriarPersonagem] = useState<boolean>(false);
@@ -488,7 +490,8 @@ export default function App() {
   };
 
   // Abrir Ficha de Personagem
-  const handleAbrirFichaPersonagem = (p: Personagem) => {
+  const handleAbrirFichaPersonagem = (p: Personagem, onRegistrarRolagem?: (event: NewSessionEvent)=>Promise<unknown>|void) => {
+    registrarRolagemFichaRef.current = onRegistrarRolagem;
     setPersonagemParaFicha(p);
   };
 
@@ -560,6 +563,7 @@ export default function App() {
 
           <CharacterSheet
             personagem={personagemParaFicha}
+            onRegistrarRolagem={registrarRolagemFichaRef.current}
             onSalvar={(atualizado) => {
               salvarPersonagemPersistente(atualizado);
               setPersonagemParaFicha(atualizado);
