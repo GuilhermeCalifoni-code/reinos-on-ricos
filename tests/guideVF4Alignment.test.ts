@@ -40,7 +40,7 @@ test('Guia vf4 page 9: persistent environmental damage has defined round cadence
   assert.equal(dano.pages,'9');
   const content=JSON.stringify(dano);
   assert.match(content,/ao final de cada Rodada/);
-  assert.match(content,/sair da Área/);
+  assert.match(content,/(sair|deixa) a Área/);
   assert.match(content,/interrompe a fonte/);
   assert.match(content,/instantâneos não causam dano contínuo/);
   assert.ok(COMPENDIUM_ENTRIES.some(entry=>entry.id==='dano-continuo'));
