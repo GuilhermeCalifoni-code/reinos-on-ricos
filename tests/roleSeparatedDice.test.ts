@@ -10,7 +10,7 @@ const hook=read('src/services/session-events/useSessionEvents.ts');
 const schema=read('src/types/sessionEvent.ts');
 
 test('Mestre has independent dice with no character sheet and explicitly private default',()=>{
-  assert.match(live,/ferramenta === 'dados' && \(mestre \?/);
+  assert.match(live,/ferramenta === 'dados' \|\| ferramenta === 'onirico'/);
   assert.match(live,/<MasterDiceRoller onRegistrarRolagem/);
   assert.match(master,/shareWithPlayers, setShareWithPlayers\] = useState\(false\)/);
   assert.match(master,/visibility: shareWithPlayers \? 'todos' : 'mestre'/);
@@ -25,7 +25,7 @@ test('Jogador must link own active sheet for their exclusive DiceRoller',()=>{
   assert.match(live,/role="group" aria-label="Ficha do Jogador para rolagens"/);
   assert.match(live,/minhasFichasVinculaveis\.map\(personagem/);
   assert.match(live,/personagemJogadorId === selecionado\.id/);
-  assert.match(live,/<DiceRoller key=\{selecionado\.id\}/);
+  assert.match(live,/<DiceRoller key=\{`\$\{selecionado\.id\}-\$\{ferramenta\}`\}/);
   assert.match(live,/visibility: 'todos'/);
   assert.match(live,/characterId: selecionado\.id/);
   assert.match(live,/onSalvarPersonagem=\{atualizarPersonagemMesa\}/);
