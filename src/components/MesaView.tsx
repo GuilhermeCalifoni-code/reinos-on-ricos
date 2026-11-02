@@ -3,6 +3,7 @@ import { Adversario, Campanha, Cena, Contador, Handout, MapaNarrativo, MembroCam
 import { UserRole } from '../types/auth';
 import { Personagem } from '../types/character';
 import type { CharacterResourceUpdate } from '../features/realtime/liveTableRepository';
+import type { NewSessionEvent } from '../types/sessionEvent';
 import { LiveTable } from './live/LiveTable';
 
 interface MesaViewProps {
@@ -32,7 +33,7 @@ interface MesaViewProps {
   onAtualizarPersonagem: (p: Personagem) => void;
   onReceberRecursosPersonagem: (update: CharacterResourceUpdate) => void;
   onAbrirModalRupturaPara: (p: Personagem, delta: number, motivo: string) => void;
-  onAbrirFichaPersonagem: (p: Personagem) => void;
+  onAbrirFichaPersonagem: (p: Personagem, onRegistrarRolagem?: (event: NewSessionEvent) => Promise<unknown> | void) => void;
   contadores: Contador[];
   onAdicionarContador: (contador: Omit<Contador, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
   onAtualizarContador: (id: string, parcial: Partial<Contador>) => void;
