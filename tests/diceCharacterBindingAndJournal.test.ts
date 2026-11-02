@@ -15,7 +15,7 @@ test('player links only own eligible sheet; GM uses independent dice context',()
   assert.match(live,/minhasFichasVinculaveis\.map\(personagem/);
   assert.match(live,/void alterarMinhaFicha\(event\.target\.value\)/);
   assert.match(live,/personagens\.filter\(p => p\.id === personagemJogadorId\)/);
-  assert.match(live,/key=\{selecionado\.id\}/);
+  assert.match(live,/key=\{`\$\{selecionado\.id\}-\$\{ferramenta\}`\}/);
   assert.match(live,/<MasterDiceRoller onRegistrarRolagem/);
   assert.match(css,/min-height: 44px/);
 });
