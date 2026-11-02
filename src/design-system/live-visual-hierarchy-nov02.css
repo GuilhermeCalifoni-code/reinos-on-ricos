@@ -1,0 +1,378 @@
+/*
+ * Mesa Ao Vivo — revisão da hierarquia visual (playtest 02/11).
+ * CSS isolado, depois das folhas legadas: não altera engine, dados ou mapa.
+ * A cena continua protagonista; ferramentas preservam acesso e contraste.
+ */
+
+.ro-app-shell--live .live-table--v5:not(.is-cinematic) > .live-vtt__player-bar {
+  position: relative;
+  inset: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  transform: none;
+  z-index: 25;
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: clamp(.45rem, 1vw, .85rem);
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  padding: .4rem clamp(.6rem, 1.5vw, 1.25rem);
+  overflow: visible;
+  border: 0;
+  border-bottom: 1px solid var(--vtt-line);
+  border-radius: 0;
+  background: var(--vtt-panel-strong);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.ro-app-shell--live .live-table--v5 .live-vtt__player-bar-label {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+  gap: .4rem;
+  align-items: center;
+  align-self: center;
+  padding: 0 .75rem 0 0;
+  border-right: 1px solid var(--vtt-line);
+  color: var(--vtt-muted);
+  letter-spacing: .12em;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__player-bar-label small {
+  margin: 0;
+  font-size: .65rem;
+}
+
+.ro-app-shell--live .live-table--v5 .live-vtt__sheet-link {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: row;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+  max-width: min(440px, 48vw);
+  padding: 0;
+  font-size: .73rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__sheet-link > span {
+  flex: 0 0 auto;
+  color: var(--vtt-muted);
+  white-space: nowrap;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__sheet-link select {
+  box-sizing: border-box;
+  flex: 0 1 190px;
+  min-width: 105px;
+  max-width: 190px;
+  min-height: 2.3rem;
+  padding: .35rem .55rem;
+  font-size: .76rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__unlink-character {
+  flex: 0 0 auto;
+  min-height: 2.3rem;
+  padding: .35rem .55rem;
+  color: var(--vtt-accent-bright);
+  font-size: .72rem;
+  line-height: 1.2;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__sheet-link-error {
+  max-width: 10rem;
+  font-size: .65rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__player-strip {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+  max-width: 100%;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__player {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 225px;
+  min-height: 2.65rem;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: .5rem;
+  padding: .25rem .5rem .25rem .28rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__player-avatar {
+  width: 2rem;
+  height: 2rem;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__player-copy strong {
+  font-size: .81rem;
+  line-height: 1.12;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__player-copy small {
+  font-size: .61rem;
+  line-height: 1.25;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__player-empty {
+  padding: .45rem;
+  font-size: .74rem;
+}
+
+/* Rodada: uma barra de estado compacta, sem bloquear a cena. */
+.ro-app-shell--live .live-table--v5 .live-round-tracker {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(190px, max-content) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .75rem;
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 3.4rem;
+  padding: .38rem clamp(.7rem, 1.5vw, 1.3rem);
+  border-top: 0;
+  border-bottom: 1px solid var(--vtt-line-strong);
+  background: var(--vtt-panel);
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .25rem .65rem;
+  min-width: 0;
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__status .ro-eyebrow {
+  display: none;
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__status strong {
+  flex: 0 0 auto;
+  color: var(--vtt-text);
+  font-size: .89rem;
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__status > span:last-child {
+  color: var(--vtt-accent-bright);
+  font-size: .74rem;
+  line-height: 1.3;
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__players {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  align-items: center;
+  min-width: 0;
+  gap: .35rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__players span {
+  flex: 0 0 auto;
+  padding: .32rem .55rem;
+  font-size: .71rem;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .35rem;
+  min-width: 0;
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__controls label {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  white-space: nowrap;
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__controls :where(button, select) {
+  min-height: 2.2rem;
+  padding: .35rem .55rem;
+  font-size: .69rem;
+}
+.ro-app-shell--live .live-table--v5 .live-round-tracker__controls :where(button,select):focus-visible,
+.ro-app-shell--live .live-table--v5 .live-vtt__sheet-link :where(button,select):focus-visible,
+.ro-app-shell--live .live-table--v5 .live-vtt__dock button:focus-visible {
+  outline: 2px solid var(--vtt-accent-bright);
+  outline-offset: 2px;
+}
+.ro-app-shell--live .live-table--v5 .live-vtt__shared-counters {
+  flex: 0 0 auto;
+  max-height: 4.8rem;
+  padding: .35rem .9rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Painel narrativo: menor, legível e completamente dentro da área visível.
+   Não bloqueia o dock, o mapa nem os controles do Mestre. */
+.ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-table__stage-copy {
+  position: absolute;
+  z-index: 3;
+  left: clamp(4.5rem, 5.6vw, 6.2rem);
+  bottom: 5.6rem;
+  right: auto;
+  top: auto;
+  justify-self: auto;
+  align-self: auto;
+  box-sizing: border-box;
+  width: min(390px, calc(100% - 8rem));
+  max-width: none;
+  max-height: min(43%, 24rem);
+  margin: 0;
+  padding: .95rem 1rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--vtt-line-strong);
+  border-left: 3px solid var(--vtt-accent);
+  border-radius: 6px;
+  background: linear-gradient(105deg, rgba(9,12,16,.94), rgba(15,19,24,.86));
+  box-shadow: 0 16px 48px rgba(0,0,0,.38);
+  backdrop-filter: blur(14px);
+  overscroll-behavior: contain;
+}
+.ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-table__stage-copy h2 {
+  max-width: none;
+  margin: .3rem 2rem .4rem 0;
+  color: #fffaf2;
+  font: 500 clamp(1.55rem, 2.5vw, 2.45rem)/1.04 "Cormorant Garamond", Georgia, serif;
+  letter-spacing: -.025em;
+  overflow-wrap: anywhere;
+}
+.ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-table__stage-copy > p:not(.ro-eyebrow) {
+  max-width: 100%;
+  color: rgba(242,238,231,.84);
+  font-size: .78rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-table__stage-copy .live-table__dismiss-scene {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  z-index: 1;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--vtt-line-strong);
+  border-radius: 5px;
+  background: rgba(8,12,16,.85);
+  color: var(--vtt-text);
+}
+.ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-vtt__dock button span {
+  font-size: .69rem;
+  line-height: 1.2;
+}
+.ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-vtt__dock button {
+  min-height: 3.2rem;
+}
+
+/* Quando o Mestre abre painéis, a cena continua clicável e o dock continua acessível. */
+@media (max-width: 1250px) {
+  .ro-app-shell--live .live-table--v5 .live-round-tracker {
+    grid-template-columns: minmax(170px, max-content) minmax(0, 1fr);
+  }
+  .ro-app-shell--live .live-table--v5 .live-round-tracker__controls {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    padding-top: .25rem;
+    border-top: 1px solid var(--vtt-line);
+  }
+}
+@media (max-width: 900px) {
+  .ro-app-shell--live .live-table--v5 .live-vtt__player-bar-label {
+    display: none;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__sheet-link > span {
+    display: none;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__sheet-link select {
+    max-width: 160px;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__unlink-character {
+    padding-inline: .4rem;
+  }
+}
+@media (max-width: 760px) {
+  .ro-app-shell--live .live-table--v5:not(.is-cinematic) > .live-vtt__player-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .3rem;
+    padding: .35rem .55rem;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__sheet-link {
+    grid-column: 1;
+    width: 100%;
+    max-width: 100%;
+    min-height: 2.3rem;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__sheet-link select {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__player-strip {
+    grid-column: 1;
+    width: 100%;
+  }
+  .ro-app-shell--live .live-table--v5 .live-vtt__player {
+    max-width: 185px;
+    min-height: 2.4rem;
+  }
+  .ro-app-shell--live .live-table--v5 .live-round-tracker {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    gap: .4rem;
+    padding: .5rem .6rem;
+  }
+  .ro-app-shell--live .live-table--v5 .live-round-tracker__players {
+    max-width: 100%;
+  }
+  .ro-app-shell--live .live-table--v5 .live-round-tracker__controls {
+    grid-column: 1;
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .ro-app-shell--live .live-table--v5 .live-round-tracker__controls label {
+    flex: 0 0 auto;
+  }
+  .ro-app-shell--live .live-table--v5 .live-round-tracker__controls button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-height: 2.5rem;
+  }
+  .ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-table__stage-copy {
+    left: .65rem;
+    right: .65rem;
+    bottom: .65rem;
+    width: auto;
+    max-height: min(35%, 12rem);
+    padding: .65rem .75rem;
+  }
+  .ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-table__stage-copy h2 {
+    font-size: 1.55rem;
+  }
+}
+@media (max-height: 650px) {
+  .ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-table__stage-copy {
+    max-height: min(33%, 9rem);
+  }
+  .ro-app-shell--live .live-table--v5:not(.is-cinematic) .live-table__stage-copy > p:not(.ro-eyebrow) {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ro-app-shell--live .live-table--v5 :where(.live-vtt__player,.live-vtt__dock button) {
+    transition: none;
+  }
+}
