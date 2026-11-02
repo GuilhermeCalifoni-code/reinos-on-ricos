@@ -589,7 +589,7 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               <button type="button" onClick={closeTool} aria-label={`Fechar ${ferramenta}`} title="Fechar ferramenta">×</button>
             </header>
             <div className="live-vtt__tool-body">
-              {ferramenta === 'dados' && (mestre ? (
+              {(ferramenta === 'dados' || ferramenta === 'onirico') && (mestre ? (
                 <MasterDiceRoller onRegistrarRolagem={async event => {
                   await registro.registrar({...event, characterId: null,
                     metadata: {...event.metadata, authorRole: 'mestre'}});
@@ -618,7 +618,8 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
                     {erroVinculo && <p role="alert" className="live-vtt__dice-character-error">{erroVinculo}</p>}
                   </div>
                   {selecionado && personagemJogadorId === selecionado.id ? (
-                    <DiceRoller key={selecionado.id}
+                    <DiceRoller key={`${selecionado.id}-${ferramenta}`}
+                      initialTab={ferramenta === 'onirico' ? 'onirico' : 'mundano'}
                       personagemAtivo={selecionado}
                       onSalvarPersonagem={atualizarPersonagemMesa}
                       onAbrirModalRuptura={(delta, motivo) => onAbrirRuptura(selecionado, delta, motivo)}
