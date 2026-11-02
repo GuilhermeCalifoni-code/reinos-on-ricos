@@ -10,6 +10,7 @@ import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from
 import { RupturaModal } from './RupturaModal';
 import { DamageModal } from './DamageModal';
 import { RestModal } from './RestModal';
+import { DiceRoller } from './DiceRoller';
 import { AssetImage } from './system/AssetImage';
 
 interface CharacterSheetProps {
@@ -56,6 +57,8 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [modalRupturaAberto,setModalRupturaAberto] = useState(false);
   const [modalDanoAberto,setModalDanoAberto] = useState(false);
   const [modalDescansoAberto,setModalDescansoAberto] = useState(false);
+  const [rolagemNaFicha, setRolagemNaFicha] = useState<'mundano' | 'onirico' | null>(null);
+  const [atributoNaFicha, setAtributoNaFicha] = useState<AtributoNome>('corpo');
   // As condições eram (e continuam sendo) marcadores temporários da interface.
   const [condicoes,setCondicoes] = useState({oculto:false,impedido:false,vulneravel:false});
   const prog = TABELA_PROGRESSAO[personagem.nivel] || TABELA_PROGRESSAO[1];
@@ -190,7 +193,8 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       <div className="ro-sheet__hero-actions" aria-label="Ações da ficha">
         <button type="button" onClick={()=>setModalDanoAberto(true)}><Heart size={17}/> Sofrer dano</button>
         <button type="button" onClick={()=>setModalDescansoAberto(true)}><Moon size={17}/> Descanso</button>
-        <button type="button" onClick={()=>onIrParaRolador(personagem)}><Dice5 size={17}/> Rolar teste</button>
+        <button type="button" aria-expanded={rolagemNaFicha === 'mundano'} onClick={()=>setRolagemNaFicha(mode=>mode==='mundano'?null:'mundano')}><Dice5 size={17}/> Teste Mundano</button>
+        <button type="button" aria-expanded={rolagemNaFicha === 'onirico'} onClick={()=>setRolagemNaFicha(mode=>mode==='onirico'?null:'onirico')}><Sparkles size={17}/> Teste Onírico</button>
         <button type="button" onClick={()=>onIrParaGuiaSonhar(personagem)}><Sparkles size={17}/> Guia do Sonhar</button>
         <div className="ro-sheet__secondary-actions">
           <button type="button" title="Exportar ficha em JSON" aria-label="Exportar ficha em JSON" onClick={()=>onExportar(personagem)}><Download size={17}/></button>
@@ -201,6 +205,19 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       </div>
     </header>
 
+    {rolagemNaFicha && (
+      <section className="ro-sheet__inline-roller" aria-label={`Rolagem ${rolagemNaFicha} na ficha`}>
+        <div className="ro-sheet__inline-roller-head">
+          <div><span className="ro-sheet__eyebrow">DADOS NA FICHA</span><h2>{rolagemNaFicha==='mundano'?'Teste Mundano':'Teste Onírico'}</h2></div>
+          <button type="button" onClick={()=>setRolagemNaFicha(null)} aria-label="Fechar dados sem sair da ficha">Fechar dados ×</button>
+        </div>
+        <DiceRoller key={`${personagem.id}-${rolagemNaFicha}-${atributoNaFicha}`}
+          personagemAtivo={personagem} atributoInicial={atributoNaFicha} initialTab={rolagemNaFicha}
+          onSalvarPersonagem={onSalvar}
+          onAbrirModalRuptura={() => setModalRupturaAberto(true)} />
+        <small>Os resultados aparecem aqui, sem sair da ficha. Para registrar a rolagem para toda a mesa, utilize Dados na Mesa Ao Vivo.</small>
+      </section>
+    )}
     <div className="ro-sheet__body">
       <div className="ro-sheet__main">
         <section className="ro-sheet__section" id="sheet-attributes">
@@ -219,7 +236,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 <output>{personagem.atributos[key]>=0?'+':''}{personagem.atributos[key]}</output>
                 <button type="button" disabled={personagem.atributos[key]>=4} onClick={()=>editarAtributo(key,personagem.atributos[key]+1)} aria-label={`Aumentar ${label}`}>+</button>
               </div>
-              <button className="ro-sheet__test" type="button" onClick={()=>onIrParaRolador(personagem,key)}><Dice5 size={15}/> Testar atributo</button>
+              <button className="ro-sheet__test" type="button" onClick={()=>{setAtributoNaFicha(key);setRolagemNaFicha('mundano');}}><Dice5 size={15}/> Testar aqui</button>
             </div>)}
           </div>
           <p className={`ro-sheet__validation ${somaAtributos===totalAtributos?'is-ok':'is-warning'}`}>
