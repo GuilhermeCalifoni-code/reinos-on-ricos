@@ -1,64 +1,58 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import {readFileSync} from 'node:fs';
 
-const migration=readFileSync('supabase/migrations/033_master_private_live_counters.sql','utf8');
-const table=readFileSync('src/components/live/LiveTable.tsx','utf8');
-const panel=readFileSync('src/components/live/CounterPanel.tsx','utf8');
-const dock=readFileSync('src/components/live/LiveDock.tsx','utf8');
-const session=readFileSync('src/components/live/SessionPanel.tsx','utf8');
-const hook=readFileSync('src/features/realtime/useCampaignRealtime.ts','utf8');
-const repo=readFileSync('src/features/realtime/liveTableRepository.ts','utf8');
-const styles=readFileSync('src/design-system/live-counters-master.css','utf8');
+const read=(path:string)=>readFileSync(path,'utf8');
+const original=read('supabase/migrations/033_master_private_live_counters.sql');
+const sharing=read('supabase/migrations/047_shared_counters_death_condition.sql');
+const table=read('src/components/live/LiveTable.tsx');
+const panel=read('src/components/live/CounterPanel.tsx');
+const dock=read('src/components/live/LiveDock.tsx');
+const hook=read('src/features/realtime/useCampaignRealtime.ts');
+const repository=read('src/features/realtime/liveTableRepository.ts');
 
-test('Jogador não visualiza contadores no dock, painel nem Registro Vivo',()=>{
-  assert.match(dock,/tools\.filter\(\(\[id\]\) => mestre \|\| id !== 'contadores'\)/);
-  assert.match(table,/mestre && ferramenta === 'contadores'/);
-  assert.match(table,/const contadoresAtuais = mestre \?/);
-  assert.match(session,/\{mestre && <section className="live-table__counter-slot"/);
-  assert.match(panel,/if \(!mestre\) return null/);
+test('Existing counters retain their original private visibility until the Mestre shares',()=>{
+  assert.match(original,/update public\.session_counters set visibilidade='mestre_privado'/);
+  assert.match(original,/for select to authenticated\s+using \(public\.is_campaign_master\(campaign_id\)\)/);
+  assert.match(panel,/compartilharNovo, setCompartilharNovo\] = useState\(false\)/);
+  assert.match(panel,/compartilharNovo \? 'compartilhado' : 'mestre_privado'/);
+  assert.match(panel,/Tornar privado/);
+  assert.match(panel,/Exibir para todos/);
 });
 
-test('Repositório não consulta nem assina stream de contadores para jogadores',()=>{
-  assert.match(repo,/async load\(campaignId: string, includePrivateCounters = false\)/);
-  assert.match(repo,/includePrivateCounters \? api\.from\('session_counters'\)/);
-  assert.match(repo,/if \(subscribePrivateCounters\) \{/);
-  assert.match(hook,/liveTableRepository\.load\(campaignId, role === 'mestre'\)/);
-  assert.match(hook,/\}, role === 'mestre'\);/);
-  assert.match(hook,/role, userId\]/);
+test('Mestre controls editing; Player only receives RLS-filtered counters in read-only view',()=>{
+  assert.match(sharing,/visibilidade = 'compartilhado'/);
+  assert.match(sharing,/public\.is_campaign_member\(campaign_id\)/);
+  assert.doesNotMatch(sharing,/drop policy "masters read counters only"/);
+  assert.match(hook,/if \(role !== 'mestre'\) throw new Error\('Contadores são exclusivos do Mestre\.'\)/);
+  assert.match(panel,/if \(!mestre\) return \(/);
+  assert.match(panel,/contadores\.filter\(c=>c\.visibilidade==='compartilhado'\)/);
+  assert.match(dock,/tools\.map\(\(\[id, label, Icon\]\)/);
+  assert.match(table,/ferramenta === 'contadores' && <CounterPanel/);
+  assert.match(table,/contadoresPublicos/);
 });
 
-test('RLS protege contadores independentemente de opção legada compartilhada',()=>{
-  assert.match(migration,/update public\.session_counters set visibilidade='mestre_privado'/);
-  assert.match(migration,/check \(visibilidade='mestre_privado'\)/);
-  assert.match(migration,/for select to authenticated\s+using \(public\.is_campaign_master\(campaign_id\)\)/);
-  assert.doesNotMatch(migration,/can_read_live_content\(campaign_id, visibilidade\)/);
+test('Client subscribes for explicit shared counter changes but refetches on visibility change',()=>{
+  assert.match(repository,/async visibleCounters\(campaignId: string\)/);
+  assert.match(repository,/\.from\('session_counters'\)\.select\('\*'\)/);
+  assert.match(repository,/table:'session_counters'/);
+  assert.match(hook,/liveTableRepository\.visibleCounters\(campaignId\)/);
+  assert.match(hook,/role !== 'mestre' && item\.visibilidade !== 'compartilhado'/);
+  assert.match(table,/countersVisibilityVersion: Date\.now\(\)/);
+  assert.match(hook,/pendingCounterWritesRef/);
 });
 
-test('Eventos privados: inclusive histórico já publicado deixa de chegar a jogadores',()=>{
-  assert.match(migration,/update public\.session_events\s+set visibility='mestre'/);
-  assert.match(migration,/as restrictive for select to authenticated/);
-  assert.match(migration,/type<>'counter_update' or public\.is_campaign_master\(campaign_id\)/);
-  assert.match(migration,/as restrictive for insert to authenticated/);
-  assert.match(panel,/type: 'counter_update',\s+visibility: 'mestre'/);
-});
-
-test('Mestre pode criar, aumentar e diminuir valor e máximo sem recarregar',()=>{
-  assert.match(panel,/onAdicionar\(\{/);
-  assert.match(panel,/valorMaximo: novoMaximo/);
+test('Counter updates in GM panel preserve sharing instead of forcibly turning private',()=>{
+  assert.match(panel,/onAtualizar\(contador\.id, \{ valorAtual: atual, valorMaximo: maximo, estado \}\)/);
   assert.match(panel,/const ajustarMaximo = \(contador: Contador, delta: number\)/);
   assert.match(panel,/const aplicarMaximo = \(contador: Contador\)/);
-  assert.match(panel,/atualizarValores\(contador, contador.valorAtual \+ delta, contador.valorMaximo\)/);
-  assert.match(panel,/onAtualizar\(contador.id, \{ valorAtual: atual, valorMaximo: maximo, estado, visibilidade: 'mestre_privado' \}\)/);
   assert.match(panel,/aria-label=\{`Aumentar máximo de/);
-  assert.match(styles,/@media\(max-width:600px\)/);
-  assert.match(hook,/pendingCounterWritesRef/);
-  assert.match(hook,/syncCounters\(replace\(countersRef\.current, \{\.\.\.previous,\.\.\.patch/);
+  assert.match(hook,/syncCounters\(replace\(countersRef\.current, \{\.\.\.previous,\.\.\.patch\}\)\)/);
   assert.doesNotMatch(table,/window\.location\.reload/);
 });
 
-test('Escrita no banco impede Jogador de criar, editar ou excluir',()=>{
-  assert.match(migration,/Previous write policies/);
-  assert.match(hook,/if \(role !== 'mestre'\) throw new Error\('Contadores são exclusivos do Mestre\.'\)/);
-  assert.match(repo,/\.from\('session_counters'\)\.update\(values\)/);
+test('Counter journal events remain private even when a progress dial is shared',()=>{
+  assert.match(original,/update public\.session_events\s+set visibility='mestre'/);
+  assert.match(original,/type<>'counter_update' or public\.is_campaign_master\(campaign_id\)/);
+  assert.match(panel,/type: 'counter_update',\s+visibility: 'mestre'/);
 });
