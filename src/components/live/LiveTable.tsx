@@ -125,10 +125,8 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
     });
   }, [compartilhando, effectiveSessionId, realtime.state?.sessionId, sessionDescription, sessionTitle]);
   const selecionarFerramenta = (proxima: LiveTool) => {
-    if (proxima === 'contadores' && !mestre) return;
     setFerramenta(atual => atual === proxima ? 'nenhuma' : proxima);
   };
-  useEffect(() => { if (!mestre) setFerramenta(atual => atual === 'contadores' ? 'nenhuma' : atual); }, [mestre]);
   // Escape fecha qualquer ferramenta aberta, inclusive Regras, sem sair da Mesa.
   useEffect(() => {
     if (ferramenta === 'nenhuma' || cinematic) return;
