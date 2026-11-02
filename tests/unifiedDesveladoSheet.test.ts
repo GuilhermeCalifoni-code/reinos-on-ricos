@@ -12,7 +12,7 @@ const styles=readFileSync('src/design-system/desvelado-sheet-light.css','utf8');
 test('Toda abertura de Desvelado reutiliza CharacterSheet, não o modal de criação',()=>{
   assert.ok(app.includes("React.lazy(() => import('./components/CharacterSheet')"));
   assert.match(app,/<CharacterSheet\s+personagem=\{personagemParaFicha\}/);
-  assert.match(mesa,/onAbrirFicha=\{onAbrirFicha\}/);
+  assert.match(mesa,/onAbrirFicha=\{abrirFichaComRolagem\}/);
   assert.match(campaign,/onAbrirFichaPersonagem/);
 });
 test('Ficha real é formulário contínuo, sem abas legadas',()=>{
