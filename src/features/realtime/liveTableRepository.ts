@@ -16,7 +16,7 @@ const toMap = (item: Omit<MapaNarrativo, 'id' | 'criadoEm' | 'atualizadoEm'>) =>
 const toToken = (item: Omit<TokenMapa, 'id' | 'criadoEm' | 'atualizadoEm'>) => ({ map_id: item.mapaId, campaign_id: item.campanhaId, character_id: item.characterId || null, npc_id: item.npcId || null, adversary_id: item.adversaryId || null, tipo: item.tipo, nome: item.nome, imagem_url: item.imagemUrl || null, token_size: item.tokenSize ?? 1, range_cells: item.rangeCells ?? 0, area_radius_cells: item.areaRadiusCells ?? 0, cor: item.cor, x: item.x, y: item.y, oculto: item.oculto, condicoes: item.condicoes ?? [] });
 
 export const liveTableRepository = {
-  async load(campaignId: string, includePrivateCounters = false) {
+  async load(campaignId: string) {
     const api=client();
     const [s,c,m,t,hp]=await Promise.all([
       api.from('live_session_states').select('*').eq('campaign_id',campaignId).maybeSingle(),
