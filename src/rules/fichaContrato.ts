@@ -229,3 +229,14 @@ export function atributoDoTesteOnirico(p: Pick<Personagem, 'atributoPrincipal' |
   const atributo = p.atributoPrincipal;
   return { atributo, valor: Number(p.atributos?.[atributo] ?? 0) };
 }
+
+/**
+ * Última barreira antes do banco (CONTRATO_FICHA_v3, §6, modo `salvar`).
+ * Bloqueia só o que o contrato manda bloquear (Recursos fora de 1–5, Ruptura fora de 0–6).
+ * Problemas de atributos de fichas antigas viram aviso e NÃO impedem salvar o resto.
+ */
+export function garantirFichaSalvavel<T extends Personagem>(p: T): T {
+  const v = validarFichaDesvelado(p, { modo: 'salvar' });
+  if (v.bloqueia) throw new Error(`A ficha não pode ser salva: ${v.erros.join(' ')}`);
+  return p;
+}

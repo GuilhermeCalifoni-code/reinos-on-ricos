@@ -284,7 +284,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           </div>
           <div className="ro-sheet__resource-grid">
             <ResourceControl name="Pontos de Vida" icon={<Heart size={18}/>} atual={personagem.vidaAtual} max={personagem.vidaMaxima} campo="vidaAtual" description="Vida na Vigília"/>
-            <ResourceControl name="Foco (PF)" icon={<Flame size={18}/>} atual={personagem.focoAtual} max={personagem.focoMaximo} campo="focoAtual" description="+2 em Teste Mundano"/>
+            <ResourceControl name="Foco (PF)" icon={<Flame size={18}/>} atual={personagem.focoAtual} max={personagem.focoMaximo} campo="focoAtual" description="Gaste 1 antes de um Teste: +2 (VF18, p. 11)"/>
             <ResourceControl name="Proteção Onírica" icon={<Shield size={18}/>} atual={personagem.protecaoOniricaAtual} max={personagem.protecaoOniricaMaxima} campo="protecaoOniricaAtual" description="Máx. 1 PO por dano"/>
           </div>
           {personagem.vidaAtual===0 && <button type="button" className="ro-sheet__death" onClick={onDispararMovimentoMorte}>Realizar Movimento de Morte <AlertTriangle size={17}/></button>}

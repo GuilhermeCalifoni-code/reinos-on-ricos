@@ -1,6 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Personagem } from '../types/character';
-import { normalizarPersonagem } from '../rules/fichaContrato';
+import { normalizarPersonagem, garantirFichaSalvavel } from '../rules/fichaContrato';
 
 // Variáveis de ambiente configuradas no Vite
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -85,6 +85,7 @@ export async function syncPersonagemComSupabase(
   const personagem = normalizarPersonagem(entrada);
 
   try {
+    garantirFichaSalvavel(personagem);
     const { error } = await supabase.from('personagens').upsert({
       id: personagem.id,
       mesa_codigo: mesaCodigo,

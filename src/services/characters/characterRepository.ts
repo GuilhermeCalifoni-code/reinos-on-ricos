@@ -1,6 +1,6 @@
 import { supabase } from '../../lib/supabaseClient';
 import { Personagem } from '../../types/character';
-import { normalizarPersonagem } from '../../rules/fichaContrato';
+import { garantirFichaSalvavel, normalizarPersonagem } from '../../rules/fichaContrato';
 
 const client = () => { if (!supabase) throw new Error('Supabase não está configurado.'); return supabase; };
 
@@ -64,7 +64,7 @@ export const characterRepository = {
   async salvar(entrada: Personagem) {
     // Toda ficha passa pelo formato novo antes de ir para o banco,
     // inclusive as que chegam da importação local ou de backups antigos.
-    const personagem = normalizarPersonagem(entrada);
+    const personagem = garantirFichaSalvavel(normalizarPersonagem(entrada));
     if (!personagem.ownerUserId) throw new Error('Uma ficha remota precisa ter um proprietário.');
     const { data, error } = await client().from('personagens').upsert({
       id: personagem.id,

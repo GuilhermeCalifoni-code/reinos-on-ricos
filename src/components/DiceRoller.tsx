@@ -88,6 +88,8 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   const [modificadorOniricoLivre, setModificadorOniricoLivre] = useState<number>(0);
   const [dtOnirico, setDtOnirico] = useState<number>(13); // Padrão 13 no Livro Básico
   const [condicaoAumentaDT, setCondicaoAumentaDT] = useState<boolean>(false);
+  // Dificuldade do Adversário: vale se for maior que a DT Onírica (VF18, p. 29). Vazio = sem adversário.
+  const [dificuldadeAdversario, setDificuldadeAdversario] = useState<number | null>(null);
   const [usarFocoOnirico, setUsarFocoOnirico] = useState<boolean>(false);
   const [resultadoOnirico, setResultadoOnirico] = useState<ResultadoTesteOnirico | null>(null);
 
@@ -144,6 +146,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
       atributo: principal ? principal.atributo : (personagemAtivo?.atributoPrincipal ?? 'mente'),
       valorAtributo: valorAtrib,
       dt: dtFinal,
+      dificuldadeAdversario: dificuldadeAdversario ?? undefined,
       modificadores: focoDisponivel ? [{ nome: 'Foco', valor: 2 }] : []
     });
 
@@ -600,7 +603,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="text-slate-300 font-semibold">Dificuldade Onírica (DT):</label>
-                <span className="text-cyan-400 font-bold">DT {dtOnirico + (condicaoAumentaDT ? 2 : 0)}</span>
+                <span className="text-cyan-400 font-bold">DT {Math.max(dtOnirico + (condicaoAumentaDT ? 2 : 0), dificuldadeAdversario ?? 0)}</span>
               </div>
               <p className="text-[10px] text-slate-500 mb-2">
                 A DT Onírica é normalmente 13 (mede a tensão entre os mundos, não a dificuldade da ação).
@@ -615,6 +618,22 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                 />
                 <span className="text-slate-300 text-[11px]">
                   Condição adversa torna manifestação mais difícil (+2 na DT)
+                </span>
+              </label>
+
+              <label className="block mt-2">
+                <span className="text-slate-300 text-[11px]">Dificuldade do Adversário (se houver)</span>
+                <input
+                  type="number"
+                  min={1}
+                  value={dificuldadeAdversario ?? ''}
+                  onChange={(e) => setDificuldadeAdversario(e.target.value === '' ? null : Number(e.target.value))}
+                  placeholder="Sem adversário"
+                  aria-label="Dificuldade do Adversário"
+                  className="w-full mt-1 p-2 rounded border border-slate-700 bg-slate-950 text-slate-200"
+                />
+                <span className="block text-[10px] text-slate-500 mt-1">
+                  Contra um Adversário, vale a maior entre a DT Onírica e a Dificuldade dele (VF18, p. 29).
                 </span>
               </label>
             </div>

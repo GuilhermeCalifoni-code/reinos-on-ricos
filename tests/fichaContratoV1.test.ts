@@ -1,8 +1,10 @@
 // Testes de comportamento do CONTRATO_FICHA_v3 (fase 1). Testam regras, não texto de código.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   AVISO_RECURSOS_AJUSTADOS_P1,
+  garantirFichaSalvavel,
   atributoDoTesteOnirico,
   converterRecursosLegados,
   normalizarPersonagem,
@@ -167,4 +169,28 @@ test('Mudar o nível de Recursos não mexe nos itens', () => {
   const depois = normalizarPersonagem({ ...p, recursosNivel: 4 });
   assert.equal(depois.itensGerais.length, 2);
   assert.equal(depois.recursosNivel, 4);
+});
+
+// ---------------- Revisão A2 do ChatGPT (PR #120) ----------------
+
+test('Gravação no banco bloqueia Recursos fora de 1–5, mas deixa salvar ficha antiga com atributos zerados', () => {
+  assert.throws(() => garantirFichaSalvavel(base({ recursosNivel: 0 as any })), /Recursos/);
+  const antiga = base({ atributos: { corpo: 0, mente: 0, vontade: 0, vinculo: 0 } });
+  assert.equal(garantirFichaSalvavel(antiga), antiga);
+});
+
+test('Os dois caminhos de gravação passam pela barreira do contrato', () => {
+  assert.match(readFileSync('src/services/characters/characterRepository.ts', 'utf8'), /garantirFichaSalvavel\(normalizarPersonagem\(entrada\)\)/);
+  assert.match(readFileSync('src/lib/supabaseClient.ts', 'utf8'), /garantirFichaSalvavel\(personagem\)/);
+});
+
+test('O rolador envia a Dificuldade do Adversário para o Teste Onírico (VF18, p. 29)', () => {
+  const fonte = readFileSync('src/components/DiceRoller.tsx', 'utf8');
+  assert.match(fonte, /dificuldadeAdversario: dificuldadeAdversario \?\? undefined/);
+  assert.match(fonte, /aria-label="Dificuldade do Adversário"/);
+});
+
+test('Texto do Foco vale para qualquer Teste, não só o Mundano (VF18, p. 11)', () => {
+  const fonte = readFileSync('src/components/CharacterSheet.tsx', 'utf8');
+  assert.doesNotMatch(fonte, /\+2 em Teste Mundano/);
 });

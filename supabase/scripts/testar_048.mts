@@ -1,4 +1,4 @@
-// Rodar: npm i --no-save @electric-sql/pglite@0.2 && npx tsx supabase/scripts/testar_048.mts
+// Rodar: npm run test:migracao (também roda no CI)
 // Testa a migração 048 num Postgres local (PGlite) e compara o SQL com o conversor TS.
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
