@@ -20,6 +20,7 @@ import {
   ResultadoOniricoTipo
 } from '../types/character';
 import { executarTesteMundano, executarTesteOnirico, resolverMovimentoMorte } from '../rules/rulesEngine';
+import { atributoDoTesteOnirico, ATRIBUTO_ROTULOS } from '../rules/fichaContrato';
 import { rollActorDamage } from '../features/realtime/roActorCombat';
 import { NewSessionEvent } from '../types/sessionEvent';
 
@@ -82,7 +83,9 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
   const [rolagensMundanas, setRolagensMundanas] = useState(0);
 
   // Estado do Teste Onírico
-  const [atribOnirico, setAtribOnirico] = useState<AtributoNome>(atributoInicial || 'vontade');
+  // Teste Onírico usa SEMPRE o Atributo Principal, com o valor atual (VF18, p. 29).
+  // Sem personagem vinculado (Mestre rolando livre), o modificador é digitado.
+  const [modificadorOniricoLivre, setModificadorOniricoLivre] = useState<number>(0);
   const [dtOnirico, setDtOnirico] = useState<number>(13); // Padrão 13 no Livro Básico
   const [condicaoAumentaDT, setCondicaoAumentaDT] = useState<boolean>(false);
   const [usarFocoOnirico, setUsarFocoOnirico] = useState<boolean>(false);
@@ -132,12 +135,13 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
 
   // Executar Teste Onírico
   const handleRolarOnirico = () => {
-    const valorAtrib = personagemAtivo ? personagemAtivo.atributos[atribOnirico] : 0;
+    const principal = personagemAtivo ? atributoDoTesteOnirico(personagemAtivo) : null;
+    const valorAtrib = principal ? principal.valor : modificadorOniricoLivre;
     const dtFinal = dtOnirico + (condicaoAumentaDT ? 2 : 0);
 
     const focoDisponivel = Boolean(usarFocoOnirico && personagemAtivo && personagemAtivo.focoAtual > 0 && onSalvarPersonagem);
     const res = executarTesteOnirico({
-      atributo: atribOnirico,
+      atributo: principal ? principal.atributo : (personagemAtivo?.atributoPrincipal ?? 'mente'),
       valorAtributo: valorAtrib,
       dt: dtFinal,
       modificadores: focoDisponivel ? [{ nome: 'Foco', valor: 2 }] : []
@@ -155,7 +159,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
     }
   };
 
-  // Executar Movimento de Morte (Livro Básico VF10, pág. 42)
+  // Executar Movimento de Morte (Livro Básico VF18, p. 41)
   const handleRolarMovimentoMorte = () => {
     const res = resolverMovimentoMorte();
     registrarResultado({
@@ -397,7 +401,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
                       Gastar 1 Ponto de Foco (+2 no Teste)
                     </span>
                     <span className="text-[10px] text-slate-500 block">
-                      Livro Básico pág. 10 · Disponível: {personagemAtivo?.focoAtual ?? 0} PF
+                      Livro Básico VF18, p. 11 · Disponível: {personagemAtivo?.focoAtual ?? 0} PF
                     </span>
                   </div>
                 </div>
@@ -543,7 +547,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
             </div>
 
             <div className="text-[10px] text-slate-500 border-t border-slate-800/80 pt-2 mt-4 text-right">
-              Reinos Oníricos RPG · Livro Básico pág. 28
+              Reinos Oníricos RPG · Livro Básico VF18, p. 30
             </div>
           </div>}
 
@@ -566,41 +570,30 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
               </p>
             </div>
 
-            {/* Atributo da Abordagem */}
+            {/* Atributo do Teste Onírico: sempre o Principal (VF18, p. 29) */}
             <div>
-              <label className="text-slate-300 block mb-1 font-semibold">
-                Atributo da Abordagem:
+              <label className="text-slate-300 block mb-1 font-semibold" htmlFor="ro-onirico-principal">
+                Atributo do Teste Onírico:
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { id: 'mente', label: 'Mente', desc: 'Compreender/estruturar' },
-                  { id: 'vontade', label: 'Vontade', desc: 'Impor à Realidade' },
-                  { id: 'corpo', label: 'Corpo', desc: 'Movimento / físico' },
-                  { id: 'vinculo', label: 'Vínculo', desc: 'Elo / conexão' }
-                ].map(at => {
-                  const chave = at.id as AtributoNome;
-                  const mod = personagemAtivo?.atributos[chave] ?? 0;
-                  const selecionado = atribOnirico === chave;
-                  return (
-                    <button
-                      key={at.id}
-                      type="button"
-                      onClick={() => setAtribOnirico(chave)}
-                      className={`p-2 rounded border text-left flex flex-col justify-between transition ${
-                        selecionado
-                          ? 'bg-cyan-950/70 border-cyan-400 text-cyan-200 font-bold'
-                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-                      }`}
-                    >
-                      <div className="flex justify-between w-full">
-                        <span>{at.label}</span>
-                        <span className="text-cyan-400">{mod >= 0 ? `+${mod}` : mod}</span>
-                      </div>
-                      <span className="text-[9px] opacity-70 font-normal">{at.desc}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              {personagemAtivo ? (
+                <p id="ro-onirico-principal" className="p-2 rounded border border-slate-700 bg-slate-950 text-slate-200 font-bold flex justify-between">
+                  <span>Principal: {ATRIBUTO_ROTULOS[atributoDoTesteOnirico(personagemAtivo).atributo]}</span>
+                  <span>{(() => { const v = atributoDoTesteOnirico(personagemAtivo).valor; return v >= 0 ? `+${v}` : v; })()}</span>
+                </p>
+              ) : (
+                <input
+                  id="ro-onirico-principal"
+                  type="number"
+                  step={1}
+                  value={modificadorOniricoLivre}
+                  onChange={(e) => { const v = Number(e.target.value); if (Number.isInteger(v)) setModificadorOniricoLivre(v); }}
+                  aria-label="Modificador do Atributo Principal"
+                  className="w-full p-2 rounded border border-slate-700 bg-slate-950 text-slate-200"
+                />
+              )}
+              <p className="text-[10px] text-slate-500 mt-1">
+                O Teste Onírico sempre usa o Atributo Principal nos dois dados (Livro Básico VF18, p. 29).
+              </p>
             </div>
 
             {/* DT do Teste Onírico (padrão 13) */}
@@ -685,7 +678,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
               {!resultadoOnirico ? (
                 <div className="text-center py-16 text-slate-500 text-xs">
                   <Sparkles className="w-12 h-12 mx-auto mb-2 opacity-30 text-cyan-400 animate-pulse" />
-                  Defina a abordagem do Desvelado e clique em Manifestar.
+                  Descreva a manifestação e clique em Manifestar. O teste usa o Atributo Principal.
                 </div>
               ) : (
                 <div className="space-y-4 animate-in fade-in duration-200">
@@ -798,7 +791,7 @@ export const DiceRoller: React.FC<DiceRollerProps> = ({
             </div>
 
             <div className="text-[10px] text-slate-500 border-t border-slate-800/80 pt-2 mt-4 text-right">
-              Reinos Oníricos RPG · Livro Básico pág. 27
+              Reinos Oníricos RPG · Livro Básico VF18, p. 29
             </div>
           </div>
 

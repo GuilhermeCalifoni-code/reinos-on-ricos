@@ -83,7 +83,7 @@ export const RulesReference: React.FC = () => {
           <article className="ro-surface">
             <p className="ro-eyebrow">Teste Onírico</p>
             <h3>Realidade + Sonhar, cada dado contra a DT</h3>
-            <p>Role 2d20 + o mesmo Atributo apropriado. A DT é normalmente 13. Os dados não competem entre si e não existem margens de sucesso. Antes do Teste, até 1 PF pode ser gasto para +2 no Teste; o bônus se aplica aos dois resultados.</p>
+            <p>Role 2d20 + o Atributo Principal (Livro Básico VF18, p. 29; o Guia Rápido ainda fala em “Atributo apropriado”, mas vale o Livro Básico). A DT é normalmente 13. Os dados não competem entre si e não existem margens de sucesso. Antes do Teste, até 1 PF pode ser gasto para +2 no Teste; o bônus se aplica aos dois resultados.</p>
             <div className="rules-reference__outcomes">
               <div><strong>Convergência</strong><span>ambos passam</span><p>Manifestação acontece; é crítico; Ruptura −1.</p></div>
               <div><strong>Realidade vence</strong><span>Realidade passa</span><p>Manifestação não acontece; Ruptura 0.</p></div>
@@ -281,7 +281,7 @@ export const RulesReference: React.FC = () => {
             <p className="ro-eyebrow">Potência em estruturas</p>
             <div className="rules-reference__compact-list">
               <p><strong>Resistência de materiais:</strong> cada Passo move uma categoria entre Frágil → Comum → Resistente → Muito Resistente. Os extremos são limites.</p>
-              <p><strong>Tamanho:</strong> cada Passo desloca uma categoria; a Potência do Sonhar usa Médio como base, conforme Livro Básico VF10 (p. 73 e exemplo da p. 91).</p>
+              <p><strong>Tamanho:</strong> cada Passo desloca uma categoria; a Potência do Sonhar usa Médio como base, conforme o Livro Básico VF18 (Potência do Sonhar).</p>
               <p><strong>Não acumula automaticamente:</strong> escolher Tamanho não aumenta ao mesmo tempo a Resistência do material.</p>
               <p><strong>Peso e carga:</strong> use a escala de Tamanho como referência; Pequeno corresponde ao que uma pessoa comum consegue levar normalmente e uma categoria acima pode ser carregada com esforço.</p>
             </div>

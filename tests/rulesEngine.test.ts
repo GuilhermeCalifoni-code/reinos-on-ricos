@@ -96,7 +96,7 @@ test('Estrutura só rompe quando dano supera R', () => {
 });
 
 
-test('Movimento de Morte segue o Livro Básico VF10, inclusive +1 Ruptura no Sonhar vence', () => {
+test('Movimento de Morte segue o Livro Básico VF18 (p. 41), inclusive +1 Ruptura no Sonhar vence', () => {
   const rolls = [
     { dados: [20, 20], tipo: 'convergencia', vida: 2, ruptura: 0, consciente: true, morre: false },
     { dados: [20, 1], tipo: 'realidade_vence', vida: 0, ruptura: 0, consciente: false, morre: false },

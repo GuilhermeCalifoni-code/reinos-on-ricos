@@ -148,7 +148,7 @@ export const COMPENDIUM_ENTRIES: CompendiumEntry[] = [
     eyebrow: 'Sonhar',
     title: 'Teste Onírico',
     summary: '2d20 + Atributo: Realidade e Sonhar contra a mesma DT.',
-    answer: 'Role 2d20 + o mesmo Atributo apropriado. Um dado representa Realidade e o outro Sonhar. Compare cada dado separadamente à DT, normalmente 13.',
+    answer: 'Role 2d20 + o Atributo Principal (Livro Básico VF18, p. 29). Um dado representa Realidade e o outro Sonhar. Compare cada dado separadamente à DT, normalmente 13.',
     details: [
       'Convergência: ambos passam; a manifestação acontece, é crítico e reduz 1 Ruptura.',
       'Realidade vence: apenas Realidade passa; a manifestação não acontece e Ruptura não muda.',
@@ -225,7 +225,7 @@ export const COMPENDIUM_ENTRIES: CompendiumEntry[] = [
       'Nível: use o menor nível capaz de realizar a mudança.',
       'Defina alcance, alvos/área e duração.',
       'Se necessário, determine complexidade e Potência.',
-      'Escolha o Atributo conforme a abordagem narrada.',
+      'Aplique o Atributo Principal do Desvelado (Livro Básico VF18, p. 29).',
       'Faça o Teste Onírico e aplique manifestação, Ruptura e consequências.'
     ],
     keywords: ['guia do sonhar', 'manifestação', 'intenção', 'domínio', 'nível', 'alcance', 'duração', 'potência'],

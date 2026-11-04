@@ -4,7 +4,8 @@ import {
   Download, Eye, Flame, Heart, Moon, Plus, Shield, Sparkles, Trash2, Waves,
   X, Zap, Camera
 } from 'lucide-react';
-import { Personagem, AtributoNome, DominioNome, VinculoItem, EquipamentoItem } from '../types/character';
+import { Personagem, AtributoNome, DominioNome, VinculoItem, ItemGeral, RecursosNivel } from '../types/character';
+import { AVISO_RECURSOS_AJUSTADOS_P1, RECURSOS_ROTULOS, normalizarPersonagem, validarFichaDesvelado } from '../rules/fichaContrato';
 import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS } from '../rules/rulesData';
 import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
@@ -40,7 +41,6 @@ const domains: { key: DominioNome; label: string; symbol: React.ReactNode }[] = 
   { key: 'substancia', label: 'Substância', symbol: <Sparkles size={17}/> },
   { key: 'vida', label: 'Vida', symbol: <Heart size={17}/> }
 ];
-const resourceLabels = ['Escasso', 'Limitado', 'Estável', 'Confortável', 'Abundante'];
 const damageReference = [
   ['Leve','d4','Socos, chutes, impactos leves'],
   ['Moderado','d6','Facas, bastões, armas improvisadas'],
@@ -51,9 +51,11 @@ const damageReference = [
 ] as const;
 
 export const CharacterSheet: React.FC<CharacterSheetProps> = ({
-  personagem, onSalvar, onAlterarRetrato, onDuplicar, onExcluir, onExportar, onIrParaRolador,
+  personagem: personagemEntrada, onSalvar, onAlterarRetrato, onDuplicar, onExcluir, onExportar, onIrParaRolador,
   onIrParaGuiaSonhar, onDispararMovimentoMorte, onRegistrarRolagem
 }) => {
+  // A ficha sempre trabalha no formato novo (Recursos 1–5 e Itens Gerais), mesmo com dados antigos.
+  const personagem = normalizarPersonagem(personagemEntrada);
   const [enviandoRetrato, setEnviandoRetrato] = useState(false);
   const [erroRetrato, setErroRetrato] = useState('');
   const [modalRupturaAberto,setModalRupturaAberto] = useState(false);
@@ -65,8 +67,9 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [condicoes,setCondicoes] = useState({oculto:false,impedido:false,vulneravel:false,morte:personagem.vidaAtual===0});
   const prog = TABELA_PROGRESSAO[personagem.nivel] || TABELA_PROGRESSAO[1];
   const validacao = validarDistribuicaoDominios(personagem.dominios, personagem.nivel);
-  const somaAtributos = Object.values(personagem.atributos).reduce((sum,value)=>sum+value,0);
-  const totalAtributos = personagem.nivel + 1;
+  // Fichas fora da regra não são bloqueadas: os problemas aparecem como aviso (CONTRATO_FICHA_v3, §4).
+  const avisosFicha = validarFichaDesvelado(personagem, { modo: 'salvar' }).avisos;
+  const avisoRecursosP1 = (personagem.avisosMigracao || []).includes(AVISO_RECURSOS_AJUSTADOS_P1);
 
   const alterarRetrato = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -125,10 +128,14 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     id:`vinculo-${crypto.randomUUID()}`,nome:'',descricao:''}]});
   const editarVinculo = (id:string,patch:Partial<VinculoItem>) => salvar({vinculos:(personagem.vinculos||[]).map(item=>
     item.id===id?{...item,...patch}:item)});
-  const addEquipamento = () => salvar({equipamentos:[...(personagem.equipamentos||[]),{
-    id:`item-${crypto.randomUUID()}`,nome:'',descricao:''}]});
-  const editarEquipamento = (id:string,patch:Partial<EquipamentoItem>) => salvar({equipamentos:(personagem.equipamentos||[]).map(item=>
+  const addItemGeral = () => salvar({itensGerais:[...personagem.itensGerais,{
+    id:`item-${crypto.randomUUID()}`,nome:'',quantidade:1,observacoes:''}]});
+  const editarItemGeral = (id:string,patch:Partial<ItemGeral>) => salvar({itensGerais:personagem.itensGerais.map(item=>
     item.id===id?{...item,...patch}:item)});
+  const removerItemGeral = (id:string) => salvar({itensGerais:personagem.itensGerais.filter(item=>item.id!==id)});
+  // Mudar o nível de Recursos não toca em nenhum item (antes, trocava a lista inteira).
+  const alterarRecursosNivel = (nivel:RecursosNivel) => salvar({recursosNivel:nivel});
+  const dispensarAvisoP1 = () => salvar({avisosMigracao:(personagem.avisosMigracao||[]).filter(a=>a!==AVISO_RECURSOS_AJUSTADOS_P1)});
   const principal = attributes.find(item=>item.key===personagem.atributoPrincipal)?.label || 'Corpo';
 
   const ResourceControl=({name,icon,atual,max,campo,description}:{
@@ -224,6 +231,21 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </div>
       </section>
     )}
+    {(avisosFicha.length>0 || avisoRecursosP1) && (
+      <div className="ro-sheet__validation is-warning" role="status" aria-live="polite">
+        <AlertTriangle size={16}/>
+        <div>
+          {avisosFicha.length>0 && <>
+            <strong>Esta ficha precisa de ajuste:</strong>
+            <ol>{avisosFicha.map(aviso=><li key={aviso}>{aviso}</li>)}</ol>
+          </>}
+          {avisoRecursosP1 && <p>
+            Recursos ajustados para 1 conforme o livro (VF18, p. 14). O valor 3 tinha sido colocado automaticamente pelo site.
+            {' '}<button type="button" onClick={dispensarAvisoP1}>Entendi</button>
+          </p>}
+        </div>
+      </div>
+    )}
     <div className="ro-sheet__body">
       <div className="ro-sheet__main">
         <section className="ro-sheet__section" id="sheet-attributes">
@@ -245,10 +267,11 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
               <button className="ro-sheet__test" type="button" onClick={()=>{setAtributoNaFicha(key);setRolagemNaFicha('mundano');}}><Dice5 size={15}/> Testar aqui</button>
             </div>)}
           </div>
-          <p className={`ro-sheet__validation ${somaAtributos===totalAtributos?'is-ok':'is-warning'}`}>
-            {somaAtributos===totalAtributos?<CheckCircle2 size={16}/>:<AlertTriangle size={16}/>}
-            Soma dos atributos: {somaAtributos}/{totalAtributos}.
-            {somaAtributos!==totalAtributos?' Confira a distribuição antes de jogar.':''}
+          <p className={`ro-sheet__validation ${avisosFicha.length===0?'is-ok':'is-warning'}`}>
+            {avisosFicha.length===0?<CheckCircle2 size={16}/>:<AlertTriangle size={16}/>}
+            {avisosFicha.length===0
+              ? 'Atributos conforme o livro.'
+              : `Atributos fora da regra (${avisosFicha.length}). Veja o aviso no topo da ficha.`}
           </p>
         </section>
 
@@ -329,24 +352,31 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
         </section>
 
         <section className="ro-sheet__section" id="sheet-belongings">
-          <div className="ro-sheet__heading"><div><span className="ro-sheet__eyebrow">05 · PERTENCES</span><h2>Recursos e equipamentos</h2></div></div>
+          <div className="ro-sheet__heading"><div><span className="ro-sheet__eyebrow">05 · PERTENCES</span><h2>Recursos e Itens Gerais</h2></div></div>
           <div className="ro-sheet__resource-level">
-            <h3>Recursos <small>Capacidade de sobrevivência urbana · nível 1 a 5</small></h3>
+            <h3>Recursos <small>Trilha abstrata · 1 escasso a 5 abundante · começa em 1</small></h3>
             <div role="group" aria-label="Nível de Recursos">
-              {[1,2,3,4,5].map(n=><button key={n} type="button" className={(personagem.recursos?.[0]?.quantidade||1)===n?'is-active':''}
-                aria-pressed={(personagem.recursos?.[0]?.quantidade||1)===n}
-                onClick={()=>salvar({recursos:[{id:'rec-main',nome:`Nível ${n} (${resourceLabels[n-1]})`,descricao:resourceLabels[n-1],quantidade:n}]})}>
-                <strong>{n}</strong><small>{resourceLabels[n-1]}</small>
+              {([1,2,3,4,5] as RecursosNivel[]).map(n=><button key={n} type="button" className={personagem.recursosNivel===n?'is-active':''}
+                aria-pressed={personagem.recursosNivel===n}
+                onClick={()=>alterarRecursosNivel(n)}>
+                <strong>{n}</strong><small>{RECURSOS_ROTULOS[n]}</small>
               </button>)}
             </div>
           </div>
-          <div className="ro-sheet__collection-header"><h3>Itens e equipamentos</h3><button type="button" onClick={addEquipamento}><Plus size={17}/> Adicionar item</button></div>
+          <div className="ro-sheet__collection-header"><h3>Itens Gerais</h3><button type="button" onClick={addItemGeral}><Plus size={17}/> Adicionar item</button></div>
           <div className="ro-sheet__collection">
-            {(personagem.equipamentos||[]).length===0 && <p className="ro-sheet__empty">Seus equipamentos aparecerão aqui.</p>}
-            {(personagem.equipamentos||[]).map(item=><div className="ro-sheet__collection-item" key={item.id}>
-              <div><input value={item.nome} onChange={e=>editarEquipamento(item.id,{nome:e.target.value})} placeholder="Nome do item" aria-label="Nome do equipamento"/>
-                <input value={item.descricao||''} onChange={e=>editarEquipamento(item.id,{descricao:e.target.value})} placeholder="Descrição ou utilidade" aria-label="Descrição do equipamento"/></div>
-              <button type="button" onClick={()=>salvar({equipamentos:(personagem.equipamentos||[]).filter(x=>x.id!==item.id)})} title="Remover item" aria-label={`Remover ${item.nome}`}><Trash2 size={17}/></button>
+            {personagem.itensGerais.length===0 && <p className="ro-sheet__empty">Seus itens aparecerão aqui.</p>}
+            {personagem.itensGerais.map(item=><div className="ro-sheet__collection-item" key={item.id}>
+              <div>
+                <label><span>Item / posse</span>
+                  <input value={item.nome} onChange={e=>editarItemGeral(item.id,{nome:e.target.value})} placeholder="Nome do item"/></label>
+                <label><span>Qtd.</span>
+                  <input type="number" min={0} step={1} value={item.quantidade}
+                    onChange={e=>{const q=Number(e.target.value); if(Number.isInteger(q)&&q>=0) editarItemGeral(item.id,{quantidade:q});}}/></label>
+                <label><span>Observações</span>
+                  <input value={item.observacoes} onChange={e=>editarItemGeral(item.id,{observacoes:e.target.value})} placeholder="Observações"/></label>
+              </div>
+              <button type="button" onClick={()=>removerItemGeral(item.id)} title="Remover item" aria-label={`Remover ${item.nome || 'item'}`}><Trash2 size={17}/></button>
             </div>)}
           </div>
           <label className="ro-sheet__field"><span>Descrição, história e anotações gerais</span>

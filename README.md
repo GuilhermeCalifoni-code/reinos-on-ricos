@@ -27,11 +27,11 @@ Conteúdo de campanha pode usar os estados de visibilidade mestre_privado, compa
 
 ## Regras automatizadas
 
-O motor segue a versão atual do Livro Básico de Reinos Oníricos (VF5):
+O motor segue a versão atual do Livro Básico de Reinos Oníricos (VF18):
 
 - Teste Mundano: 1d20 + Atributo ≥ DT;
 - 20 natural é sucesso automático;
-- Teste Onírico: Realidade e Sonhar são comparados separadamente;
+- Teste Onírico: 2d20 + Atributo Principal (valor atual), DT 13 ou a Dificuldade do Adversário se maior; Realidade e Sonhar são comparados separadamente (p. 29);
 - Convergência: manifestação acontece, crítico e -1 Ruptura;
 - Realidade vence: manifestação não acontece e 0 Ruptura;
 - Sonhar vence: manifestação acontece e +1 Ruptura;
@@ -40,7 +40,7 @@ O motor segue a versão atual do Livro Básico de Reinos Oníricos (VF5):
 - Defesa: 8 + Corpo;
 - dano é convertido em perda de 1/2 PV, ou 3 PV com Dano Massivo opcional;
 - no máximo 1 PO reduz a perda em 1 PV por ocorrência;
-- Movimento de Morte usa 2d20 contra DT 13: Convergência recupera 2 PV; Realidade vence mantém 0 PV e Inconsciente; Sonhar vence recupera 1 PV e +2 Ruptura; Divergência resulta em morte;
+- Movimento de Morte usa 2d20 contra DT 13: Convergência recupera 2 PV; Realidade vence mantém 0 PV e Inconsciente; Sonhar vence recupera 1 PV e +1 Ruptura; Divergência resulta em morte (p. 41);
 - Efeitos do Sonhar usam DT 10/12/14/16/18 conforme o Nível efetivamente utilizado;
 - Potência usa 0/1/2/2/3 Passos e todos os Passos afetam uma única característica mecânica;
 - objetos e estruturas usam Resistência por Material × Tamanho, sem PV;

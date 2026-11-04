@@ -17,7 +17,7 @@ test('Toda abertura de Desvelado reutiliza CharacterSheet, não o modal de cria�
 });
 test('Ficha real é formulário contínuo, sem abas legadas',()=>{
   assert.match(sheet,/className="ro-sheet"/);
-  for (const heading of ['Atributos','Combate e resistência','Domínios do Sonhar','Ancoragem e vínculos','Recursos e equipamentos']) {
+  for (const heading of ['Atributos','Combate e resistência','Domínios do Sonhar','Ancoragem e vínculos','Recursos e Itens Gerais']) {
     assert.ok(sheet.includes(heading),heading);
   }
   assert.doesNotMatch(sheet,/paginaAtiva|setPaginaAtiva|Ficha 1\/2|Ficha 2\/2/);
@@ -41,8 +41,8 @@ test('Domínios e níveis usam progressão existente e limites oficiais',()=>{
   assert.match(sheet,/n>prog\.dominioMaximo/);
   assert.match(sheet,/atualizadoEm:new Date\(\)\.toISOString\(\)/);
 });
-test('Ações de ficha e dados existentes são preservados sem novas tabelas',()=>{
-  for(const marker of ['onExportar(personagem)','onDuplicar(personagem.id)','onExcluir(personagem.id)','setRolagemNaFicha(\'mundano\')','onIrParaGuiaSonhar(personagem)','personagem.ancoragem','personagem.vinculos','personagem.recursos','personagem.equipamentos','anotacoesGerais','percepcaoOniricaNotas']) {
+test('Ações de ficha e dados existentes são preservados (Recursos 1–5 e Itens Gerais pelo contrato v3)',()=>{
+  for(const marker of ['onExportar(personagem)','onDuplicar(personagem.id)','onExcluir(personagem.id)','setRolagemNaFicha(\'mundano\')','onIrParaGuiaSonhar(personagem)','personagem.ancoragem','personagem.vinculos','personagem.recursosNivel','personagem.itensGerais','anotacoesGerais','percepcaoOniricaNotas']) {
     assert.ok(sheet.includes(marker),marker);
   }
 });

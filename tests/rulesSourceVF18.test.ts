@@ -4,7 +4,7 @@ import { getFullCompendiumRule } from '../src/rules/compendiumFullRules';
 import { DISTANCIAS_REINOS_ONIRICOS } from '../src/rules/rulesData';
 import { executarTesteMundano, resolverMovimentoMorte } from '../src/rules/rulesEngine';
 
-test('Movimento de Morte VF10: Sonhar vence dá 1 PV e +1 Ruptura; Realidade vence estabiliza sem PV', () => {
+test('Movimento de Morte VF18 (p. 41): Sonhar vence dá 1 PV e +1 Ruptura; Realidade vence estabiliza sem PV', () => {
   let index = 0;
   const sonhar = resolverMovimentoMorte(() => [1, 20][index++]);
   assert.equal(sonhar.recuperaVida, 1);
