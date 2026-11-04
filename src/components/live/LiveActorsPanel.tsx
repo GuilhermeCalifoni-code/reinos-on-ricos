@@ -19,7 +19,7 @@ interface LiveActorsPanelProps {
   onSelecionar: (id: string) => void;
   onAbrirFicha: (personagem: Personagem) => void;
   onAjustar: (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => void;
-  onRuptura: (personagem: Personagem) => void;
+  onRuptura: (personagem: Personagem, delta: number) => void;
   onActorRoll: (content: string, details: Record<string, unknown>) => Promise<unknown>;
   onClose: () => void;
 }
@@ -112,7 +112,8 @@ export const LiveActorsPanel: React.FC<LiveActorsPanelProps> = ({
                   <div className="live-vtt__actor-actions">
                     <button type="button" onClick={() => onAjustar(personagem, 'vidaAtual', -1)}>− Vida</button>
                     <button type="button" onClick={() => onAjustar(personagem, 'vidaAtual', 1)}>+ Vida</button>
-                    <button type="button" onClick={() => onRuptura(personagem)}>+ Ruptura</button>
+                    <button type="button" disabled={personagem.ruptura <= 0} onClick={() => onRuptura(personagem, -1)}>− Ruptura</button>
+                    <button type="button" disabled={personagem.ruptura >= 6} onClick={() => onRuptura(personagem, 1)}>+ Ruptura</button>
                   </div>
                 )}
               </article>

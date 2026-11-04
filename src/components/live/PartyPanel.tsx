@@ -8,7 +8,7 @@ interface PartyPanelProps {
   mestre: boolean;
   onSelecionar: (id: string) => void;
   onAjustar: (personagem: Personagem, campo: 'vidaAtual' | 'focoAtual', delta: number) => void;
-  onRuptura: (personagem: Personagem) => void;
+  onRuptura: (personagem: Personagem, delta: number) => void;
 }
 
 export const PartyPanel: React.FC<PartyPanelProps> = ({ personagens, selecionadoId, mestre, onSelecionar, onAjustar, onRuptura }) => (
@@ -18,7 +18,7 @@ export const PartyPanel: React.FC<PartyPanelProps> = ({ personagens, selecionado
     {personagens.map(personagem => <article key={personagem.id} className={`live-table__character ${selecionadoId === personagem.id ? 'is-selected' : ''}`}>
       <button onClick={() => onSelecionar(personagem.id)} className="live-table__character-main"><span className={`live-table__avatar ${personagem.imagemUrl ? 'has-image' : ''}`}>{personagem.imagemUrl ? <AssetImage src={personagem.imagemUrl} alt="" /> : personagem.nome.slice(0, 2).toUpperCase()}</span><span><strong>{personagem.nome}</strong><small>{personagem.conceito} · Nível {personagem.nivel}</small></span></button>
       <div className="live-table__resources"><span>Vida <b>{personagem.vidaAtual}/{personagem.vidaMaxima}</b></span><span>Foco <b>{personagem.focoAtual}/{personagem.focoMaximo}</b></span><span>PO <b>{personagem.protecaoOniricaAtual}/{personagem.protecaoOniricaMaxima}</b></span><span className={personagem.ruptura >= 4 ? 'is-danger' : ''}>Ruptura <b>{personagem.ruptura}/6</b></span></div>
-      {mestre && <div className="live-table__character-actions"><button onClick={() => onAjustar(personagem, 'vidaAtual', -1)}>− Vida</button><button onClick={() => onAjustar(personagem, 'vidaAtual', 1)}>+ Vida</button><button onClick={() => onRuptura(personagem)}>Ruptura</button></div>}
+      {mestre && <div className="live-table__character-actions"><button onClick={() => onAjustar(personagem, 'vidaAtual', -1)}>− Vida</button><button onClick={() => onAjustar(personagem, 'vidaAtual', 1)}>+ Vida</button><button disabled={personagem.ruptura <= 0} onClick={() => onRuptura(personagem, -1)}>− Ruptura</button><button disabled={personagem.ruptura >= 6} onClick={() => onRuptura(personagem, 1)}>+ Ruptura</button></div>}
     </article>)}
   </aside>
 );
