@@ -3,6 +3,7 @@ import { X, Check, UserPlus, ImagePlus, Upload, Link2, Shield, Heart, Sparkles, 
 import { Personagem, AtributoNome, DominioNome } from '../types/character';
 import { TABELA_PROGRESSAO } from '../rules/rulesData';
 import { calcularResistencia, calcularDefesa, calcularVidaMaxima, validarDistribuicaoDominios } from '../rules/rulesEngine';
+import { validarFichaDesvelado, ATRIBUTO_ROTULOS } from '../rules/fichaContrato';
 
 interface CreateCharacterModalProps {
   isOpen: boolean;
@@ -19,18 +20,19 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   const [jogador, setJogador] = useState('');
   const [nivel, setNivel] = useState(1);
   const [conceito, setConceito] = useState<'Lúcido' | 'Tecelão' | 'Desperto' | 'Ecoante'>('Lúcido');
-  const [atributoPrincipal, setAtributoPrincipal] = useState<AtributoNome>('mente');
-  
+  // Nada vem escolhido: o jogador escolhe o Principal e distribui os valores (VF18, p. 11).
+  const [atributoPrincipal, setAtributoPrincipal] = useState<AtributoNome | null>(null);
+
   const [atributos, setAtributos] = useState({
-    corpo: 2,
-    mente: 1,
+    corpo: 0,
+    mente: 0,
     vontade: 0,
-    vinculo: -1
+    vinculo: 0
   });
 
   const [dominios, setDominios] = useState<Record<DominioNome, number>>({
-    consciencia: 3,
-    espaco: 2,
+    consciencia: 0,
+    espaco: 0,
     fluxo: 0,
     substancia: 0,
     vida: 0
@@ -75,12 +77,15 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   const validacao = validarDistribuicaoDominios(dominios, nivel);
   const pontosAtributoEsperados = 2 + prog.pontosAtributoAdicionais;
   const somaAtributos = Object.values(atributos).reduce((total, valor) => total + valor, 0);
-  const atributosBaseValidos = nivel > 1 || [...Object.values(atributos)].sort((a, b) => a - b).join(',') === '-1,0,1,2';
-  const atributosValidos = Object.values(atributos).every(valor => valor >= -1 && valor <= 4)
-    && somaAtributos === pontosAtributoEsperados
-    && atributosBaseValidos;
+  // Validação central (CONTRATO_FICHA_v3): Principal com +2 obrigatório e distribuição do livro.
+  const validacaoFicha = validarFichaDesvelado({ nivel, atributos, atributoPrincipal: atributoPrincipal ?? undefined, dominios }, { modo: 'criacao' });
+  const atributosValidos = validarFichaDesvelado({ nivel, atributos, atributoPrincipal: atributoPrincipal ?? undefined }, { modo: 'edicao_atributos' }).erros.length === 0;
   const dominiosCompletos = validacao.valida && validacao.pontosUsados === validacao.pontosTotais;
-  const fichaValida = Boolean(nome.trim()) && atributosValidos && dominiosCompletos;
+  const pendenciasCriacao = [
+    ...(nome.trim() ? [] : ['Dê um nome ao personagem.']),
+    ...validacaoFicha.erros
+  ];
+  const fichaValida = pendenciasCriacao.length === 0 && atributoPrincipal !== null;
 
   const handleUpdateAtributo = (at: AtributoNome, val: number) => {
     setAtributos(prev => ({ ...prev, [at]: val }));
@@ -91,7 +96,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   };
 
   const handleCriar = async () => {
-    if (!fichaValida) return;
+    if (!fichaValida || !atributoPrincipal) return;
     const resistencia = calcularResistencia(atributos.corpo);
     const defesa = calcularDefesa(atributoPrincipal, atributos, nivel).defesa;
     const vidaMaxima = calcularVidaMaxima(nivel);
@@ -125,13 +130,12 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
         }
       ],
       dominios,
-      ancoragem: ancoragem.trim() || 'Um relógio de bolso antigo herdado da família.',
+      ancoragem: ancoragem.trim(),
       vinculos: [],
-      equipamentos: [
-        { id: 'eq-1', nome: 'Smartphone com bateria reserva', descricao: 'Comunicação e lanterna' },
-        { id: 'eq-2', nome: 'Casaco pesado impermeável', descricao: 'Vestimenta de proteção cotidiana' }
-      ],
-      recursos: [{ id: 'rec-1', nome: 'Recursos Estáveis', quantidade: 3, descricao: 'Nível 3 (Estável)' }],
+      // Recursos começam em 1 (VF18, p. 14). Nada de itens inventados pelo site.
+      recursosNivel: 1,
+      itensGerais: [],
+      avisosMigracao: [],
       percepcaoOniricaNotas: '',
       anotacoesGerais: '',
       criadoEm: new Date().toISOString(),
@@ -153,8 +157,8 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
 
   const vidaMaxima = calcularVidaMaxima(nivel);
   const resistencia = calcularResistencia(atributos.corpo);
-  const defesa = calcularDefesa(atributoPrincipal, atributos, nivel).defesa;
-  const hasInvalidFields = !atributosValidos || !dominiosCompletos;
+  const defesa = calcularDefesa(atributoPrincipal ?? 'corpo', atributos, nivel).defesa;
+  const hasInvalidFields = pendenciasCriacao.length > 0 || atributoPrincipal === null;
   const attributeItems: { id: AtributoNome; label: string; symbol: React.ReactNode }[] = [
     { id: 'corpo', label: 'Corpo', symbol: <Heart size={19} /> },
     { id: 'mente', label: 'Mente', symbol: <Brain size={19} /> },
@@ -267,7 +271,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                   <span>Escolha o atributo principal e distribua os valores do nível.</span>
                 </div>
                 <p className={atributosValidos ? 'ro-character-create-score is-valid' : 'ro-character-create-score is-invalid'}>
-                  Soma {somaAtributos}/{pontosAtributoEsperados} · Atributo principal: {attributeItems.find(a => a.id === atributoPrincipal)?.label}
+                  Soma {somaAtributos}/{pontosAtributoEsperados} · Atributo principal: {atributoPrincipal ? ATRIBUTO_ROTULOS[atributoPrincipal] : 'escolha um'}
                 </p>
                 <div className="ro-character-create-attributes">
                   {attributeItems.map(item => {
@@ -290,9 +294,9 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                   })}
                 </div>
                 {!atributosValidos && <p className="ro-character-create-validation" role="status">
-                  {nivel === 1
-                    ? 'No nível 1, distribua exatamente +2, +1, 0 e −1 entre os quatro atributos.'
-                    : `Neste nível, os atributos devem somar ${pontosAtributoEsperados}, com valores entre −1 e +4.`}
+                  {nivel <= 2
+                    ? 'Distribua exatamente +2, +1, 0 e −1 entre os quatro atributos. O +2 vai obrigatoriamente no Atributo Principal.'
+                    : `Neste nível, os atributos devem somar ${pontosAtributoEsperados} e o Atributo Principal precisa ter pelo menos +2.`}
                 </p>}
               </section>
 
@@ -398,9 +402,12 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
         <footer className="ro-character-create-footer">
           <div aria-live="polite">
             {erroSalvar && <p className="ro-character-create-error" role="alert">{erroSalvar}</p>}
-            {!erroSalvar && hasInvalidFields && <p className="ro-character-create-footnote">
-              Complete a distribuição de atributos e Domínios para criar a ficha.
-            </p>}
+            {!erroSalvar && hasInvalidFields && <div className="ro-character-create-footnote">
+              <strong>Para criar a ficha, falta:</strong>
+              <ul>
+                {pendenciasCriacao.map(p => <li key={p}>{p}</li>)}
+              </ul>
+            </div>}
           </div>
           <div className="ro-character-create-footer-buttons">
             <button type="button" className="ro-character-create-cancel" disabled={salvando} onClick={onClose}>Cancelar</button>

@@ -27,6 +27,22 @@ export type DistanciaFaixa =
   | 'muito_longe'
   | 'alem';
 
+/** Recursos (VF18, p. 14): trilha abstrata de 1 (Escasso) a 5 (Abundante). */
+export type RecursosNivel = 1 | 2 | 3 | 4 | 5;
+
+/** Item da seção Itens Gerais da ficha (item/posse, quantidade, observações). */
+export interface ItemGeral {
+  id: string;
+  nome: string;
+  quantidade: number;
+  observacoes: string;
+  /** Só em itens vindos do formato antigo. */
+  origemLegada?: 'equipamentos' | 'recursos';
+  /** JSON original do item antigo, intacto. */
+  dadosLegados?: unknown;
+}
+
+/** @deprecated Formato antigo de Recursos (lista). Use `recursosNivel` e `itensGerais`. */
 export interface RecursoItem {
   id: string;
   nome: string;
@@ -34,6 +50,7 @@ export interface RecursoItem {
   quantidade?: number;
 }
 
+/** @deprecated Formato antigo de itens. Use `ItemGeral`. */
 export interface EquipamentoItem {
   id: string;
   nome: string;
@@ -94,8 +111,16 @@ export interface Personagem {
   // Vínculos, Recursos e Narrativa
   ancoragem: string;
   vinculos: VinculoItem[];
-  recursos: RecursoItem[];
-  equipamentos: EquipamentoItem[];
+  /** Recursos de 1 a 5 (VF18, p. 14). Começa em 1. */
+  recursosNivel: RecursosNivel;
+  /** Itens Gerais: item/posse, quantidade e observações. */
+  itensGerais: ItemGeral[];
+  /** Avisos deixados pela migração (ex.: 'recursos_ajustados_p1'). O jogador pode dispensar. */
+  avisosMigracao?: string[];
+  /** @deprecated Formato antigo, mantido só para leitura e reversão. */
+  recursos?: RecursoItem[];
+  /** @deprecated Formato antigo, mantido só para leitura e reversão. */
+  equipamentos?: EquipamentoItem[];
   
   // Percepção Onírica (ferramenta narrativa vinculada aos Domínios)
   percepcaoOniricaNotas?: string;

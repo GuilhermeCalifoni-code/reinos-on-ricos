@@ -1,9 +1,10 @@
 import { supabase } from '../../lib/supabaseClient';
 import { Personagem } from '../../types/character';
+import { garantirFichaSalvavel, normalizarPersonagem } from '../../rules/fichaContrato';
 
 const client = () => { if (!supabase) throw new Error('Supabase não está configurado.'); return supabase; };
 
-const mapCharacter = (row: any): Personagem => ({
+const mapCharacter = (row: any): Personagem => normalizarPersonagem({
   id: row.id,
   campaignId: row.campaign_id || undefined,
   ownerUserId: row.owner_user_id || undefined,
@@ -27,13 +28,18 @@ const mapCharacter = (row: any): Personagem => ({
   dominios: row.dominios,
   ancoragem: row.ancoragem || '',
   vinculos: row.vinculos || [],
+  // Colunas novas (migration 048). Antes da migração elas não existem e
+  // normalizarPersonagem converte o formato antigo (recursos/equipamentos).
+  recursosNivel: row.recursos_nivel ?? undefined,
+  itensGerais: row.recursos_nivel === undefined ? undefined : (row.itens_gerais || []),
+  avisosMigracao: row.avisos_migracao || [],
   equipamentos: row.equipamentos || [],
   recursos: row.recursos || [],
   percepcaoOniricaNotas: row.percepcao_onirica_notas || '',
   anotacoesGerais: row.anotacoes_gerais || '',
   criadoEm: row.criado_em || new Date().toISOString(),
   atualizadoEm: row.atualizado_em || new Date().toISOString()
-});
+} as Partial<Personagem>) as Personagem;
 
 export const characterRepository = {
   async listar(campaignId: string) {
@@ -55,7 +61,10 @@ export const characterRepository = {
     return (data || []).map(mapCharacter);
   },
 
-  async salvar(personagem: Personagem) {
+  async salvar(entrada: Personagem) {
+    // Toda ficha passa pelo formato novo antes de ir para o banco,
+    // inclusive as que chegam da importação local ou de backups antigos.
+    const personagem = garantirFichaSalvavel(normalizarPersonagem(entrada));
     if (!personagem.ownerUserId) throw new Error('Uma ficha remota precisa ter um proprietário.');
     const { data, error } = await client().from('personagens').upsert({
       id: personagem.id,
@@ -81,8 +90,11 @@ export const characterRepository = {
       dominios: personagem.dominios,
       ancoragem: personagem.ancoragem,
       vinculos: personagem.vinculos,
-      equipamentos: personagem.equipamentos,
-      recursos: personagem.recursos,
+      // As colunas antigas (recursos, equipamentos) não são mais gravadas:
+      // ficam intactas para leitura e reversão (CONTRATO_FICHA_v3, seção 7).
+      recursos_nivel: personagem.recursosNivel,
+      itens_gerais: personagem.itensGerais,
+      avisos_migracao: personagem.avisosMigracao,
       percepcao_onirica_notas: personagem.percepcaoOniricaNotas || '',
       anotacoes_gerais: personagem.anotacoesGerais || ''
     }, { onConflict: 'id' }).select().single();

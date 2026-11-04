@@ -243,21 +243,28 @@ export function executarTesteMundano(params: {
 
 // Rolador de Teste Onírico
 export function executarTesteOnirico(params: {
+  /** Deve ser o Atributo Principal do personagem (VF18, p. 29). Use atributoDoTesteOnirico(). */
   atributo: AtributoNome;
+  /** Valor atual do Atributo Principal (pode passar de +2 com a progressão). */
   valorAtributo: number;
   dt: number;
   modificadores: { nome: string; valor: number }[];
+  /** Quando o teste afeta diretamente um Adversário: vale a DT do teste ou a Dificuldade dele, a maior (VF18, p. 29). */
+  dificuldadeAdversario?: number;
+  /** Só para testes automatizados. */
+  rolarD20?: () => number;
 }): ResultadoTesteOnirico {
-  const rolarD20 = () => Math.floor(Math.random() * 20) + 1;
+  const rolarD20 = params.rolarD20 ?? (() => Math.floor(Math.random() * 20) + 1);
   const dadoRealidade = rolarD20();
   const dadoSonhar = rolarD20();
+  const dt = Math.max(params.dt, params.dificuldadeAdversario ?? -Infinity);
 
   const totalMod = params.modificadores.reduce((acc, m) => acc + m.valor, 0);
   const totalRealidade = dadoRealidade + params.valorAtributo + totalMod;
   const totalSonhar = dadoSonhar + params.valorAtributo + totalMod;
 
-  const sucessoRealidade = totalRealidade >= params.dt;
-  const sucessoSonhar = totalSonhar >= params.dt;
+  const sucessoRealidade = totalRealidade >= dt;
+  const sucessoSonhar = totalSonhar >= dt;
 
   let resultado: ResultadoOniricoTipo;
   let efeitoNarrativo = '';
@@ -287,7 +294,7 @@ export function executarTesteOnirico(params: {
     tipo: 'onirico',
     atributo: params.atributo,
     valorAtributo: params.valorAtributo,
-    dt: params.dt,
+    dt,
     modificadores: params.modificadores,
     dadoRealidade,
     totalRealidade,

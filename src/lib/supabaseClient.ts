@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Personagem } from '../types/character';
+import { normalizarPersonagem, garantirFichaSalvavel } from '../rules/fichaContrato';
 
 // Variáveis de ambiente configuradas no Vite
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -77,12 +78,14 @@ export async function testarConexaoSupabase(): Promise<{ ok: boolean; mensagem: 
 
 // Sincronizar Personagem com Supabase
 export async function syncPersonagemComSupabase(
-  personagem: Personagem,
+  entrada: Personagem,
   mesaCodigo: string = 'ONIRICO-01'
 ): Promise<boolean> {
   if (!supabase) return false;
+  const personagem = normalizarPersonagem(entrada);
 
   try {
+    garantirFichaSalvavel(personagem);
     const { error } = await supabase.from('personagens').upsert({
       id: personagem.id,
       mesa_codigo: mesaCodigo,
@@ -105,8 +108,9 @@ export async function syncPersonagemComSupabase(
       dominios: personagem.dominios,
       ancoragem: personagem.ancoragem,
       vinculos: personagem.vinculos,
-      equipamentos: personagem.equipamentos,
-      recursos: personagem.recursos,
+      recursos_nivel: personagem.recursosNivel,
+      itens_gerais: personagem.itensGerais,
+      avisos_migracao: personagem.avisosMigracao || [],
       percepcao_onirica_notas: personagem.percepcaoOniricaNotas,
       anotacoes_gerais: personagem.anotacoesGerais,
       atualizado_em: new Date().toISOString()
@@ -141,7 +145,7 @@ export async function carregarPersonagensDoSupabase(
     }
 
     // Mapear colunas do banco de volta para a interface Personagem
-    return data.map((row: any): Personagem => ({
+    return data.map((row: any): Personagem => normalizarPersonagem({
       id: row.id,
       nome: row.nome,
       jogador: row.jogador,
@@ -162,13 +166,16 @@ export async function carregarPersonagensDoSupabase(
       dominios: row.dominios,
       ancoragem: row.ancoragem || '',
       vinculos: row.vinculos || [],
+      recursosNivel: row.recursos_nivel ?? undefined,
+      itensGerais: row.recursos_nivel === undefined ? undefined : (row.itens_gerais || []),
+      avisosMigracao: row.avisos_migracao || [],
       equipamentos: row.equipamentos || [],
       recursos: row.recursos || [],
       percepcaoOniricaNotas: row.percepcao_onirica_notas || '',
       anotacoesGerais: row.anotacoes_gerais || '',
       criadoEm: row.criado_em || new Date().toISOString(),
       atualizadoEm: row.atualizado_em || new Date().toISOString()
-    }));
+    } as Partial<Personagem>) as Personagem);
   } catch (err) {
     console.error('Falha ao carregar do Supabase:', err);
     return null;
