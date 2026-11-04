@@ -9,6 +9,7 @@ import { AVISO_RECURSOS_AJUSTADOS_P1, RECURSOS_ROTULOS, normalizarPersonagem, va
 import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS } from '../rules/rulesData';
 import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
+import { ajustarRuptura } from '../rules/rupturaRapida';
 import { DamageModal } from './DamageModal';
 import { RestModal } from './RestModal';
 import { DiceRoller } from './DiceRoller';
@@ -280,7 +281,12 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           <div className="ro-sheet__stats">
             <div><Shield size={19}/><span>Defesa</span><strong>{personagem.defesa}</strong><small>8 + Corpo</small></div>
             <div><Zap size={19}/><span>Resistência</span><strong>{personagem.resistencia}</strong><small>6 + Corpo</small></div>
-            <div><Moon size={19}/><span>Ruptura</span><strong>{personagem.ruptura}<small>/6</small></strong><small>Tensão onírica</small></div>
+            <div><Moon size={19}/><span>Ruptura</span><strong>{personagem.ruptura}<small>/6</small></strong><small>Tensão onírica</small>
+              <div className="ro-sheet__stepper">
+                <button type="button" disabled={personagem.ruptura<=0} onClick={()=>onSalvar(ajustarRuptura(personagem,-1))} aria-label="Diminuir Ruptura">−</button>
+                <button type="button" disabled={personagem.ruptura>=6} onClick={()=>onSalvar(ajustarRuptura(personagem,1))} aria-label="Aumentar Ruptura">+</button>
+              </div>
+            </div>
           </div>
           <div className="ro-sheet__resource-grid">
             <ResourceControl name="Pontos de Vida" icon={<Heart size={18}/>} atual={personagem.vidaAtual} max={personagem.vidaMaxima} campo="vidaAtual" description="Vida na Vigília"/>

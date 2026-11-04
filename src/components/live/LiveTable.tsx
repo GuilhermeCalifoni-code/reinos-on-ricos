@@ -21,6 +21,7 @@ import { AssetImage } from '../system/AssetImage';
 import { LiveActorsPanel } from './LiveActorsPanel';
 import { LiveDirectorPanel } from './LiveDirectorPanel';
 import { campaignAssetService } from '../../services/storage/campaignAssetService';
+import { ajustarRuptura } from '../../rules/rupturaRapida';
 import { ArrowLeft, FileText, Image as ImageIcon, Layers3, Map as MapIcon, MessageSquareText, Moon, Radio, Users } from 'lucide-react';
 
 interface LiveTableProps {
@@ -621,7 +622,12 @@ export const LiveTable: React.FC<LiveTableProps> = (props) => {
               onSelecionar={setSelecionadoId}
               onAbrirFicha={abrirFichaComRolagem}
               onAjustar={ajustar}
-              onRuptura={(personagem) => onAbrirRuptura(personagem, 1, 'Ajuste na Mesa Ao Vivo')}
+              onRuptura={(personagem, delta) => {
+                const atualizado = ajustarRuptura(personagem, delta, 'Ajuste na Mesa Ao Vivo');
+                if (atualizado === personagem) return;
+                atualizarPersonagemMesa(atualizado);
+                registrarSemFalhar(sessionEventFactories.rupture(personagem.id, personagem.nome, atualizado.ruptura - personagem.ruptura, 'Ajuste na Mesa Ao Vivo'));
+              }}
               onActorRoll={registrarRolagemAtor}
               onClose={() => setPartyOpen(false)}
             />
