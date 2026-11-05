@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { rolarMundanoRapido, rolarOniricoRapido, RESULTADO_ONIRICO_ROTULO } from '../src/rules/rolagemRapida';
+import { DT_MUNDANA, forcarSonharRapido, podeForcarSonhar, rolarMundanoRapido, rolarOniricoRapido, RESULTADO_ONIRICO_ROTULO } from '../src/rules/rolagemRapida';
 
 const dados = (...v: number[]) => { let i = 0; return () => v[i++]; };
 const p: any = { id: 'p', nome: 'Helena', nivel: 1, atributos: { corpo: 0, mente: 2, vontade: 3, vinculo: -1 }, atributoPrincipal: 'mente', focoAtual: 2, ruptura: 0 };
@@ -60,6 +60,56 @@ test('A ficha usa a rolagem rápida e não embute mais o rolador completo', () =
   assert.match(ficha, /<RolagemRapida /);
   assert.doesNotMatch(ficha, /<DiceRoller /);
   assert.match(ficha, /pedirRolagem\(\{modo:'mundano',atributo:key,rolarDireto:true\}\)/);
+});
+
+// ---------------- Rolagens por tipo (VF18, p. 30 e Regras Avançadas) ----------------
+
+test('Tabela de DT Mundana do livro: 8 Trivial a 20 Extraordinário', () => {
+  assert.deepEqual(DT_MUNDANA.map(d => `${d.dt} ${d.rotulo}`),
+    ['8 Trivial', '10 Fácil', '12 Comum', '14 Desafiador', '16 Difícil', '18 Muito Difícil', '20 Extraordinário']);
+});
+
+test('Mundano com Vantagem usa o maior de 2d20; com Desvantagem, o menor', () => {
+  for (let i = 0; i < 30; i++) {
+    const v = rolarMundanoRapido(p, 'corpo', { dt: 12, modoRolagem: 'vantagem', usarFoco: false, modificador: 0 }).resultado;
+    assert.equal(v.dadosRolados.length, 2); assert.equal(v.dadoBruto, Math.max(...v.dadosRolados));
+    const d = rolarMundanoRapido(p, 'corpo', { dt: 12, modoRolagem: 'desvantagem', usarFoco: false, modificador: 0 }).resultado;
+    assert.equal(d.dadosRolados.length, 2); assert.equal(d.dadoBruto, Math.min(...d.dadosRolados));
+  }
+});
+
+test('Forçar o Sonhar só depois de fracasso (Realidade vence ou Divergência)', () => {
+  const rv = rolarOniricoRapido(p, opOn, dados(12, 1)).resultado; // 14 / 3
+  const dv = rolarOniricoRapido(p, opOn, dados(1, 1)).resultado;
+  const sv = rolarOniricoRapido(p, opOn, dados(1, 12)).resultado;
+  const cv = rolarOniricoRapido(p, opOn, dados(12, 12)).resultado;
+  assert.deepEqual([rv, dv, sv, cv].map(podeForcarSonhar), [true, true, false, false]);
+  assert.throws(() => forcarSonharRapido(p, sv, false, dados(1, 1)));
+});
+
+test('Forçar o Sonhar: +1 Ruptura na hora, mesma DT e mesmo Foco sem gastar PF de novo', () => {
+  const primeira = rolarOniricoRapido(p, { usarFoco: true, condicaoAdversa: true, dificuldadeAdversario: null }, dados(5, 5)); // DT 15
+  assert.equal(primeira.resultado.dt, 15);
+  const quemRolou = primeira.personagemAtualizado!; // gastou 1 PF
+  const f = forcarSonharRapido(quemRolou, primeira.resultado, false, dados(11, 11));
+  // primeira foi Divergência (5+4=9 e 9 < 15): +2 dela, acumulado com +1 por forçar (decisão do Diogo, 05/11)
+  assert.equal(primeira.resultado.resultado, 'divergencia');
+  assert.equal(f.personagemAtualizado.ruptura, quemRolou.ruptura + 3);
+  assert.deepEqual(f.personagemAtualizado.historicoRuptura.slice(0, 2).map((h: any) => h.motivo), ['Forçar o Sonhar', 'Teste Onírico: Divergência']);
+  assert.equal(f.personagemAtualizado.focoAtual, quemRolou.focoAtual);
+  assert.equal(f.personagemAtualizado.historicoRuptura[0].motivo, 'Forçar o Sonhar');
+  assert.equal(f.resultado.dt, 15);
+  assert.equal(f.resultado.totalRealidade, 15); // 11 + Mente 2 + Foco 2
+  assert.equal(f.resultado.resultado, 'convergencia');
+  assert.match(f.evento.content, /Forçar o Sonhar/);
+});
+
+test('Forçar o Sonhar: se a Ruptura da primeira já foi aplicada, não aplica de novo (só o +1)', () => {
+  const dv = rolarOniricoRapido(p, opOn, dados(1, 1)).resultado;
+  const jaAplicada = { ...p, ruptura: 2 };
+  assert.equal(forcarSonharRapido(jaAplicada, dv, true, dados(1, 1)).personagemAtualizado.ruptura, 3);
+  const rv = rolarOniricoRapido(p, opOn, dados(12, 1)).resultado; // Realidade vence: 0 de Ruptura
+  assert.equal(forcarSonharRapido(p, rv, false, dados(1, 1)).personagemAtualizado.ruptura, 1);
 });
 
 test('Editar atributos: rascunho só é salvo dentro da regra (modo edicao_atributos)', () => {

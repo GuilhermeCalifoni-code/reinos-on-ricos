@@ -78,3 +78,7 @@
 .ro-damage__death{display:flex;align-items:center;gap:8px;margin:0;padding:10px 12px;border:1px solid #d9a79f;border-radius:7px;background:#fbefec;color:#7d2f25;font-size:.8rem}
 .ro-damage__actions{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
 .ro-damage__cancel{min-height:44px;padding:0 16px;border:1px solid #d7c7b4;border-radius:7px;background:#fffefa;color:#625649;font-weight:600;font-size:.86rem}
+.ro-quickroll__field select{padding:8px 10px;border:1px solid #d7c7b4;border-radius:6px;background:#fffefa;color:#19212a;font-size:.9rem}
+.ro-quickroll-result__force{display:grid;gap:1px;min-height:40px;padding:6px 10px;border:1px solid #754c27;border-radius:6px;background:#865427;color:#fffefa;font-size:.82rem;font-weight:700}
+.ro-quickroll-result__force small{font-weight:500;font-size:.68rem;opacity:.85}
+.ro-quickroll-result__force:hover{background:#754c27}
