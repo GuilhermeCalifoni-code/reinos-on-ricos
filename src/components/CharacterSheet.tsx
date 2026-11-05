@@ -281,11 +281,13 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           <div className="ro-sheet__stats">
             <div><Shield size={19}/><span>Defesa</span><strong>{personagem.defesa}</strong><small>8 + Corpo</small></div>
             <div><Zap size={19}/><span>Resistência</span><strong>{personagem.resistencia}</strong><small>6 + Corpo</small></div>
-            <div><Moon size={19}/><span>Ruptura</span><strong>{personagem.ruptura}<small>/6</small></strong><small>Tensão onírica</small>
-              <div className="ro-sheet__stepper">
+            <div><Moon size={19}/><span>Ruptura</span>
+              <div className="ro-sheet__stepper ro-sheet__stepper--valor">
                 <button type="button" disabled={personagem.ruptura<=0} onClick={()=>onSalvar(ajustarRuptura(personagem,-1))} aria-label="Diminuir Ruptura">−</button>
+                <strong>{personagem.ruptura}<small>/6</small></strong>
                 <button type="button" disabled={personagem.ruptura>=6} onClick={()=>onSalvar(ajustarRuptura(personagem,1))} aria-label="Aumentar Ruptura">+</button>
               </div>
+              <small>Tensão onírica</small>
             </div>
           </div>
           <div className="ro-sheet__resource-grid">
