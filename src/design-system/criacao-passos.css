@@ -1,0 +1,54 @@
+/* Criação do Desvelado em passos (T1B). Mesmo visual de create-character-light.css. */
+.ro-character-create-dialog:has(.ro-create-steps){width:min(820px,100%);height:min(860px,calc(100dvh - 2 * clamp(8px,2vw,24px)))}
+.ro-character-create-layout.ro-create-single{display:block;max-width:720px;margin:0 auto}
+.ro-character-create-score{font:600 .78rem/1.4 Inter,system-ui,sans-serif}
+.ro-character-create-domain-values button{font-family:Inter,system-ui,sans-serif}
+
+.ro-create-steps{padding:10px clamp(16px,2.5vw,32px);border-bottom:1px solid var(--create-edge);background:var(--create-paper-strong);overflow-x:auto}
+.ro-create-steps ol{display:flex;gap:4px;margin:0;padding:0;list-style:none;min-width:max-content}
+.ro-create-steps button{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid transparent;border-radius:999px;background:transparent;color:var(--create-muted);font:600 .76rem Inter,system-ui,sans-serif;cursor:pointer}
+.ro-create-steps button span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--create-edge);background:#fdfaf6;font-size:.7rem}
+.ro-create-steps button.is-current{border-color:var(--create-copper);background:#f6ecdf;color:var(--create-copper-dark)}
+.ro-create-steps button.is-current span{background:var(--create-copper);border-color:var(--create-copper);color:#fff}
+.ro-create-steps button.is-done span{background:var(--create-success);border-color:var(--create-success);color:#fff}
+.ro-create-steps button:disabled{opacity:.45;cursor:not-allowed}
+
+.ro-create-concepts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ro-create-concepts button{display:grid;gap:6px;align-content:start;padding:16px;border:1px solid var(--create-edge);border-radius:8px;background:linear-gradient(150deg,#fffefb,#f4eee5);color:var(--create-ink);text-align:left;cursor:pointer}
+.ro-create-concepts button strong{font:600 1.45rem/1.1 'Cormorant Garamond',Georgia,serif}
+.ro-create-concepts button em{font-style:italic;font-size:.8rem;color:var(--create-copper-dark)}
+.ro-create-concepts button span{font-size:.8rem;line-height:1.45;color:var(--create-muted)}
+.ro-create-concepts button:hover{border-color:#c1a98d}
+.ro-create-concepts button.is-selected{border-color:var(--create-copper);background:#f6ecdf;box-shadow:inset 0 3px 0 var(--create-copper)}
+.ro-create-note{margin:0;font-size:.78rem;line-height:1.5;color:var(--create-muted)}
+.ro-create-attr-desc{display:block;font-size:.72rem;line-height:1.4;color:var(--create-muted);min-height:2.8em}
+.ro-character-create-domain-label small{display:block;margin-left:6px;font:400 .72rem Inter,system-ui,sans-serif;color:var(--create-muted);white-space:normal}
+
+.ro-create-review{display:grid;gap:16px}
+.ro-create-review-id{display:flex;gap:16px;align-items:center}
+.ro-create-review-id h4{margin:0;font:600 1.8rem/1.1 'Cormorant Garamond',Georgia,serif}
+.ro-create-review-id p{margin:4px 0 0;font-size:.84rem;color:var(--create-muted)}
+.ro-create-review-list{display:grid;gap:8px;margin:0}
+.ro-create-review-list>div{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--create-edge)}
+.ro-create-review-list dt{font-size:.74rem;font-weight:700;color:var(--create-copper-dark);text-transform:uppercase;letter-spacing:.06em}
+.ro-create-review-list dd{margin:0;font-size:.86rem}
+.ro-character-create-footer-buttons button{display:inline-flex;align-items:center;gap:6px}
+@media(max-width:600px){
+  .ro-create-concepts{grid-template-columns:1fr}
+  .ro-create-review-list>div{grid-template-columns:1fr;gap:2px}
+}
+.ro-create-single .ro-character-create-domains{grid-template-columns:1fr}
+.ro-create-single .ro-character-create-domain-label{flex-wrap:wrap;white-space:normal;row-gap:2px}
+.ro-create-single .ro-character-create-domain-label small{flex-basis:100%;margin-left:0}
+/* Retrato maior (pedido do Guilherme ao testar o #128). */
+.ro-create-single .ro-character-create-portrait-controls{grid-template-columns:200px minmax(0,1fr);gap:20px;align-items:start}
+.ro-create-single .ro-character-create-portrait-thumb{width:200px;height:260px;min-height:260px}
+.ro-create-single .ro-character-create-portrait-thumb img{max-height:none}
+.ro-create-single .ro-character-create-portrait-thumb svg{width:44px;height:44px}
+.ro-create-review-id{align-items:flex-start;gap:20px}
+.ro-create-review-id .ro-character-create-portrait-thumb{width:160px;height:210px;min-height:210px;flex-shrink:0}
+@media(max-width:600px){
+  .ro-create-single .ro-character-create-portrait-controls{grid-template-columns:1fr}
+  .ro-create-single .ro-character-create-portrait-thumb{width:100%;max-width:260px;height:320px;justify-self:center}
+  .ro-create-review-id{flex-direction:column;align-items:center;text-align:center}
+}
