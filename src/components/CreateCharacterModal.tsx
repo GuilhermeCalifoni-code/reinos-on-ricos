@@ -1,9 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { X, Check, UserPlus, ImagePlus, Upload, Link2, Shield, Heart, Sparkles, Anchor, Moon, Eye, Brain, Waves, Box, Leaf, Flame } from 'lucide-react';
+import { X, Check, UserPlus, ImagePlus, Upload, Link2, Shield, Heart, Sparkles, Anchor, Eye, Brain, Waves, Box, Leaf, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome } from '../types/character';
 import { TABELA_PROGRESSAO } from '../rules/rulesData';
 import { calcularResistencia, calcularDefesa, calcularVidaMaxima, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { validarFichaDesvelado, ATRIBUTO_ROTULOS } from '../rules/fichaContrato';
+
+type Conceito = 'Lúcido' | 'Tecelão' | 'Desperto' | 'Ecoante';
+
+// Tabela "Conceito dos Desvelados" (Livro Básico VF18, p. 10).
+const CONCEITOS: { id: Conceito; diante: string; relacao: string }[] = [
+  { id: 'Lúcido', diante: 'Impõe sua vontade', relacao: 'Busca exercer sua intenção sobre o Onírico e determinar aquilo que deve acontecer.' },
+  { id: 'Tecelão', diante: 'Imaginou outro caminho', relacao: 'Enxerga possibilidades além dos limites aparentes.' },
+  { id: 'Desperto', diante: 'Procurou compreender', relacao: 'Busca padrões, relações e regras mesmo naquilo que parece desafiar qualquer lógica.' },
+  { id: 'Ecoante', diante: 'Permitiu-se sentir', relacao: 'Percebe emoções, memórias e ressonâncias no Sonhar e permite que essa experiência o atravesse.' }
+];
+
+// Descrição dos Atributos (Livro Básico VF18, pp. 10–11).
+const ATRIBUTO_DESCRICAO: Record<AtributoNome, string> = {
+  corpo: 'Força física, resistência, coordenação e capacidade de agir através do corpo.',
+  mente: 'Raciocínio, percepção, conhecimento e capacidade de compreender padrões.',
+  vontade: 'Determinação, autocontrole, coragem e resistência à pressão.',
+  vinculo: 'Conexões emocionais, sociais e simbólicas com pessoas, lugares e objetos.'
+};
+
+// O que cada Domínio manipula (Livro Básico VF18).
+const DOMINIO_DESCRICAO: Record<DominioNome, string> = {
+  consciencia: 'Emoção, memória, pensamento e identidade.',
+  espaco: 'Posição, distância e relações espaciais.',
+  fluxo: 'Ritmo, duração, processos e causalidade.',
+  substancia: 'Matéria e propriedades físicas.',
+  vida: 'Organismos e processos vitais.'
+};
+
+const PASSOS = ['Identidade', 'Conceito', 'Atributos', 'Sonhar', 'Ancoragem', 'Revisão'] as const;
 
 interface CreateCharacterModalProps {
   isOpen: boolean;
@@ -19,7 +48,9 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   const [nome, setNome] = useState('');
   const [jogador, setJogador] = useState('');
   const [nivel, setNivel] = useState(1);
-  const [conceito, setConceito] = useState<'Lúcido' | 'Tecelão' | 'Desperto' | 'Ecoante'>('Lúcido');
+  // Criação em passos (T1B). Nada vem escolhido pelo site, nem o Conceito.
+  const [passo, setPasso] = useState(0);
+  const [conceito, setConceito] = useState<Conceito | null>(null);
   // Nada vem escolhido: o jogador escolhe o Principal e distribui os valores (VF18, p. 11).
   const [atributoPrincipal, setAtributoPrincipal] = useState<AtributoNome | null>(null);
 
@@ -85,10 +116,28 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
     ...(nome.trim() ? [] : ['Dê um nome ao personagem.']),
     ...validacaoFicha.erros
   ];
-  const fichaValida = pendenciasCriacao.length === 0 && atributoPrincipal !== null;
+  // O que falta em cada passo. "Próximo" só avança quando o passo atual está completo.
+  const pendenciasPorPasso: string[][] = [
+    nome.trim() ? [] : ['Dê um nome ao personagem.'],
+    conceito ? [] : ['Escolha o Conceito do Desvelado.'],
+    validarFichaDesvelado({ nivel, atributos, atributoPrincipal: atributoPrincipal ?? undefined }, { modo: 'edicao_atributos' }).erros,
+    dominiosCompletos ? [] : [validacao.erros?.[0] || `Distribua todos os ${validacao.pontosTotais} Pontos de Sonhar (faltam ${validacao.pontosTotais - validacao.pontosUsados}).`],
+    [],
+    []
+  ];
+  const pendenciasPasso = pendenciasPorPasso[passo] ?? [];
+  const primeiroPassoIncompleto = pendenciasPorPasso.findIndex(lista => lista.length > 0);
+  const podeIrPara = (alvo: number) => alvo <= passo || primeiroPassoIncompleto === -1 || alvo <= primeiroPassoIncompleto;
+  const fichaValida = pendenciasCriacao.length === 0 && atributoPrincipal !== null && conceito !== null;
 
   const handleUpdateAtributo = (at: AtributoNome, val: number) => {
     setAtributos(prev => ({ ...prev, [at]: val }));
+  };
+
+  // O Atributo Principal recebe obrigatoriamente +2 (VF18, p. 11): ao marcar, ele já vai para +2.
+  const escolherPrincipal = (at: AtributoNome) => {
+    setAtributoPrincipal(at);
+    setAtributos(prev => prev[at] >= 2 ? prev : { ...prev, [at]: 2 });
   };
 
   const handleUpdateDominio = (dom: DominioNome, val: number) => {
@@ -96,7 +145,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   };
 
   const handleCriar = async () => {
-    if (!fichaValida || !atributoPrincipal) return;
+    if (!fichaValida || !atributoPrincipal || !conceito) return;
     const resistencia = calcularResistencia(atributos.corpo);
     const defesa = calcularDefesa(atributoPrincipal, atributos, nivel).defesa;
     const vidaMaxima = calcularVidaMaxima(nivel);
@@ -158,7 +207,6 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   const vidaMaxima = calcularVidaMaxima(nivel);
   const resistencia = calcularResistencia(atributos.corpo);
   const defesa = calcularDefesa(atributoPrincipal ?? 'corpo', atributos, nivel).defesa;
-  const hasInvalidFields = pendenciasCriacao.length > 0 || atributoPrincipal === null;
   const attributeItems: { id: AtributoNome; label: string; symbol: React.ReactNode }[] = [
     { id: 'corpo', label: 'Corpo', symbol: <Heart size={19} /> },
     { id: 'mente', label: 'Mente', symbol: <Brain size={19} /> },
@@ -181,16 +229,31 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
           <div className="ro-character-create-heading">
             <span className="ro-character-create-eyebrow">REINOS ONÍRICOS · PERSONAGENS</span>
             <h2 id="ro-create-character-title">Criar novo Desvelado</h2>
-            <p>Ficha inicial · Regras do Livro Básico · Níveis 1 a 5</p>
+            <p>Passo {passo + 1} de {PASSOS.length} · {PASSOS[passo]}</p>
           </div>
           <button className="ro-character-create-icon-button" type="button" onClick={onClose} disabled={salvando} aria-label="Fechar criação de Desvelado">
             <X size={21} />
           </button>
         </header>
 
+        <nav className="ro-create-steps" aria-label="Passos da criação">
+          <ol>
+            {PASSOS.map((rotulo, i) => (
+              <li key={rotulo}>
+                <button type="button" disabled={!podeIrPara(i) || salvando} aria-current={i === passo ? 'step' : undefined}
+                  className={i === passo ? 'is-current' : i < passo && pendenciasPorPasso[i].length === 0 ? 'is-done' : ''}
+                  onClick={() => setPasso(i)}>
+                  <span>{i < passo && pendenciasPorPasso[i].length === 0 ? <Check size={13}/> : i + 1}</span>{rotulo}
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
         <div className="ro-character-create-scroll">
-          <div className="ro-character-create-layout">
-            <form id="ro-create-character-form" className="ro-character-create-form" onSubmit={event => { event.preventDefault(); void handleCriar(); }}>
+          <div className="ro-character-create-layout ro-create-single">
+            <form id="ro-create-character-form" className="ro-character-create-form" onSubmit={event => { event.preventDefault(); if (passo === PASSOS.length - 1) void handleCriar(); else if (pendenciasPasso.length === 0) setPasso(p => p + 1); }}>
+              {passo === 0 && <>
               <section className="ro-character-create-section" aria-labelledby="ro-create-identity">
                 <div className="ro-character-create-section-title">
                   <h3 id="ro-create-identity">Identidade</h3>
@@ -205,11 +268,6 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                     <select value={nivel} onChange={event => setNivel(Number(event.target.value))}>
                       {[1,2,3,4,5].map(value =>
                         <option key={value} value={value}>Nível {value} · {TABELA_PROGRESSAO[value].pontosDeSonhar} pontos de Sonhar</option>)}
-                    </select>
-                  </label>
-                  <label>Conceito do Desvelado
-                    <select value={conceito} onChange={event => setConceito(event.target.value as typeof conceito)}>
-                      {(['Lúcido','Tecelão','Desperto','Ecoante'] as const).map(value => <option key={value} value={value}>{value}</option>)}
                     </select>
                   </label>
                 </div>
@@ -265,10 +323,30 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 </div>
               </section>
 
-              <section className="ro-character-create-section" aria-labelledby="ro-create-attributes">
+              </>}
+
+              {passo === 1 && <section className="ro-character-create-section" aria-labelledby="ro-create-concept">
+                <div className="ro-character-create-section-title">
+                  <h3 id="ro-create-concept">Conceito</h3>
+                  <span>Quando tudo aquilo que conhecia deixou de fazer sentido, como seu Personagem conseguiu seguir adiante? (Livro Básico, p. 10)</span>
+                </div>
+                <div className="ro-create-concepts" role="radiogroup" aria-label="Conceito do Desvelado">
+                  {CONCEITOS.map(c => (
+                    <button type="button" role="radio" aria-checked={conceito === c.id} key={c.id}
+                      className={conceito === c.id ? 'is-selected' : ''} onClick={() => setConceito(c.id)}>
+                      <strong>{c.id}</strong>
+                      <em>Diante do impossível… {c.diante.toLowerCase()}.</em>
+                      <span>{c.relacao}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="ro-create-note">O Conceito não limita o que o Desvelado pode manifestar; os Domínios fazem isso. Ele muda a maneira como o Sonhar aparece na narrativa.</p>
+              </section>}
+
+              {passo === 2 && <section className="ro-character-create-section" aria-labelledby="ro-create-attributes">
                 <div className="ro-character-create-section-title">
                   <h3 id="ro-create-attributes">Atributos</h3>
-                  <span>Escolha o atributo principal e distribua os valores do nível.</span>
+                  <span>Marque o Atributo Principal: ele recebe +2 e é o usado nos Testes Oníricos. {nivel <= 2 ? 'Distribua +1, 0 e −1 nos outros três.' : `Neste nível os atributos somam ${pontosAtributoEsperados}.`}</span>
                 </div>
                 <p className={atributosValidos ? 'ro-character-create-score is-valid' : 'ro-character-create-score is-invalid'}>
                   Soma {somaAtributos}/{pontosAtributoEsperados} · Atributo principal: {atributoPrincipal ? ATRIBUTO_ROTULOS[atributoPrincipal] : 'escolha um'}
@@ -280,14 +358,15 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                     return <div className={principal ? 'ro-character-create-attribute is-primary' : 'ro-character-create-attribute'} key={item.id}>
                       <label className="ro-character-create-attribute-head">
                         <span>{item.symbol}{item.label}</span>
-                        <input type="radio" name="principalRadio" checked={principal} onChange={() => setAtributoPrincipal(item.id)}
+                        <input type="radio" name="principalRadio" checked={principal} onChange={() => escolherPrincipal(item.id)}
                           aria-label={`Definir ${item.label} como atributo principal`} />
                       </label>
+                      <small className="ro-create-attr-desc">{ATRIBUTO_DESCRICAO[item.id]}</small>
                       <div className="ro-character-create-adjuster">
                         <button type="button" disabled={value <= -1} onClick={() => handleUpdateAtributo(item.id,value-1)}
                           aria-label={`Diminuir ${item.label}`}>−</button>
                         <output aria-label={`Valor de ${item.label}`}>{value >= 0 ? '+' + value : value}</output>
-                        <button type="button" disabled={value >= 4 || somaAtributos >= pontosAtributoEsperados}
+                        <button type="button" disabled={value >= 4}
                           onClick={() => handleUpdateAtributo(item.id,value+1)} aria-label={`Aumentar ${item.label}`}>+</button>
                       </div>
                     </div>;
@@ -298,28 +377,9 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                     ? 'Distribua exatamente +2, +1, 0 e −1 entre os quatro atributos. O +2 vai obrigatoriamente no Atributo Principal.'
                     : `Neste nível, os atributos devem somar ${pontosAtributoEsperados} e o Atributo Principal precisa ter pelo menos +2.`}
                 </p>}
-              </section>
+              </section>}
 
-              <section className="ro-character-create-section" aria-labelledby="ro-create-stats">
-                <div className="ro-character-create-section-title">
-                  <h3 id="ro-create-stats">Estatísticas</h3>
-                  <span>Calculadas automaticamente pela progressão oficial.</span>
-                </div>
-                <div className="ro-character-create-stats">
-                  {[
-                    {label:'PV',value:vidaMaxima,info:'Vida máxima',symbol:<Heart size={20}/>},
-                    {label:'Defesa',value:defesa,info:'8 + Corpo',symbol:<Shield size={20}/>},
-                    {label:'Resistência',value:resistencia,info:'6 + Corpo',symbol:<Shield size={20}/>},
-                    {label:'Foco (PF)',value:prog.focoBase,info:'Nível ' + nivel,symbol:<Flame size={20}/>},
-                    {label:'Proteção Onírica',value:prog.protecaoOniricaBase,info:'Nível ' + nivel,symbol:<Sparkles size={20}/>},
-                    {label:'Ruptura',value:0,info:'Inicial',symbol:<Moon size={20}/>}
-                  ].map(item => <div className="ro-character-create-stat" key={item.label}>
-                    {item.symbol}<span>{item.label}</span><strong>{item.value}</strong><small>{item.info}</small>
-                  </div>)}
-                </div>
-              </section>
-
-              <section className="ro-character-create-section" aria-labelledby="ro-create-domains">
+              {passo === 3 && <section className="ro-character-create-section" aria-labelledby="ro-create-domains">
                 <div className="ro-character-create-section-title">
                   <h3 id="ro-create-domains">Domínios do Sonhar</h3>
                   <span>Distribua os pontos sem ultrapassar o limite por Domínio.</span>
@@ -331,7 +391,7 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                   {domainItems.map(item => {
                     const selected = dominios[item.id] || 0;
                     return <div className="ro-character-create-domain" key={item.id}>
-                      <span className="ro-character-create-domain-label">{item.symbol}{item.label}</span>
+                      <span className="ro-character-create-domain-label">{item.symbol}{item.label}<small>{DOMINIO_DESCRICAO[item.id]}</small></span>
                       <div className="ro-character-create-domain-values" role="group" aria-label={`Nível de ${item.label}`}>
                         {[0,1,2,3,4,5].map(value => <button type="button" key={value}
                           className={value === selected ? 'is-selected' : ''}
@@ -345,9 +405,9 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 {!dominiosCompletos && <p className="ro-character-create-validation" role="status">
                   {validacao.erros?.[0] || 'Distribua todos os pontos de Domínio para continuar.'}
                 </p>}
-              </section>
+              </section>}
 
-              <section className="ro-character-create-section" aria-labelledby="ro-create-anchor">
+              {passo === 4 && <section className="ro-character-create-section" aria-labelledby="ro-create-anchor">
                 <div className="ro-character-create-section-title">
                   <h3 id="ro-create-anchor">Ancoragem</h3>
                   <span>Pessoa, lembrança, objeto ou lugar que mantém seu vínculo com a Realidade.</span>
@@ -358,62 +418,69 @@ export const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                     onChange={event => setAncoragem(event.target.value)}
                     placeholder="Ex.: Uma fita cassete antiga com a voz do meu irmão…"/>
                 </label>
-              </section>
+                <p className="ro-create-note">Pode deixar para depois: dá para preencher a Ancoragem na ficha.</p>
+              </section>}
+
+              {passo === 5 && <section className="ro-character-create-section" aria-labelledby="ro-create-review">
+                <div className="ro-character-create-section-title">
+                  <h3 id="ro-create-review">Revisão</h3>
+                  <span>Confira antes de criar. Os números são calculados pelas regras do livro.</span>
+                </div>
+                <div className="ro-create-review">
+                  <div className="ro-create-review-id">
+                    <div className="ro-character-create-portrait-thumb">
+                      {previewRetrato ? <img src={previewRetrato} alt="Retrato do Desvelado" /> : <UserPlus size={34} aria-hidden="true" />}
+                    </div>
+                    <div>
+                      <h4>{nome.trim() || 'Seu Desvelado'}</h4>
+                      <p>Nível {nivel} · {conceito ?? 'sem Conceito'}{jogador.trim() ? ' · ' + jogador.trim() : ''}</p>
+                      <p>Atributo Principal: <strong>{atributoPrincipal ? ATRIBUTO_ROTULOS[atributoPrincipal] : '—'}</strong></p>
+                    </div>
+                  </div>
+                  <div className="ro-character-create-stats">
+                    {[
+                      {label:'PV',value:vidaMaxima,info:'Vida máxima',symbol:<Heart size={20}/>},
+                      {label:'Foco (PF)',value:prog.focoBase,info:'Nível ' + nivel,symbol:<Flame size={20}/>},
+                      {label:'Proteção Onírica',value:prog.protecaoOniricaBase,info:'Nível ' + nivel,symbol:<Sparkles size={20}/>},
+                      {label:'Defesa',value:defesa,info:'8 + Corpo',symbol:<Shield size={20}/>},
+                      {label:'Resistência',value:resistencia,info:'6 + Corpo',symbol:<Shield size={20}/>}
+                    ].map(item => <div className="ro-character-create-stat" key={item.label}>
+                      {item.symbol}<span>{item.label}</span><strong>{item.value}</strong><small>{item.info}</small>
+                    </div>)}
+                  </div>
+                  <dl className="ro-create-review-list">
+                    <div><dt>Atributos</dt><dd>{attributeItems.map(a => `${a.label} ${atributos[a.id] >= 0 ? '+' : ''}${atributos[a.id]}`).join(' · ')}</dd></div>
+                    <div><dt>Domínios</dt><dd>{domainItems.filter(d => (dominios[d.id] || 0) > 0).map(d => `${d.label} ${dominios[d.id]}`).join(' · ') || '—'}</dd></div>
+                    <div><dt>Ancoragem</dt><dd>{ancoragem.trim() || 'A preencher depois'}</dd></div>
+                    <div><dt>Recursos</dt><dd>1 (Escasso), como manda o livro</dd></div>
+                  </dl>
+                </div>
+              </section>}
             </form>
 
-            <aside className="ro-character-create-preview" aria-label="Prévia da ficha em criação">
-              <div className="ro-character-create-section-title">
-                <h3>Prévia da ficha</h3><span>Atualiza enquanto você preenche o formulário.</span>
-              </div>
-              <div className="ro-character-create-preview-portrait">
-                {previewRetrato
-                  ? <img src={previewRetrato} alt="Retrato selecionado para a ficha" />
-                  : <div className="ro-character-create-no-portrait"><UserPlus size={44}/><span>Seu retrato aparecerá aqui</span></div>}
-              </div>
-              <div className="ro-character-create-preview-name">
-                <h4>{nome.trim() || 'Seu Desvelado'}</h4>
-                <p>Nível {nivel} · {conceito}{jogador.trim() ? ' · ' + jogador.trim() : ''}</p>
-              </div>
-              <div className="ro-character-create-preview-vitals">
-                <div><Heart size={16}/><span>PV</span><strong>{vidaMaxima}</strong></div>
-                <div><Flame size={16}/><span>Foco</span><strong>{prog.focoBase}</strong></div>
-                <div><Sparkles size={16}/><span>PO</span><strong>{prog.protecaoOniricaBase}</strong></div>
-                <div><Moon size={16}/><span>Ruptura</span><strong>0</strong></div>
-              </div>
-              <div className="ro-character-create-preview-defense"><Shield size={18}/> Defesa <strong>{defesa}</strong><small>Resistência {resistencia}</small></div>
-              <div className="ro-character-create-preview-domains">
-                <h5>Domínios do Sonhar <span>{validacao.pontosUsados}/{validacao.pontosTotais}</span></h5>
-                {domainItems.map(item => <div key={item.id}>
-                  <span>{item.symbol}{item.label}</span>
-                  <div className="ro-character-create-preview-track">
-                    <i style={{width: ((dominios[item.id] || 0)/5*100) + '%'}} />
-                  </div>
-                  <b>{dominios[item.id] || 0}</b>
-                </div>)}
-              </div>
-              <div className="ro-character-create-preview-anchor"><Anchor size={18}/>
-                <div><strong>Ancoragem</strong><p>{ancoragem.trim() || 'Seu elo com a Realidade aparecerá aqui.'}</p></div>
-              </div>
-              <p className="ro-character-create-preview-notice"><Eye size={15}/> Prévia visual. Sua ficha completa será criada com as regras e os recursos do sistema.</p>
-            </aside>
           </div>
         </div>
 
         <footer className="ro-character-create-footer">
           <div aria-live="polite">
             {erroSalvar && <p className="ro-character-create-error" role="alert">{erroSalvar}</p>}
-            {!erroSalvar && hasInvalidFields && <div className="ro-character-create-footnote">
-              <strong>Para criar a ficha, falta:</strong>
+            {!erroSalvar && pendenciasPasso.length > 0 && <div className="ro-character-create-footnote">
+              <strong>Para continuar, falta:</strong>
               <ul>
-                {pendenciasCriacao.map(p => <li key={p}>{p}</li>)}
+                {pendenciasPasso.map(p => <li key={p}>{p}</li>)}
               </ul>
             </div>}
           </div>
           <div className="ro-character-create-footer-buttons">
-            <button type="button" className="ro-character-create-cancel" disabled={salvando} onClick={onClose}>Cancelar</button>
-            <button type="submit" form="ro-create-character-form" className="ro-character-create-submit" disabled={!fichaValida || salvando}>
-              <Check size={18}/>{salvando ? 'Salvando…' : 'Criar Desvelado'}
-            </button>
+            {passo === 0
+              ? <button type="button" className="ro-character-create-cancel" disabled={salvando} onClick={onClose}>Cancelar</button>
+              : <button type="button" className="ro-character-create-cancel" disabled={salvando} onClick={() => setPasso(p => p - 1)}><ChevronLeft size={17}/> Voltar</button>}
+            {passo < PASSOS.length - 1
+              ? <button type="button" className="ro-character-create-submit" disabled={pendenciasPasso.length > 0}
+                  onClick={() => setPasso(p => p + 1)}>Próximo: {PASSOS[passo + 1]} <ChevronRight size={17}/></button>
+              : <button type="submit" form="ro-create-character-form" className="ro-character-create-submit" disabled={!fichaValida || salvando}>
+                  <Check size={18}/>{salvando ? 'Salvando…' : 'Criar Desvelado'}
+                </button>}
           </div>
         </footer>
       </div>
