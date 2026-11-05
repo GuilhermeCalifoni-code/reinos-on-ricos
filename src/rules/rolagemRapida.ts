@@ -69,8 +69,9 @@ function rolarOniricoInterno(
   p: Personagem, op: OpcoesOnirico, rolarD20?: () => number,
   forcar?: { dt: number; focoJaUsado: boolean }
 ): RolagemRapidaFeita<ResultadoTesteOnirico> {
-  // Ao Forçar o Sonhar, os modificadores são os mesmos da rolagem original e o Foco não é gasto de novo.
-  const usarFoco = forcar ? forcar.focoJaUsado : op.usarFoco && p.focoAtual > 0;
+  // Ao Forçar o Sonhar, os modificadores são os mesmos da rolagem original. Se ela usou Foco,
+  // o Foco é gasto de novo (decisão do Guilherme, 05/11); sem PF, a nova rolagem vai sem o +2.
+  const usarFoco = forcar ? forcar.focoJaUsado && p.focoAtual > 0 : op.usarFoco && p.focoAtual > 0;
   const { atributo, valor } = atributoDoTesteOnirico(p);
   const res = executarTesteOnirico({
     atributo,
@@ -87,7 +88,7 @@ function rolarOniricoInterno(
     metadata: { kind: 'onirico', forcado: Boolean(forcar), realidade: res.dadoRealidade, sonhar: res.dadoSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura, foco: usarFoco,
       roll: { kind: 'onirico', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, totalRealidade: res.totalRealidade, totalSonhar: res.totalSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura } }
   };
-  return { resultado: res, personagemAtualizado: usarFoco && !forcar ? gastarFoco(p) : null, evento };
+  return { resultado: res, personagemAtualizado: usarFoco ? gastarFoco(p) : null, evento };
 }
 
 /** Só pode Forçar o Sonhar depois de um fracasso: Realidade vence ou Divergência (VF18, p. 30). */
@@ -110,7 +111,7 @@ export function forcarSonharRapido(
   const comRuptura = ajustarRuptura(comPrimeira, 1, 'Forçar o Sonhar');
   const focoJaUsado = anterior.modificadores.some(m => m.nome === 'Foco');
   const feita = rolarOniricoInterno(comRuptura, { usarFoco: false, condicaoAdversa: false, dificuldadeAdversario: null }, rolarD20, { dt: anterior.dt, focoJaUsado });
-  return { ...feita, personagemAtualizado: comRuptura };
+  return { ...feita, personagemAtualizado: feita.personagemAtualizado ?? comRuptura };
 }
 
 export const rotuloAtributo = (a: AtributoNome) => ATRIBUTO_ROTULOS[a] ?? a;

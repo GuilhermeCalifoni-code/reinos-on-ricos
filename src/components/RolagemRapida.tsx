@@ -236,7 +236,7 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
             <button type="button" className="ro-quickroll-result__force" onClick={forcarSonhar}>
               Forçar o Sonhar <small>{resultado.r.impactoRuptura > 0 && !resultado.rupturaAplicada
                 ? `+${resultado.r.impactoRuptura} desta rolagem e +1 por forçar; rola de novo, uma vez`
-                : '+1 Ruptura e rola de novo, uma vez'}</small>
+                : '+1 Ruptura e rola de novo, uma vez'}{resultado.r.modificadores.some(m => m.nome === 'Foco') ? ' · gasta 1 PF de novo' : ''}</small>
             </button>
           )}
         </>}
