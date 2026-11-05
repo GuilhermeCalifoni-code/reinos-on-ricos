@@ -9,6 +9,7 @@ import { AVISO_RECURSOS_AJUSTADOS_P1, RECURSOS_ROTULOS, normalizarPersonagem, pr
 import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS } from '../rules/rulesData';
 import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
+import { SubirNivelModal } from './SubirNivelModal';
 import { ajustarRuptura } from '../rules/rupturaRapida';
 import { RestModal } from './RestModal';
 import { RolagemRapida, type PedidoRolagem } from './RolagemRapida';
@@ -59,6 +60,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [enviandoRetrato, setEnviandoRetrato] = useState(false);
   const [erroRetrato, setErroRetrato] = useState('');
   const [modalRupturaAberto,setModalRupturaAberto] = useState(false);
+  const [modalNivelAberto,setModalNivelAberto] = useState(false);
   const [modalDescansoAberto,setModalDescansoAberto] = useState(false);
   // Rolagem rápida: janela pequena para rolar, resultado no canto direito da tela.
   const [pedidoRolagem, setPedidoRolagem] = useState<PedidoRolagem | null>(null);
@@ -124,15 +126,6 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     if(check.pontosUsados>check.pontosTotais && value>personagem.dominios[key])return;
     if(personagem.nivel===5 && value===5 && domains.some(item=>item.key!==key && next[item.key]===5))return;
     salvar({dominios:next});
-  };
-  const editarNivel = (level:number) => {
-    const next=TABELA_PROGRESSAO[level];
-    if(!next)return;
-    salvar({nivel:level,vidaMaxima:next.vidaBase,vidaAtual:Math.min(personagem.vidaAtual,next.vidaBase),
-      focoMaximo:next.focoBase,focoAtual:Math.min(personagem.focoAtual,next.focoBase),
-      protecaoOniricaMaxima:next.protecaoOniricaBase,
-      protecaoOniricaAtual:Math.min(personagem.protecaoOniricaAtual,next.protecaoOniricaBase),
-      defesa:calcularDefesa(personagem.atributoPrincipal,personagem.atributos,level).defesa});
   };
   const alterarRecurso = (campo:'vidaAtual'|'focoAtual'|'protecaoOniricaAtual',max:number,delta:number) => {
     const atual=personagem[campo];
@@ -203,11 +196,12 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
           <label>Jogador / convidado
             <input type="text" value={personagem.jogador||''} maxLength={120} onChange={e=>salvar({jogador:e.target.value})} placeholder="Nome do jogador"/>
           </label>
-          <label>Nível
-            <select value={personagem.nivel} onChange={e=>editarNivel(Number(e.target.value))} aria-label="Nível do Desvelado">
-              {[1,2,3,4,5].map(value=><option key={value} value={value}>Nível {value}</option>)}
-            </select>
-          </label>
+          <div className="ro-sheet__level">
+            <span>Nível</span>
+            <output className="ro-sheet__level-value" aria-label="Nível do Desvelado">Nível {personagem.nivel}</output>
+            {personagem.nivel < 5 && <button type="button" className="ro-sheet__level-up" onClick={()=>setModalNivelAberto(true)}>
+              <Sparkles size={14}/> Subir para o nível {personagem.nivel + 1}</button>}
+          </div>
           <label>Conceito
             <select value={personagem.conceito} onChange={e=>salvar({conceito:e.target.value})}>
               {['Lúcido','Tecelão','Desperto','Ecoante'].map(v=><option key={v} value={v}>{v}</option>)}
@@ -433,6 +427,8 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       </aside>
     </div>
 
+    <SubirNivelModal personagem={personagem} isOpen={modalNivelAberto} onClose={()=>setModalNivelAberto(false)}
+      onSalvar={onSalvar} onRegistrarRolagem={onRegistrarRolagem}/>
     <RupturaModal personagem={personagem} isOpen={modalRupturaAberto} onClose={()=>setModalRupturaAberto(false)} onSalvar={onSalvar}/>
     <RestModal personagem={personagem} isOpen={modalDescansoAberto} onClose={()=>setModalDescansoAberto(false)} onSalvar={onSalvar}/>
   </article>;
