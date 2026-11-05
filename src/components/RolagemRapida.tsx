@@ -5,7 +5,7 @@ import type { NewSessionEvent } from '../types/sessionEvent';
 import { atributoDoTesteOnirico } from '../rules/fichaContrato';
 import { ajustarRuptura } from '../rules/rupturaRapida';
 import {
-  RESULTADO_ONIRICO_ROTULO, rolarMundanoRapido, rolarOniricoRapido, rotuloAtributo,
+  DT_MUNDANA, RESULTADO_ONIRICO_ROTULO, forcarSonharRapido, podeForcarSonhar, rolarMundanoRapido, rolarOniricoRapido, rotuloAtributo,
   type OpcoesMundano, type OpcoesOnirico
 } from '../rules/rolagemRapida';
 
@@ -15,7 +15,7 @@ export type PedidoRolagem =
 
 type Resultado =
   | { tipo: 'mundano'; r: ResultadoTesteMundano }
-  | { tipo: 'onirico'; r: ResultadoTesteOnirico; rupturaAplicada: boolean };
+  | { tipo: 'onirico'; r: ResultadoTesteOnirico; rupturaAplicada: boolean; forcado: boolean };
 
 type EstadoEnvio = 'local' | 'enviando' | 'enviado' | 'erro';
 
@@ -64,7 +64,7 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
   const rolarOnirico = () => {
     const feita = rolarOniricoRapido(personagem, opOnirico);
     if (feita.personagemAtualizado) onSalvar(feita.personagemAtualizado);
-    setResultado({ tipo: 'onirico', r: feita.resultado, rupturaAplicada: false });
+    setResultado({ tipo: 'onirico', r: feita.resultado, rupturaAplicada: false, forcado: false });
     setOpOnirico(o => ({ ...o, usarFoco: false }));
     registrar(feita.evento);
     onFecharPainel();
@@ -98,7 +98,17 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
     setResultado({ ...resultado, rupturaAplicada: true });
   };
 
+  // Forçar o Sonhar: +1 Ruptura na hora e nova rolagem com a mesma DT e modificadores, uma vez só.
+  const forcarSonhar = () => {
+    if (!resultado || resultado.tipo !== 'onirico' || resultado.forcado || !podeForcarSonhar(resultado.r)) return;
+    const feita = forcarSonharRapido(personagem, resultado.r);
+    onSalvar(feita.personagemAtualizado);
+    setResultado({ tipo: 'onirico', r: feita.resultado, rupturaAplicada: false, forcado: true });
+    registrar(feita.evento);
+  };
+
   const principal = atributoDoTesteOnirico(personagem);
+  const rotuloDt = (dt: number) => DT_MUNDANA.find(d => d.dt === dt)?.rotulo;
   const temFoco = personagem.focoAtual > 0;
 
   return <>
@@ -117,7 +127,7 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
               <span>Atributo Principal</span>
               <strong>{rotuloAtributo(principal.atributo)} {sinal(principal.valor)}</strong>
             </p>
-            <small className="ro-quickroll__hint">2d20 (Realidade e Sonhar) + Principal · DT {Math.max(13 + (opOnirico.condicaoAdversa ? 2 : 0), opOnirico.dificuldadeAdversario ?? 0)}</small>
+            <small className="ro-quickroll__hint">2d20 (Realidade e Sonhar) + Principal · DT {Math.max(13 + (opOnirico.condicaoAdversa ? 2 : 0), opOnirico.dificuldadeAdversario ?? 0)} · Teste Onírico nunca tem Vantagem ou Desvantagem (VF18).</small>
             <label className="ro-quickroll__check">
               <input type="checkbox" checked={opOnirico.usarFoco && temFoco} disabled={!temFoco}
                 onChange={e => setOpOnirico(o => ({ ...o, usarFoco: e.target.checked }))}/>
@@ -139,6 +149,28 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
             </div>}
             <button ref={botaoRolar} type="button" className="ro-quickroll__roll" onClick={rolarOnirico}><Sparkles size={17}/> Rolar</button>
           </> : <>
+            <small className="ro-quickroll__hint">Ajuste Vantagem e DT se precisar. Depois clique no atributo para rolar.</small>
+            <div className="ro-quickroll__modes" role="group" aria-label="Vantagem ou Desvantagem">
+              {(['desvantagem', 'normal', 'vantagem'] as const).map(m => (
+                <button key={m} type="button" className={opMundano.modoRolagem === m ? 'is-active' : ''} aria-pressed={opMundano.modoRolagem === m}
+                  onClick={() => setOpMundano(o => ({ ...o, modoRolagem: m }))}>{m[0].toUpperCase() + m.slice(1)}</button>
+              ))}
+            </div>
+            <small className="ro-quickroll__hint">
+              {opMundano.modoRolagem === 'normal' ? '1d20 + atributo.' : opMundano.modoRolagem === 'vantagem' ? 'Vantagem: rola 2d20 e usa o maior.' : 'Desvantagem: rola 2d20 e usa o menor.'}
+              {' '}Vantagem e Desvantagem juntas se anulam (VF18).
+            </small>
+            <label className="ro-quickroll__field">Dificuldade (DT)
+              <select value={opMundano.dt} onChange={e => setOpMundano(o => ({ ...o, dt: Number(e.target.value) }))}>
+                {DT_MUNDANA.map(d => <option key={d.dt} value={d.dt}>{d.dt} · {d.rotulo}</option>)}
+                {!rotuloDt(opMundano.dt) && <option value={opMundano.dt}>{opMundano.dt}</option>}
+              </select>
+            </label>
+            <label className="ro-quickroll__check">
+              <input type="checkbox" checked={opMundano.usarFoco && temFoco} disabled={!temFoco}
+                onChange={e => setOpMundano(o => ({ ...o, usarFoco: e.target.checked }))}/>
+              Usar Foco (+2) · {personagem.focoAtual} PF
+            </label>
             <div className="ro-quickroll__attrs" role="group" aria-label="Escolha o atributo e role">
               {ATRIBUTOS.map(a => (
                 <button key={a} type="button" ref={a === atributo ? botaoRolar : undefined}
@@ -147,28 +179,16 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
                 </button>
               ))}
             </div>
-            <small className="ro-quickroll__hint">Clique no atributo para rolar 1d20 + atributo · DT {opMundano.dt}</small>
-            <label className="ro-quickroll__check">
-              <input type="checkbox" checked={opMundano.usarFoco && temFoco} disabled={!temFoco}
-                onChange={e => setOpMundano(o => ({ ...o, usarFoco: e.target.checked }))}/>
-              Usar Foco (+2) · {personagem.focoAtual} PF
-            </label>
             <button type="button" className="ro-quickroll__more" aria-expanded={opcoesAbertas} onClick={() => setOpcoesAbertas(v => !v)}>
               {opcoesAbertas ? '− Menos opções' : '+ Mais opções'}
             </button>
             {opcoesAbertas && <div className="ro-quickroll__options">
-              <label className="ro-quickroll__field">DT
+              <label className="ro-quickroll__field">Outra DT (acima de 20 = Onírico)
                 <input type="number" min={1} value={opMundano.dt} onChange={e => setOpMundano(o => ({ ...o, dt: Number(e.target.value) || 12 }))}/>
               </label>
               <label className="ro-quickroll__field">Modificador
                 <input type="number" value={opMundano.modificador} onChange={e => setOpMundano(o => ({ ...o, modificador: Number(e.target.value) || 0 }))}/>
               </label>
-              <div className="ro-quickroll__modes" role="group" aria-label="Modo de rolagem">
-                {(['desvantagem', 'normal', 'vantagem'] as const).map(m => (
-                  <button key={m} type="button" className={opMundano.modoRolagem === m ? 'is-active' : ''} aria-pressed={opMundano.modoRolagem === m}
-                    onClick={() => setOpMundano(o => ({ ...o, modoRolagem: m }))}>{m[0].toUpperCase() + m.slice(1)}</button>
-                ))}
-              </div>
             </div>}
           </>}
           <button type="button" className="ro-quickroll__full" onClick={() => { onFecharPainel(); onAbrirRoladorCompleto(pedido.modo === 'mundano' ? atributo : undefined); }}>
@@ -185,13 +205,16 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
           <span className="ro-quickroll-result__title">{personagem.nome} · {rotuloAtributo(resultado.r.atributo)}</span>
           <div className="ro-quickroll-result__numbers">
             <div><strong>{resultado.r.totalFinal}</strong><small>TOTAL</small></div>
-            <div><strong className="is-die">{resultado.r.dadoBruto}</strong><small>{resultado.r.dadosRolados.length > 1 ? `d20 (${resultado.r.dadosRolados.join(' e ')})` : 'd20'}</small></div>
+            <div><strong className="is-die">{resultado.r.dadoBruto}</strong><small>{resultado.r.dadosRolados.length > 1
+              ? `${resultado.r.modoRolagem === 'vantagem' ? 'VANTAGEM' : 'DESVANTAGEM'} (${resultado.r.dadosRolados.join(' e ')})` : 'D20'}</small></div>
           </div>
           <p className={`ro-quickroll-result__verdict ${resultado.r.sucesso ? 'is-good' : 'is-bad'}`}>
-            {resultado.r.sucesso ? 'Sucesso' : 'Fracasso'} <small>vs DT {resultado.r.dt}{resultado.r.dadoBruto === 20 ? ' · 20 natural' : ''}{resultado.r.focoUtilizado ? ' · Foco +2' : ''}</small>
+            {resultado.r.dadoBruto === 20 ? 'Crítico!' : resultado.r.sucesso ? 'Sucesso' : 'Fracasso'}
+            <small>vs DT {resultado.r.dt}{rotuloDt(resultado.r.dt) ? ` (${rotuloDt(resultado.r.dt)})` : ''}{resultado.r.focoUtilizado ? ' · Foco +2' : ''}</small>
           </p>
+          {resultado.r.dadoBruto === 20 && <p className="ro-quickroll-result__effect">20 natural: sucesso automático. Se causar dano, o dano é crítico.</p>}
         </> : <>
-          <span className="ro-quickroll-result__title">{personagem.nome} · Teste Onírico</span>
+          <span className="ro-quickroll-result__title">{personagem.nome} · {resultado.forcado ? 'Forçar o Sonhar' : 'Teste Onírico'}</span>
           <div className="ro-quickroll-result__numbers">
             <div className={resultado.r.sucessoRealidade ? 'is-pass' : ''}><strong>{resultado.r.totalRealidade}</strong><small>REALIDADE ({resultado.r.dadoRealidade})</small></div>
             <div className={resultado.r.sucessoSonhar ? 'is-pass' : ''}><strong>{resultado.r.totalSonhar}</strong><small>SONHAR ({resultado.r.dadoSonhar})</small></div>
@@ -206,6 +229,12 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
           {resultado.r.impactoRuptura !== 0 && (
             <button type="button" className="ro-quickroll-result__apply" disabled={resultado.rupturaAplicada} onClick={aplicarRuptura}>
               {resultado.rupturaAplicada ? `Ruptura ${sinal(resultado.r.impactoRuptura)} aplicada` : `Aplicar ${sinal(resultado.r.impactoRuptura)} de Ruptura`}
+            </button>
+          )}
+          {resultado.forcado && <p className="ro-quickroll-result__effect">Já recebeu +1 Ruptura por Forçar o Sonhar.</p>}
+          {!resultado.forcado && !resultado.rupturaAplicada && podeForcarSonhar(resultado.r) && (
+            <button type="button" className="ro-quickroll-result__force" onClick={forcarSonhar}>
+              Forçar o Sonhar <small>+1 Ruptura e rola de novo, uma vez</small>
             </button>
           )}
         </>}

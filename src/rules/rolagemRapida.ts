@@ -3,6 +3,14 @@ import type { AtributoNome, Personagem, ResultadoOniricoTipo, ResultadoTesteMund
 import type { NewSessionEvent } from '../types/sessionEvent';
 import { executarTesteMundano, executarTesteOnirico } from './rulesEngine';
 import { atributoDoTesteOnirico, ATRIBUTO_ROTULOS } from './fichaContrato';
+import { ajustarRuptura } from './rupturaRapida';
+
+/** Tabela de Dificuldade de Testes Mundanos (VF18, p. 30). */
+export const DT_MUNDANA: { dt: number; rotulo: string }[] = [
+  { dt: 8, rotulo: 'Trivial' }, { dt: 10, rotulo: 'Fácil' }, { dt: 12, rotulo: 'Comum' },
+  { dt: 14, rotulo: 'Desafiador' }, { dt: 16, rotulo: 'Difícil' }, { dt: 18, rotulo: 'Muito Difícil' },
+  { dt: 20, rotulo: 'Extraordinário' }
+];
 
 export const RESULTADO_ONIRICO_ROTULO: Record<ResultadoOniricoTipo, string> = {
   convergencia: 'Convergência',
@@ -54,24 +62,50 @@ export function rolarMundanoRapido(p: Personagem, atributo: AtributoNome, op: Op
 }
 
 export function rolarOniricoRapido(p: Personagem, op: OpcoesOnirico, rolarD20?: () => number): RolagemRapidaFeita<ResultadoTesteOnirico> {
-  const usarFoco = op.usarFoco && p.focoAtual > 0;
+  return rolarOniricoInterno(p, op, rolarD20);
+}
+
+function rolarOniricoInterno(
+  p: Personagem, op: OpcoesOnirico, rolarD20?: () => number,
+  forcar?: { dt: number; focoJaUsado: boolean }
+): RolagemRapidaFeita<ResultadoTesteOnirico> {
+  // Ao Forçar o Sonhar, os modificadores são os mesmos da rolagem original e o Foco não é gasto de novo.
+  const usarFoco = forcar ? forcar.focoJaUsado : op.usarFoco && p.focoAtual > 0;
   const { atributo, valor } = atributoDoTesteOnirico(p);
   const res = executarTesteOnirico({
     atributo,
     valorAtributo: valor,
-    dt: 13 + (op.condicaoAdversa ? 2 : 0),
-    dificuldadeAdversario: op.dificuldadeAdversario ?? undefined,
+    dt: forcar ? forcar.dt : 13 + (op.condicaoAdversa ? 2 : 0),
+    dificuldadeAdversario: forcar ? undefined : op.dificuldadeAdversario ?? undefined,
     modificadores: usarFoco ? [{ nome: 'Foco', valor: 2 }] : [],
     rolarD20
   });
   const evento: NewSessionEvent = {
     type: 'roll',
     characterId: p.id,
-    content: `${p.nome} · ${res.atributo}: Realidade ${res.dadoRealidade} (${res.totalRealidade}) · Sonhar ${res.dadoSonhar} (${res.totalSonhar}) vs DT ${res.dt} — ${res.resultado}.`,
-    metadata: { kind: 'onirico', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura, foco: usarFoco,
+    content: `${p.nome} · ${forcar ? 'Forçar o Sonhar · ' : ''}${res.atributo}: Realidade ${res.dadoRealidade} (${res.totalRealidade}) · Sonhar ${res.dadoSonhar} (${res.totalSonhar}) vs DT ${res.dt} — ${res.resultado}.`,
+    metadata: { kind: 'onirico', forcado: Boolean(forcar), realidade: res.dadoRealidade, sonhar: res.dadoSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura, foco: usarFoco,
       roll: { kind: 'onirico', realidade: res.dadoRealidade, sonhar: res.dadoSonhar, totalRealidade: res.totalRealidade, totalSonhar: res.totalSonhar, dt: res.dt, resultado: res.resultado, ruptura: res.impactoRuptura } }
   };
-  return { resultado: res, personagemAtualizado: usarFoco ? gastarFoco(p) : null, evento };
+  return { resultado: res, personagemAtualizado: usarFoco && !forcar ? gastarFoco(p) : null, evento };
+}
+
+/** Só pode Forçar o Sonhar depois de um fracasso: Realidade vence ou Divergência (VF18, p. 30). */
+export const podeForcarSonhar = (r: ResultadoTesteOnirico) => r.resultado === 'realidade_vence' || r.resultado === 'divergencia';
+
+/**
+ * Forçar o Sonhar (VF18, p. 30): o Desvelado recebe 1 Ruptura na hora e rola um novo Teste Onírico
+ * com a mesma DT e os mesmos modificadores. Só uma vez por manifestação (a tela controla isso).
+ * A Ruptura de Forçar soma com a consequência da nova rolagem, que é aplicada depois, à parte.
+ */
+export function forcarSonharRapido(
+  p: Personagem, anterior: ResultadoTesteOnirico, rolarD20?: () => number
+): RolagemRapidaFeita<ResultadoTesteOnirico> & { personagemAtualizado: Personagem } {
+  if (!podeForcarSonhar(anterior)) throw new Error('Só é possível Forçar o Sonhar depois de um fracasso no Teste Onírico.');
+  const comRuptura = ajustarRuptura(p, 1, 'Forçar o Sonhar');
+  const focoJaUsado = anterior.modificadores.some(m => m.nome === 'Foco');
+  const feita = rolarOniricoInterno(comRuptura, { usarFoco: false, condicaoAdversa: false, dificuldadeAdversario: null }, rolarD20, { dt: anterior.dt, focoJaUsado });
+  return { ...feita, personagemAtualizado: comRuptura };
 }
 
 export const rotuloAtributo = (a: AtributoNome) => ATRIBUTO_ROTULOS[a] ?? a;
