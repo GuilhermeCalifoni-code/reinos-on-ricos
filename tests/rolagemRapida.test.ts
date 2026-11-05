@@ -130,3 +130,15 @@ test('Forçar o Sonhar com Foco mas sem PF sobrando: a nova rolagem vai sem o +2
   assert.equal(f.resultado.totalRealidade, 12); // 10 + Mente 2, sem Foco
   assert.equal(f.personagemAtualizado.focoAtual, 0);
 });
+
+test('Dano: atalhos pelo Nível de Perigo do livro, e clicar rola o dado de verdade', async () => {
+  const { NIVEIS_DE_PERIGO, rolarDado } = await import('../src/components/DamageModal');
+  assert.deepEqual(NIVEIS_DE_PERIGO.map(n => `${n.label} d${n.lados}`),
+    ['Baixo d4', 'Moderado d6', 'Grave d8', 'Severo d10', 'Devastador d12', 'Onírico d20']);
+  assert.equal(rolarDado(6, () => 0), 1);
+  assert.equal(rolarDado(6, () => 0.9999), 6);
+  for (let i = 0; i < 200; i++) { const v = rolarDado(20); assert.ok(v >= 1 && v <= 20 && Number.isInteger(v)); }
+  const fonte = readFileSync('src/components/DamageModal.tsx', 'utf8');
+  assert.match(fonte, /onClick=\{\(\) => rolarPerigo\(a\.label, a\.lados\)\}/);
+  assert.doesNotMatch(fonte, /'Pistola'/);
+});
