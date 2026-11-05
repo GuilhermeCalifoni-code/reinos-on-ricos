@@ -87,7 +87,7 @@ test('Forçar o Sonhar só depois de fracasso (Realidade vence ou Divergência)'
   assert.throws(() => forcarSonharRapido(p, sv, false, dados(1, 1)));
 });
 
-test('Forçar o Sonhar: +1 Ruptura na hora, mesma DT e mesmo Foco sem gastar PF de novo', () => {
+test('Forçar o Sonhar: +1 Ruptura na hora, mesma DT, e o Foco é gasto de novo', () => {
   const primeira = rolarOniricoRapido(p, { usarFoco: true, condicaoAdversa: true, dificuldadeAdversario: null }, dados(5, 5)); // DT 15
   assert.equal(primeira.resultado.dt, 15);
   const quemRolou = primeira.personagemAtualizado!; // gastou 1 PF
@@ -96,7 +96,7 @@ test('Forçar o Sonhar: +1 Ruptura na hora, mesma DT e mesmo Foco sem gastar PF 
   assert.equal(primeira.resultado.resultado, 'divergencia');
   assert.equal(f.personagemAtualizado.ruptura, quemRolou.ruptura + 3);
   assert.deepEqual(f.personagemAtualizado.historicoRuptura.slice(0, 2).map((h: any) => h.motivo), ['Forçar o Sonhar', 'Teste Onírico: Divergência']);
-  assert.equal(f.personagemAtualizado.focoAtual, quemRolou.focoAtual);
+  assert.equal(f.personagemAtualizado.focoAtual, quemRolou.focoAtual - 1); // gasta de novo (Guilherme, 05/11)
   assert.equal(f.personagemAtualizado.historicoRuptura[0].motivo, 'Forçar o Sonhar');
   assert.equal(f.resultado.dt, 15);
   assert.equal(f.resultado.totalRealidade, 15); // 11 + Mente 2 + Foco 2
@@ -120,4 +120,13 @@ test('Editar atributos: rascunho só é salvo dentro da regra (modo edicao_atrib
   assert.match(ficha, /disabled=\{problemasRascunho\.length>0\} onClick=\{salvarEdicaoAtributos\}/);
   // Fora do modo de edição, os botões − e + dos atributos não aparecem.
   assert.match(ficha, /\{editandoAtributos\s*\? <div className="ro-sheet__stepper ro-sheet__attribute-stepper">/);
+});
+
+test('Forçar o Sonhar com Foco mas sem PF sobrando: a nova rolagem vai sem o +2', () => {
+  const primeira = rolarOniricoRapido({ ...p, focoAtual: 1 }, { ...opOn, usarFoco: true }, dados(1, 1));
+  const semPF = primeira.personagemAtualizado!; // 0 PF
+  assert.equal(semPF.focoAtual, 0);
+  const f = forcarSonharRapido(semPF, primeira.resultado, false, dados(10, 10));
+  assert.equal(f.resultado.totalRealidade, 12); // 10 + Mente 2, sem Foco
+  assert.equal(f.personagemAtualizado.focoAtual, 0);
 });
