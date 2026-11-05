@@ -1,0 +1,43 @@
+/* Subir de nível (T1B+). Mesmo visual da ficha e da rolagem rápida. */
+.ro-levelup{width:min(460px,100%);max-height:calc(100dvh - 32px);overflow-y:auto}
+.ro-levelup__hero{display:grid;justify-items:center;gap:2px;padding:14px 0 6px}
+.ro-levelup__hero small{font-size:.78rem;color:#81766b}
+.ro-levelup__hero strong{font:600 3rem/1 "Cormorant Garamond",Georgia,serif;color:#865427}
+.ro-levelup__quote{margin:0;padding:10px 14px;border-left:3px solid #c9a77f;background:#faf6ef;font:italic 500 1.02rem/1.45 "Cormorant Garamond",Georgia,serif;color:#3c3f42}
+.ro-levelup__quote cite{display:block;margin-top:4px;font:600 .68rem Inter,sans-serif;font-style:normal;color:#968a7e}
+.ro-levelup__gains{display:grid;gap:6px;padding:12px 14px;border:1px solid #e0d2c1;border-radius:7px;background:linear-gradient(150deg,#fffefb,#f4eee5)}
+.ro-levelup__gains>span,.ro-levelup__label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#865427}
+.ro-levelup__gains ul{margin:0;padding-left:18px;display:grid;gap:3px;font-size:.88rem}
+.ro-quickroll__field textarea{padding:8px 10px;border:1px solid #d7c7b4;border-radius:6px;background:#fffefa;color:#19212a;font:inherit;font-size:.88rem;resize:vertical}
+.ro-quickroll__field small{font-weight:400;color:#968a7e}
+.ro-levelup__block{display:grid;gap:8px}
+.ro-levelup__domains{display:grid;gap:6px}
+.ro-levelup__domain{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 10px;border:1px solid #e0d2c1;border-radius:7px;background:#fffefa}
+.ro-levelup__domain>span{font:600 1rem "Cormorant Garamond",Georgia,serif}
+.ro-levelup__domain .ro-sheet__stepper{grid-template-columns:36px 44px 36px}
+.ro-levelup__domain .ro-sheet__stepper button{min-height:34px;min-width:36px}
+.ro-levelup__domain strong{text-align:center;font:600 1.4rem/1 "Cormorant Garamond",Georgia,serif}
+.ro-levelup__domain strong.is-new{color:#865427}
+.ro-levelup__pending{margin:0}
+.ro-levelup__pending ul{margin:4px 0 0;padding-left:18px}
+.ro-levelup__actions{display:grid;grid-template-columns:auto 1fr;gap:10px}
+.ro-levelup__back{min-height:44px;padding:0 16px;border:1px solid #d7c7b4;border-radius:7px;background:#fffefa;color:#625649;font-weight:600;font-size:.86rem}
+.ro-quickroll__roll:disabled{opacity:.45;cursor:not-allowed}
+.ro-sheet__level-up{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:6px 10px;border:1px solid #9c7149;border-radius:6px;background:#f2e8d8;color:#754c27;font:700 .74rem Inter,sans-serif}
+.ro-sheet__level-up:hover{background:#e8d7c1}
+.ro-sheet__level-value{display:flex;align-items:center;min-height:42px;font:600 1.15rem "Cormorant Garamond",Georgia,serif;color:#19212a}
+
+/* Comemoração ao subir: curta, some sozinha (ou num clique). */
+.ro-levelup-party{position:fixed;inset:0;z-index:95;display:grid;place-content:center;justify-items:center;gap:6px;background:rgba(250,246,239,.92);cursor:pointer;animation:ro-levelup-fade 2.6s ease forwards}
+.ro-levelup-party__glow{position:absolute;inset:0;margin:auto;width:520px;height:520px;max-width:90vw;max-height:90vw;border-radius:50%;background:radial-gradient(circle,rgba(201,167,127,.55) 0%,rgba(201,167,127,0) 65%);animation:ro-levelup-glow 2.6s ease-out forwards;pointer-events:none}
+.ro-levelup-party__eyebrow{position:relative;font:700 .72rem Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#865427}
+.ro-levelup-party__number{position:relative;font:600 clamp(3.4rem,10vw,6rem)/1 "Cormorant Garamond",Georgia,serif;color:#19212a;animation:ro-levelup-rise .9s cubic-bezier(.2,.8,.2,1) both}
+.ro-levelup-party__line{position:relative;font:italic 500 1.1rem "Cormorant Garamond",Georgia,serif;color:#625649;animation:ro-levelup-rise .9s .25s cubic-bezier(.2,.8,.2,1) both}
+@keyframes ro-levelup-rise{from{opacity:0;transform:translateY(16px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes ro-levelup-glow{0%{transform:scale(.4);opacity:0}35%{opacity:1}100%{transform:scale(1.25);opacity:.2}}
+@keyframes ro-levelup-fade{0%,80%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.ro-levelup-party,.ro-levelup-party *{animation:none!important}}
+.ro-sheet__level{display:grid;gap:5px;align-content:start;color:var(--sh-muted,#686b6c);font-size:.72rem;font-weight:600;min-width:0}
+.ro-sheet__level .ro-sheet__level-value{min-height:41px;padding:7px 9px;border:1px solid #d8cfc3;border-radius:5px;background:#f6f1e9;font-size:1rem}
+.ro-sheet__level .ro-sheet__level-up{margin-top:0;justify-content:center}
+.ro-levelup .ro-quickroll__attrs button strong{font-size:1.3rem;white-space:nowrap}

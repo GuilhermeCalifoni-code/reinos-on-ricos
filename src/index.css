@@ -30,6 +30,7 @@
 @import "./design-system/live-player-token-placement.css";
 @import "./design-system/playtest-flow-nov02.css";
 @import "./design-system/rolagem-rapida.css";
+@import "./design-system/subir-nivel.css";
 
 @layer base {
   :root {
