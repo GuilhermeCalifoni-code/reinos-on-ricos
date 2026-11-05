@@ -252,3 +252,17 @@
   color: #9e2f35;
   font-size: .8rem;
 }
+
+/* Modo "editar atributos" (T1B): leitura limpa; edição com rascunho e botão de salvar. */
+.ro-sheet__edit-attrs{border:1px solid #9c7149;border-radius:6px;background:#f2e8d8;color:#754c27;font:700 .76rem Inter,sans-serif;padding:8px 14px}
+.ro-sheet__edit-attrs:hover{background:#e8d7c1}
+.ro-sheet__attribute-badge{margin-left:auto;font-size:.58rem;font-weight:700;border:1px solid #9a6d39;background:#9a6d39;color:#fff;border-radius:3px;padding:3px 6px}
+.ro-sheet__attribute-value{display:block;text-align:center;font:600 2.3rem/1.1 "Cormorant Garamond",Georgia,serif;color:var(--sh-ink);padding:6px 0}
+.ro-sheet__attr-editbar{display:grid;gap:10px;margin-top:10px}
+.ro-sheet__attr-editbar .ro-sheet__validation{margin:0}
+.ro-sheet__attr-editbar .ro-sheet__validation ul{margin:4px 0 0;padding-left:18px}
+.ro-sheet__attr-editbar-actions{display:flex;justify-content:flex-end;gap:8px}
+.ro-sheet__attr-cancel,.ro-sheet__attr-save{min-height:40px;padding:0 16px;border-radius:7px;font:700 .82rem Inter,sans-serif}
+.ro-sheet__attr-cancel{border:1px solid #d7c7b4;background:#fffefa;color:#625649}
+.ro-sheet__attr-save{border:1px solid #754c27;background:#865427;color:#fffefa}
+.ro-sheet__attr-save:disabled{opacity:.45;cursor:not-allowed}

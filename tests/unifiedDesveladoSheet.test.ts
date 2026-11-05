@@ -27,7 +27,7 @@ test('Ficha mantém controles de recursos, Ruptura, Dano e Descanso',()=>{
   assert.match(sheet,/vidaAtual/);
   assert.match(sheet,/focoAtual/);
   assert.match(sheet,/protecaoOniricaAtual/);
-  assert.match(sheet,/calcularDefesa\(personagem\.atributoPrincipal,atributos,personagem\.nivel\)/);
+  assert.match(sheet,/calcularDefesa\(atributoPrincipal,atributos,personagem\.nivel\)/);
   assert.match(sheet,/calcularResistencia\(atributos\.corpo\)/);
   assert.match(sheet,/<RupturaModal personagem=\{personagem\}/);
   assert.match(sheet,/<DamageModal personagem=\{personagem\}/);

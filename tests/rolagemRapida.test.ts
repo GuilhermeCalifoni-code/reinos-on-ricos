@@ -61,3 +61,13 @@ test('A ficha usa a rolagem rápida e não embute mais o rolador completo', () =
   assert.doesNotMatch(ficha, /<DiceRoller /);
   assert.match(ficha, /pedirRolagem\(\{modo:'mundano',atributo:key,rolarDireto:true\}\)/);
 });
+
+test('Editar atributos: rascunho só é salvo dentro da regra (modo edicao_atributos)', () => {
+  const ficha = readFileSync('src/components/CharacterSheet.tsx', 'utf8');
+  assert.match(ficha, />Editar atributos</);
+  assert.match(ficha, /problemasDeAtributos\(rascunhoAtributos\.atributos, rascunhoAtributos\.principal, personagem\.nivel\)/);
+  assert.match(ficha, /if\(!rascunhoAtributos \|\| problemasRascunho\.length>0\)return;/);
+  assert.match(ficha, /disabled=\{problemasRascunho\.length>0\} onClick=\{salvarEdicaoAtributos\}/);
+  // Fora do modo de edição, os botões − e + dos atributos não aparecem.
+  assert.match(ficha, /\{editandoAtributos\s*\? <div className="ro-sheet__stepper ro-sheet__attribute-stepper">/);
+});
