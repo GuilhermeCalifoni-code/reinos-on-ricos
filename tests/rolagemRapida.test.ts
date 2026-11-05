@@ -111,3 +111,13 @@ test('Forçar o Sonhar: se a Ruptura da primeira já foi aplicada, não aplica d
   const rv = rolarOniricoRapido(p, opOn, dados(12, 1)).resultado; // Realidade vence: 0 de Ruptura
   assert.equal(forcarSonharRapido(p, rv, false, dados(1, 1)).personagemAtualizado.ruptura, 1);
 });
+
+test('Editar atributos: rascunho só é salvo dentro da regra (modo edicao_atributos)', () => {
+  const ficha = readFileSync('src/components/CharacterSheet.tsx', 'utf8');
+  assert.match(ficha, />Editar atributos</);
+  assert.match(ficha, /problemasDeAtributos\(rascunhoAtributos\.atributos, rascunhoAtributos\.principal, personagem\.nivel\)/);
+  assert.match(ficha, /if\(!rascunhoAtributos \|\| problemasRascunho\.length>0\)return;/);
+  assert.match(ficha, /disabled=\{problemasRascunho\.length>0\} onClick=\{salvarEdicaoAtributos\}/);
+  // Fora do modo de edição, os botões − e + dos atributos não aparecem.
+  assert.match(ficha, /\{editandoAtributos\s*\? <div className="ro-sheet__stepper ro-sheet__attribute-stepper">/);
+});

@@ -5,7 +5,7 @@ import {
   X, Zap, Camera
 } from 'lucide-react';
 import { Personagem, AtributoNome, DominioNome, VinculoItem, ItemGeral, RecursosNivel } from '../types/character';
-import { AVISO_RECURSOS_AJUSTADOS_P1, RECURSOS_ROTULOS, normalizarPersonagem, validarFichaDesvelado } from '../rules/fichaContrato';
+import { AVISO_RECURSOS_AJUSTADOS_P1, RECURSOS_ROTULOS, normalizarPersonagem, problemasDeAtributos, validarFichaDesvelado } from '../rules/fichaContrato';
 import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS } from '../rules/rulesData';
 import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
@@ -97,11 +97,26 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const salvar = (patch: Partial<Personagem>) =>
     onSalvar({...personagem,...patch,atualizadoEm:new Date().toISOString()});
 
+  // Modo "editar atributos": as mudanças ficam num rascunho e só são salvas
+  // quando estão dentro da regra do livro (CONTRATO_FICHA_v3, modo edicao_atributos).
+  const [rascunhoAtributos, setRascunhoAtributos] = useState<{atributos:Personagem['atributos'];principal:AtributoNome}|null>(null);
+  const editandoAtributos = rascunhoAtributos !== null;
+  const atributosVisiveis = rascunhoAtributos?.atributos ?? personagem.atributos;
+  const principalVisivel = rascunhoAtributos?.principal ?? personagem.atributoPrincipal;
+  const problemasRascunho = rascunhoAtributos ? problemasDeAtributos(rascunhoAtributos.atributos, rascunhoAtributos.principal, personagem.nivel) : [];
+  const iniciarEdicaoAtributos = () => setRascunhoAtributos({atributos:{...personagem.atributos},principal:personagem.atributoPrincipal});
+  const cancelarEdicaoAtributos = () => setRascunhoAtributos(null);
   const editarAtributo = (key:AtributoNome,value:number) => {
-    if(value < -1 || value > 4 || !Number.isInteger(value))return;
-    const atributos={...personagem.atributos,[key]:value};
-    salvar({atributos,resistencia:calcularResistencia(atributos.corpo),
-      defesa:calcularDefesa(personagem.atributoPrincipal,atributos,personagem.nivel).defesa});
+    if(!rascunhoAtributos || value < -1 || value > 4 || !Number.isInteger(value))return;
+    setRascunhoAtributos({...rascunhoAtributos,atributos:{...rascunhoAtributos.atributos,[key]:value}});
+  };
+  const definirPrincipalRascunho = (key:AtributoNome) => { if(rascunhoAtributos) setRascunhoAtributos({...rascunhoAtributos,principal:key}); };
+  const salvarEdicaoAtributos = () => {
+    if(!rascunhoAtributos || problemasRascunho.length>0)return;
+    const {atributos,principal:atributoPrincipal}=rascunhoAtributos;
+    salvar({atributos,atributoPrincipal,resistencia:calcularResistencia(atributos.corpo),
+      defesa:calcularDefesa(atributoPrincipal,atributos,personagem.nivel).defesa});
+    setRascunhoAtributos(null);
   };
   const editarDominio = (key:DominioNome,value:number) => {
     if(value<0||value>prog.dominioMaximo||!Number.isInteger(value))return;
@@ -239,30 +254,47 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     <div className="ro-sheet__body">
       <div className="ro-sheet__main">
         <section className="ro-sheet__section" id="sheet-attributes">
-          <div className="ro-sheet__heading"><div><span className="ro-sheet__eyebrow">01 · IDENTIDADE E CAPACIDADES</span><h2>Atributos</h2></div><span className="ro-sheet__section-extra">Principal: {principal}</span></div>
+          <div className="ro-sheet__heading"><div><span className="ro-sheet__eyebrow">01 · IDENTIDADE E CAPACIDADES</span><h2>Atributos</h2></div>
+            {editandoAtributos
+              ? <span className="ro-sheet__section-extra">Editando atributos</span>
+              : <button type="button" className="ro-sheet__edit-attrs" onClick={iniciarEdicaoAtributos}>Editar atributos</button>}
+          </div>
           <p className="ro-sheet__intro">Atributo Principal define sua especialidade. A Defesa é sempre 8 + Corpo.</p>
           <div className="ro-sheet__attribute-grid">
-            {attributes.map(({key,label,symbol,description})=><div className={`ro-sheet__attribute ${personagem.atributoPrincipal===key?'is-primary':''}`} key={key}>
+            {attributes.map(({key,label,symbol,description})=><div className={`ro-sheet__attribute ${principalVisivel===key?'is-primary':''}`} key={key}>
               <div className="ro-sheet__attribute-head">{symbol}<strong>{label}</strong>
-                <button type="button" aria-pressed={personagem.atributoPrincipal===key}
-                  title={`Definir ${label} como atributo principal`}
-                  onClick={()=>salvar({atributoPrincipal:key})}>{personagem.atributoPrincipal===key?'Principal':'Definir'}</button>
+                {editandoAtributos
+                  ? <button type="button" aria-pressed={principalVisivel===key}
+                      title={`Definir ${label} como atributo principal`}
+                      onClick={()=>definirPrincipalRascunho(key)}>{principalVisivel===key?'Principal':'Definir'}</button>
+                  : principalVisivel===key && <span className="ro-sheet__attribute-badge">Principal</span>}
               </div>
               <span className="ro-sheet__attribute-desc">{description}</span>
-              <div className="ro-sheet__stepper ro-sheet__attribute-stepper">
-                <button type="button" disabled={personagem.atributos[key]<=-1} onClick={()=>editarAtributo(key,personagem.atributos[key]-1)} aria-label={`Diminuir ${label}`}>−</button>
-                <output>{personagem.atributos[key]>=0?'+':''}{personagem.atributos[key]}</output>
-                <button type="button" disabled={personagem.atributos[key]>=4} onClick={()=>editarAtributo(key,personagem.atributos[key]+1)} aria-label={`Aumentar ${label}`}>+</button>
-              </div>
-              <button className="ro-sheet__test" type="button" onClick={()=>pedirRolagem({modo:'mundano',atributo:key,rolarDireto:true})}><Dice5 size={15}/> Testar aqui</button>
+              {editandoAtributos
+                ? <div className="ro-sheet__stepper ro-sheet__attribute-stepper">
+                    <button type="button" disabled={atributosVisiveis[key]<=-1} onClick={()=>editarAtributo(key,atributosVisiveis[key]-1)} aria-label={`Diminuir ${label}`}>−</button>
+                    <output>{atributosVisiveis[key]>=0?'+':''}{atributosVisiveis[key]}</output>
+                    <button type="button" disabled={atributosVisiveis[key]>=4} onClick={()=>editarAtributo(key,atributosVisiveis[key]+1)} aria-label={`Aumentar ${label}`}>+</button>
+                  </div>
+                : <output className="ro-sheet__attribute-value">{atributosVisiveis[key]>=0?'+':''}{atributosVisiveis[key]}</output>}
+              {!editandoAtributos && <button className="ro-sheet__test" type="button" onClick={()=>pedirRolagem({modo:'mundano',atributo:key,rolarDireto:true})}><Dice5 size={15}/> Testar aqui</button>}
             </div>)}
           </div>
-          <p className={`ro-sheet__validation ${avisosFicha.length===0?'is-ok':'is-warning'}`}>
+          {editandoAtributos ? <div className="ro-sheet__attr-editbar">
+            {problemasRascunho.length===0
+              ? <p className="ro-sheet__validation is-ok"><CheckCircle2 size={16}/> Atributos conforme o livro. Pode salvar.</p>
+              : <div className="ro-sheet__validation is-warning"><AlertTriangle size={16}/>
+                  <div><strong>Para salvar, falta:</strong><ul>{problemasRascunho.map(p=><li key={p}>{p}</li>)}</ul></div></div>}
+            <div className="ro-sheet__attr-editbar-actions">
+              <button type="button" className="ro-sheet__attr-cancel" onClick={cancelarEdicaoAtributos}>Cancelar</button>
+              <button type="button" className="ro-sheet__attr-save" disabled={problemasRascunho.length>0} onClick={salvarEdicaoAtributos}>Salvar atributos</button>
+            </div>
+          </div> : <p className={`ro-sheet__validation ${avisosFicha.length===0?'is-ok':'is-warning'}`}>
             {avisosFicha.length===0?<CheckCircle2 size={16}/>:<AlertTriangle size={16}/>}
             {avisosFicha.length===0
               ? 'Atributos conforme o livro.'
-              : `Atributos fora da regra (${avisosFicha.length}). Veja o aviso no topo da ficha.`}
-          </p>
+              : `Atributos fora da regra (${avisosFicha.length}). Use "Editar atributos" para corrigir.`}
+          </p>}
         </section>
 
         <section className="ro-sheet__section" id="sheet-vigil">
