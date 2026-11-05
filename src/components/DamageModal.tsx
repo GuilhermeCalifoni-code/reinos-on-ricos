@@ -11,15 +11,16 @@ interface DamageModalProps {
   onDispararMovimentoMorte?: () => void;
 }
 
-// Atalhos de valor de dano (os mesmos de antes).
-const ATALHOS = [
-  { label: 'Soco', dado: 'd4', val: 3 },
-  { label: 'Faca', dado: 'd6', val: 5 },
-  { label: 'Pistola', dado: 'd8', val: 7 },
-  { label: 'Fuzil', dado: 'd10', val: 9 },
-  { label: 'Pesado', dado: 'd12', val: 11 },
-  { label: 'Onírico', dado: 'd20', val: 16 }
-];
+// Tabela Nível de Perigo (Livro Básico VF18, p. 139). Clicar rola o dado de verdade.
+export const NIVEIS_DE_PERIGO = [
+  { label: 'Baixo', lados: 4 },
+  { label: 'Moderado', lados: 6 },
+  { label: 'Grave', lados: 8 },
+  { label: 'Severo', lados: 10 },
+  { label: 'Devastador', lados: 12 },
+  { label: 'Onírico', lados: 20 }
+] as const;
+export const rolarDado = (lados: number, aleatorio: () => number = Math.random) => 1 + Math.floor(aleatorio() * lados);
 
 /** Janela "Sofrer dano": conversão Dano × Resistência (VF18), no visual da ficha. */
 export const DamageModal: React.FC<DamageModalProps> = ({ personagem, isOpen, onClose, onSalvar, onDispararMovimentoMorte }) => {
@@ -27,6 +28,12 @@ export const DamageModal: React.FC<DamageModalProps> = ({ personagem, isOpen, on
   const [usarPO, setUsarPO] = useState<boolean>(personagem.protecaoOniricaAtual > 0);
   const [usarDanoMassivo, setUsarDanoMassivo] = useState<boolean>(true);
   const [opcoesAbertas, setOpcoesAbertas] = useState(false);
+  const [ultimaRolagem, setUltimaRolagem] = useState<{ label: string; lados: number; valor: number } | null>(null);
+  const rolarPerigo = (label: string, lados: number) => {
+    const valor = rolarDado(lados);
+    setUltimaRolagem({ label, lados, valor });
+    setDano(valor);
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -42,7 +49,10 @@ export const DamageModal: React.FC<DamageModalProps> = ({ personagem, isOpen, on
   const perdaBase = r.vidaPerdida + r.poUtilizada;
   const massivo = usarDanoMassivo && dano > personagem.resistencia * 2;
   const chegouAZero = r.vidaRestante === 0;
-  const mudarDano = (v: number) => setDano(Math.max(1, Math.min(99, Math.round(v) || 1)));
+  const limitar = (v: number) => Math.max(1, Math.min(99, Math.round(v) || 1));
+  // − e + ajustam o valor (ex.: somar o bônus) sem apagar a rolagem; digitar troca o valor e apaga.
+  const ajustarDano = (delta: number) => setDano(d => limitar(d + delta));
+  const mudarDano = (v: number) => { setUltimaRolagem(null); setDano(limitar(v)); };
 
   const aplicar = () => {
     onSalvar({ ...personagem, vidaAtual: r.vidaRestante, protecaoOniricaAtual: r.poRestante, atualizadoEm: new Date().toISOString() });
@@ -61,19 +71,25 @@ export const DamageModal: React.FC<DamageModalProps> = ({ personagem, isOpen, on
         <div className="ro-damage__amount">
           <span>Dano recebido</span>
           <div className="ro-sheet__stepper ro-sheet__stepper--valor">
-            <button type="button" disabled={dano <= 1} onClick={() => mudarDano(dano - 1)} aria-label="Diminuir dano">−</button>
+            <button type="button" disabled={dano <= 1} onClick={() => ajustarDano(-1)} aria-label="Diminuir dano">−</button>
             <input type="number" min={1} max={99} value={dano} onChange={e => mudarDano(Number(e.target.value))} aria-label="Valor do dano"/>
-            <button type="button" disabled={dano >= 99} onClick={() => mudarDano(dano + 1)} aria-label="Aumentar dano">+</button>
+            <button type="button" disabled={dano >= 99} onClick={() => ajustarDano(1)} aria-label="Aumentar dano">+</button>
           </div>
         </div>
 
-        <div className="ro-damage__chips" role="group" aria-label="Atalhos de dano">
-          {ATALHOS.map(a => (
-            <button key={a.label} type="button" className={dano === a.val ? 'is-active' : ''} onClick={() => setDano(a.val)}>
-              {a.label} <small>{a.dado}</small>
+        <div className="ro-damage__chips" role="group" aria-label="Rolar o dano pelo Nível de Perigo">
+          {NIVEIS_DE_PERIGO.map(a => (
+            <button key={a.label} type="button" className={ultimaRolagem?.label === a.label ? 'is-active' : ''}
+              onClick={() => rolarPerigo(a.label, a.lados)} aria-label={`Rolar dano ${a.label} (d${a.lados})`}>
+              {a.label} <small>d{a.lados}</small>
             </button>
           ))}
         </div>
+        <small className="ro-damage__rolled" aria-live="polite">
+          {ultimaRolagem
+            ? `Rolou ${ultimaRolagem.valor} no d${ultimaRolagem.lados} (${ultimaRolagem.label})${dano !== ultimaRolagem.valor ? `, ajustado para ${dano}` : ''}. Use o + para somar um bônus, se houver.`
+            : 'Clique no Nível de Perigo para rolar o dado, ou digite o dano.'}
+        </small>
 
         <div className={`ro-damage__verdict ${massivo ? 'is-bad' : dano > personagem.resistencia ? 'is-warn' : ''}`}>
           <strong>Perde {perdaBase} PV</strong>
