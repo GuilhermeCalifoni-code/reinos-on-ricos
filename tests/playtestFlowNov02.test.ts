@@ -39,12 +39,11 @@ test('round state validation refuses corrupt or spoofed metadata',()=>{
 });
 
 test('Mundano and Onírico can be rolled directly inside the sheet',()=>{
+  // Desde 04/11 a ficha usa a rolagem rápida (janela pequena + resultado no canto), não o rolador completo embutido.
   assert.match(sheet,/Teste Mundano/);
   assert.match(sheet,/Teste Onírico/);
-  assert.match(sheet,/ro-sheet__inline-roller/);
-  assert.match(sheet,/<DiceRoller key=/);
-  assert.match(sheet,/initialTab=\{rolagemNaFicha\}/);
-  assert.match(sheet,/onSalvarPersonagem=\{onSalvar\}/);
+  assert.match(sheet,/<RolagemRapida personagem=\{personagem\}/);
+  assert.match(sheet,/onSalvar=\{onSalvar\} onRegistrarRolagem=\{onRegistrarRolagem\}/);
   assert.match(dice,/initialTab\?: 'mundano' \| 'onirico'/);
   assert.match(dock,/\['onirico', 'Onírico'/);
   assert.match(live,/initialTab=\{ferramenta === 'onirico' \? 'onirico' : 'mundano'\}/);

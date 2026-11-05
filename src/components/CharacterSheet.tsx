@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   Anchor, AlertTriangle, Archive, BookOpen, Brain, CheckCircle2, Copy, Dice5,
   Download, Eye, Flame, Heart, Moon, Plus, Shield, Sparkles, Trash2, Waves,
@@ -12,7 +12,7 @@ import { RupturaModal } from './RupturaModal';
 import { ajustarRuptura } from '../rules/rupturaRapida';
 import { DamageModal } from './DamageModal';
 import { RestModal } from './RestModal';
-import { DiceRoller } from './DiceRoller';
+import { RolagemRapida, type PedidoRolagem } from './RolagemRapida';
 import type {NewSessionEvent} from '../types/sessionEvent';
 import { AssetImage } from './system/AssetImage';
 
@@ -62,8 +62,11 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [modalRupturaAberto,setModalRupturaAberto] = useState(false);
   const [modalDanoAberto,setModalDanoAberto] = useState(false);
   const [modalDescansoAberto,setModalDescansoAberto] = useState(false);
-  const [rolagemNaFicha, setRolagemNaFicha] = useState<'mundano' | 'onirico' | null>(null);
-  const [atributoNaFicha, setAtributoNaFicha] = useState<AtributoNome>('corpo');
+  // Rolagem rápida: janela pequena para rolar, resultado no canto direito da tela.
+  const [pedidoRolagem, setPedidoRolagem] = useState<PedidoRolagem | null>(null);
+  const contadorRolagem = useRef(0);
+  const pedirRolagem = (p: PedidoRolagem extends infer T ? (T extends unknown ? Omit<T,'id'> : never) : never) => setPedidoRolagem({ ...p, id: ++contadorRolagem.current } as PedidoRolagem);
+  const fecharPainelRolagem = useCallback(() => setPedidoRolagem(null), []);
   // As condições eram (e continuam sendo) marcadores temporários da interface.
   const [condicoes,setCondicoes] = useState({oculto:false,impedido:false,vulneravel:false,morte:personagem.vidaAtual===0});
   const prog = TABELA_PROGRESSAO[personagem.nivel] || TABELA_PROGRESSAO[1];
@@ -203,8 +206,8 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       <div className="ro-sheet__hero-actions" aria-label="Ações da ficha">
         <button type="button" onClick={()=>setModalDanoAberto(true)}><Heart size={17}/> Sofrer dano</button>
         <button type="button" onClick={()=>setModalDescansoAberto(true)}><Moon size={17}/> Descanso</button>
-        <button type="button" aria-expanded={rolagemNaFicha === 'mundano'} onClick={()=>setRolagemNaFicha(mode=>mode==='mundano'?null:'mundano')}><Dice5 size={17}/> Teste Mundano</button>
-        <button type="button" aria-expanded={rolagemNaFicha === 'onirico'} onClick={()=>setRolagemNaFicha(mode=>mode==='onirico'?null:'onirico')}><Sparkles size={17}/> Teste Onírico</button>
+        <button type="button" aria-haspopup="dialog" onClick={()=>pedirRolagem({modo:'mundano'})}><Dice5 size={17}/> Teste Mundano</button>
+        <button type="button" aria-haspopup="dialog" onClick={()=>pedirRolagem({modo:'onirico'})}><Sparkles size={17}/> Teste Onírico</button>
         <button type="button" onClick={()=>onIrParaGuiaSonhar(personagem)}><Sparkles size={17}/> Guia do Sonhar</button>
         <div className="ro-sheet__secondary-actions">
           <button type="button" title="Exportar ficha em JSON" aria-label="Exportar ficha em JSON" onClick={()=>onExportar(personagem)}><Download size={17}/></button>
@@ -215,23 +218,9 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
       </div>
     </header>
 
-    {rolagemNaFicha && (
-      <section className="ro-sheet__inline-roller" aria-label={`Rolagem ${rolagemNaFicha} na ficha`}>
-        <div className="ro-sheet__inline-roller-head">
-          <div><span className="ro-sheet__eyebrow">DADOS NA FICHA</span><h2>{rolagemNaFicha==='mundano'?'Teste Mundano':'Teste Onírico'}</h2></div>
-          <button type="button" onClick={()=>setRolagemNaFicha(null)} aria-label="Fechar dados sem sair da ficha">Fechar dados ×</button>
-        </div>
-        <DiceRoller key={`${personagem.id}-${rolagemNaFicha}-${atributoNaFicha}`}
-          personagemAtivo={personagem} atributoInicial={atributoNaFicha} initialTab={rolagemNaFicha}
-          onSalvarPersonagem={onSalvar}
-          onRegistrarRolagem={onRegistrarRolagem}
-          onAbrirModalRuptura={() => setModalRupturaAberto(true)} />
-        <div className="ro-sheet__inline-roller-actions">
-          <small>{onRegistrarRolagem ? 'As rolagens são registradas na Mesa Ao Vivo para todos os jogadores.' : 'Rolagem local: para compartilhar o resultado, abra sua ficha a partir da Mesa Ao Vivo.'}</small>
-          <button type="button" onClick={()=>onIrParaRolador(personagem,atributoNaFicha)}>Abrir rolador completo</button>
-        </div>
-      </section>
-    )}
+    <RolagemRapida personagem={personagem} pedido={pedidoRolagem} onFecharPainel={fecharPainelRolagem}
+      onSalvar={onSalvar} onRegistrarRolagem={onRegistrarRolagem}
+      onAbrirRoladorCompleto={(atributo)=>onIrParaRolador(personagem,atributo)}/>
     {(avisosFicha.length>0 || avisoRecursosP1) && (
       <div className="ro-sheet__validation is-warning" role="status" aria-live="polite">
         <AlertTriangle size={16}/>
@@ -265,7 +254,7 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
                 <output>{personagem.atributos[key]>=0?'+':''}{personagem.atributos[key]}</output>
                 <button type="button" disabled={personagem.atributos[key]>=4} onClick={()=>editarAtributo(key,personagem.atributos[key]+1)} aria-label={`Aumentar ${label}`}>+</button>
               </div>
-              <button className="ro-sheet__test" type="button" onClick={()=>{setAtributoNaFicha(key);setRolagemNaFicha('mundano');}}><Dice5 size={15}/> Testar aqui</button>
+              <button className="ro-sheet__test" type="button" onClick={()=>pedirRolagem({modo:'mundano',atributo:key,rolarDireto:true})}><Dice5 size={15}/> Testar aqui</button>
             </div>)}
           </div>
           <p className={`ro-sheet__validation ${avisosFicha.length===0?'is-ok':'is-warning'}`}>
