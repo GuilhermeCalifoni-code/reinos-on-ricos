@@ -30,7 +30,8 @@ test('Ficha mantém controles de recursos, Ruptura, Dano e Descanso',()=>{
   assert.match(sheet,/calcularDefesa\(atributoPrincipal,atributos,personagem\.nivel\)/);
   assert.match(sheet,/calcularResistencia\(atributos\.corpo\)/);
   assert.match(sheet,/<RupturaModal personagem=\{personagem\}/);
-  assert.match(sheet,/<DamageModal personagem=\{personagem\}/);
+  // Desde 05/11 a ficha não tem o botão "Sofrer dano": o jogador tira PV no − e o Mestre narra (Guilherme).
+  assert.doesNotMatch(sheet,/DamageModal|Sofrer dano/);
   assert.match(sheet,/<RestModal personagem=\{personagem\}/);
   assert.match(sheet,/onDispararMovimentoMorte/);
 });

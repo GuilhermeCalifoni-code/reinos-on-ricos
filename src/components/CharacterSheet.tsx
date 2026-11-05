@@ -10,7 +10,6 @@ import { TABELA_PROGRESSAO, DESCRICAO_DOMINIOS } from '../rules/rulesData';
 import { calcularDefesa, calcularResistencia, validarDistribuicaoDominios } from '../rules/rulesEngine';
 import { RupturaModal } from './RupturaModal';
 import { ajustarRuptura } from '../rules/rupturaRapida';
-import { DamageModal } from './DamageModal';
 import { RestModal } from './RestModal';
 import { RolagemRapida, type PedidoRolagem } from './RolagemRapida';
 import type {NewSessionEvent} from '../types/sessionEvent';
@@ -60,7 +59,6 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
   const [enviandoRetrato, setEnviandoRetrato] = useState(false);
   const [erroRetrato, setErroRetrato] = useState('');
   const [modalRupturaAberto,setModalRupturaAberto] = useState(false);
-  const [modalDanoAberto,setModalDanoAberto] = useState(false);
   const [modalDescansoAberto,setModalDescansoAberto] = useState(false);
   // Rolagem rápida: janela pequena para rolar, resultado no canto direito da tela.
   const [pedidoRolagem, setPedidoRolagem] = useState<PedidoRolagem | null>(null);
@@ -219,7 +217,6 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
         <p className="ro-sheet__hero-caption">A identidade muda. A Realidade permanece — até deixar de permanecer.</p>
       </div>
       <div className="ro-sheet__hero-actions" aria-label="Ações da ficha">
-        <button type="button" onClick={()=>setModalDanoAberto(true)}><Heart size={17}/> Sofrer dano</button>
         <button type="button" onClick={()=>setModalDescansoAberto(true)}><Moon size={17}/> Descanso</button>
         <button type="button" aria-haspopup="dialog" onClick={()=>pedirRolagem({modo:'mundano'})}><Dice5 size={17}/> Teste Mundano</button>
         <button type="button" aria-haspopup="dialog" onClick={()=>pedirRolagem({modo:'onirico'})}><Sparkles size={17}/> Teste Onírico</button>
@@ -437,8 +434,6 @@ export const CharacterSheet: React.FC<CharacterSheetProps> = ({
     </div>
 
     <RupturaModal personagem={personagem} isOpen={modalRupturaAberto} onClose={()=>setModalRupturaAberto(false)} onSalvar={onSalvar}/>
-    <DamageModal personagem={personagem} isOpen={modalDanoAberto} onClose={()=>setModalDanoAberto(false)}
-      onSalvar={onSalvar} onDispararMovimentoMorte={onDispararMovimentoMorte}/>
     <RestModal personagem={personagem} isOpen={modalDescansoAberto} onClose={()=>setModalDescansoAberto(false)} onSalvar={onSalvar}/>
   </article>;
 };
