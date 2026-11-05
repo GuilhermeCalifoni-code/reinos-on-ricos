@@ -96,13 +96,18 @@ export const podeForcarSonhar = (r: ResultadoTesteOnirico) => r.resultado === 'r
 /**
  * Forçar o Sonhar (VF18, p. 30): o Desvelado recebe 1 Ruptura na hora e rola um novo Teste Onírico
  * com a mesma DT e os mesmos modificadores. Só uma vez por manifestação (a tela controla isso).
- * A Ruptura de Forçar soma com a consequência da nova rolagem, que é aplicada depois, à parte.
+ * Decisão do Diogo (05/11): a consequência da primeira rolagem ACUMULA, porque ela falhou de verdade.
+ * Então entram: a Ruptura da primeira (se ainda não foi aplicada) + 1 por Forçar; a da nova rolagem
+ * é aplicada depois, à parte.
  */
 export function forcarSonharRapido(
-  p: Personagem, anterior: ResultadoTesteOnirico, rolarD20?: () => number
+  p: Personagem, anterior: ResultadoTesteOnirico, primeiraJaAplicada: boolean, rolarD20?: () => number
 ): RolagemRapidaFeita<ResultadoTesteOnirico> & { personagemAtualizado: Personagem } {
   if (!podeForcarSonhar(anterior)) throw new Error('Só é possível Forçar o Sonhar depois de um fracasso no Teste Onírico.');
-  const comRuptura = ajustarRuptura(p, 1, 'Forçar o Sonhar');
+  const comPrimeira = !primeiraJaAplicada && anterior.impactoRuptura !== 0
+    ? ajustarRuptura(p, anterior.impactoRuptura, `Teste Onírico: ${RESULTADO_ONIRICO_ROTULO[anterior.resultado]}`)
+    : p;
+  const comRuptura = ajustarRuptura(comPrimeira, 1, 'Forçar o Sonhar');
   const focoJaUsado = anterior.modificadores.some(m => m.nome === 'Foco');
   const feita = rolarOniricoInterno(comRuptura, { usarFoco: false, condicaoAdversa: false, dificuldadeAdversario: null }, rolarD20, { dt: anterior.dt, focoJaUsado });
   return { ...feita, personagemAtualizado: comRuptura };

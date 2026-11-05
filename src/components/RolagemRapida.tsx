@@ -101,7 +101,7 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
   // Forçar o Sonhar: +1 Ruptura na hora e nova rolagem com a mesma DT e modificadores, uma vez só.
   const forcarSonhar = () => {
     if (!resultado || resultado.tipo !== 'onirico' || resultado.forcado || !podeForcarSonhar(resultado.r)) return;
-    const feita = forcarSonharRapido(personagem, resultado.r);
+    const feita = forcarSonharRapido(personagem, resultado.r, resultado.rupturaAplicada);
     onSalvar(feita.personagemAtualizado);
     setResultado({ tipo: 'onirico', r: feita.resultado, rupturaAplicada: false, forcado: true });
     registrar(feita.evento);
@@ -231,10 +231,12 @@ export function RolagemRapida({ personagem, pedido, onFecharPainel, onSalvar, on
               {resultado.rupturaAplicada ? `Ruptura ${sinal(resultado.r.impactoRuptura)} aplicada` : `Aplicar ${sinal(resultado.r.impactoRuptura)} de Ruptura`}
             </button>
           )}
-          {resultado.forcado && <p className="ro-quickroll-result__effect">Já recebeu +1 Ruptura por Forçar o Sonhar.</p>}
-          {!resultado.forcado && !resultado.rupturaAplicada && podeForcarSonhar(resultado.r) && (
+          {resultado.forcado && <p className="ro-quickroll-result__effect">A Ruptura da primeira rolagem e o +1 por forçar já foram aplicados.</p>}
+          {!resultado.forcado && podeForcarSonhar(resultado.r) && (
             <button type="button" className="ro-quickroll-result__force" onClick={forcarSonhar}>
-              Forçar o Sonhar <small>+1 Ruptura e rola de novo, uma vez</small>
+              Forçar o Sonhar <small>{resultado.r.impactoRuptura > 0 && !resultado.rupturaAplicada
+                ? `+${resultado.r.impactoRuptura} desta rolagem e +1 por forçar; rola de novo, uma vez`
+                : '+1 Ruptura e rola de novo, uma vez'}</small>
             </button>
           )}
         </>}

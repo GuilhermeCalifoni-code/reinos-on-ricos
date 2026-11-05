@@ -84,19 +84,30 @@ test('Forçar o Sonhar só depois de fracasso (Realidade vence ou Divergência)'
   const sv = rolarOniricoRapido(p, opOn, dados(1, 12)).resultado;
   const cv = rolarOniricoRapido(p, opOn, dados(12, 12)).resultado;
   assert.deepEqual([rv, dv, sv, cv].map(podeForcarSonhar), [true, true, false, false]);
-  assert.throws(() => forcarSonharRapido(p, sv, dados(1, 1)));
+  assert.throws(() => forcarSonharRapido(p, sv, false, dados(1, 1)));
 });
 
 test('Forçar o Sonhar: +1 Ruptura na hora, mesma DT e mesmo Foco sem gastar PF de novo', () => {
   const primeira = rolarOniricoRapido(p, { usarFoco: true, condicaoAdversa: true, dificuldadeAdversario: null }, dados(5, 5)); // DT 15
   assert.equal(primeira.resultado.dt, 15);
   const quemRolou = primeira.personagemAtualizado!; // gastou 1 PF
-  const f = forcarSonharRapido(quemRolou, primeira.resultado, dados(11, 11));
-  assert.equal(f.personagemAtualizado.ruptura, quemRolou.ruptura + 1);
+  const f = forcarSonharRapido(quemRolou, primeira.resultado, false, dados(11, 11));
+  // primeira foi Divergência (5+4=9 e 9 < 15): +2 dela, acumulado com +1 por forçar (decisão do Diogo, 05/11)
+  assert.equal(primeira.resultado.resultado, 'divergencia');
+  assert.equal(f.personagemAtualizado.ruptura, quemRolou.ruptura + 3);
+  assert.deepEqual(f.personagemAtualizado.historicoRuptura.slice(0, 2).map((h: any) => h.motivo), ['Forçar o Sonhar', 'Teste Onírico: Divergência']);
   assert.equal(f.personagemAtualizado.focoAtual, quemRolou.focoAtual);
   assert.equal(f.personagemAtualizado.historicoRuptura[0].motivo, 'Forçar o Sonhar');
   assert.equal(f.resultado.dt, 15);
   assert.equal(f.resultado.totalRealidade, 15); // 11 + Mente 2 + Foco 2
   assert.equal(f.resultado.resultado, 'convergencia');
   assert.match(f.evento.content, /Forçar o Sonhar/);
+});
+
+test('Forçar o Sonhar: se a Ruptura da primeira já foi aplicada, não aplica de novo (só o +1)', () => {
+  const dv = rolarOniricoRapido(p, opOn, dados(1, 1)).resultado;
+  const jaAplicada = { ...p, ruptura: 2 };
+  assert.equal(forcarSonharRapido(jaAplicada, dv, true, dados(1, 1)).personagemAtualizado.ruptura, 3);
+  const rv = rolarOniricoRapido(p, opOn, dados(12, 1)).resultado; // Realidade vence: 0 de Ruptura
+  assert.equal(forcarSonharRapido(p, rv, false, dados(1, 1)).personagemAtualizado.ruptura, 1);
 });
