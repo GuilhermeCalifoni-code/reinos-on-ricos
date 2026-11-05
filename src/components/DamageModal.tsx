@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Shield, Heart, Skull, AlertCircle, Check, X, ShieldAlert } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Heart, Skull, X } from 'lucide-react';
 import { Personagem } from '../types/character';
+import { processarDano } from '../rules/rulesEngine';
 
 interface DamageModalProps {
   personagem: Personagem;
@@ -10,239 +11,111 @@ interface DamageModalProps {
   onDispararMovimentoMorte?: () => void;
 }
 
-export const DamageModal: React.FC<DamageModalProps> = ({
-  personagem,
-  isOpen,
-  onClose,
-  onSalvar,
-  onDispararMovimentoMorte
-}) => {
-  const [danoBruto, setDanoBruto] = useState<number>(6);
+// Atalhos de valor de dano (os mesmos de antes).
+const ATALHOS = [
+  { label: 'Soco', dado: 'd4', val: 3 },
+  { label: 'Faca', dado: 'd6', val: 5 },
+  { label: 'Pistola', dado: 'd8', val: 7 },
+  { label: 'Fuzil', dado: 'd10', val: 9 },
+  { label: 'Pesado', dado: 'd12', val: 11 },
+  { label: 'Onírico', dado: 'd20', val: 16 }
+];
+
+/** Janela "Sofrer dano": conversão Dano × Resistência (VF18), no visual da ficha. */
+export const DamageModal: React.FC<DamageModalProps> = ({ personagem, isOpen, onClose, onSalvar, onDispararMovimentoMorte }) => {
+  const [dano, setDano] = useState<number>(6);
   const [usarPO, setUsarPO] = useState<boolean>(personagem.protecaoOniricaAtual > 0);
-  const [usarDanoMacico, setUsarDanoMacico] = useState<boolean>(true);
+  const [usarDanoMassivo, setUsarDanoMassivo] = useState<boolean>(true);
+  const [opcoesAbertas, setOpcoesAbertas] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const resistencia = personagem.resistencia;
   const poDisponivel = personagem.protecaoOniricaAtual;
+  const r = processarDano(dano, personagem.resistencia, personagem.vidaAtual, poDisponivel, usarPO, usarDanoMassivo);
+  const perdaBase = r.vidaPerdida + r.poUtilizada;
+  const massivo = usarDanoMassivo && dano > personagem.resistencia * 2;
+  const chegouAZero = r.vidaRestante === 0;
+  const mudarDano = (v: number) => setDano(Math.max(1, Math.min(99, Math.round(v) || 1)));
 
-  // Mecânica oficial do Livro Básico (Pág. 11, 12, 117):
-  // Dano <= R -> perde 1 PV
-  // Dano > R -> perde 2 PV
-  // Dano Maciço (Opcional): Dano > 2*R -> perde 3 PV
-  let perdaVidaCalculada = 0;
-  if (usarDanoMacico && danoBruto > resistencia * 2) {
-    perdaVidaCalculada = 3;
-  } else if (danoBruto > resistencia) {
-    perdaVidaCalculada = 2;
-  } else {
-    perdaVidaCalculada = 1;
-  }
-
-  // Abatimento com Proteção Onírica (1 PO reduz em 1 PV, máx 1 PO por ocorrência de dano)
-  const poGasta = (usarPO && poDisponivel > 0 && perdaVidaCalculada > 0) ? 1 : 0;
-  const perdaVidaFinal = Math.max(0, perdaVidaCalculada - poGasta);
-  const novaVida = Math.max(0, personagem.vidaAtual - perdaVidaFinal);
-  const novaPO = Math.max(0, poDisponivel - poGasta);
-  const chegouAZero = novaVida === 0;
-
-  const handleAplicar = () => {
-    const atualizado: Personagem = {
-      ...personagem,
-      vidaAtual: novaVida,
-      protecaoOniricaAtual: novaPO,
-      atualizadoEm: new Date().toISOString()
-    };
-    onSalvar(atualizado);
+  const aplicar = () => {
+    onSalvar({ ...personagem, vidaAtual: r.vidaRestante, protecaoOniricaAtual: r.poRestante, atualizadoEm: new Date().toISOString() });
     onClose();
-
-    if (chegouAZero && onDispararMovimentoMorte) {
-      onDispararMovimentoMorte();
-    }
+    if (chegouAZero && onDispararMovimentoMorte) onDispararMovimentoMorte();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#11141c] border border-slate-700/80 rounded-lg max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in duration-200">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-[#161b26]">
-          <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded bg-rose-950/80 border border-rose-500/40 text-rose-400">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-slate-100 font-['Chakra_Petch'] uppercase tracking-wider">
-                Registrar Dano
-              </h3>
-              <p className="text-xs text-slate-400 font-mono">
-                {personagem.nome} · Conversão Dano vs Resistência
-              </p>
-            </div>
+    <div className="ro-quickroll__backdrop" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <section className="ro-quickroll ro-damage" role="dialog" aria-modal="true" aria-label={`Sofrer dano: ${personagem.nome}`}>
+        <header className="ro-quickroll__head">
+          <span><Heart size={17}/> Sofrer dano</span>
+          <button type="button" onClick={onClose} aria-label="Fechar"><X size={17}/></button>
+        </header>
+
+        <div className="ro-damage__amount">
+          <span>Dano recebido</span>
+          <div className="ro-sheet__stepper ro-sheet__stepper--valor">
+            <button type="button" disabled={dano <= 1} onClick={() => mudarDano(dano - 1)} aria-label="Diminuir dano">−</button>
+            <input type="number" min={1} max={99} value={dano} onChange={e => mudarDano(Number(e.target.value))} aria-label="Valor do dano"/>
+            <button type="button" disabled={dano >= 99} onClick={() => mudarDano(dano + 1)} aria-label="Aumentar dano">+</button>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800/60 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
-        <div className="p-5 space-y-4">
-          
-          {/* Valor de Dano Bruto */}
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="text-xs font-mono text-slate-300">
-                Valor total do dano sofrido:
-              </label>
-              <span className="text-xs font-mono text-cyan-400 font-bold">
-                {danoBruto} pontos
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="range"
-                min={1}
-                max={30}
-                value={danoBruto}
-                onChange={(e) => setDanoBruto(Number(e.target.value))}
-                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-rose-500"
-              />
-              <input
-                type="number"
-                min={1}
-                max={99}
-                value={danoBruto}
-                onChange={(e) => setDanoBruto(Math.max(1, Number(e.target.value)))}
-                className="w-16 px-2 py-1 text-center bg-slate-950 border border-slate-700 rounded text-slate-100 font-mono text-sm focus:outline-none focus:border-rose-500"
-              />
-            </div>
-          </div>
-
-          {/* Dados de Referência Rápida (d4 a d20) */}
-          <div className="flex flex-wrap gap-1.5">
-            {[
-              { label: 'Soco (d4)', val: 3 },
-              { label: 'Faca (d6)', val: 5 },
-              { label: 'Pistola (d8)', val: 7 },
-              { label: 'Fuzil (d10)', val: 9 },
-              { label: 'Pesado (d12)', val: 11 },
-              { label: 'Onírico (d20)', val: 16 }
-            ].map(preset => (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => setDanoBruto(preset.val)}
-                className="text-[10px] font-mono px-2 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300 hover:border-slate-700"
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Painel de Cálculo Transparente */}
-          <div className="bg-slate-950/80 border border-slate-800/80 rounded p-3 text-xs font-mono space-y-2">
-            <div className="flex justify-between items-center text-slate-300">
-              <span>Dano Recebido: <strong>{danoBruto}</strong></span>
-              <span>Resistência (R): <strong className="text-cyan-400">{resistencia}</strong></span>
-            </div>
-
-            <div className="border-t border-slate-800 pt-2 text-slate-300 space-y-1">
-              {danoBruto <= resistencia ? (
-                <p className="text-emerald-400">
-                  ✔ Dano ({danoBruto}) ≤ R ({resistencia}) → <strong>Perde 1 PV</strong>
-                </p>
-              ) : (usarDanoMacico && danoBruto > resistencia * 2) ? (
-                <p className="text-rose-400">
-                  ⚠ Dano ({danoBruto}) &gt; Dobro de R ({resistencia * 2}) → <strong>Dano Maciço: Perde 3 PV</strong>
-                </p>
-              ) : (
-                <p className="text-amber-400">
-                  ⚠ Dano ({danoBruto}) &gt; R ({resistencia}) → <strong>Perde 2 PV</strong>
-                </p>
-              )}
-            </div>
-
-            {/* Proteção Onírica */}
-            <div className="border-t border-slate-800 pt-2 flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer text-slate-300">
-                <input
-                  type="checkbox"
-                  checked={usarPO && poDisponivel > 0}
-                  disabled={poDisponivel === 0}
-                  onChange={(e) => setUsarPO(e.target.checked)}
-                  className="rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-cyan-500/40"
-                />
-                <span>
-                  Gastar 1 PO para reduzir 1 PV ({poDisponivel} disponíveis)
-                </span>
-              </label>
-              {poGasta > 0 && (
-                <span className="text-cyan-400 font-bold">-1 PV absorvido</span>
-              )}
-            </div>
-
-            <div className="border-t border-slate-800 pt-2 flex items-center justify-between text-[11px] text-slate-400">
-              <label className="flex items-center gap-1.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={usarDanoMacico}
-                  onChange={(e) => setUsarDanoMacico(e.target.checked)}
-                  className="rounded border-slate-700 bg-slate-900 text-slate-400"
-                />
-                <span>Regra Opcional Dano Maciço (&gt; 2×R = 3V)</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Consequência Final */}
-          <div className="p-3 rounded bg-slate-900 border border-slate-800 text-xs font-mono space-y-1.5">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Vida:</span>
-              <span className="font-bold text-slate-100">
-                {personagem.vidaAtual} → <span className={chegouAZero ? 'text-rose-400' : 'text-slate-200'}>{novaVida} V</span>
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Proteção Onírica:</span>
-              <span className="font-bold text-cyan-300">
-                {poDisponivel} → {novaPO} PO
-              </span>
-            </div>
-
-            {chegouAZero && (
-              <div className="p-2 mt-2 rounded bg-rose-950/90 border border-rose-600 text-rose-200 text-xs flex items-center gap-2">
-                <Skull className="w-5 h-5 text-rose-400 shrink-0" />
-                <span>
-                  <strong>Atenção:</strong> O personagem atingiu 0 PV! É necessário realizar imediatamente o <strong>Movimento de Morte</strong> (2d20 vs DT 13).
-                </span>
-              </div>
-            )}
-          </div>
-
+        <div className="ro-damage__chips" role="group" aria-label="Atalhos de dano">
+          {ATALHOS.map(a => (
+            <button key={a.label} type="button" className={dano === a.val ? 'is-active' : ''} onClick={() => setDano(a.val)}>
+              {a.label} <small>{a.dado}</small>
+            </button>
+          ))}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-5 py-3 border-t border-slate-800 bg-[#161b26]">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1.5 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded font-medium transition"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleAplicar}
-            className="px-4 py-1.5 text-xs text-slate-950 font-bold bg-rose-500 hover:bg-rose-400 rounded shadow-[0_0_12px_rgba(244,63,94,0.3)] flex items-center gap-1.5 transition"
-          >
-            <Check className="w-4 h-4" />
-            Aplicar Dano
-          </button>
+        <div className={`ro-damage__verdict ${massivo ? 'is-bad' : dano > personagem.resistencia ? 'is-warn' : ''}`}>
+          <strong>Perde {perdaBase} PV</strong>
+          <small>
+            {massivo ? `Dano Massivo: ${dano} > 2 × Resistência (${personagem.resistencia * 2})`
+              : dano > personagem.resistencia ? `Dano ${dano} > Resistência ${personagem.resistencia}`
+              : `Dano ${dano} ≤ Resistência ${personagem.resistencia}`}
+            {r.poUtilizada ? ' · a Proteção Onírica absorve 1' : ''}
+          </small>
         </div>
 
-      </div>
+        <label className="ro-quickroll__check">
+          <input type="checkbox" checked={usarPO && poDisponivel > 0} disabled={poDisponivel === 0} onChange={e => setUsarPO(e.target.checked)}/>
+          Usar 1 Proteção Onírica (−1 PV) · {poDisponivel} PO
+        </label>
+
+        <button type="button" className="ro-quickroll__more" aria-expanded={opcoesAbertas} onClick={() => setOpcoesAbertas(v => !v)}>
+          {opcoesAbertas ? '− Menos opções' : '+ Mais opções'}
+        </button>
+        {opcoesAbertas && <div className="ro-quickroll__options">
+          <label className="ro-quickroll__check">
+            <input type="checkbox" checked={usarDanoMassivo} onChange={e => setUsarDanoMassivo(e.target.checked)}/>
+            Regra opcional: Dano Massivo (acima de 2 × Resistência perde 3 PV)
+          </label>
+        </div>}
+
+        <div className="ro-damage__after">
+          <div className={chegouAZero ? 'is-bad' : ''}><small>VIDA</small><strong>{personagem.vidaAtual} → {r.vidaRestante}</strong></div>
+          <div><small>PROTEÇÃO ONÍRICA</small><strong>{poDisponivel} → {r.poRestante}</strong></div>
+        </div>
+
+        {chegouAZero && (
+          <p className="ro-damage__death"><Skull size={17}/> Chega a 0 PV: faça o Movimento de Morte (2d20 contra DT 13).</p>
+        )}
+
+        <div className="ro-damage__actions">
+          <button type="button" className="ro-damage__cancel" onClick={onClose}>Cancelar</button>
+          <button type="button" className="ro-quickroll__roll" onClick={aplicar}>
+            Aplicar dano{r.vidaPerdida > 0 ? ` (−${r.vidaPerdida} PV)` : ''}
+          </button>
+        </div>
+      </section>
     </div>
   );
 };
