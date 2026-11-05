@@ -52,34 +52,7 @@
 @media(max-width:600px){.ro-quickroll-result{left:12px;right:12px;bottom:12px;width:auto}}
 @media(prefers-reduced-motion:reduce){.ro-quickroll-result{animation:none}}
 
-/* Janela "Sofrer dano": mesmo visual da rolagem rápida. */
-.ro-damage{width:min(380px,100%)}
-.ro-damage__amount{display:grid;gap:6px;justify-items:center}
-.ro-damage__amount>span{font-size:.74rem;font-weight:600;color:#625649}
-.ro-damage__amount .ro-sheet__stepper{grid-template-columns:44px 96px 44px;gap:10px}
-.ro-damage__amount .ro-sheet__stepper button{min-height:44px}
-.ro-damage__amount input{width:100%;padding:4px 0;border:1px solid #d7c7b4;border-radius:7px;background:#fffefa;color:#19212a;text-align:center;font:600 2.2rem/1.1 "Cormorant Garamond",Georgia,serif;-moz-appearance:textfield}
-.ro-damage__amount input::-webkit-outer-spin-button,.ro-damage__amount input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.ro-damage__chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.ro-damage__chips button{padding:7px 4px;border:1px solid #e0d2c1;border-radius:6px;background:#fffefa;color:#3c3f42;font-size:.76rem;font-weight:600}
-.ro-damage__chips button small{color:#968a7e;font-weight:500}
-.ro-damage__chips button:hover,.ro-damage__chips button.is-active{border-color:#9c7149;background:#f2e8d8}
-.ro-damage__verdict{display:grid;justify-items:center;gap:2px;padding:12px;border:1px solid #e0d2c1;border-radius:7px;background:linear-gradient(150deg,#fffefb,#f4eee5);text-align:center}
-.ro-damage__verdict strong{font:600 1.6rem/1.1 "Cormorant Garamond",Georgia,serif}
-.ro-damage__verdict small{font-size:.72rem;color:#81766b}
-.ro-damage__verdict.is-warn strong{color:#865427}
-.ro-damage__verdict.is-bad strong{color:#a24539}
-.ro-damage__after{display:grid;grid-template-columns:1fr 1fr}
-.ro-damage__after>div{display:grid;justify-items:center;gap:2px}
-.ro-damage__after>div+div{border-left:1px solid #e0d2c1}
-.ro-damage__after small{font-size:.62rem;font-weight:700;letter-spacing:.08em;color:#81766b}
-.ro-damage__after strong{font:600 1.5rem/1.1 "Cormorant Garamond",Georgia,serif}
-.ro-damage__after .is-bad strong{color:#a24539}
-.ro-damage__death{display:flex;align-items:center;gap:8px;margin:0;padding:10px 12px;border:1px solid #d9a79f;border-radius:7px;background:#fbefec;color:#7d2f25;font-size:.8rem}
-.ro-damage__actions{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
-.ro-damage__cancel{min-height:44px;padding:0 16px;border:1px solid #d7c7b4;border-radius:7px;background:#fffefa;color:#625649;font-weight:600;font-size:.86rem}
 .ro-quickroll__field select{padding:8px 10px;border:1px solid #d7c7b4;border-radius:6px;background:#fffefa;color:#19212a;font-size:.9rem}
 .ro-quickroll-result__force{display:grid;gap:1px;min-height:40px;padding:6px 10px;border:1px solid #754c27;border-radius:6px;background:#865427;color:#fffefa;font-size:.82rem;font-weight:700}
 .ro-quickroll-result__force small{font-weight:500;font-size:.68rem;opacity:.85}
 .ro-quickroll-result__force:hover{background:#754c27}
-.ro-damage__rolled{display:block;text-align:center;font-size:.72rem;color:#81766b;margin-top:-4px}
