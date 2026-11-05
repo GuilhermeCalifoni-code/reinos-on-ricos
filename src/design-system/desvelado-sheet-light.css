@@ -66,6 +66,8 @@
 .ro-sheet__stepper{display:grid;grid-template-columns:38px minmax(0,1fr) 38px;gap:5px;align-items:center}
 .ro-sheet__stepper button{min-width:38px;min-height:40px;border:1px solid #d7c7b4;border-radius:5px;background:#f2e8d8;color:#754c27;font-size:1.2rem;font-weight:600}
 .ro-sheet__stepper button:not(:disabled):hover{background:#e8d7c1;border-color:#9c7149}
+.ro-sheet__stepper--valor{gap:10px}
+.ro-sheet__stepper--valor strong{text-align:center}
 .ro-sheet__stepper output{text-align:center;font-weight:700;font-size:1.17rem;color:var(--sh-ink)}
 .ro-sheet__test{border:0;border-bottom:1px solid #cfbb9f;background:transparent;color:#976c3c;display:flex;align-items:center;justify-content:center;gap:6px;min-height:35px;font-size:.7rem;font-weight:700}
 .ro-sheet__validation{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:5px;font-size:.74rem;line-height:1.5}
@@ -192,6 +194,8 @@
   .ro-sheet__attribute-desc{font-size:.62rem}
   .ro-sheet__attribute-head button{padding:2px 3px;font-size:.54rem}
   .ro-sheet__stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ro-sheet__stepper--valor{grid-template-columns:repeat(2,38px);justify-content:center;gap:6px}
+  .ro-sheet__stepper--valor strong{grid-column:1/-1;order:-1}
   .ro-sheet__stats strong{font-size:1.7rem}
   .ro-sheet__resource-grid{grid-template-columns:1fr}
   .ro-sheet__domain{grid-template-columns:1fr;gap:9px}
