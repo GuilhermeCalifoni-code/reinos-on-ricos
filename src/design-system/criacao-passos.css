@@ -40,3 +40,15 @@
 .ro-create-single .ro-character-create-domains{grid-template-columns:1fr}
 .ro-create-single .ro-character-create-domain-label{flex-wrap:wrap;white-space:normal;row-gap:2px}
 .ro-create-single .ro-character-create-domain-label small{flex-basis:100%;margin-left:0}
+/* Retrato maior (pedido do Guilherme ao testar o #128). */
+.ro-create-single .ro-character-create-portrait-controls{grid-template-columns:200px minmax(0,1fr);gap:20px;align-items:start}
+.ro-create-single .ro-character-create-portrait-thumb{width:200px;height:260px;min-height:260px}
+.ro-create-single .ro-character-create-portrait-thumb img{max-height:none}
+.ro-create-single .ro-character-create-portrait-thumb svg{width:44px;height:44px}
+.ro-create-review-id{align-items:flex-start;gap:20px}
+.ro-create-review-id .ro-character-create-portrait-thumb{width:160px;height:210px;min-height:210px;flex-shrink:0}
+@media(max-width:600px){
+  .ro-create-single .ro-character-create-portrait-controls{grid-template-columns:1fr}
+  .ro-create-single .ro-character-create-portrait-thumb{width:100%;max-width:260px;height:320px;justify-self:center}
+  .ro-create-review-id{flex-direction:column;align-items:center;text-align:center}
+}
