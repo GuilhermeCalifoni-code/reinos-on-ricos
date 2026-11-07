@@ -13,6 +13,7 @@
     "test:migracao": "tsx supabase/scripts/testar_048.mts"
   },
   "dependencies": {
+    "@sentry/react": "^11.11.0",
     "@supabase/supabase-js": "^2.116.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vercel/speed-insights": "^2.0.0",
