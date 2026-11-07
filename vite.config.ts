@@ -6,6 +6,11 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
+    // Monitoramento (T4): ambiente e versão vêm da Vercel na hora do build.
+    define: {
+      __AMBIENTE__: JSON.stringify(process.env.VERCEL_ENV || 'local'),
+      __VERSAO__: JSON.stringify(process.env.VERCEL_GIT_COMMIT_SHA || ''),
+    },
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

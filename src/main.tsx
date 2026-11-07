@@ -6,6 +6,9 @@ import './index.css';
 import { ThemeProvider } from './design-system/theme';
 import { AppErrorBoundary } from './components/system/AppErrorBoundary';
 import { ConnectionStatus } from './components/system/ConnectionStatus';
+import { iniciarMonitoramento } from './lib/monitoramento';
+
+iniciarMonitoramento();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

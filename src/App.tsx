@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { identificarUsuario } from './lib/monitoramento';
 import { Sidebar, MobileNavigation, MainViewType } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
@@ -168,10 +169,12 @@ export default function App() {
 
       sessionRef.current = restaurada;
       setSession(restaurada);
+      identificarUsuario(restaurada.authUserId);
       setAuthChecking(false);
     };
 
     const limparSessaoRemotaEmCache = () => {
+      identificarUsuario(null);
       sessionRef.current = null;
       setSession(null);
       setAuthChecking(false);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { registrarErroDaTela } from '../../lib/monitoramento';
 
 interface AppErrorBoundaryProps {
   children: React.ReactNode;
@@ -44,6 +45,7 @@ export class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, App
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error('[Reinos Oníricos] Falha não tratada na interface', error, info);
+    registrarErroDaTela(error, info.componentStack);
 
     if (!isChunkLoadError(error)) return;
 
