@@ -10,7 +10,7 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "test:migracao": "tsx supabase/scripts/testar_048.mts"
+    "test:migracao": "tsx supabase/scripts/testar_048.mts && tsx supabase/scripts/testar_cadeia.mts"
   },
   "dependencies": {
     "@sentry/react": "^11.11.0",
@@ -25,7 +25,7 @@
     "vite": "^8.3.0"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.2.17",
+    "@electric-sql/pglite": "^0.5.15",
     "@types/node": "^22.14.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

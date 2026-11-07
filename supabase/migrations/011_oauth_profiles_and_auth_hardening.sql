@@ -2,6 +2,9 @@
 -- OAuth profile metadata + first-pass auth hardening.
 -- Applied to production project hyuvypzjlsuoatkpzcuv on 2026-10-04.
 
+-- T5: a coluna email existia em produção mas nenhuma migração a criava.
+alter table public.profiles add column if not exists email text;
+
 create or replace function public.create_profile_for_auth_user()
 returns trigger
 language plpgsql
@@ -63,7 +66,12 @@ revoke execute on function public.set_updated_at() from public, anon, authentica
 revoke execute on function public.live_state_set_updated_at() from public, anon, authenticated;
 revoke execute on function public.live_table_set_updated_at() from public, anon, authenticated;
 revoke execute on function public.map_token_campaign_matches_map() from public, anon, authenticated;
-revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
+-- T5: rls_auto_enable() foi criada fora do repositório (painel); só revoga se existir.
+do $$ begin
+  if to_regprocedure('public.rls_auto_enable()') is not null then
+    revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
+  end if;
+end $$;
 
 revoke execute on function public.can_read_campaign_content(uuid,text) from anon;
 revoke execute on function public.can_read_live_content(uuid,text) from anon;
@@ -80,6 +88,19 @@ revoke execute on function public.join_campaign_by_code(text) from anon;
 revoke execute on function public.link_own_character_to_membership(uuid,text) from anon;
 revoke execute on function public.regenerate_campaign_invite(uuid) from anon;
 
-alter policy "Permitir tudo em mesas" on public.mesas to authenticated;
-alter policy "Permitir tudo em cenas_tensao" on public.cenas_tensao to authenticated;
-alter policy "Permitir tudo em rolagens" on public.rolagens to authenticated;
+-- T5: tabelas antigas (mesas, cenas_tensao, rolagens) existem só em produção.
+do $$ begin
+  if to_regclass('public.mesas') is not null then
+    alter policy "Permitir tudo em mesas" on public.mesas to authenticated;
+  end if;
+end $$;
+do $$ begin
+  if to_regclass('public.cenas_tensao') is not null then
+    alter policy "Permitir tudo em cenas_tensao" on public.cenas_tensao to authenticated;
+  end if;
+end $$;
+do $$ begin
+  if to_regclass('public.rolagens') is not null then
+    alter policy "Permitir tudo em rolagens" on public.rolagens to authenticated;
+  end if;
+end $$;
