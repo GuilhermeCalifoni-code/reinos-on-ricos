@@ -210,12 +210,12 @@ create policy "campaign co-members read profiles" on public.profiles for select 
 
 -- Jogadores podem enviar whisper apenas para um Mestre ativo da própria campanha.
 create or replace function public.is_campaign_master_user(p_campaign_id uuid, p_user_id uuid)
-returns boolean language sql security definer stable set search_path = public as $
+returns boolean language sql security definer stable set search_path = public as $$
   select exists (
     select 1 from public.campaign_members
     where campaign_id = p_campaign_id and user_id = p_user_id and role = 'mestre' and status = 'ativo'
   );
-$;
+$$;
 
 drop policy if exists "campaign members create allowed session events" on public.session_events;
 create policy "campaign members create allowed session events" on public.session_events
