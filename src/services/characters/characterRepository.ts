@@ -48,6 +48,13 @@ export const characterRepository = {
     return (data || []).map(mapCharacter);
   },
 
+  /** T6b: abre uma ficha pelo link. Quem decide se a pessoa pode ver é o banco (RLS): sem permissão, volta null. */
+  async buscar(id: string) {
+    const { data, error } = await client().from('personagens').select('*').eq('id', id).maybeSingle();
+    if (error) throw error;
+    return data ? mapCharacter(data) : null;
+  },
+
   async listarDoUsuario() {
     const { data: { user }, error: userError } = await client().auth.getUser();
     if (userError) throw userError;

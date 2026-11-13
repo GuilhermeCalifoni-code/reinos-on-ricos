@@ -20,6 +20,7 @@ import { canPrepareCampaign as roleCanPrepare, campaignEntryView } from './servi
 import { useRemoteCampaignContent } from './services/campaigns/useRemoteCampaignContent';
 import { useRemoteCharacters } from './services/characters/useRemoteCharacters';
 import { campaignRepository } from './services/campaigns/campaignRepository';
+import { characterRepository } from './services/characters/characterRepository';
 import { campaignAssetService } from './services/storage/campaignAssetService';
 import { localCloudMigrationService } from './services/migration/localCloudMigrationService';
 import { useTheme } from './design-system/theme';
@@ -225,27 +226,49 @@ export default function App() {
   // T6: endereço acompanha a tela. A primeira sincronização só corrige o endereço (sem criar histórico).
   const primeiraSincronizacaoRef = useRef(true);
   const idCampanhaDaRota = campanhaAtivaId ?? campanhaAtiva?.id ?? null;
+  // T6b: ficha aberta pelo link (espera carregar) ou pelo site.
+  const [fichaDaRotaId, setFichaDaRotaId] = useState<string | null>(rotaInicial.personagemId ?? null);
+  const [personagemParaFicha, setPersonagemParaFicha] = useState<Personagem | null>(null);
+  const idFichaDaRota = personagemParaFicha?.id ?? fichaDaRotaId;
   useEffect(() => {
-    const caminho = caminhoDaRota(viewAtiva, idCampanhaDaRota);
+    const caminho = caminhoDaRota(viewAtiva, idCampanhaDaRota, idFichaDaRota);
     const primeira = primeiraSincronizacaoRef.current;
     primeiraSincronizacaoRef.current = false;
     if (window.location.pathname === caminho) return;
     const destino = caminho + window.location.search;
     if (primeira) window.history.replaceState(null, '', destino);
     else window.history.pushState(null, '', destino);
-  }, [viewAtiva, idCampanhaDaRota]);
+  }, [viewAtiva, idCampanhaDaRota, idFichaDaRota]);
 
   // T6: botões voltar/avançar do navegador.
   useEffect(() => {
     const aoVoltar = () => {
       const rota = rotaDoCaminho(window.location.pathname);
-      setPersonagemParaFicha(null);
+      setPersonagemParaFicha(current => (rota.personagemId && current?.id === rota.personagemId ? current : null));
+      setFichaDaRotaId(rota.personagemId ?? null);
       if (rota.campanhaId) setCampanhaRemotaAtivaId(rota.campanhaId);
       setViewAtiva(rota.view);
     };
     window.addEventListener('popstate', aoVoltar);
     return () => window.removeEventListener('popstate', aoVoltar);
   }, []);
+
+  // T6b: ficha aberta pelo link. Primeiro procura nas fichas já carregadas; se não achar, pergunta ao banco
+  // (o RLS só devolve a ficha se a pessoa puder vê-la). Sem permissão, fica na lista de Personagens.
+  useEffect(() => {
+    if (!fichaDaRotaId || !session?.authUserId) return;
+    if (personagemParaFicha?.id === fichaDaRotaId) { setFichaDaRotaId(null); return; }
+    let ativo = true;
+    void characterRepository.buscar(fichaDaRotaId)
+      .then(encontrada => {
+        if (!ativo) return;
+        if (encontrada) setPersonagemParaFicha(encontrada);
+        else setViewAtiva('personagens');
+      })
+      .catch(() => { if (ativo) setViewAtiva('personagens'); })
+      .finally(() => { if (ativo) setFichaDaRotaId(null); });
+    return () => { ativo = false; };
+  }, [fichaDaRotaId, session?.authUserId, personagemParaFicha?.id]);
 
   // T6: link de uma campanha que a pessoa não participa (ou que não existe mais) volta para a lista.
   useEffect(() => {
@@ -264,7 +287,6 @@ export default function App() {
       setViewAtiva('modo_mesa');
     }
   }, [viewAtiva, campanhaAtiva?.id, papelDaCampanha, session?.role]);
-  const [personagemParaFicha, setPersonagemParaFicha] = useState<Personagem | null>(null);
   const registrarRolagemFichaRef = useRef<((event: NewSessionEvent)=>Promise<unknown>|void) | undefined>(undefined);
 
   // Modais
@@ -295,6 +317,7 @@ export default function App() {
     // T6: abre a tela do endereço (ex.: link de campanha aberto antes do login); sem endereço, o Início.
     const rota = rotaDoCaminho(window.location.pathname);
     if (rota.campanhaId) setCampanhaRemotaAtivaId(rota.campanhaId);
+    setFichaDaRotaId(rota.personagemId ?? null);
     setViewAtiva(rota.view);
   };
 

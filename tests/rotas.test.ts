@@ -43,3 +43,11 @@ test('T6: telas que dependem de campanha', () => {
   assert.equal(telaDeCampanha('detalhe_campanha'), true);
   assert.equal(telaDeCampanha('campanhas'), false);
 });
+
+test('T6b: ficha aberta tem endereço próprio', () => {
+  assert.equal(caminhoDaRota('personagens', null, 'desvelado-123'), '/personagens/desvelado-123');
+  // A ficha manda no endereço mesmo aberta de dentro da mesa.
+  assert.equal(caminhoDaRota('modo_mesa', ID, 'desvelado-123'), '/personagens/desvelado-123');
+  assert.deepEqual(rotaDoCaminho('/personagens/desvelado-123'), { view: 'personagens', personagemId: 'desvelado-123' });
+  assert.deepEqual(rotaDoCaminho('/personagens'), { view: 'personagens' });
+});
