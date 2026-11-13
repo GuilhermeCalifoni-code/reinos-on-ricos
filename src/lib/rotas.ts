@@ -8,6 +8,7 @@ import type { MainViewType } from '../components/Sidebar';
 export interface Rota {
   view: MainViewType;
   campanhaId?: string;
+  personagemId?: string;
 }
 
 const CAMINHO_FIXO: Partial<Record<MainViewType, string>> = {
@@ -28,8 +29,9 @@ const VIEW_DO_CAMINHO: Record<string, MainViewType> = Object.fromEntries(
 // Ids de campanha são uuid; aceitamos qualquer trecho seguro para não quebrar ids antigos.
 const ID_VALIDO = /^[A-Za-z0-9_-]{1,80}$/;
 
-/** Endereço da tela. Telas de campanha sem campanha escolhida caem na lista. */
-export function caminhoDaRota(view: MainViewType, campanhaId?: string | null): string {
+/** Endereço da tela. Telas de campanha sem campanha escolhida caem na lista. Ficha aberta tem endereço próprio. */
+export function caminhoDaRota(view: MainViewType, campanhaId?: string | null, personagemId?: string | null): string {
+  if (personagemId) return `/personagens/${encodeURIComponent(personagemId)}`;
   if (view === 'detalhe_campanha' || view === 'modo_mesa') {
     if (!campanhaId) return '/campanhas';
     const id = encodeURIComponent(campanhaId);
@@ -51,6 +53,7 @@ export function rotaDoCaminho(pathname: string): Rota {
     if (ID_VALIDO.test(id)) {
       if (partes[0] === 'mesa') return { view: 'modo_mesa', campanhaId: id };
       if (partes[0] === 'campanhas') return { view: 'detalhe_campanha', campanhaId: id };
+      if (partes[0] === 'personagens') return { view: 'personagens', personagemId: id };
     }
   }
   return { view: 'dashboard' };
