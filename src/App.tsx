@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { identificarUsuario } from './lib/monitoramento';
 import { Sidebar, MobileNavigation, MainViewType } from './components/Sidebar';
+import { caminhoDaRota, rotaDoCaminho, telaDeCampanha } from './lib/rotas';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { CampaignsLibraryView } from './components/CampaignsLibraryView';
@@ -65,7 +66,9 @@ export default function App() {
   }, [session, setTheme]);
 
   const campanhasRemotas = useRemoteCampaigns(session?.authUserId);
-  const [campanhaRemotaAtivaId, setCampanhaRemotaAtivaId] = useState<string | null>(null);
+  // T6: a tela inicial vem do endereço (F5 e links abrem a tela certa).
+  const [rotaInicial] = useState(() => rotaDoCaminho(window.location.pathname));
+  const [campanhaRemotaAtivaId, setCampanhaRemotaAtivaId] = useState<string | null>(rotaInicial.campanhaId ?? null);
   const usandoRemoto = Boolean(session?.authUserId) && isSupabaseConfigured();
   const platformAccess = usePlatformAccess(usandoRemoto ? session?.authUserId : undefined);
   const canAccessAdmin = platformAccess.canViewUsers || platformAccess.canManageCampaignRoles || platformAccess.canManageCommunity || platformAccess.canModerateCommunity;
@@ -217,10 +220,44 @@ export default function App() {
   }, []);
 
   // Navegação Principal do Produto
-  const [viewAtiva, setViewAtiva] = useState<MainViewType>('dashboard');
+  const [viewAtiva, setViewAtiva] = useState<MainViewType>(rotaInicial.view);
+
+  // T6: endereço acompanha a tela. A primeira sincronização só corrige o endereço (sem criar histórico).
+  const primeiraSincronizacaoRef = useRef(true);
+  const idCampanhaDaRota = campanhaAtivaId ?? campanhaAtiva?.id ?? null;
   useEffect(() => {
-    if (viewAtiva === 'administracao' && !platformAccess.loading && !canAccessAdmin) setViewAtiva('dashboard');
-  }, [viewAtiva, platformAccess.loading, canAccessAdmin]);
+    const caminho = caminhoDaRota(viewAtiva, idCampanhaDaRota);
+    const primeira = primeiraSincronizacaoRef.current;
+    primeiraSincronizacaoRef.current = false;
+    if (window.location.pathname === caminho) return;
+    const destino = caminho + window.location.search;
+    if (primeira) window.history.replaceState(null, '', destino);
+    else window.history.pushState(null, '', destino);
+  }, [viewAtiva, idCampanhaDaRota]);
+
+  // T6: botões voltar/avançar do navegador.
+  useEffect(() => {
+    const aoVoltar = () => {
+      const rota = rotaDoCaminho(window.location.pathname);
+      setPersonagemParaFicha(null);
+      if (rota.campanhaId) setCampanhaRemotaAtivaId(rota.campanhaId);
+      setViewAtiva(rota.view);
+    };
+    window.addEventListener('popstate', aoVoltar);
+    return () => window.removeEventListener('popstate', aoVoltar);
+  }, []);
+
+  // T6: link de uma campanha que a pessoa não participa (ou que não existe mais) volta para a lista.
+  useEffect(() => {
+    if (!telaDeCampanha(viewAtiva) || !campanhaAtivaId) return;
+    if (!campanhasRemotas.carregado || campanhasRemotas.carregando) return;
+    if (campanhas.some(c => c.id === campanhaAtivaId)) return;
+    setCampanhaRemotaAtivaId(null);
+    setViewAtiva('campanhas');
+  }, [viewAtiva, campanhaAtivaId, campanhas, campanhasRemotas.carregado, campanhasRemotas.carregando]);
+  useEffect(() => {
+    if (viewAtiva === 'administracao' && platformAccess.pronto && !canAccessAdmin) setViewAtiva('dashboard');
+  }, [viewAtiva, platformAccess.pronto, canAccessAdmin]);
   // O estúdio de preparação é exclusivo do Mestre. O Jogador/Observador volta à Mesa.
   useEffect(() => {
     if (viewAtiva === 'detalhe_campanha' && campanhaAtiva && !podePrepararCampanha(campanhaAtiva)) {
@@ -255,8 +292,10 @@ export default function App() {
     setSession(novaSession);
     setAuthChecking(false);
     // Contas remotas não têm um papel global: Mestre/Jogador/Observador é definido por campanha.
-    // O Dashboard é o ponto de entrada correto para qualquer conta autenticada.
-    setViewAtiva('dashboard');
+    // T6: abre a tela do endereço (ex.: link de campanha aberto antes do login); sem endereço, o Início.
+    const rota = rotaDoCaminho(window.location.pathname);
+    if (rota.campanhaId) setCampanhaRemotaAtivaId(rota.campanhaId);
+    setViewAtiva(rota.view);
   };
 
   const handleAtualizarSessao = (patch: Partial<UserSession>) => {
@@ -307,14 +346,22 @@ export default function App() {
     }, `reinos-oniricos-legado-${new Date().toISOString().slice(0, 10)}.json`);
   };
 
+  const voltarEnderecoAoInicio = () => {
+    // T6: ao sair, a próxima conta não herda o endereço da anterior.
+    if (window.location.pathname !== '/') window.history.replaceState(null, '', '/' + window.location.search);
+    setViewAtiva('dashboard');
+  };
+
   const handleSairTodos = async () => {
     await authService.sairTodos();
+    voltarEnderecoAoInicio();
     sessionRef.current = null;
     setSession(null);
   };
 
   const handleTrocarSessao = () => {
     void authService.sair().catch(() => undefined);
+    voltarEnderecoAoInicio();
     setCampanhaRemotaAtivaId(null);
     sessionRef.current = null;
     setSession(null);

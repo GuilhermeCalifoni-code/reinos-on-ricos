@@ -8,6 +8,8 @@ export function useRemoteCampaigns(userId?: string) {
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [membros, setMembros] = useState<MembroCampanha[]>([]);
   const [carregando, setCarregando] = useState(false);
+  // T6: só depois da primeira carga dá para dizer que uma campanha do link não é sua.
+  const [carregado, setCarregado] = useState(false);
   const [erro, setErro] = useState('');
   const requestSeq = useRef(0);
 
@@ -51,7 +53,10 @@ export function useRemoteCampaigns(userId?: string) {
         setErro(e.message || 'Não foi possível carregar as campanhas.');
       }
     } finally {
-      if (currentRequest === requestSeq.current) setCarregando(false);
+      if (currentRequest === requestSeq.current) {
+        setCarregando(false);
+        setCarregado(true);
+      }
     }
   }, [userId]);
 
@@ -59,6 +64,7 @@ export function useRemoteCampaigns(userId?: string) {
     setCampanhas([]);
     setMembros([]);
     setErro('');
+    setCarregado(false);
 
     if (!userId) {
       setCarregando(false);
@@ -142,6 +148,7 @@ export function useRemoteCampaigns(userId?: string) {
     campanhas,
     membros,
     carregando,
+    carregado,
     erro,
     recarregar,
     criar,
